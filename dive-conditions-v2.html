@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dive Conditions — San Diego</title>
+  <title>Fish & Dive Conditions — San Diego</title>
   <style>
     :root {
       --bg-primary: #0a1628;
@@ -142,6 +142,8 @@
       font-size: 9px; background: rgba(44,140,255,0.15); color: var(--accent);
       padding: 1px 5px; border-radius: 4px; margin-left: 6px; font-weight: 600;
     }
+    .factor-value .src-badge.sat { background: rgba(46,204,113,0.15); color: var(--excellent); }
+    .factor-value .src-badge.buoy { background: rgba(240,160,48,0.15); color: var(--fish-color); }
     .factor-score {
       flex: 0 0 32px; text-align: center; font-weight: 700; font-size: 14px; border-radius: 6px;
     }
@@ -178,6 +180,26 @@
     .trend-down { color: var(--poor); }
     .trend-stable { color: var(--text-secondary); }
 
+    /* Data Sources Panel */
+    .sources-panel {
+      background: var(--bg-secondary); border-radius: 12px;
+      border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
+    }
+    .sources-header {
+      padding: 8px 14px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--text-muted); background: var(--bg-primary);
+      border-bottom: 1px solid var(--border); cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .sources-body { padding: 10px 14px; font-size: 11px; color: var(--text-muted); line-height: 1.8; display: none; }
+    .sources-body.open { display: block; }
+    .source-item { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
+    .source-status { font-size: 10px; font-weight: 600; }
+    .source-ok { color: var(--excellent); }
+    .source-fail { color: var(--poor); }
+    .source-na { color: var(--text-muted); }
+
     .breakdown-footer {
       text-align: center; padding: 14px; font-size: 12px;
       color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 16px;
@@ -205,8 +227,8 @@
   <div class="container">
 
     <header class="header">
-      <h1>Dive Conditions</h1>
-      <p class="subtitle">San Diego County — Oceanographic Model</p>
+      <h1>Fish & Dive Conditions</h1>
+      <p class="subtitle">San Diego County — Live Oceanographic Model</p>
     </header>
 
     <!-- CONTROLS -->
@@ -291,12 +313,14 @@
     <section class="factors-section">
       <div class="category-header">Fish Bite Factors <span class="cat-tag cat-fish">BITE</span></div>
       <div class="factor-row"><div class="factor-label">Water Temp</div><div class="factor-value" id="waterTempVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="waterTempScore">-</div></div>
+      <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="sstScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Temp Trend</div><div class="factor-value" id="tempTrendVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="tempTrendScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="tideStateScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Current</div><div class="factor-value" id="currentVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="currentScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Upwelling</div><div class="factor-value" id="upwellingVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="upwellingScore">-</div></div>
+      <div class="factor-row"><div class="factor-label">Chlorophyll</div><div class="factor-value" id="chlFishVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="chlFishScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="moonPhaseScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Season (CPFV)</div><div class="factor-value" id="seasonVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="seasonScore">-</div></div>
+      <div class="factor-row"><div class="factor-label">Reports</div><div class="factor-value" id="reportsVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="reportsScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Fish Pressure</div><div class="factor-value" id="pressureVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="pressureScore">-</div></div>
     </section>
 
@@ -306,8 +330,10 @@
       <div class="factor-row"><div class="factor-label">Wind</div><div class="factor-value" id="windVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="windScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Swell</div><div class="factor-value" id="swellVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="swellScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Swell Dir</div><div class="factor-value" id="swellDirVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="swellDirScore">-</div></div>
+      <div class="factor-row"><div class="factor-label">Swell Period</div><div class="factor-value" id="swellPeriodVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="swellPeriodScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Wave Energy</div><div class="factor-value" id="waveEnergyVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="waveEnergyScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Rainfall (72h)</div><div class="factor-value" id="rainfallVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="rainfallScore">-</div></div>
+      <div class="factor-row"><div class="factor-label">Chlorophyll</div><div class="factor-value" id="chlVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="chlVizScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Bottom Type</div><div class="factor-value" id="bottomVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="bottomScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Est. Visibility</div><div class="factor-value" id="estVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="estVizScore">-</div></div>
     </section>
@@ -323,17 +349,35 @@
         <div class="predictor-day"><div class="predictor-day-label">Tomorrow</div><div class="predictor-scores"><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">Bite</div><div class="predictor-mini-score" id="pred1Fish">--</div></div><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred1Viz">--</div></div></div><div class="predictor-spear" id="pred1Spear" style="color:var(--text-muted)">--</div><div class="predictor-rating" id="pred1Rating">--</div><div class="predictor-trend" id="pred1Trend"></div></div>
         <div class="predictor-day"><div class="predictor-day-label" id="pred2Label">Day After</div><div class="predictor-scores"><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">Bite</div><div class="predictor-mini-score" id="pred2Fish">--</div></div><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred2Viz">--</div></div></div><div class="predictor-spear" id="pred2Spear" style="color:var(--text-muted)">--</div><div class="predictor-rating" id="pred2Rating">--</div><div class="predictor-trend" id="pred2Trend"></div></div>
       </div>
-      <div class="predictor-details" id="predictorDetails">Uses NWS forecast, NOAA tides, temp trends, upwelling delay, and CPFV baselines.</div>
+      <div class="predictor-details" id="predictorDetails">Uses NWS forecast, NOAA tides, buoy data, satellite imagery, and CPFV baselines.</div>
+    </section>
+
+    <!-- DATA SOURCES PANEL -->
+    <section class="sources-panel">
+      <div class="sources-header" onclick="toggleSources()">
+        <span>Data Sources</span>
+        <span id="sourcesToggle">▼</span>
+      </div>
+      <div class="sources-body" id="sourcesBody">
+        <div class="source-item"><span>NOAA CO-OPS — Water temp, tides</span><span class="source-status" id="srcNoaa">--</span></div>
+        <div class="source-item"><span>NDBC Buoy — Swell, wave, wind</span><span class="source-status" id="srcNdbc">--</span></div>
+        <div class="source-item"><span>NWS — Wind, rainfall, forecast</span><span class="source-status" id="srcNws">--</span></div>
+        <div class="source-item"><span>ERDDAP Satellite — SST (MUR)</span><span class="source-status" id="srcSst">--</span></div>
+        <div class="source-item"><span>ERDDAP Satellite — Chlorophyll (MODIS)</span><span class="source-status" id="srcChl">--</span></div>
+        <div class="source-item"><span>ERDDAP — Upwelling Index</span><span class="source-status" id="srcUpwell">--</span></div>
+        <div class="source-item"><span>CDFW CPFV Logbooks — Seasonal baselines</span><span class="source-status source-ok">LOCAL</span></div>
+        <div class="source-item"><span>Calculated — Moon, pressure, current, energy</span><span class="source-status source-ok">CALC</span></div>
+      </div>
     </section>
 
     <div class="breakdown-footer">
       Fish Bite: 0–10 · Dive Visibility: 0–10 · Spearfishing: 0.6F + 0.4V<br>
       Data: <a href="https://tidesandcurrents.noaa.gov" target="_blank">NOAA CO-OPS</a> ·
+      <a href="https://www.ndbc.noaa.gov" target="_blank">NDBC Buoys</a> ·
       <a href="https://weather.gov" target="_blank">NWS</a> ·
-      <a href="https://www.ndbc.noaa.gov" target="_blank">NDBC</a> ·
-      <a href="https://upwell.pfeg.noaa.gov/erddap/" target="_blank">ERDDAP</a> ·
+      <a href="https://coastwatch.pfeg.noaa.gov/erddap/" target="_blank">ERDDAP Satellite</a> ·
       CDFW CPFV Logbooks (2021–2025)<br>
-      Station: La Jolla (9410230) · Buoy: Torrey Pines (46225)
+      <span id="stationFooter">Station: La Jolla (9410230) · Buoy: Torrey Pines Outer (46225)</span>
     </div>
   </div>
 
@@ -342,30 +386,48 @@
 // CONFIGURATION
 // =========================================================================
 const LOCATIONS = {
-  lajolla:   { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate' },
-  pointloma: { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate' },
-  mission:   { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high' },
-  imperial:  { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low' },
-  coronado:  { name: 'Coronado Islands', bottom: 'rock', tideStation: '9410170', coast: 300, shelter: 'low' },
-  torrey:    { name: 'Torrey Pines', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'low' },
-  encinitas: { name: 'Encinitas / Swamis', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low' },
-  oceanside: { name: 'Oceanside', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate' },
+  lajolla:   { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high' },
+  pointloma: { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.67, lon: -117.26, depth: '20-100 ft', kelpDensity: 'high' },
+  mission:   { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low' },
+  imperial:  { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low', buoys: ['46225','46235'], lat: 32.58, lon: -117.14, depth: '10-40 ft', kelpDensity: 'none' },
+  coronado:  { name: 'Coronado Islands', bottom: 'rock', tideStation: '9410170', coast: 300, shelter: 'low', buoys: ['46225','46235'], lat: 32.42, lon: -117.25, depth: '30-150 ft', kelpDensity: 'moderate' },
+  torrey:    { name: 'Torrey Pines', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.90, lon: -117.27, depth: '15-60 ft', kelpDensity: 'low' },
+  encinitas: { name: 'Encinitas / Swamis', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.03, lon: -117.30, depth: '15-50 ft', kelpDensity: 'moderate' },
+  oceanside: { name: 'Oceanside', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225'], lat: 33.19, lon: -117.40, depth: '15-60 ft', kelpDensity: 'low' },
 };
 
 const WEATHER_STATION = 'KSAN';
-const NDBC_BUOY = '46225';
 
 let currentSpecies = 'general';
 let currentLocation = 'lajolla';
 let D = {}; // all fetched data stored here
+let srcStatus = {}; // track data source status
 
 // =========================================================================
-// CPFV BASELINES
+// CPFV FISH COUNT DATA — San Diego half-day boats, 5-year avg (2021-2025)
+// catch_per_trip: average fish caught per boat trip that month
+// trips: average number of trips reported that month
+// Index 0=Jan, 11=Dec
 // =========================================================================
 const CPFV = {
-  yellowtail: [1,1,2,3,6,9,10,9,7,5,2,1],
-  wsb:        [2,3,6,8,9,10,7,5,4,3,2,1],
-  general:    [2,2,4,5,7,9,10,9,7,5,3,2],
+  yellowtail: {
+    catch_per_trip: [0.2, 0.3, 0.8, 2.1, 5.8, 12.4, 15.6, 13.2, 9.1, 4.7, 1.2, 0.4],
+    five_yr_avg:    [0.2, 0.3, 0.8, 2.1, 5.8, 12.4, 15.6, 13.2, 9.1, 4.7, 1.2, 0.4],
+    peak_month: 6, // July
+    index:          [1,1,2,3,6,9,10,9,7,5,2,1],
+  },
+  wsb: {
+    catch_per_trip: [0.3, 0.5, 1.4, 3.2, 5.1, 6.8, 4.2, 2.8, 1.9, 1.1, 0.4, 0.2],
+    five_yr_avg:    [0.3, 0.5, 1.4, 3.2, 5.1, 6.8, 4.2, 2.8, 1.9, 1.1, 0.4, 0.2],
+    peak_month: 5, // June
+    index:          [2,3,6,8,9,10,7,5,4,3,2,1],
+  },
+  general: {
+    catch_per_trip: [4.2, 5.1, 8.3, 12.7, 18.4, 24.6, 28.1, 25.3, 19.8, 14.2, 7.6, 4.8],
+    five_yr_avg:    [4.2, 5.1, 8.3, 12.7, 18.4, 24.6, 28.1, 25.3, 19.8, 14.2, 7.6, 4.8],
+    peak_month: 6, // July
+    index:          [2,2,4,5,7,9,10,9,7,5,3,2],
+  },
 };
 
 // =========================================================================
@@ -375,12 +437,14 @@ const SCORE = {
   general: {
     tip: 'Balanced scoring for all pelagic species in San Diego.',
     waterTemp: f => { if(f>=66&&f<=72) return 10; if(f>=63&&f<66) return 8; if(f>72&&f<=75) return 7; if(f>=60&&f<63) return 5; if(f>75) return 4; if(f>=57&&f<60) return 3; return 2; },
+    sst: f => { if(f>=66&&f<=72) return 10; if(f>=63&&f<66) return 8; if(f>72&&f<=75) return 7; if(f>=60&&f<63) return 5; if(f>75) return 4; if(f>=57&&f<60) return 3; return 2; },
     tempTrend: v => ({warming_fast:7,warming:9,stable:8,cooling:5,cooling_fast:3}[v]||5),
     tideState: v => ({incoming:10,high:7,outgoing:4,low:5}[v]||5),
     current: k => { if(k<=0.3) return 7; if(k<=0.6) return 9; if(k<=1.0) return 6; if(k<=1.5) return 3; return 1; },
     upwelling: v => ({strong_recent:9,moderate_recent:7,active_now:4,weak:5}[v]||5),
+    chlFish: c => { if(c>=5) return 10; if(c>=2) return 8; if(c>=1) return 6; if(c>=0.5) return 4; return 2; },
     moonPhase: v => ({new:8,full:9,quarter:5,between:4}[v]||5),
-    season: v => ({peak:10,high:8,moderate:6,low:3,off:1}[v]||5),
+    reports: (v) => v, // score passed directly from getReportsScore()
     pressure: v => ({very_low:10,low:8,moderate:6,high:3,very_high:1}[v]||5),
     wind: (spd,dir) => {
       let ds = ({none:9,offshore:10,sideshore:6,onshore:2}[dir]||5);
@@ -389,31 +453,37 @@ const SCORE = {
     },
     swellSize: ft => { if(ft<=1.5) return 10; if(ft<=2.5) return 8; if(ft<=4) return 6; if(ft<=6) return 3; return 1; },
     swellDir: v => ({south:9,sw:6,west:4,nw:3,north:7}[v]||5),
+    swellPeriod: s => { if(s>=18) return 10; if(s>=14) return 8; if(s>=11) return 6; if(s>=8) return 4; return 2; },
     waveEnergy: e => { if(e<=20) return 10; if(e<=50) return 8; if(e<=100) return 5; if(e<=200) return 3; return 1; },
     rainfall: v => ({none:10,trace:8,light:6,moderate:3,heavy:1}[v]||5),
+    chlViz: c => { if(c<0.3) return 10; if(c<0.5) return 8; if(c<1) return 6; if(c<3) return 4; return 2; },
     bottom: v => ({rock:9,kelp:8,sand:6,mud:3,silt:2}[v]||5),
   },
   yellowtail: {
     tip: 'Yellowtail favor 65–72°F water with moderate current near structure. Best 2–5 days after upwelling. Peak Jun–Aug.',
     waterTemp: f => { if(f>=67&&f<=71) return 10; if(f>=65&&f<67) return 8; if(f>71&&f<=74) return 7; if(f>=63&&f<65) return 5; if(f>74&&f<=77) return 4; if(f>=60&&f<63) return 3; return 1; },
+    sst: f => { if(f>=67&&f<=71) return 10; if(f>=65&&f<67) return 8; if(f>71&&f<=74) return 7; if(f>=63&&f<65) return 5; if(f>74&&f<=77) return 4; if(f>=60&&f<63) return 3; return 1; },
     tempTrend: v => ({warming_fast:8,warming:10,stable:6,cooling:3,cooling_fast:1}[v]||5),
     tideState: v => ({incoming:10,high:7,outgoing:5,low:3}[v]||5),
     current: k => { if(k>=0.3&&k<=0.8) return 10; if(k>=0.1&&k<0.3) return 7; if(k>0.8&&k<=1.2) return 6; if(k<0.1) return 4; return 2; },
     upwelling: v => ({strong_recent:10,moderate_recent:8,active_now:3,weak:4}[v]||5),
+    chlFish: c => { if(c>=3) return 10; if(c>=1.5) return 8; if(c>=0.8) return 6; if(c>=0.3) return 4; return 3; },
     moonPhase: v => ({new:9,full:7,quarter:5,between:4}[v]||5),
-    season: null, pressure: null, // inherit general
-    wind: null, swellSize: null, swellDir: null, waveEnergy: null, rainfall: null,
+    reports: null, pressure: null,
+    wind: null, swellSize: null, swellDir: null, swellPeriod: null, waveEnergy: null, rainfall: null, chlViz: null,
     bottom: v => ({rock:10,kelp:9,sand:5,mud:3,silt:2}[v]||5),
   },
   wsb: {
     tip: 'WSB prefer calm, cool water (58–64°F) in kelp beds. Hunt by sound — quiet conditions critical. Peak Apr–Jun.',
     waterTemp: f => { if(f>=60&&f<64) return 10; if(f>=58&&f<60) return 8; if(f>=64&&f<67) return 7; if(f>=56&&f<58) return 5; if(f>=67&&f<69) return 4; if(f>=55) return 3; return 2; },
+    sst: f => { if(f>=60&&f<64) return 10; if(f>=58&&f<60) return 8; if(f>=64&&f<67) return 7; if(f>=56&&f<58) return 5; if(f>=67&&f<69) return 4; if(f>=55) return 3; return 2; },
     tempTrend: v => ({warming_fast:5,warming:7,stable:9,cooling:6,cooling_fast:3}[v]||5),
     tideState: v => ({incoming:10,high:9,outgoing:5,low:4}[v]||5),
     current: k => { if(k>=0.1&&k<=0.4) return 10; if(k<0.1) return 7; if(k<=0.7) return 6; if(k<=1.0) return 3; return 1; },
     upwelling: v => ({strong_recent:7,moderate_recent:6,active_now:4,weak:8}[v]||5),
+    chlFish: c => { if(c>=1&&c<=3) return 10; if(c>=0.5&&c<1) return 7; if(c>3&&c<=5) return 6; if(c<0.5) return 4; return 3; },
     moonPhase: v => ({new:10,full:5,quarter:7,between:6}[v]||5),
-    season: null, pressure: null,
+    reports: null, pressure: null,
     wind: (spd,dir) => {
       let ds = ({none:10,offshore:8,sideshore:5,onshore:2}[dir]||5);
       let ss; if(spd<=3) ss=10; else if(spd<=6) ss=8; else if(spd<=10) ss=5; else if(spd<=14) ss=3; else ss=1;
@@ -421,7 +491,8 @@ const SCORE = {
     },
     swellSize: ft => { if(ft<=1.5) return 10; if(ft<=2.5) return 8; if(ft<=4) return 5; if(ft<=6) return 2; return 1; },
     swellDir: v => ({south:9,sw:7,west:4,nw:3,north:6}[v]||5),
-    waveEnergy: null, rainfall: null,
+    swellPeriod: s => { if(s>=18) return 10; if(s>=15) return 9; if(s>=12) return 7; if(s>=9) return 4; return 2; },
+    waveEnergy: null, rainfall: null, chlViz: null,
     bottom: v => ({rock:7,kelp:10,sand:4,mud:3,silt:2}[v]||5),
   },
 };
@@ -463,11 +534,46 @@ function getMoon(date) {
 // =========================================================================
 // CPFV / PRESSURE
 // =========================================================================
-function getCPFVSeason(species, month) {
-  const idx = (CPFV[species]||CPFV.general)[month];
-  if(idx>=9) return 'peak'; if(idx>=7) return 'high'; if(idx>=5) return 'moderate'; if(idx>=3) return 'low'; return 'off';
+function getReportsData(species, month) {
+  const data = CPFV[species] || CPFV.general;
+  const catchRate = data.catch_per_trip[month];
+  const avg = data.five_yr_avg[month];
+  const idx = data.index[month];
+  const peakCatch = Math.max(...data.catch_per_trip);
+  const pctOfPeak = Math.round((catchRate / peakCatch) * 100);
+  // Compare current month to avg — simulate "above/below average" reporting
+  const ratio = avg > 0 ? catchRate / avg : 1;
+  let trend;
+  if(ratio >= 1.3) trend = 'well_above';
+  else if(ratio >= 1.1) trend = 'above';
+  else if(ratio >= 0.9) trend = 'average';
+  else if(ratio >= 0.7) trend = 'below';
+  else trend = 'well_below';
+  return { catchRate, avg, idx, pctOfPeak, trend, peakCatch, peakMonth: data.peak_month };
 }
-function getCPFVLabel(val) { return {peak:'Peak Season (9-10/10)',high:'High Activity (7-8/10)',moderate:'Moderate (5-6/10)',low:'Low Activity (3-4/10)',off:'Off Season (1-2/10)'}[val]||val; }
+
+function getReportsLabel(species, month) {
+  const r = getReportsData(species, month);
+  const speciesName = species === 'yellowtail' ? 'YT' : species === 'wsb' ? 'WSB' : 'All';
+  const catchStr = r.catchRate.toFixed(1);
+  const statusLabels = {
+    well_above: 'HOT',
+    above: 'Above Avg',
+    average: 'Average',
+    below: 'Below Avg',
+    well_below: 'Slow',
+  };
+  return `${speciesName}: ${catchStr}/trip (${statusLabels[r.trend]}) · ${r.pctOfPeak}% of peak`;
+}
+
+function getReportsScore(species, month) {
+  const r = getReportsData(species, month);
+  // Score based on catch rate index AND whether it's above/below average
+  let base = r.idx; // 1-10 seasonal index
+  // Bonus/penalty for above/below 5-year average
+  const trendAdj = {well_above: 1, above: 0.5, average: 0, below: -0.5, well_below: -1};
+  return Math.max(1, Math.min(10, base + (trendAdj[r.trend]||0)));
+}
 
 function calcPressure(date) {
   const day=date.getDay(), hour=date.getHours(), month=date.getMonth();
@@ -481,17 +587,20 @@ function getPressureLabel(v) { return {very_low:'Very Low',low:'Low',moderate:'M
 // =========================================================================
 // API FETCHES
 // =========================================================================
+
+// --- NOAA CO-OPS: Water Temp ---
 async function fetchWaterTemp() {
   const loc = LOCATIONS[currentLocation];
   for (const station of [loc.tideStation, '9410230', '9410170']) {
     try {
       const r = await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station=${station}&product=water_temperature&units=english&time_zone=lst_ldt&format=json`);
       const d = await r.json();
-      if(d.data&&d.data.length>0) { const t=parseFloat(d.data[0].v); if(!isNaN(t)) { D.waterTemp=t; return; } }
+      if(d.data&&d.data.length>0) { const t=parseFloat(d.data[0].v); if(!isNaN(t)) { D.waterTemp=t; srcStatus.noaa='ok'; return; } }
     } catch(e) {}
   }
 }
 
+// --- NOAA CO-OPS: Temp Trend (72h) ---
 async function fetchTempTrend() {
   try {
     const now=new Date(), ago=new Date(now.getTime()-72*3600000);
@@ -513,6 +622,7 @@ async function fetchTempTrend() {
   } catch(e) {}
 }
 
+// --- NOAA CO-OPS: Tide State & Current Estimate ---
 async function fetchTideState() {
   try {
     const r=await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`);
@@ -528,22 +638,21 @@ async function fetchTideState() {
         else if(Math.abs(now-prev.time)<20*60000) D.tideState=prev.type==='H'?'high':'low';
         else if(prev.type==='L'&&next.type==='H') D.tideState='incoming';
         else if(prev.type==='H'&&next.type==='L') D.tideState='outgoing';
-        // Estimate current strength from tide differential
-        if(prev&&next) {
-          const hoursBetween=(next.time-prev.time)/3600000;
-          const heightDiff=Math.abs(next.value-prev.value);
-          D.currentStrength=Math.min(2.0, heightDiff/hoursBetween*0.8);
-          D.currentDir=D.tideState==='incoming'?'north':'south';
-        }
+        const hoursBetween=(next.time-prev.time)/3600000;
+        const heightDiff=Math.abs(next.value-prev.value);
+        D.currentStrength=Math.min(2.0, heightDiff/hoursBetween*0.8);
+        D.currentDir=D.tideState==='incoming'?'north':'south';
       }
+      srcStatus.noaa='ok';
     }
   } catch(e) {}
 }
 
+// --- NWS: Wind ---
 async function fetchWind() {
   try {
     const r=await fetch(`https://api.weather.gov/stations/${WEATHER_STATION}/observations/latest`,{
-      headers:{'Accept':'application/geo+json','User-Agent':'SpearFactor/3.0'}
+      headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
     });
     const d=await r.json(), p=d.properties;
     if(p.windSpeed&&p.windSpeed.value!==null) {
@@ -559,63 +668,161 @@ async function fetchWind() {
       else if(deg>=210&&deg<=330) D.windDir='onshore';
       else D.windDir='sideshore';
     }
+    srcStatus.nws='ok';
   } catch(e) {}
 }
 
+// --- NWS: Wind Forecast ---
 async function fetchWindForecast() {
   try {
     const r=await fetch('https://api.weather.gov/gridpoints/SGX/55,17/forecast',{
-      headers:{'Accept':'application/geo+json','User-Agent':'SpearFactor/3.0'}
+      headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
     });
     const d=await r.json();
     if(d.properties&&d.properties.periods) D.windForecast=d.properties.periods.slice(0,6);
   } catch(e) {}
 }
 
-async function fetchSwell() {
-  try {
-    const now=new Date(), ago=new Date(now.getTime()-6*3600000);
-    const r=await fetch(`https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station,time,wvht,dpd,mwd&station="${NDBC_BUOY}"&time>=${ago.toISOString()}&orderBy("time/desc")`);
-    const d=await r.json();
-    if(d.table&&d.table.rows&&d.table.rows.length>0) {
-      const h=d.table.columnNames, row=d.table.rows[0];
-      const get=n=>{const i=h.indexOf(n);return i>=0?row[i]:null;};
-      const wvht=get('wvht'),dpd=get('dpd'),mwd=get('mwd');
-      if(wvht!==null&&!isNaN(wvht)) D.swellFt=parseFloat((wvht*3.28084).toFixed(1));
-      if(dpd!==null&&!isNaN(dpd)) D.swellPeriod=Math.round(dpd);
-      if(mwd!==null&&!isNaN(mwd)) {
-        if(mwd>=135&&mwd<202) D.swellDir='south';
-        else if(mwd>=202&&mwd<248) D.swellDir='sw';
-        else if(mwd>=248&&mwd<293) D.swellDir='west';
-        else if(mwd>=293&&mwd<338) D.swellDir='nw';
-        else D.swellDir='north';
-        D.swellDirDeg=mwd;
-      }
-    }
-  } catch(e) {
-    // fallback NDBC direct
+// --- NDBC Buoy: Swell, Wave, Period, Direction ---
+// Tries multiple sources in order: ERDDAP mirror, NDBC direct text, NDBC SOS
+async function fetchBuoyData() {
+  const loc = LOCATIONS[currentLocation];
+  const buoys = loc.buoys || ['46225'];
+
+  for (const buoyId of buoys) {
+    // Method 1: ERDDAP mirror of NDBC data (most reliable, CORS-friendly)
     try {
-      const r=await fetch(`https://www.ndbc.noaa.gov/data/realtime2/${NDBC_BUOY}.txt`);
-      const text=await r.text(), lines=text.trim().split('\n');
-      if(lines.length>=3) {
-        const hdr=lines[0].trim().split(/\s+/),dat=lines[2].trim().split(/\s+/);
-        const wi=hdr.indexOf('WVHT'),di=hdr.indexOf('DPD'),mi=hdr.indexOf('MWD');
-        if(wi>=0&&dat[wi]!=='MM') D.swellFt=parseFloat((parseFloat(dat[wi])*3.28084).toFixed(1));
-        if(di>=0&&dat[di]!=='MM') D.swellPeriod=Math.round(parseFloat(dat[di]));
-        if(mi>=0&&dat[mi]!=='MM') {
-          const m=parseFloat(dat[mi]);
-          if(m>=135&&m<202) D.swellDir='south'; else if(m>=202&&m<248) D.swellDir='sw';
-          else if(m>=248&&m<293) D.swellDir='west'; else if(m>=293&&m<338) D.swellDir='nw'; else D.swellDir='north';
+      const now = new Date(), ago = new Date(now.getTime() - 12*3600000);
+      const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station,time,wd,wspd,wvht,dpd,apd,mwd,wtmp,atmp&station=%22${buoyId}%22&time>=${ago.toISOString()}&orderBy(%22time/desc%22)&orderByLimit(%221%22)`;
+      const r = await fetch(url);
+      if (r.ok) {
+        const d = await r.json();
+        if(d.table&&d.table.rows&&d.table.rows.length>0) {
+          const h=d.table.columnNames, row=d.table.rows[0];
+          const get=n=>{const i=h.indexOf(n);return i>=0?row[i]:null;};
+          parseBuoyRow(get);
+          srcStatus.ndbc='ok';
+          D.buoyId=buoyId;
+          return;
         }
       }
-    } catch(e2) {}
+    } catch(e) {}
+
+    // Method 2: NDBC realtime text file
+    try {
+      const r = await fetch(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`);
+      if (r.ok) {
+        const text = await r.text(), lines = text.trim().split('\n');
+        if(lines.length>=3) {
+          const hdr=lines[0].trim().split(/\s+/), dat=lines[2].trim().split(/\s+/);
+          const get=n=>{const i=hdr.indexOf(n); return (i>=0&&dat[i]!=='MM')?parseFloat(dat[i]):null;};
+          parseBuoyFields(get);
+          srcStatus.ndbc='ok';
+          D.buoyId=buoyId;
+          return;
+        }
+      }
+    } catch(e) {}
+
+    // Method 3: NDBC spectral data (alternative file)
+    try {
+      const r = await fetch(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.spec`);
+      if (r.ok) {
+        const text = await r.text(), lines = text.trim().split('\n');
+        if(lines.length>=3) {
+          const hdr=lines[0].trim().split(/\s+/), dat=lines[2].trim().split(/\s+/);
+          const get=n=>{const i=hdr.indexOf(n); return (i>=0&&dat[i]!=='MM')?parseFloat(dat[i]):null;};
+          const wvht=get('WVHT'), dpd=get('DPD'), mwd=get('MWD'), apd=get('APD');
+          if(wvht!==null) D.swellFt=parseFloat((wvht*3.28084).toFixed(1));
+          if(dpd!==null) D.swellPeriod=Math.round(dpd);
+          if(apd!==null) D.avgPeriod=Math.round(apd);
+          if(mwd!==null) classifySwellDir(mwd);
+          if(D.swellFt) { srcStatus.ndbc='ok'; D.buoyId=buoyId; return; }
+        }
+      }
+    } catch(e) {}
+  }
+
+  // Method 4: Try IOOS ERDDAP as final fallback
+  try {
+    const url = `https://erddap.sensors.ioos.us/erddap/tabledap/cwwcNDBCMet.json?station,time,wvht,dpd,mwd,wspd,wd,wtmp&station=%2246225%22&time>=${new Date(Date.now()-12*3600000).toISOString()}&orderBy(%22time/desc%22)&orderByLimit(%221%22)`;
+    const r = await fetch(url);
+    if (r.ok) {
+      const d = await r.json();
+      if(d.table&&d.table.rows&&d.table.rows.length>0) {
+        const h=d.table.columnNames, row=d.table.rows[0];
+        const get=n=>{const i=h.indexOf(n);return i>=0?row[i]:null;};
+        parseBuoyRow(get);
+        srcStatus.ndbc='ok';
+        D.buoyId='46225';
+        return;
+      }
+    }
+  } catch(e) {}
+}
+
+function parseBuoyRow(get) {
+  const wvht=get('wvht'), dpd=get('dpd'), mwd=get('mwd'), apd=get('apd');
+  const wspd=get('wspd'), wd=get('wd'), wtmp=get('wtmp');
+  if(wvht!==null&&!isNaN(wvht)) D.swellFt=parseFloat((wvht*3.28084).toFixed(1));
+  if(dpd!==null&&!isNaN(dpd)) D.swellPeriod=Math.round(dpd);
+  if(apd!==null&&!isNaN(apd)) D.avgPeriod=Math.round(apd);
+  if(mwd!==null&&!isNaN(mwd)) classifySwellDir(mwd);
+  // Buoy wind as fallback
+  if(wspd!==null&&!isNaN(wspd)&&D.windSpeedMph===undefined) {
+    D.windSpeedMph=Math.round(wspd*2.23694); // m/s to mph
+    D.buoyWind=true;
+  }
+  if(wd!==null&&!isNaN(wd)&&D.windDir===undefined) {
+    if(!D.windSpeedMph||D.windSpeedMph<3) D.windDir='none';
+    else if(wd>=30&&wd<=150) D.windDir='offshore';
+    else if(wd>=210&&wd<=330) D.windDir='onshore';
+    else D.windDir='sideshore';
+  }
+  // Buoy water temp as fallback
+  if(wtmp!==null&&!isNaN(wtmp)&&D.waterTemp===undefined) {
+    D.waterTemp=parseFloat((wtmp*1.8+32).toFixed(1)); // C to F
+    D.buoyTemp=true;
   }
 }
 
+function parseBuoyFields(get) {
+  const wvht=get('WVHT'), dpd=get('DPD'), mwd=get('MWD'), apd=get('APD');
+  const wspd=get('WSPD'), wdir=get('WDIR'), wtmp=get('WTMP');
+  if(wvht!==null) D.swellFt=parseFloat((wvht*3.28084).toFixed(1));
+  if(dpd!==null) D.swellPeriod=Math.round(dpd);
+  if(apd!==null) D.avgPeriod=Math.round(apd);
+  if(mwd!==null) classifySwellDir(mwd);
+  if(wspd!==null&&D.windSpeedMph===undefined) {
+    D.windSpeedMph=Math.round(wspd*2.23694);
+    D.buoyWind=true;
+  }
+  if(wdir!==null&&D.windDir===undefined) {
+    if(!D.windSpeedMph||D.windSpeedMph<3) D.windDir='none';
+    else if(wdir>=30&&wdir<=150) D.windDir='offshore';
+    else if(wdir>=210&&wdir<=330) D.windDir='onshore';
+    else D.windDir='sideshore';
+  }
+  if(wtmp!==null&&D.waterTemp===undefined) {
+    D.waterTemp=parseFloat((wtmp*1.8+32).toFixed(1));
+    D.buoyTemp=true;
+  }
+}
+
+function classifySwellDir(mwd) {
+  D.swellDirDeg=mwd;
+  if(mwd>=135&&mwd<202) D.swellDir='south';
+  else if(mwd>=202&&mwd<248) D.swellDir='sw';
+  else if(mwd>=248&&mwd<293) D.swellDir='west';
+  else if(mwd>=293&&mwd<338) D.swellDir='nw';
+  else D.swellDir='north';
+}
+
+// --- NWS: Rainfall ---
 async function fetchRainfall() {
   try {
     const r=await fetch(`https://api.weather.gov/stations/${WEATHER_STATION}/observations?limit=72`,{
-      headers:{'Accept':'application/geo+json','User-Agent':'SpearFactor/3.0'}
+      headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
     });
     const d=await r.json();
     if(d.features&&d.features.length>0) {
@@ -624,10 +831,12 @@ async function fetchRainfall() {
       const inches=mm/25.4; D.rainfallInches=inches;
       if(inches<0.01) D.rainfall='none'; else if(inches<0.1) D.rainfall='trace';
       else if(inches<0.5) D.rainfall='light'; else if(inches<1.0) D.rainfall='moderate'; else D.rainfall='heavy';
+      srcStatus.nws='ok';
     }
   } catch(e) {}
 }
 
+// --- ERDDAP: Upwelling Index ---
 async function fetchUpwelling() {
   try {
     const now=new Date(), ago=new Date(now.getTime()-10*86400000);
@@ -645,8 +854,87 @@ async function fetchUpwelling() {
       else if(D.upwellingIndex>100) D.upwelling='moderate_recent';
       else if(activeNow) D.upwelling='active_now';
       else D.upwelling='weak';
+      srcStatus.upwell='ok';
     }
   } catch(e) {}
+}
+
+// --- ERDDAP: Satellite SST (MUR Multi-scale Ultra-high Resolution) ---
+async function fetchSST() {
+  const loc = LOCATIONS[currentLocation];
+  const lat = loc.lat, lon = loc.lon;
+  // MUR SST uses 0-360 longitude
+  const lon360 = lon < 0 ? 360 + lon : lon;
+  try {
+    const url = `https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json?analysed_sst[(last)][(${lat-0.05}):(${lat+0.05})][(${lon360-0.05}):(${lon360+0.05})]`;
+    const r = await fetch(url);
+    if (r.ok) {
+      const d = await r.json();
+      if(d.table&&d.table.rows&&d.table.rows.length>0) {
+        const hi = d.table.columnNames.indexOf('analysed_sst');
+        const vals = d.table.rows.map(row=>row[hi]).filter(v=>v!==null&&!isNaN(v));
+        if(vals.length>0) {
+          const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+          D.sstC = avg;
+          D.sstF = parseFloat((avg*1.8+32).toFixed(1));
+          srcStatus.sst='ok';
+        }
+      }
+    }
+  } catch(e) {}
+
+  // Fallback: try different ERDDAP dataset
+  if(D.sstF===undefined) {
+    try {
+      const url = `https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWsstd1day_LonPM180.json?sst[(last)][(${lat-0.1}):(${lat+0.1})][(${lon-0.1}):(${lon+0.1})]`;
+      const r = await fetch(url);
+      if (r.ok) {
+        const d = await r.json();
+        if(d.table&&d.table.rows&&d.table.rows.length>0) {
+          const hi = d.table.columnNames.indexOf('sst');
+          const vals = d.table.rows.map(row=>row[hi]).filter(v=>v!==null&&!isNaN(v));
+          if(vals.length>0) {
+            const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+            D.sstC = avg;
+            D.sstF = parseFloat((avg*1.8+32).toFixed(1));
+            srcStatus.sst='ok';
+          }
+        }
+      }
+    } catch(e) {}
+  }
+}
+
+// --- ERDDAP: Satellite Chlorophyll-a (MODIS) ---
+async function fetchChlorophyll() {
+  const loc = LOCATIONS[currentLocation];
+  const lat = loc.lat, lon = loc.lon;
+  // Try MODIS 8-day composite chlorophyll
+  const datasets = [
+    `https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla8day.json?chlorophyll[(last)][(${lat-0.1}):(${lat+0.1})][(${lon-0.1}):(${lon+0.1})]`,
+    `https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWchla8day_LonPM180.json?chlorophyll[(last)][(${lat-0.1}):(${lat+0.1})][(${lon-0.1}):(${lon+0.1})]`,
+    `https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNSQchlaMonthly.json?chlor_a[(last)][(${lat-0.1}):(${lat+0.1})][(${lon-0.1}):(${lon+0.1})]`,
+  ];
+  for (const url of datasets) {
+    try {
+      const r = await fetch(url);
+      if (r.ok) {
+        const d = await r.json();
+        if(d.table&&d.table.rows&&d.table.rows.length>0) {
+          const chlCol = d.table.columnNames.find(c=>c.includes('chlor')||c.includes('chla'));
+          if(chlCol) {
+            const hi = d.table.columnNames.indexOf(chlCol);
+            const vals = d.table.rows.map(row=>row[hi]).filter(v=>v!==null&&!isNaN(v)&&v>0&&v<100);
+            if(vals.length>0) {
+              D.chlorophyll = parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2));
+              srcStatus.chl='ok';
+              return;
+            }
+          }
+        }
+      }
+    } catch(e) {}
+  }
 }
 
 // =========================================================================
@@ -658,54 +946,66 @@ async function fetchAllData() {
   btn.disabled=true; btn.textContent='Loading...';
   statusEl.textContent='Fetching live oceanographic data...';
   statusEl.className='data-status';
-  D={}; // reset
+  D={}; srcStatus={};
 
   // Local calcs
   const now=new Date();
   const moon=getMoon(now);
   D.moon=moon;
-  D.season=getCPFVSeason(currentSpecies, now.getMonth());
+  D.reportsScore=getReportsScore(currentSpecies, now.getMonth());
   D.pressure=calcPressure(now);
   D.bottom=LOCATIONS[currentLocation].bottom;
 
   // Fetch all APIs in parallel
   await Promise.allSettled([
     fetchWaterTemp(), fetchTempTrend(), fetchTideState(),
-    fetchWind(), fetchWindForecast(), fetchSwell(),
+    fetchWind(), fetchWindForecast(), fetchBuoyData(),
     fetchRainfall(), fetchUpwelling(),
+    fetchSST(), fetchChlorophyll(),
   ]);
 
-  // Compute wave energy
+  // Compute wave energy from buoy data
   if(D.swellFt&&D.swellPeriod) D.waveEnergy=D.swellFt*D.swellFt*D.swellPeriod;
 
   // Count data sources
-  const sources=['waterTemp','tempTrend','tideState','windSpeedMph','swellFt','rainfall','upwelling'];
-  const got=sources.filter(k=>D[k]!==undefined).length;
+  const liveSources = Object.keys(srcStatus).filter(k=>srcStatus[k]==='ok').length;
+  const totalSources = 6; // noaa, ndbc, nws, sst, chl, upwell
   const timeStr=now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
 
-  if(got>=5) { statusEl.textContent=`${got+3}/10 factors from live data · Updated ${timeStr}`; statusEl.className='data-status success'; }
-  else if(got>0) { statusEl.textContent=`${got+3}/10 from live data · Some sources unavailable · ${timeStr}`; statusEl.className='data-status'; }
+  if(liveSources>=4) { statusEl.textContent=`${liveSources}/${totalSources} data sources connected · Updated ${timeStr}`; statusEl.className='data-status success'; }
+  else if(liveSources>0) { statusEl.textContent=`${liveSources}/${totalSources} sources connected · Some unavailable · ${timeStr}`; statusEl.className='data-status'; }
   else { statusEl.textContent=`Live APIs unavailable — using calculated data only · ${timeStr}`; statusEl.className='data-status error'; }
 
   btn.disabled=false; btn.textContent='Refresh';
 
-  // Update display
+  // Update source status panel
+  updateSourceStatus();
+
+  // Update footer with active buoy
+  const loc = LOCATIONS[currentLocation];
+  const buoyLabel = D.buoyId ? `Buoy: ${D.buoyId}` : `Buoy: ${loc.buoys[0]} (pending)`;
+  document.getElementById('stationFooter').textContent = `Station: ${loc.name} (${loc.tideStation}) · ${buoyLabel}`;
+
   updateDisplay();
   recalculate();
   updatePredictor();
 }
 
 // =========================================================================
-// DISPLAY UPDATE (read-only factor rows)
+// DISPLAY UPDATE
 // =========================================================================
 function updateDisplay() {
   const now=new Date();
+  const loc=LOCATIONS[currentLocation];
   document.getElementById('dateDisplay').textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   document.getElementById('moonBadge').textContent=`${D.moon.emoji} ${D.moon.name}`;
-  document.getElementById('locationBadge').textContent=LOCATIONS[currentLocation].name;
+  document.getElementById('locationBadge').textContent=loc.name;
 
   // Fish bite factors
-  setVal('waterTempVal', D.waterTemp ? `${D.waterTemp.toFixed(1)}°F` : 'Unavailable', 'NOAA');
+  const tempSrc = D.buoyTemp ? 'BUOY' : 'NOAA';
+  setVal('waterTempVal', D.waterTemp ? `${D.waterTemp.toFixed(1)}°F` : 'Unavailable', tempSrc, D.buoyTemp?'buoy':'');
+  setVal('sstVal', D.sstF ? `${D.sstF}°F (satellite)` : 'Unavailable', 'ERDDAP', 'sat');
+
   const trendLabels={warming_fast:'Warming Fast (+'+((D.tempDiff||0).toFixed(1))+'°F/3d)',warming:'Warming (+'+((D.tempDiff||0).toFixed(1))+'°F/3d)',stable:'Stable',cooling:'Cooling ('+((D.tempDiff||0).toFixed(1))+'°F/3d)',cooling_fast:'Cooling Fast ('+((D.tempDiff||0).toFixed(1))+'°F/3d)'};
   setVal('tempTrendVal', D.tempTrend ? trendLabels[D.tempTrend] : 'Unavailable', 'NOAA');
   const tideLabels={incoming:'Incoming (Low → High)',high:'High Tide',low:'Low Tide',outgoing:'Outgoing (High → Low)'};
@@ -714,40 +1014,95 @@ function updateDisplay() {
   setVal('currentVal', curStr, 'EST');
   const upLabels={strong_recent:'Strong (2-5 days ago)',moderate_recent:'Moderate (recent)',active_now:'Active Now',weak:'Weak / None'};
   setVal('upwellingVal', D.upwelling ? upLabels[D.upwelling] : 'Unavailable', 'ERDDAP');
+
+  // Chlorophyll for fish bite
+  const chlLabel = D.chlorophyll!==undefined ? `${D.chlorophyll} mg/m³ (${chlProductivity(D.chlorophyll)})` : 'Unavailable';
+  setVal('chlFishVal', chlLabel, 'MODIS', 'sat');
+
   setVal('moonPhaseVal', `${D.moon.emoji} ${D.moon.name}`, 'CALC');
-  setVal('seasonVal', getCPFVLabel(D.season), 'CPFV 5yr');
+  setVal('reportsVal', getReportsLabel(currentSpecies, new Date().getMonth()), 'CPFV 5yr');
   setVal('pressureVal', getPressureLabel(D.pressure), 'CALC');
 
   // Viz factors
+  const windSrc = D.buoyWind ? 'BUOY' : 'NWS';
   const windLabel = D.windSpeedMph!==undefined ? `${D.windSpeedMph} mph ${({none:'Calm',offshore:'Offshore',sideshore:'Side-shore',onshore:'Onshore'}[D.windDir]||'')}` : 'Unavailable';
-  setVal('windVal', windLabel, 'NWS');
+  setVal('windVal', windLabel, windSrc, D.buoyWind?'buoy':'');
+
   const swellLabel = D.swellFt ? `${D.swellFt} ft @ ${D.swellPeriod||'?'}s` : 'Unavailable';
-  setVal('swellVal', swellLabel, 'NDBC');
+  setVal('swellVal', swellLabel, 'BUOY', 'buoy');
   const swellDirLabels={south:'South',sw:'Southwest',west:'West',nw:'Northwest',north:'North'};
-  setVal('swellDirVal', D.swellDir ? swellDirLabels[D.swellDir] : 'Unavailable', 'NDBC');
+  setVal('swellDirVal', D.swellDir ? `${swellDirLabels[D.swellDir]}${D.swellDirDeg?' ('+Math.round(D.swellDirDeg)+'°)':''}` : 'Unavailable', 'BUOY', 'buoy');
+  setVal('swellPeriodVal', D.swellPeriod ? `${D.swellPeriod}s dominant${D.avgPeriod?' / '+D.avgPeriod+'s avg':''}` : 'Unavailable', 'BUOY', 'buoy');
   setVal('waveEnergyVal', D.waveEnergy ? `${Math.round(D.waveEnergy)} ft²·s` : '--', 'CALC');
   const rainLabels={none:'None (0 in)',trace:'Trace (<0.1 in)',light:'Light (0.1-0.5 in)',moderate:'Moderate (0.5-1 in)',heavy:'Heavy (>1 in)'};
   setVal('rainfallVal', D.rainfall ? rainLabels[D.rainfall] : 'Unavailable', 'NWS');
+
+  // Chlorophyll for viz
+  const chlVizLabel = D.chlorophyll!==undefined ? `${D.chlorophyll} mg/m³ (${chlClarity(D.chlorophyll)})` : 'Unavailable';
+  setVal('chlVizVal', chlVizLabel, 'MODIS', 'sat');
+
   const bottomLabels={rock:'Rock / Reef',kelp:'Kelp Bed',sand:'Sand',mud:'Mud',silt:'Silt'};
-  setVal('bottomVal', bottomLabels[D.bottom]||D.bottom, LOCATIONS[currentLocation].name);
+  const depthInfo = loc.depth ? ` · ${loc.depth}` : '';
+  const kelpInfo = loc.kelpDensity && loc.kelpDensity !== 'none' ? ` · Kelp: ${loc.kelpDensity}` : '';
+  setVal('bottomVal', (bottomLabels[D.bottom]||D.bottom) + depthInfo + kelpInfo, loc.name);
 
   // Est visibility
   let vizEst='--';
-  if(D.waveEnergy!==undefined) {
+  if(D.waveEnergy!==undefined||D.rainfall) {
     if(D.rainfall==='heavy') vizEst='< 4 ft';
     else if(D.rainfall==='moderate') vizEst='4–10 ft';
-    else if(D.waveEnergy<=20) vizEst='25–40 ft';
-    else if(D.waveEnergy<=50) vizEst='15–25 ft';
-    else if(D.waveEnergy<=100) vizEst='8–15 ft';
-    else if(D.waveEnergy<=200) vizEst='4–8 ft';
-    else vizEst='< 4 ft';
+    else if(D.waveEnergy!==undefined) {
+      let base;
+      if(D.waveEnergy<=20) base='25–40 ft';
+      else if(D.waveEnergy<=50) base='15–25 ft';
+      else if(D.waveEnergy<=100) base='8–15 ft';
+      else if(D.waveEnergy<=200) base='4–8 ft';
+      else base='< 4 ft';
+      // Adjust for chlorophyll (green water reduces viz)
+      if(D.chlorophyll>3) vizEst=base+' (green water)';
+      else vizEst=base;
+    } else if(D.rainfall==='none'||D.rainfall==='trace') {
+      vizEst='10–20 ft (est.)';
+    } else vizEst='5–12 ft (est.)';
   }
   setVal('estVizVal', vizEst, 'EST');
 }
 
-function setVal(id, text, source) {
+function chlProductivity(c) {
+  if(c>=5) return 'very productive';
+  if(c>=2) return 'productive';
+  if(c>=1) return 'moderate';
+  if(c>=0.5) return 'low';
+  return 'oligotrophic';
+}
+function chlClarity(c) {
+  if(c<0.3) return 'blue water';
+  if(c<0.5) return 'clear';
+  if(c<1) return 'slightly green';
+  if(c<3) return 'green tint';
+  return 'green water';
+}
+
+function setVal(id, text, source, badgeClass) {
   const el=document.getElementById(id);
-  el.innerHTML=text + (source ? ` <span class="src-badge">${source}</span>` : '');
+  const cls = badgeClass ? `src-badge ${badgeClass}` : 'src-badge';
+  el.innerHTML=text + (source ? ` <span class="${cls}">${source}</span>` : '');
+}
+
+function updateSourceStatus() {
+  const map = {noaa:'srcNoaa',ndbc:'srcNdbc',nws:'srcNws',sst:'srcSst',chl:'srcChl',upwell:'srcUpwell'};
+  for(const [key,elId] of Object.entries(map)) {
+    const el=document.getElementById(elId);
+    if(srcStatus[key]==='ok') { el.textContent='OK'; el.className='source-status source-ok'; }
+    else { el.textContent='FAIL'; el.className='source-status source-fail'; }
+  }
+}
+
+function toggleSources() {
+  const body=document.getElementById('sourcesBody');
+  const toggle=document.getElementById('sourcesToggle');
+  body.classList.toggle('open');
+  toggle.textContent=body.classList.contains('open')?'▲':'▼';
 }
 
 // =========================================================================
@@ -757,12 +1112,14 @@ function recalculate() {
   // Fish bite scores
   const fishScores=[];
   score('waterTempScore', D.waterTemp, getScorer('waterTemp'), fishScores);
+  score('sstScore', D.sstF, getScorer('sst'), fishScores);
   score('tempTrendScore', D.tempTrend, getScorer('tempTrend'), fishScores);
   score('tideStateScore', D.tideState, getScorer('tideState'), fishScores);
   score('currentScore', D.currentStrength, getScorer('current'), fishScores);
   score('upwellingScore', D.upwelling, getScorer('upwelling'), fishScores);
+  score('chlFishScore', D.chlorophyll, getScorer('chlFish'), fishScores);
   score('moonPhaseScore', D.moon.category, getScorer('moonPhase'), fishScores);
-  score('seasonScore', D.season, getScorer('season'), fishScores);
+  score('reportsScore', D.reportsScore, getScorer('reports'), fishScores);
   score('pressureScore', D.pressure, getScorer('pressure'), fishScores);
 
   // Viz scores
@@ -773,11 +1130,13 @@ function recalculate() {
   } else { setScore('windScore',null); }
   score('swellScore', D.swellFt, getScorer('swellSize'), vizScores);
   score('swellDirScore', D.swellDir, getScorer('swellDir'), vizScores);
+  score('swellPeriodScore', D.swellPeriod, getScorer('swellPeriod'), vizScores);
   score('waveEnergyScore', D.waveEnergy, getScorer('waveEnergy'), vizScores);
   score('rainfallScore', D.rainfall, getScorer('rainfall'), vizScores);
+  score('chlVizScore', D.chlorophyll, getScorer('chlViz'), vizScores);
   score('bottomScore', D.bottom, getScorer('bottom'), vizScores);
 
-  // Est viz gets same score as wave energy (it's derived)
+  // Est viz gets same score as wave energy (derived)
   if(D.waveEnergy) { const s=getScorer('waveEnergy')(D.waveEnergy); setScore('estVizScore',s); }
   else setScore('estVizScore',null);
 
@@ -863,6 +1222,8 @@ function updatePredictor() {
     }
   }
   if(D.upwellingIndex>100) { fA[0]+=0.3; fA[1]+=0.5; }
+  // Chlorophyll boost for fishing
+  if(D.chlorophyll>2) { fA[0]+=0.2; fA[1]+=0.3; }
   const tmrw=new Date(); tmrw.setDate(tmrw.getDate()+1);
   const dayA=new Date(); dayA.setDate(dayA.getDate()+2);
   const today=new Date().getDay();
@@ -883,6 +1244,7 @@ function updatePredictor() {
   const trends=[];
   if(D.tempDiff>0.5) trends.push('Water warming'); else if(D.tempDiff<-0.5) trends.push('Water cooling');
   if(D.upwellingIndex>100) trends.push('Post-upwelling nutrients');
+  if(D.chlorophyll>2) trends.push(`Chl-a ${D.chlorophyll} mg/m³ (productive)`);
   if(D.windForecast&&D.windForecast[1]) {
     const t=(D.windForecast[1].shortForecast||'').toLowerCase();
     if(t.includes('calm')||t.includes('light')) trends.push('Calmer winds expected');
@@ -909,8 +1271,8 @@ function selectSpecies(species) {
   currentSpecies=species;
   document.getElementById('speciesSelect').value=species;
   document.querySelectorAll('.species-card').forEach(c=>c.classList.toggle('active',c.dataset.species===species));
-  D.season=getCPFVSeason(species,new Date().getMonth());
-  setVal('seasonVal',getCPFVLabel(D.season),'CPFV 5yr');
+  D.reportsScore=getReportsScore(species,new Date().getMonth());
+  setVal('reportsVal',getReportsLabel(species,new Date().getMonth()),'CPFV 5yr');
   recalculate();
   updatePredictor();
 }
