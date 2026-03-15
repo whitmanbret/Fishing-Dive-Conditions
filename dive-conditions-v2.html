@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpearFactor Dive Conditions — San Diego</title>
+  <style>
+    :root {
+      --bg-primary: #0a1628;
+      --bg-secondary: #12203a;
+      --bg-card: #1a2d4d;
+      --bg-input: #0d1a30;
+      --text-primary: #e0ecff;
+      --text-secondary: #7a99c4;
+      --text-muted: #4a6a94;
+      --accent: #2c8cff;
+      --border: #1e3558;
+      --excellent: #2ecc71;
+      --good: #3498db;
+      --fair: #f39c12;
+      --poor: #e74c3c;
+      --yellowtail-accent: #f0a030;
+      --wsb-accent: #90b8e0;
+      --fish-color: #f0a030;
+      --viz-color: #2c8cff;
+      --spear-color: #2ecc71;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    .container { max-width: 700px; margin: 0 auto; padding: 16px; }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 20px 0 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+    .header .subtitle { color: var(--text-secondary); font-size: 14px; margin-top: 2px; }
+    .header .meta {
+      display: flex; justify-content: center; align-items: center;
+      gap: 12px; margin-top: 8px; font-size: 13px;
+      color: var(--text-muted); flex-wrap: wrap;
+    }
+    .moon-badge {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 3px 10px; font-size: 12px; color: var(--text-secondary);
+    }
+    .refresh-btn {
+      background: none; border: 1px solid var(--border); color: var(--accent);
+      border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .refresh-btn:hover { background: var(--bg-card); }
+    .data-status { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+    .data-status.error { color: var(--poor); }
+    .data-status.success { color: var(--excellent); }
+
+    /* Species Selector */
+    .species-selector { display: flex; gap: 8px; margin-bottom: 16px; }
+    .species-card {
+      flex: 1; text-align: center; padding: 10px 8px; border-radius: 10px;
+      border: 2px solid var(--border); background: var(--bg-secondary);
+      cursor: pointer; transition: all 0.2s; font-size: 13px; font-weight: 600;
+    }
+    .species-card:hover { border-color: var(--text-muted); }
+    .species-card.active[data-species="general"] { border-color: var(--accent); background: rgba(44,140,255,0.1); color: var(--accent); }
+    .species-card.active[data-species="yellowtail"] { border-color: var(--yellowtail-accent); background: rgba(240,160,48,0.1); color: var(--yellowtail-accent); }
+    .species-card.active[data-species="wsb"] { border-color: var(--wsb-accent); background: rgba(144,184,224,0.1); color: var(--wsb-accent); }
+    .species-label { font-size: 12px; }
+    .species-name { font-size: 10px; color: var(--text-muted); font-weight: 400; margin-top: 1px; }
+
+    /* === THREE SCORE GAUGES === */
+    .scores-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .score-gauge {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 12px;
+      text-align: center;
+      position: relative;
+    }
+    .score-gauge.spear-gauge {
+      grid-column: 1 / -1;
+      border-width: 2px;
+    }
+    .gauge-icon { font-size: 20px; margin-bottom: 4px; }
+    .gauge-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; margin-bottom: 6px;
+    }
+    .gauge-score {
+      font-size: 48px; font-weight: 800; line-height: 1;
+      transition: color 0.3s;
+    }
+    .gauge-max { font-size: 14px; color: var(--text-muted); font-weight: 400; }
+    .gauge-rating {
+      display: inline-block; margin-top: 6px; padding: 3px 14px;
+      border-radius: 16px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px;
+    }
+    .gauge-formula {
+      font-size: 10px; color: var(--text-muted); margin-top: 6px;
+    }
+    .spear-gauge .gauge-score { font-size: 56px; }
+
+    /* Gauge ring (SVG arc) */
+    .gauge-ring-wrap {
+      width: 120px; height: 70px; margin: 0 auto 4px; position: relative;
+    }
+    .gauge-ring-wrap svg { width: 120px; height: 70px; }
+    .gauge-arc-bg { fill: none; stroke: var(--bg-card); stroke-width: 8; }
+    .gauge-arc { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease, stroke 0.3s; }
+    .gauge-ring-score {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      font-size: 28px; font-weight: 800; line-height: 1;
+    }
+
+    .spear-gauge .gauge-ring-wrap { width: 160px; height: 90px; }
+    .spear-gauge .gauge-ring-wrap svg { width: 160px; height: 90px; }
+    .spear-gauge .gauge-arc-bg, .spear-gauge .gauge-arc { stroke-width: 10; }
+    .spear-gauge .gauge-ring-score { font-size: 36px; }
+
+    /* Rating colors */
+    .rating-excellent { background: rgba(46,204,113,0.15); color: var(--excellent); border: 1px solid var(--excellent); }
+    .rating-good { background: rgba(52,152,219,0.15); color: var(--good); border: 1px solid var(--good); }
+    .rating-fair { background: rgba(243,156,18,0.15); color: var(--fair); border: 1px solid var(--fair); }
+    .rating-poor { background: rgba(231,76,60,0.15); color: var(--poor); border: 1px solid var(--poor); }
+    .rating-none { background: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border); }
+
+    /* Insight text below scores */
+    .insight-text {
+      text-align: center; font-size: 13px; color: var(--text-secondary);
+      margin-bottom: 16px; padding: 8px 16px;
+      background: var(--bg-secondary); border-radius: 10px; border: 1px solid var(--border);
+      font-style: italic; line-height: 1.5;
+    }
+
+    /* Wave Energy Display */
+    .derived-metrics {
+      display: flex; justify-content: center; gap: 20px;
+      margin-bottom: 16px; padding: 8px; font-size: 12px; color: var(--text-secondary);
+    }
+    .derived-metrics .metric { text-align: center; }
+    .derived-metrics .metric-value { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+    .derived-metrics .metric-label { font-size: 10px; color: var(--text-muted); }
+
+    /* Category Headers */
+    .category-header {
+      padding: 8px 14px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--text-muted); background: var(--bg-primary);
+      border-bottom: 1px solid var(--border);
+    }
+    .category-header .cat-tag {
+      font-size: 9px; padding: 1px 6px; border-radius: 4px; margin-left: 6px;
+      font-weight: 600; vertical-align: middle;
+    }
+    .cat-fish { background: rgba(240,160,48,0.2); color: var(--fish-color); }
+    .cat-viz { background: rgba(44,140,255,0.2); color: var(--viz-color); }
+    .cat-both { background: rgba(46,204,113,0.15); color: var(--spear-color); }
+
+    /* Factor Rows */
+    .factors-section {
+      background: var(--bg-secondary); border-radius: 12px;
+      border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
+    }
+    .factor-row {
+      display: flex; align-items: center; padding: 10px 14px;
+      border-bottom: 1px solid var(--border); gap: 8px;
+    }
+    .factor-row:last-child { border-bottom: none; }
+    .factor-label { flex: 0 0 110px; font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+    .factor-input { flex: 1; display: flex; align-items: center; gap: 6px; }
+    .factor-input select, .factor-input input[type="number"] {
+      width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+      color: var(--text-primary); border-radius: 6px; padding: 6px 8px;
+      font-size: 13px; font-family: inherit; appearance: auto;
+    }
+    .factor-input select:focus, .factor-input input:focus { outline: none; border-color: var(--accent); }
+    .factor-score {
+      flex: 0 0 36px; text-align: center; font-weight: 700; font-size: 14px;
+      border-radius: 6px; padding: 2px 0;
+    }
+    .score-high { color: var(--excellent); }
+    .score-med { color: var(--fair); }
+    .score-low { color: var(--poor); }
+    .score-none { color: var(--text-muted); }
+    .auto-badge {
+      font-size: 9px; background: rgba(44,140,255,0.15); color: var(--accent);
+      padding: 1px 5px; border-radius: 4px; white-space: nowrap; font-weight: 600;
+    }
+
+    /* 48-Hour Predictor */
+    .predictor-section {
+      background: var(--bg-secondary); border-radius: 12px;
+      border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
+    }
+    .predictor-header {
+      padding: 12px 14px; font-size: 13px; font-weight: 700;
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .predictor-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
+    .predictor-day {
+      text-align: center; padding: 14px 8px;
+      border-right: 1px solid var(--border);
+    }
+    .predictor-day:last-child { border-right: none; }
+    .predictor-day-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+    .predictor-scores { display: flex; justify-content: center; gap: 12px; margin-bottom: 4px; }
+    .predictor-mini { text-align: center; }
+    .predictor-mini-label { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .predictor-mini-score { font-size: 20px; font-weight: 800; line-height: 1.2; }
+    .predictor-spear { font-size: 28px; font-weight: 800; line-height: 1; margin-top: 4px; }
+    .predictor-rating { font-size: 10px; font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .predictor-trend { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    .predictor-details {
+      padding: 10px 14px; font-size: 11px; color: var(--text-muted);
+      border-top: 1px solid var(--border); line-height: 1.6;
+    }
+    .trend-up { color: var(--excellent); }
+    .trend-down { color: var(--poor); }
+    .trend-stable { color: var(--text-secondary); }
+
+    .breakdown-footer {
+      text-align: center; padding: 14px; font-size: 12px;
+      color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 16px;
+    }
+    .breakdown-footer a { color: var(--accent); text-decoration: none; }
+
+    @media (max-width: 480px) {
+      .container { padding: 10px; }
+      .header h1 { font-size: 18px; }
+      .scores-grid { gap: 8px; }
+      .gauge-ring-wrap { width: 100px; height: 60px; }
+      .gauge-ring-wrap svg { width: 100px; height: 60px; }
+      .gauge-ring-score { font-size: 22px; }
+      .spear-gauge .gauge-ring-wrap { width: 130px; height: 75px; }
+      .spear-gauge .gauge-ring-wrap svg { width: 130px; height: 75px; }
+      .spear-gauge .gauge-ring-score { font-size: 30px; }
+      .factor-label { flex: 0 0 90px; font-size: 12px; }
+      .factor-input select, .factor-input input { font-size: 12px; padding: 5px 6px; }
+      .species-card { padding: 8px 4px; font-size: 12px; }
+      .predictor-mini-score { font-size: 16px; }
+      .predictor-spear { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header class="header">
+      <h1>SpearFactor Dive Conditions</h1>
+      <p class="subtitle">San Diego County — Oceanographic Model</p>
+      <div class="meta">
+        <span id="dateDisplay"></span>
+        <span class="moon-badge" id="moonBadge">--</span>
+        <button class="refresh-btn" onclick="fetchAllData()" id="refreshBtn">Refresh Data</button>
+      </div>
+      <div class="data-status" id="dataStatus">Fetching oceanographic data...</div>
+    </header>
+
+    <div class="species-selector">
+      <div class="species-card active" data-species="general" onclick="selectSpecies('general')">
+        <div class="species-label">General</div>
+        <div class="species-name">All Species</div>
+      </div>
+      <div class="species-card" data-species="yellowtail" onclick="selectSpecies('yellowtail')">
+        <div class="species-label">Yellowtail</div>
+        <div class="species-name">S. lalandi</div>
+      </div>
+      <div class="species-card" data-species="wsb" onclick="selectSpecies('wsb')">
+        <div class="species-label">White Sea Bass</div>
+        <div class="species-name">A. nobilis</div>
+      </div>
+    </div>
+
+    <!-- THREE SCORE GAUGES -->
+    <div class="scores-grid">
+      <div class="score-gauge" id="fishGauge">
+        <div class="gauge-label" style="color:var(--fish-color)">Fish Bite Score</div>
+        <div class="gauge-ring-wrap">
+          <svg viewBox="0 0 120 70">
+            <path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/>
+            <path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="fishArc" style="stroke:var(--fish-color)"/>
+          </svg>
+          <div class="gauge-ring-score" id="fishScore" style="color:var(--text-muted)">--</div>
+        </div>
+        <div class="gauge-rating rating-none" id="fishRating">--</div>
+      </div>
+
+      <div class="score-gauge" id="vizGauge">
+        <div class="gauge-label" style="color:var(--viz-color)">Dive Visibility</div>
+        <div class="gauge-ring-wrap">
+          <svg viewBox="0 0 120 70">
+            <path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/>
+            <path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="vizArc" style="stroke:var(--viz-color)"/>
+          </svg>
+          <div class="gauge-ring-score" id="vizScore" style="color:var(--text-muted)">--</div>
+        </div>
+        <div class="gauge-rating rating-none" id="vizRating">--</div>
+      </div>
+
+      <div class="score-gauge spear-gauge" id="spearGauge">
+        <div class="gauge-label" style="color:var(--spear-color)">Spearfishing Opportunity</div>
+        <div class="gauge-ring-wrap">
+          <svg viewBox="0 0 160 90">
+            <path d="M 10 85 A 70 70 0 0 1 150 85" class="gauge-arc-bg"/>
+            <path d="M 10 85 A 70 70 0 0 1 150 85" class="gauge-arc" id="spearArc" style="stroke:var(--spear-color)"/>
+          </svg>
+          <div class="gauge-ring-score" id="spearScore" style="color:var(--text-muted)">--</div>
+        </div>
+        <div class="gauge-rating rating-none" id="spearRating">--</div>
+        <div class="gauge-formula">S = 0.6 × Fish + 0.4 × Visibility</div>
+      </div>
+    </div>
+
+    <div class="insight-text" id="insightText">Loading conditions...</div>
+
+    <!-- Derived Metrics -->
+    <div class="derived-metrics" id="derivedMetrics" style="display:none">
+      <div class="metric">
+        <div class="metric-value" id="waveEnergyVal">--</div>
+        <div class="metric-label">Wave Energy (ft²·s)</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value" id="visibilityEst">--</div>
+        <div class="metric-label">Est. Visibility</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value" id="tempTrendVal">--</div>
+        <div class="metric-label">3-Day Temp Trend</div>
+      </div>
+    </div>
+
+    <!-- FISH BITE FACTORS -->
+    <section class="factors-section">
+      <div class="category-header">Fish Bite Factors <span class="cat-tag cat-fish">BITE</span></div>
+
+      <div class="factor-row">
+        <div class="factor-label">Water Temp</div>
+        <div class="factor-input">
+          <input type="number" id="waterTemp" min="45" max="85" step="0.1" placeholder="°F" onchange="recalculate()" oninput="recalculate()">
+          <span class="auto-badge" id="waterTempAuto" style="display:none">NOAA</span>
+        </div>
+        <div class="factor-score score-none" id="waterTempScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Temp Trend</div>
+        <div class="factor-input">
+          <select id="tempTrend" onchange="recalculate()">
+            <option value="">--</option>
+            <option value="warming_fast">Warming Fast (>2°F/3d)</option>
+            <option value="warming">Warming (0.5–2°F/3d)</option>
+            <option value="stable">Stable</option>
+            <option value="cooling">Cooling (0.5–2°F/3d)</option>
+            <option value="cooling_fast">Cooling Fast (>2°F/3d)</option>
+          </select>
+          <span class="auto-badge" id="tempTrendAuto" style="display:none">NOAA</span>
+        </div>
+        <div class="factor-score score-none" id="tempTrendScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Tide State</div>
+        <div class="factor-input">
+          <select id="tideState" onchange="recalculate()">
+            <option value="">--</option>
+            <option value="incoming">Low → High (Incoming)</option>
+            <option value="high">High Tide</option>
+            <option value="low">Low Tide</option>
+            <option value="outgoing">High → Low (Outgoing)</option>
+          </select>
+          <span class="auto-badge" id="tideAuto" style="display:none">NOAA</span>
+        </div>
+        <div class="factor-score score-none" id="tideStateScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Current Dir</div>
+        <div class="factor-input">
+          <select id="currentDir" onchange="recalculate()">
+            <option value="">--</option>
+            <option value="west">West</option>
+            <option value="south">South</option>
+            <option value="north">North</option>
+            <option value="east">East</option>
+          </select>
+        </div>
+        <div class="factor-score score-none" id="currentDirScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Current (kts)</div>
+        <div class="factor-input">
+          <input type="number" id="currentStr" min="0" max="5" step="0.1" placeholder="knots" onchange="recalculate()" oninput="recalculate()">
+        </div>
+        <div class="factor-score score-none" id="currentStrScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Upwelling</div>
+        <div class="factor-input">
+          <select id="upwelling" onchange="recalculate()">
+            <option value="">--</option>
+            <option value="strong_recent">Strong (2–5 days ago)</option>
+            <option value="moderate_recent">Moderate (2–5 days ago)</option>
+            <option value="active_now">Active Now</option>
+            <option value="weak">Weak / None</option>
+          </select>
+          <span class="auto-badge" id="upwellingAuto" style="display:none">ERDDAP</span>
+        </div>
+        <div class="factor-score score-none" id="upwellingScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Moon Phase</div>
+        <div class="factor-input">
+          <select id="moonPhase" onchange="recalculate()">
+            <option value="">--</option>
+            <option value="new">New Moon</option>
+            <option value="full">Full Moon</option>
+            <option value="quarter">Quarter Moon</option>
+            <option value="between">Between Phases</option>
+          </select>
+          <span class="auto-badge" id="moonAuto" style="display:none">CALC</span>
+        </div>
+        <div class="factor-score score-none" id="moonPhaseScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Season (CPFV)</div>
+        <div class="factor-input">
+          <select id="seasonalActivity" onchange="recalculate()">
+            <option value="">--</option>
+            <option value="peak">Peak Season</option>
+            <option value="high">High Activity</option>
+            <option value="moderate">Moderate</option>
+            <option value="low">Low Activity</option>
+            <option value="off">Off Season</option>
+          </select>
+          <span class="auto-badge" id="seasonAuto" style="display:none">CPFV 5yr</span>
+        </div>
+        <div class="factor-score score-none" id="seasonalActivityScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Fish Pressure</div>
+        <div class="factor-input">
+          <select id="fishingPressure" onchange="recalculate()">
+            <option value="">--</option>
+            <option value="very_low">Very Low (weekday, early)</option>
+            <option value="low">Low (weekday)</option>
+            <option value="moderate">Moderate</option>
+            <option value="high">High (weekend/holiday)</option>
+            <option value="very_high">Very High (peak wknd)</option>
+          </select>
+          <span class="auto-badge" id="pressureAuto" style="display:none">CALC</span>
+        </div>
+        <div class="factor-score score-none" id="fishingPressureScore">-</div>
+      </div>
+    </section>
+
+    <!-- DIVE VISIBILITY FACTORS -->
+    <section class="factors-section">
+      <div class="category-header">Dive Visibility Factors <span class="cat-tag cat-viz">VIZ</span></div>
+
+      <div class="factor-row">
+        <div class="factor-label">Wind Dir</div>
+        <div class="factor-input">
+          <select id="windDir" onchange="recalculate()">
+            <option value="">--</option>
+            <option value="none">No Wind</option>
+            <option value="offshore">Offshore (E)</option>
+            <option value="sideshore">Side-shore (N/S)</option>
+            <option value="onshore">Onshore (W)</option>
+          </select>
+          <span class="auto-badge" id="windDirAuto" style="display:none">NWS</span>
+        </div>
+        <div class="factor-score score-none" id="windDirScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Wind Speed</div>
+        <div class="factor-input">
+          <input type="number" id="windSpeed" min="0" max="50" step="1" placeholder="mph" onchange="recalculate()" oninput="recalculate()">
+          <span class="auto-badge" id="windSpeedAuto" style="display:none">NWS</span>
+        </div>
+        <div class="factor-score score-none" id="windSpeedScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Swell Height</div>
+        <div class="factor-input">
+          <input type="number" id="swellSize" min="0" max="25" step="0.1" placeholder="ft" onchange="recalculate()" oninput="recalculate()">
+          <span class="auto-badge" id="swellSizeAuto" style="display:none">NDBC</span>
+        </div>
+        <div class="factor-score score-none" id="swellSizeScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Swell Period</div>
+        <div class="factor-input">
+          <input type="number" id="swellPeriod" min="3" max="25" step="1" placeholder="sec" onchange="recalculate()" oninput="recalculate()">
+          <span class="auto-badge" id="swellPeriodAuto" style="display:none">NDBC</span>
+        </div>
+        <div class="factor-score score-none" id="swellPeriodScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Swell Dir</div>
+        <div class="factor-input">
+          <select id="swellDir" onchange="recalculate()">
+            <option value="">--</option>
+            <option value="south">South</option>
+            <option value="sw">Southwest</option>
+            <option value="west">West</option>
+            <option value="nw">Northwest</option>
+            <option value="north">North</option>
+          </select>
+          <span class="auto-badge" id="swellDirAuto" style="display:none">NDBC</span>
+        </div>
+        <div class="factor-score score-none" id="swellDirScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Rainfall (72h)</div>
+        <div class="factor-input">
+          <select id="rainfall" onchange="recalculate()">
+            <option value="">--</option>
+            <option value="none">None (0 in)</option>
+            <option value="trace">Trace (< 0.1 in)</option>
+            <option value="light">Light (0.1–0.5 in)</option>
+            <option value="moderate">Moderate (0.5–1 in)</option>
+            <option value="heavy">Heavy (> 1 in)</option>
+          </select>
+          <span class="auto-badge" id="rainfallAuto" style="display:none">NWS</span>
+        </div>
+        <div class="factor-score score-none" id="rainfallScore">-</div>
+      </div>
+
+      <div class="factor-row">
+        <div class="factor-label">Bottom Type</div>
+        <div class="factor-input">
+          <select id="bottomType" onchange="recalculate()">
+            <option value="">--</option>
+            <option value="rock">Rock / Reef</option>
+            <option value="kelp">Kelp Bed</option>
+            <option value="sand">Sand</option>
+            <option value="mud">Mud</option>
+            <option value="silt">Silt</option>
+          </select>
+        </div>
+        <div class="factor-score score-none" id="bottomTypeScore">-</div>
+      </div>
+    </section>
+
+    <!-- 48-HOUR PREDICTOR -->
+    <section class="predictor-section">
+      <div class="predictor-header">
+        <span>48-Hour Predictor</span>
+        <span style="font-size:10px; color:var(--text-muted)">Based on current trends</span>
+      </div>
+      <div class="predictor-grid">
+        <div class="predictor-day" id="predDay0">
+          <div class="predictor-day-label">Today</div>
+          <div class="predictor-scores">
+            <div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">Bite</div><div class="predictor-mini-score" id="pred0Fish">--</div></div>
+            <div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred0Viz">--</div></div>
+          </div>
+          <div class="predictor-spear" id="pred0Spear" style="color:var(--text-muted)">--</div>
+          <div class="predictor-rating" id="pred0Rating">--</div>
+          <div class="predictor-trend" id="pred0Trend"></div>
+        </div>
+        <div class="predictor-day" id="predDay1">
+          <div class="predictor-day-label">Tomorrow</div>
+          <div class="predictor-scores">
+            <div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">Bite</div><div class="predictor-mini-score" id="pred1Fish">--</div></div>
+            <div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred1Viz">--</div></div>
+          </div>
+          <div class="predictor-spear" id="pred1Spear" style="color:var(--text-muted)">--</div>
+          <div class="predictor-rating" id="pred1Rating">--</div>
+          <div class="predictor-trend" id="pred1Trend"></div>
+        </div>
+        <div class="predictor-day" id="predDay2">
+          <div class="predictor-day-label" id="pred2Label">Day After</div>
+          <div class="predictor-scores">
+            <div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">Bite</div><div class="predictor-mini-score" id="pred2Fish">--</div></div>
+            <div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred2Viz">--</div></div>
+          </div>
+          <div class="predictor-spear" id="pred2Spear" style="color:var(--text-muted)">--</div>
+          <div class="predictor-rating" id="pred2Rating">--</div>
+          <div class="predictor-trend" id="pred2Trend"></div>
+        </div>
+      </div>
+      <div class="predictor-details" id="predictorDetails">
+        Uses NWS wind forecast, NOAA tide predictions, water temp trends, upwelling delay, and CPFV seasonal baselines.
+      </div>
+    </section>
+
+    <div class="breakdown-footer">
+      Fish Bite: 0–10 · Dive Visibility: 0–10 · Spearfishing: 0.6F + 0.4V<br>
+      Data: <a href="https://tidesandcurrents.noaa.gov" target="_blank">NOAA CO-OPS</a> ·
+      <a href="https://weather.gov" target="_blank">NWS</a> ·
+      <a href="https://www.ndbc.noaa.gov" target="_blank">NDBC</a> ·
+      <a href="https://upwell.pfeg.noaa.gov/erddap/" target="_blank">ERDDAP</a> ·
+      CDFW CPFV Logbooks (2021–2025)<br>
+      Station: La Jolla (9410230) · Buoy: Torrey Pines (46225)
+    </div>
+
+  </div>
+
+  <script>
+    // =========================================================================
+    // CONFIGURATION
+    // =========================================================================
+    const CONFIG = {
+      tideStation: '9410230',
+      weatherStation: 'KSAN',
+      ndbcBuoy: '46225',
+      coastBearing: 270,
+    };
+
+    let currentSpecies = 'general';
+    let autoPopulated = {};
+    let fetchedData = {};
+
+    // =========================================================================
+    // FACTOR GROUPINGS — which factors feed which score
+    // =========================================================================
+    const FISH_FACTORS = ['waterTemp','tempTrend','tideState','currentDir','currentStr','upwelling','moonPhase','seasonalActivity','fishingPressure'];
+    const VIZ_FACTORS = ['windDir','windSpeed','swellSize','swellPeriod','swellDir','rainfall','bottomType'];
+
+    // =========================================================================
+    // CPFV 5-YEAR MONTHLY BASELINES (San Diego half-day boats, 2021-2025)
+    // =========================================================================
+    const CPFV_DATA = {
+      yellowtail: { monthly: [1, 1, 2, 3, 6, 9, 10, 9, 7, 5, 2, 1] },
+      wsb:        { monthly: [2, 3, 6, 8, 9, 10, 7, 5, 4, 3, 2, 1] },
+      general:    { monthly: [2, 2, 4, 5, 7, 9, 10, 9, 7, 5, 3, 2] },
+    };
+
+    // =========================================================================
+    // SCORING PROFILES — each factor returns 1-10 (10 = best)
+    // =========================================================================
+    const PROFILES = {
+      general: {
+        tip: 'Balanced scoring for all pelagic species in San Diego.',
+        // Fish bite scorers
+        waterTemp: (f) => {
+          if (f >= 66 && f <= 72) return 10;
+          if (f >= 63 && f < 66) return 8;
+          if (f > 72 && f <= 75) return 7;
+          if (f >= 60 && f < 63) return 5;
+          if (f > 75) return 4;
+          if (f >= 57 && f < 60) return 3;
+          return 2;
+        },
+        tempTrend:       { warming_fast: 7, warming: 9, stable: 8, cooling: 5, cooling_fast: 3 },
+        tideState:       { incoming: 10, high: 7, outgoing: 4, low: 5 },
+        currentDir:      { west: 8, south: 7, north: 5, east: 3 },
+        currentStr:      (k) => { if (k <= 0.3) return 7; if (k <= 0.6) return 9; if (k <= 1.0) return 6; if (k <= 1.5) return 3; return 1; },
+        upwelling:       { strong_recent: 9, moderate_recent: 7, active_now: 4, weak: 5 },
+        moonPhase:       { new: 8, full: 9, quarter: 5, between: 4 },
+        seasonalActivity:{ peak: 10, high: 8, moderate: 6, low: 3, off: 1 },
+        fishingPressure: { very_low: 10, low: 8, moderate: 6, high: 3, very_high: 1 },
+        // Viz scorers
+        windDir:     { none: 9, offshore: 10, sideshore: 6, onshore: 2 },
+        windSpeed:   (mph) => { if (mph <= 5) return 10; if (mph <= 8) return 8; if (mph <= 12) return 6; if (mph <= 16) return 4; if (mph <= 20) return 2; return 1; },
+        swellSize:   (ft) => { if (ft <= 1.5) return 10; if (ft <= 2.5) return 8; if (ft <= 4) return 6; if (ft <= 6) return 3; return 1; },
+        swellPeriod: (s) => { if (s >= 10 && s <= 14) return 8; if (s >= 8 && s < 10) return 6; if (s >= 15 && s <= 17) return 5; if (s < 8) return 4; return 3; },
+        swellDir:    { south: 9, sw: 6, west: 4, nw: 3, north: 7 },
+        rainfall:    { none: 10, trace: 8, light: 6, moderate: 3, heavy: 1 },
+        bottomType:  { rock: 9, kelp: 8, sand: 6, mud: 3, silt: 2 },
+      },
+
+      yellowtail: {
+        tip: 'Yellowtail favor 65–72°F water with moderate current near structure. Best 2–5 days after upwelling. Peak Jun–Aug per CPFV data.',
+        waterTemp: (f) => {
+          if (f >= 67 && f <= 71) return 10;
+          if (f >= 65 && f < 67) return 8;
+          if (f > 71 && f <= 74) return 7;
+          if (f >= 63 && f < 65) return 5;
+          if (f > 74 && f <= 77) return 4;
+          if (f >= 60 && f < 63) return 3;
+          return 1;
+        },
+        tempTrend:       { warming_fast: 8, warming: 10, stable: 6, cooling: 3, cooling_fast: 1 },
+        tideState:       { incoming: 10, high: 7, outgoing: 5, low: 3 },
+        currentDir:      { west: 8, south: 7, north: 5, east: 4 },
+        currentStr:      (k) => { if (k >= 0.3 && k <= 0.8) return 10; if (k >= 0.1 && k < 0.3) return 7; if (k > 0.8 && k <= 1.2) return 6; if (k < 0.1) return 4; return 2; },
+        upwelling:       { strong_recent: 10, moderate_recent: 8, active_now: 3, weak: 4 },
+        moonPhase:       { new: 9, full: 7, quarter: 5, between: 4 },
+        seasonalActivity: null,
+        fishingPressure:  null,
+        // Viz — inherit general
+        windDir: null, windSpeed: null, swellSize: null, swellPeriod: null,
+        swellDir: null, rainfall: null,
+        bottomType: { rock: 10, kelp: 9, sand: 5, mud: 3, silt: 2 },
+      },
+
+      wsb: {
+        tip: 'WSB prefer calm, cool water (58–64°F) in kelp beds. Hunt by sound — quiet conditions critical. Peak Apr–Jun per CPFV data.',
+        waterTemp: (f) => {
+          if (f >= 60 && f < 64) return 10;
+          if (f >= 58 && f < 60) return 8;
+          if (f >= 64 && f < 67) return 7;
+          if (f >= 56 && f < 58) return 5;
+          if (f >= 67 && f < 69) return 4;
+          if (f >= 55) return 3;
+          return 2;
+        },
+        tempTrend:       { warming_fast: 5, warming: 7, stable: 9, cooling: 6, cooling_fast: 3 },
+        tideState:       { incoming: 10, high: 9, outgoing: 5, low: 4 },
+        currentDir:      null,
+        currentStr:      (k) => { if (k >= 0.1 && k <= 0.4) return 10; if (k < 0.1) return 7; if (k <= 0.7) return 6; if (k <= 1.0) return 3; return 1; },
+        upwelling:       { strong_recent: 7, moderate_recent: 6, active_now: 4, weak: 8 },
+        moonPhase:       { new: 10, full: 5, quarter: 7, between: 6 },
+        seasonalActivity: null,
+        fishingPressure:  null,
+        // Viz — WSB need calmer conditions
+        windDir:     { none: 10, offshore: 8, sideshore: 5, onshore: 2 },
+        windSpeed:   (mph) => { if (mph <= 3) return 10; if (mph <= 6) return 8; if (mph <= 10) return 5; if (mph <= 14) return 3; return 1; },
+        swellSize:   (ft) => { if (ft <= 1.5) return 10; if (ft <= 2.5) return 8; if (ft <= 4) return 5; if (ft <= 6) return 2; return 1; },
+        swellPeriod: (s) => { if (s >= 14 && s <= 18) return 8; if (s >= 10 && s < 14) return 7; if (s >= 8 && s < 10) return 5; if (s < 8) return 3; return 4; },
+        swellDir:    { south: 9, sw: 7, west: 4, nw: 3, north: 6 },
+        rainfall:    { none: 10, trace: 7, light: 5, moderate: 3, heavy: 1 },
+        bottomType:  { rock: 7, kelp: 10, sand: 4, mud: 3, silt: 2 },
+      },
+    };
+
+    function getScorer(species, key) {
+      const v = PROFILES[species][key];
+      if (v !== null && v !== undefined) return v;
+      return PROFILES.general[key];
+    }
+
+    function scoreClass(s) {
+      if (s >= 8) return 'score-high';
+      if (s >= 5) return 'score-med';
+      return 'score-low';
+    }
+
+    // =========================================================================
+    // RATING THRESHOLDS (0-10 scale)
+    // =========================================================================
+    function getRating10(score) {
+      if (score >= 8) return { label: 'Excellent', cls: 'rating-excellent', color: 'var(--excellent)' };
+      if (score >= 6) return { label: 'Good', cls: 'rating-good', color: 'var(--good)' };
+      if (score >= 4) return { label: 'Fair', cls: 'rating-fair', color: 'var(--fair)' };
+      return { label: 'Poor', cls: 'rating-poor', color: 'var(--poor)' };
+    }
+
+    // =========================================================================
+    // MOON PHASE
+    // =========================================================================
+    function getMoonPhaseInfo(date) {
+      const knownNewMoon = new Date(Date.UTC(2000, 0, 6, 18, 14, 0));
+      const syn = 29.530588853;
+      const diff = (date.getTime() - knownNewMoon.getTime()) / 86400000;
+      const age = ((diff % syn) + syn) % syn;
+      let name, emoji;
+      if (age < 1.85) { name='New Moon'; emoji='🌑'; }
+      else if (age < 7.38) { name='Waxing Crescent'; emoji='🌒'; }
+      else if (age < 9.23) { name='First Quarter'; emoji='🌓'; }
+      else if (age < 12.91) { name='Waxing Gibbous'; emoji='🌔'; }
+      else if (age < 16.61) { name='Full Moon'; emoji='🌕'; }
+      else if (age < 20.29) { name='Waning Gibbous'; emoji='🌖'; }
+      else if (age < 22.14) { name='Last Quarter'; emoji='🌗'; }
+      else if (age < 27.68) { name='Waning Crescent'; emoji='🌘'; }
+      else { name='New Moon'; emoji='🌑'; }
+      const half = syn/2;
+      const dNew = Math.min(age, syn-age);
+      const dFull = Math.abs(age-half);
+      let cat;
+      if (dNew <= 3) cat='new';
+      else if (dFull <= 3) cat='full';
+      else if ((age >= 6 && age <= 10) || (age >= 20.5 && age <= 24)) cat='quarter';
+      else cat='between';
+      return { name, emoji, category: cat };
+    }
+
+    // =========================================================================
+    // CPFV / PRESSURE
+    // =========================================================================
+    function getCPFVSeason(species, month) {
+      const idx = (CPFV_DATA[species] || CPFV_DATA.general).monthly[month];
+      if (idx >= 9) return 'peak';
+      if (idx >= 7) return 'high';
+      if (idx >= 5) return 'moderate';
+      if (idx >= 3) return 'low';
+      return 'off';
+    }
+
+    function calcPressure(date) {
+      const day = date.getDay(), hour = date.getHours(), month = date.getMonth();
+      const sm = [5,6,7,8].includes(month) ? 1.3 : [3,4,9,10].includes(month) ? 1.1 : 0.8;
+      let bp = (day===0||day===6) ? ((hour>=5&&hour<=11)?5:4) : ((hour>=5&&hour<=8)?3:2);
+      const adj = bp * sm;
+      if (adj<=1.5) return 'very_low';
+      if (adj<=2.5) return 'low';
+      if (adj<=3.5) return 'moderate';
+      if (adj<=4.5) return 'high';
+      return 'very_high';
+    }
+
+    // =========================================================================
+    // API FETCH FUNCTIONS
+    // =========================================================================
+    async function fetchWaterTemp() {
+      for (const station of [CONFIG.tideStation, '9410170', '9410660']) {
+        try {
+          const r = await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station=${station}&product=water_temperature&units=english&time_zone=lst_ldt&format=json`);
+          const d = await r.json();
+          if (d.data && d.data.length > 0) {
+            const t = parseFloat(d.data[0].v);
+            if (!isNaN(t)) {
+              document.getElementById('waterTemp').value = t.toFixed(1);
+              document.getElementById('waterTempAuto').style.display = 'inline';
+              autoPopulated.waterTemp = true;
+              fetchedData.waterTemp = t;
+              return t;
+            }
+          }
+        } catch(e) {}
+      }
+      return null;
+    }
+
+    async function fetchTempTrend() {
+      try {
+        const now = new Date();
+        const ago = new Date(now.getTime() - 72*3600000);
+        const fmt = d => `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+        const r = await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(ago)}&end_date=${fmt(now)}&station=${CONFIG.tideStation}&product=water_temperature&units=english&time_zone=lst_ldt&format=json&interval=h`);
+        const d = await r.json();
+        if (d.data && d.data.length >= 12) {
+          const vals = d.data.map(x => parseFloat(x.v)).filter(v => !isNaN(v));
+          if (vals.length >= 12) {
+            const early = vals.slice(0,6).reduce((a,b)=>a+b,0)/6;
+            const late = vals.slice(-6).reduce((a,b)=>a+b,0)/6;
+            const diff = late - early;
+            fetchedData.tempDiff = diff;
+            let trend;
+            if (diff > 2) trend='warming_fast';
+            else if (diff > 0.5) trend='warming';
+            else if (diff > -0.5) trend='stable';
+            else if (diff > -2) trend='cooling';
+            else trend='cooling_fast';
+            document.getElementById('tempTrend').value = trend;
+            document.getElementById('tempTrendAuto').style.display = 'inline';
+            autoPopulated.tempTrend = true;
+            const sign = diff >= 0 ? '+' : '';
+            document.getElementById('tempTrendVal').textContent = `${sign}${diff.toFixed(1)}°F`;
+            document.getElementById('tempTrendVal').className = `metric-value ${diff > 0 ? 'trend-up' : diff < -0.5 ? 'trend-down' : 'trend-stable'}`;
+            return trend;
+          }
+        }
+      } catch(e) { console.warn('Temp trend failed:', e); }
+      return null;
+    }
+
+    async function fetchTideState() {
+      try {
+        const r = await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station=${CONFIG.tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`);
+        const d = await r.json();
+        if (d.predictions && d.predictions.length > 0) {
+          const now = new Date();
+          const events = d.predictions.map(p => ({ time: new Date(p.t.replace(' ','T')), type: p.type, value: parseFloat(p.v) }));
+          fetchedData.tideEvents = events;
+          let prev=null, next=null;
+          for (let i=0; i<events.length; i++) {
+            if (events[i].time > now) { next=events[i]; prev=i>0?events[i-1]:null; break; }
+            prev=events[i];
+          }
+          let state=null;
+          if (prev && next) {
+            if (Math.abs(now-next.time)<20*60000) state=next.type==='H'?'high':'low';
+            else if (Math.abs(now-prev.time)<20*60000) state=prev.type==='H'?'high':'low';
+            else if (prev.type==='L'&&next.type==='H') state='incoming';
+            else if (prev.type==='H'&&next.type==='L') state='outgoing';
+          }
+          if (state) {
+            document.getElementById('tideState').value = state;
+            document.getElementById('tideAuto').style.display = 'inline';
+            autoPopulated.tideState = true;
+            return state;
+          }
+        }
+      } catch(e) { console.warn('Tide failed:', e); }
+      return null;
+    }
+
+    async function fetchWind() {
+      try {
+        const r = await fetch(`https://api.weather.gov/stations/${CONFIG.weatherStation}/observations/latest`, {
+          headers: { 'Accept': 'application/geo+json', 'User-Agent': 'SpearFactorDiveConditions/3.0' }
+        });
+        const d = await r.json();
+        const p = d.properties;
+        let mph=null;
+        if (p.windSpeed && p.windSpeed.value !== null) {
+          const raw = p.windSpeed.value, u = p.windSpeed.unitCode;
+          if (u.includes('km_h')||u.includes('km/h')) mph=raw*0.621371;
+          else if (u.includes('m/s')||u.includes('m_s')) mph=raw*2.23694;
+          else mph=raw;
+          mph=Math.round(mph);
+          document.getElementById('windSpeed').value = mph;
+          document.getElementById('windSpeedAuto').style.display = 'inline';
+          autoPopulated.windSpeed = true;
+          fetchedData.windSpeed = mph;
+        }
+        if (p.windDirection && p.windDirection.value !== null && mph !== null) {
+          const deg = p.windDirection.value;
+          fetchedData.windDeg = deg;
+          let dir;
+          if (mph<3) dir='none';
+          else if (deg>=30&&deg<=150) dir='offshore';
+          else if (deg>=210&&deg<=330) dir='onshore';
+          else dir='sideshore';
+          document.getElementById('windDir').value = dir;
+          document.getElementById('windDirAuto').style.display = 'inline';
+          autoPopulated.windDir = true;
+        }
+        return { speed: mph };
+      } catch(e) { console.warn('Wind failed:', e); }
+      return null;
+    }
+
+    async function fetchWindForecast() {
+      try {
+        const r = await fetch('https://api.weather.gov/gridpoints/SGX/55,17/forecast', {
+          headers: { 'Accept': 'application/geo+json', 'User-Agent': 'SpearFactorDiveConditions/3.0' }
+        });
+        const d = await r.json();
+        if (d.properties && d.properties.periods) {
+          fetchedData.windForecast = d.properties.periods.slice(0,6);
+        }
+      } catch(e) {}
+    }
+
+    async function fetchSwellData() {
+      try {
+        const now = new Date();
+        const ago = new Date(now.getTime() - 6*3600000);
+        const r = await fetch(`https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station,time,wvht,dpd,mwd&station="${CONFIG.ndbcBuoy}"&time>=${ago.toISOString()}&orderBy("time/desc")`);
+        const d = await r.json();
+        if (d.table && d.table.rows && d.table.rows.length > 0) {
+          const h = d.table.columnNames, row = d.table.rows[0];
+          const get = n => { const i=h.indexOf(n); return i>=0?row[i]:null; };
+          const wvht=get('wvht'), dpd=get('dpd'), mwd=get('mwd');
+          if (wvht!==null&&!isNaN(wvht)) {
+            const ft=(wvht*3.28084).toFixed(1);
+            document.getElementById('swellSize').value=ft;
+            document.getElementById('swellSizeAuto').style.display='inline';
+            autoPopulated.swellSize=true;
+            fetchedData.swellHeightFt=parseFloat(ft);
+          }
+          if (dpd!==null&&!isNaN(dpd)) {
+            document.getElementById('swellPeriod').value=Math.round(dpd);
+            document.getElementById('swellPeriodAuto').style.display='inline';
+            autoPopulated.swellPeriod=true;
+            fetchedData.swellPeriod=dpd;
+          }
+          if (mwd!==null&&!isNaN(mwd)) {
+            let dir;
+            if (mwd>=135&&mwd<202) dir='south';
+            else if (mwd>=202&&mwd<248) dir='sw';
+            else if (mwd>=248&&mwd<293) dir='west';
+            else if (mwd>=293&&mwd<338) dir='nw';
+            else dir='north';
+            document.getElementById('swellDir').value=dir;
+            document.getElementById('swellDirAuto').style.display='inline';
+            autoPopulated.swellDir=true;
+          }
+          return;
+        }
+      } catch(e) { console.warn('ERDDAP swell failed:', e); }
+      // Fallback NDBC direct
+      try {
+        const r = await fetch(`https://www.ndbc.noaa.gov/data/realtime2/${CONFIG.ndbcBuoy}.txt`);
+        const text = await r.text();
+        const lines = text.trim().split('\n');
+        if (lines.length >= 3) {
+          const hdr=lines[0].trim().split(/\s+/), dat=lines[2].trim().split(/\s+/);
+          const wi=hdr.indexOf('WVHT'),di=hdr.indexOf('DPD'),mi=hdr.indexOf('MWD');
+          if (wi>=0&&dat[wi]!=='MM') { document.getElementById('swellSize').value=(parseFloat(dat[wi])*3.28084).toFixed(1); autoPopulated.swellSize=true; }
+          if (di>=0&&dat[di]!=='MM') { document.getElementById('swellPeriod').value=Math.round(parseFloat(dat[di])); autoPopulated.swellPeriod=true; }
+          if (mi>=0&&dat[mi]!=='MM') {
+            const m=parseFloat(dat[mi]); let dir;
+            if(m>=135&&m<202) dir='south'; else if(m>=202&&m<248) dir='sw'; else if(m>=248&&m<293) dir='west'; else if(m>=293&&m<338) dir='nw'; else dir='north';
+            document.getElementById('swellDir').value=dir; autoPopulated.swellDir=true;
+          }
+        }
+      } catch(e) { console.warn('NDBC direct failed (CORS expected):', e); }
+    }
+
+    async function fetchRainfall() {
+      try {
+        const r = await fetch(`https://api.weather.gov/stations/${CONFIG.weatherStation}/observations?limit=72`, {
+          headers: { 'Accept': 'application/geo+json', 'User-Agent': 'SpearFactorDiveConditions/3.0' }
+        });
+        const d = await r.json();
+        if (d.features && d.features.length > 0) {
+          let mm=0;
+          for (const obs of d.features) {
+            const p = obs.properties.precipitationLastHour;
+            if (p && p.value !== null && p.value > 0) mm += p.value;
+          }
+          const inches = mm/25.4;
+          fetchedData.rainfall72h = inches;
+          let cat;
+          if (inches<0.01) cat='none';
+          else if (inches<0.1) cat='trace';
+          else if (inches<0.5) cat='light';
+          else if (inches<1.0) cat='moderate';
+          else cat='heavy';
+          document.getElementById('rainfall').value=cat;
+          document.getElementById('rainfallAuto').style.display='inline';
+          autoPopulated.rainfall=true;
+          return cat;
+        }
+      } catch(e) { console.warn('Rainfall failed:', e); }
+      return null;
+    }
+
+    async function fetchUpwelling() {
+      try {
+        const now = new Date();
+        const ago = new Date(now.getTime() - 10*86400000);
+        const r = await fetch(`https://upwell.pfeg.noaa.gov/erddap/tabledap/erdUI36mo.json?time,upwelling_index&station=%2233N119W%22&time>=${ago.toISOString()}&orderBy(%22time/desc%22)`);
+        const d = await r.json();
+        if (d.table && d.table.rows && d.table.rows.length > 0) {
+          const rows = d.table.rows;
+          const latest = rows[0][1];
+          fetchedData.upwellingIndex = latest;
+          let recentStrong=false, activeNow=false;
+          for (const row of rows) {
+            const daysAgo = (now - new Date(row[0]))/86400000;
+            if (daysAgo<=1 && row[1]>150) activeNow=true;
+            if (daysAgo>=2 && daysAgo<=5 && row[1]>150) recentStrong=true;
+          }
+          let cat;
+          if (recentStrong) cat='strong_recent';
+          else if (latest>100) cat='moderate_recent';
+          else if (activeNow) cat='active_now';
+          else cat='weak';
+          document.getElementById('upwelling').value=cat;
+          document.getElementById('upwellingAuto').style.display='inline';
+          autoPopulated.upwelling=true;
+        }
+      } catch(e) { console.warn('Upwelling failed:', e); }
+    }
+
+    // =========================================================================
+    // MASTER FETCH
+    // =========================================================================
+    async function fetchAllData() {
+      const statusEl = document.getElementById('dataStatus');
+      statusEl.textContent = 'Fetching oceanographic data...';
+      statusEl.className = 'data-status';
+      autoPopulated = {};
+      fetchedData = {};
+
+      // Local calcs
+      const moon = getMoonPhaseInfo(new Date());
+      document.getElementById('moonBadge').textContent = `${moon.emoji} ${moon.name}`;
+      document.getElementById('moonPhase').value = moon.category;
+      document.getElementById('moonAuto').style.display = 'inline';
+      autoPopulated.moonPhase = true;
+
+      const now = new Date();
+      document.getElementById('seasonalActivity').value = getCPFVSeason(currentSpecies, now.getMonth());
+      document.getElementById('seasonAuto').style.display = 'inline';
+      autoPopulated.seasonalActivity = true;
+
+      document.getElementById('fishingPressure').value = calcPressure(now);
+      document.getElementById('pressureAuto').style.display = 'inline';
+      autoPopulated.fishingPressure = true;
+
+      await Promise.allSettled([
+        fetchWaterTemp(), fetchTempTrend(), fetchTideState(),
+        fetchWind(), fetchWindForecast(), fetchSwellData(),
+        fetchRainfall(), fetchUpwelling(),
+      ]);
+
+      updateDerived();
+      const ac = Object.keys(autoPopulated).length;
+      const timeStr = now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+      if (ac >= 12) { statusEl.textContent = `${ac}/16 auto-populated · ${timeStr}`; statusEl.className = 'data-status success'; }
+      else if (ac > 0) { statusEl.textContent = `${ac}/16 auto-populated · ${16-ac} manual · ${timeStr}`; statusEl.className = 'data-status'; }
+      else { statusEl.textContent = 'APIs unavailable — enter manually'; statusEl.className = 'data-status error'; }
+
+      recalculate();
+      updatePredictor();
+    }
+
+    // =========================================================================
+    // DERIVED METRICS
+    // =========================================================================
+    function updateDerived() {
+      const h = parseFloat(document.getElementById('swellSize').value);
+      const p = parseFloat(document.getElementById('swellPeriod').value);
+      const rain = document.getElementById('rainfall').value;
+      if (h && p) {
+        const energy = h*h*p;
+        document.getElementById('waveEnergyVal').textContent = Math.round(energy);
+        let viz;
+        if (rain==='heavy') viz='< 4 ft';
+        else if (rain==='moderate') viz='4-10 ft';
+        else if (energy<=20) viz='25-40 ft';
+        else if (energy<=50) viz='15-25 ft';
+        else if (energy<=100) viz='8-15 ft';
+        else if (energy<=200) viz='4-8 ft';
+        else viz='< 4 ft';
+        document.getElementById('visibilityEst').textContent = viz;
+        document.getElementById('derivedMetrics').style.display = 'flex';
+      }
+    }
+
+    // =========================================================================
+    // SVG ARC HELPERS
+    // =========================================================================
+    function setArc(arcId, pct, color) {
+      const arc = document.getElementById(arcId);
+      // Arc length for the semicircle path
+      const isSpear = arcId === 'spearArc';
+      const totalLen = isSpear ? 220 : 157; // approximate arc lengths
+      arc.style.strokeDasharray = totalLen;
+      arc.style.strokeDashoffset = totalLen - (totalLen * Math.min(pct, 1));
+      arc.style.stroke = color;
+    }
+
+    // =========================================================================
+    // SCORE CALCULATOR — DUAL SCORES
+    // =========================================================================
+    function calcGroupScore(factors) {
+      let total=0, count=0;
+      for (const key of factors) {
+        const el = document.getElementById(key);
+        const scoreEl = document.getElementById(key+'Score');
+        const val = el.value;
+        if (val===''||val===null) {
+          if (scoreEl) { scoreEl.textContent='-'; scoreEl.className='factor-score score-none'; }
+          continue;
+        }
+        const scorer = getScorer(currentSpecies, key);
+        let score;
+        if (typeof scorer==='function') score=scorer(parseFloat(val));
+        else if (typeof scorer==='object') score=scorer[val];
+        if (score!==null&&score!==undefined&&!isNaN(score)) {
+          if (scoreEl) { scoreEl.textContent=score; scoreEl.className=`factor-score ${scoreClass(score)}`; }
+          total+=score; count++;
+        } else {
+          if (scoreEl) { scoreEl.textContent='-'; scoreEl.className='factor-score score-none'; }
+        }
+      }
+      if (count < 3) return null; // need at least 3 factors
+      return total/count; // 1-10 average
+    }
+
+    function recalculate() {
+      const fishAvg = calcGroupScore(FISH_FACTORS);
+      const vizAvg = calcGroupScore(VIZ_FACTORS);
+
+      // Update Fish gauge
+      updateGauge('fish', fishAvg, 'var(--fish-color)');
+      // Update Viz gauge
+      updateGauge('viz', vizAvg, 'var(--viz-color)');
+      // Update Spear gauge
+      let spearScore = null;
+      if (fishAvg !== null && vizAvg !== null) {
+        spearScore = 0.6 * fishAvg + 0.4 * vizAvg;
+      } else if (fishAvg !== null) {
+        spearScore = fishAvg; // partial
+      } else if (vizAvg !== null) {
+        spearScore = vizAvg;
+      }
+      updateGauge('spear', spearScore, 'var(--spear-color)');
+
+      // Insight text
+      updateInsight(fishAvg, vizAvg, spearScore);
+      updateDerived();
+    }
+
+    function updateGauge(name, score, defaultColor) {
+      const scoreEl = document.getElementById(name+'Score');
+      const ratingEl = document.getElementById(name+'Rating');
+      const arcId = name+'Arc';
+
+      if (score === null) {
+        scoreEl.textContent = '--';
+        scoreEl.style.color = 'var(--text-muted)';
+        ratingEl.textContent = 'Need Data';
+        ratingEl.className = 'gauge-rating rating-none';
+        setArc(arcId, 0, 'var(--bg-card)');
+        return;
+      }
+
+      const display = score.toFixed(1);
+      scoreEl.textContent = display;
+      const rating = getRating10(score);
+      scoreEl.style.color = rating.color;
+      ratingEl.textContent = rating.label;
+      ratingEl.className = `gauge-rating ${rating.cls}`;
+      setArc(arcId, score/10, rating.color);
+    }
+
+    function updateInsight(fish, viz, spear) {
+      const el = document.getElementById('insightText');
+      const profile = PROFILES[currentSpecies];
+      if (fish === null && viz === null) {
+        el.textContent = profile.tip;
+        return;
+      }
+
+      let parts = [];
+      if (fish !== null && viz !== null) {
+        const diff = fish - viz;
+        if (diff > 2) {
+          parts.push('Fish are biting but visibility is limited — classic productive water scenario.');
+        } else if (diff < -2) {
+          parts.push('Crystal clear water but fish activity is low. Great for reef diving, less ideal for pelagics.');
+        } else if (fish >= 7 && viz >= 7) {
+          parts.push('Both fish activity and visibility are strong. Prime spearfishing conditions.');
+        } else if (fish < 4 && viz < 4) {
+          parts.push('Poor conditions across the board. Consider waiting for improvement.');
+        } else {
+          parts.push(profile.tip);
+        }
+      } else {
+        parts.push(profile.tip);
+      }
+      el.textContent = parts.join(' ');
+    }
+
+    // =========================================================================
+    // 48-HOUR PREDICTOR
+    // =========================================================================
+    function updatePredictor() {
+      const fishNow = calcGroupScore(FISH_FACTORS);
+      const vizNow = calcGroupScore(VIZ_FACTORS);
+      if (fishNow === null && vizNow === null) {
+        for (let i=0; i<3; i++) {
+          document.getElementById(`pred${i}Fish`).textContent = '--';
+          document.getElementById(`pred${i}Viz`).textContent = '--';
+          document.getElementById(`pred${i}Spear`).textContent = '--';
+          document.getElementById(`pred${i}Rating`).textContent = 'Insufficient data';
+        }
+        return;
+      }
+
+      // Today
+      setPredDay(0, fishNow, vizNow);
+
+      // Adjustments for tomorrow and day after
+      const fishAdj = [0, 0], vizAdj = [0, 0];
+
+      // Temp trend affects fish bite
+      if (fetchedData.tempDiff !== undefined) {
+        const rate = fetchedData.tempDiff / 3;
+        if (currentSpecies === 'yellowtail') {
+          fishAdj[0] += rate > 0 ? 0.3 : rate < -0.5 ? -0.5 : 0;
+          fishAdj[1] += rate > 0 ? 0.5 : rate < -0.5 ? -0.8 : 0;
+        } else if (currentSpecies === 'wsb') {
+          fishAdj[0] += rate < 0 ? 0.2 : rate > 0.5 ? -0.3 : 0;
+          fishAdj[1] += rate < 0 ? 0.3 : rate > 0.5 ? -0.5 : 0;
+        } else {
+          fishAdj[0] += rate > 0 ? 0.2 : rate < -0.5 ? -0.3 : 0;
+          fishAdj[1] += rate > 0 ? 0.3 : rate < -0.5 ? -0.5 : 0;
+        }
+      }
+
+      // Wind forecast affects viz
+      if (fetchedData.windForecast) {
+        for (let day=0; day<2; day++) {
+          const period = fetchedData.windForecast[day+1];
+          if (period) {
+            const match = (period.windSpeed||'').match(/(\d+)/);
+            if (match) {
+              const fw = parseInt(match[1]);
+              const cw = fetchedData.windSpeed || 10;
+              if (fw < cw - 5) vizAdj[day] += 0.5;
+              else if (fw > cw + 5) vizAdj[day] -= 0.5;
+            }
+          }
+        }
+      }
+
+      // Upwelling delay bonus for fish
+      if (fetchedData.upwellingIndex > 100) {
+        fishAdj[0] += 0.3;
+        fishAdj[1] += 0.5;
+      }
+
+      // Pressure shift
+      const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+      const dayAfter = new Date(); dayAfter.setDate(dayAfter.getDate()+2);
+      const todayDay = new Date().getDay();
+      if ((todayDay===0||todayDay===6) && tomorrow.getDay()>=1 && tomorrow.getDay()<=5) fishAdj[0] += 0.3;
+      if ((todayDay===5||todayDay===4) && (dayAfter.getDay()===0||dayAfter.getDay()===6)) fishAdj[1] -= 0.3;
+
+      const f1 = fishNow !== null ? Math.max(1, Math.min(10, fishNow + fishAdj[0])) : null;
+      const f2 = fishNow !== null ? Math.max(1, Math.min(10, fishNow + fishAdj[1])) : null;
+      const v1 = vizNow !== null ? Math.max(1, Math.min(10, vizNow + vizAdj[0])) : null;
+      const v2 = vizNow !== null ? Math.max(1, Math.min(10, vizNow + vizAdj[1])) : null;
+
+      setPredDay(1, f1, v1);
+      setPredDay(2, f2, v2);
+
+      // Day labels
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      document.getElementById('pred2Label').textContent = days[dayAfter.getDay()];
+
+      // Trend arrows
+      for (let i=0; i<2; i++) {
+        const trendEl = document.getElementById(`pred${i+1}Trend`);
+        const totalAdj = (fishAdj[i]||0) + (vizAdj[i]||0);
+        if (totalAdj > 0.3) { trendEl.textContent = '▲ Improving'; trendEl.className = 'predictor-trend trend-up'; }
+        else if (totalAdj < -0.3) { trendEl.textContent = '▼ Declining'; trendEl.className = 'predictor-trend trend-down'; }
+        else { trendEl.textContent = '▸ Stable'; trendEl.className = 'predictor-trend trend-stable'; }
+      }
+
+      // Details
+      const trends = [];
+      if (fetchedData.tempDiff > 0.5) trends.push('Water warming');
+      else if (fetchedData.tempDiff < -0.5) trends.push('Water cooling');
+      if (fetchedData.upwellingIndex > 100) trends.push('Post-upwelling nutrients');
+      if (fetchedData.windForecast && fetchedData.windForecast[1]) {
+        const t = (fetchedData.windForecast[1].shortForecast||'').toLowerCase();
+        if (t.includes('calm')||t.includes('light')) trends.push('Calmer winds expected');
+        if (t.includes('rain')) trends.push('Rain incoming');
+      }
+      if (trends.length > 0) document.getElementById('predictorDetails').textContent = 'Key trends: ' + trends.join(' · ');
+    }
+
+    function setPredDay(idx, fish, viz) {
+      const fishEl = document.getElementById(`pred${idx}Fish`);
+      const vizEl = document.getElementById(`pred${idx}Viz`);
+      const spearEl = document.getElementById(`pred${idx}Spear`);
+      const ratingEl = document.getElementById(`pred${idx}Rating`);
+
+      if (fish !== null) {
+        fishEl.textContent = fish.toFixed(1);
+        fishEl.style.color = getRating10(fish).color;
+      } else { fishEl.textContent = '--'; }
+
+      if (viz !== null) {
+        vizEl.textContent = viz.toFixed(1);
+        vizEl.style.color = getRating10(viz).color;
+      } else { vizEl.textContent = '--'; }
+
+      let spear = null;
+      if (fish !== null && viz !== null) spear = 0.6*fish + 0.4*viz;
+      else if (fish !== null) spear = fish;
+      else if (viz !== null) spear = viz;
+
+      if (spear !== null) {
+        spearEl.textContent = spear.toFixed(1);
+        const r = getRating10(spear);
+        spearEl.style.color = r.color;
+        ratingEl.textContent = r.label;
+        ratingEl.style.color = r.color;
+      } else {
+        spearEl.textContent = '--';
+        ratingEl.textContent = '--';
+      }
+    }
+
+    // =========================================================================
+    // SPECIES SELECTOR
+    // =========================================================================
+    function selectSpecies(species) {
+      currentSpecies = species;
+      document.querySelectorAll('.species-card').forEach(c => c.classList.toggle('active', c.dataset.species===species));
+      document.getElementById('seasonalActivity').value = getCPFVSeason(species, new Date().getMonth());
+      recalculate();
+      updatePredictor();
+    }
+
+    // =========================================================================
+    // INIT
+    // =========================================================================
+    function init() {
+      document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-US', {
+        weekday:'long', month:'long', day:'numeric', year:'numeric'
+      });
+      fetchAllData();
+    }
+
+    init();
+  </script>
+</body>
+</html>
