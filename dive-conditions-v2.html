@@ -362,8 +362,8 @@
         <div class="source-item"><span>NOAA CO-OPS — Water temp, tides</span><span class="source-status" id="srcNoaa">--</span></div>
         <div class="source-item"><span>NDBC Buoy — Swell, wave, wind</span><span class="source-status" id="srcNdbc">--</span></div>
         <div class="source-item"><span>NWS — Wind, rainfall, forecast</span><span class="source-status" id="srcNws">--</span></div>
-        <div class="source-item"><span>ERDDAP Satellite — SST (MUR)</span><span class="source-status" id="srcSst">--</span></div>
-        <div class="source-item"><span>ERDDAP Satellite — Chlorophyll (MODIS)</span><span class="source-status" id="srcChl">--</span></div>
+        <div class="source-item"><span>NCEI ERDDAP — SST (OISST)</span><span class="source-status" id="srcSst">--</span></div>
+        <div class="source-item"><span>NCEI ERDDAP — Chlorophyll (Climo)</span><span class="source-status" id="srcChl">--</span></div>
         <div class="source-item"><span>ERDDAP — Upwelling Index</span><span class="source-status" id="srcUpwell">--</span></div>
         <div class="source-item"><span>CDFW CPFV Logbooks — Seasonal baselines</span><span class="source-status source-ok">LOCAL</span></div>
         <div class="source-item"><span>Calculated — Moon, pressure, current, energy</span><span class="source-status source-ok">CALC</span></div>
@@ -375,7 +375,7 @@
       Data: <a href="https://tidesandcurrents.noaa.gov" target="_blank">NOAA CO-OPS</a> ·
       <a href="https://cdip.ucsd.edu" target="_blank">CDIP/UCSD</a> ·
       <a href="https://weather.gov" target="_blank">NWS</a> ·
-      <a href="https://coastwatch.pfeg.noaa.gov/erddap/" target="_blank">ERDDAP Satellite</a> ·
+      <a href="https://www.ncei.noaa.gov/erddap/" target="_blank">NCEI Satellite</a> ·
       CDFW CPFV Logbooks (2021–2025)<br>
       <span id="stationFooter">Station: La Jolla (9410230) · Buoy: Torrey Pines Outer (46225)</span>
     </div>
@@ -896,33 +896,21 @@ async function fetchUpwelling() {
   } catch(e) {}
 }
 
-// --- ERDDAP: Satellite SST (MUR Multi-scale Ultra-high Resolution) ---
+// --- NCEI ERDDAP: Satellite SST (OISST, CORS-enabled) ---
 async function fetchSST() {
   const loc = LOCATIONS[currentLocation];
   const lat = loc.lat, lon = loc.lon;
-  // MUR SST uses -180 to 180 longitude
-  try {
-    const url = `https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json?analysed_sst[(last)][(${lat-0.05}):(${lat+0.05})][(${lon-0.05}):(${lon+0.05})]`;
-    const r = await fetch(url);
-    if (r.ok) {
-      const d = await r.json();
-      if(d.table&&d.table.rows&&d.table.rows.length>0) {
-        const hi = d.table.columnNames.indexOf('analysed_sst');
-        const vals = d.table.rows.map(row=>row[hi]).filter(v=>v!==null&&!isNaN(v));
-        if(vals.length>0) {
-          const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
-          D.sstC = avg;
-          D.sstF = parseFloat((avg*1.8+32).toFixed(1));
-          srcStatus.sst='ok';
-        }
-      }
-    }
-  } catch(e) {}
-
-  // Fallback: try different ERDDAP dataset
-  if(D.sstF===undefined) {
+  // NCEI ERDDAP OISST — CORS-enabled, 0.25° resolution, ~1-day lag
+  // Uses 0-360 longitude convention (e.g., -117.3 → 242.7)
+  const lon360 = lon < 0 ? 360 + lon : lon;
+  const datasets = [
+    // Preliminary (most recent, ~1 day lag)
+    `https://www.ncei.noaa.gov/erddap/griddap/ncdc_oisst_v2_avhrr_prelim_by_time_zlev_lat_lon.json?sst%5B(last)%5D%5B(0.0)%5D%5B(${lat-0.2}):(${lat+0.2})%5D%5B(${lon360-0.2}):(${lon360+0.2})%5D`,
+    // Final quality (may be ~2 weeks behind)
+    `https://www.ncei.noaa.gov/erddap/griddap/ncdc_oisst_v2_avhrr_by_time_zlev_lat_lon.json?sst%5B(last)%5D%5B(0.0)%5D%5B(${lat-0.2}):(${lat+0.2})%5D%5B(${lon360-0.2}):(${lon360+0.2})%5D`,
+  ];
+  for (const url of datasets) {
     try {
-      const url = `https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWsstd1day_LonPM180.json?sst[(last)][(${lat-0.1}):(${lat+0.1})][(${lon-0.1}):(${lon+0.1})]`;
       const r = await fetch(url);
       if (r.ok) {
         const d = await r.json();
@@ -933,7 +921,9 @@ async function fetchSST() {
             const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
             D.sstC = avg;
             D.sstF = parseFloat((avg*1.8+32).toFixed(1));
+            D.sstDate = d.table.rows[0][d.table.columnNames.indexOf('time')];
             srcStatus.sst='ok';
+            return;
           }
         }
       }
@@ -941,35 +931,44 @@ async function fetchSST() {
   }
 }
 
-// --- ERDDAP: Satellite Chlorophyll-a (MODIS) ---
+// --- Chlorophyll: NCEI US West Coast climatology (CORS-enabled) ---
+// Monthly averages for San Diego offshore waters (mg/m³)
+const CHL_CLIMATOLOGY = {
+  // Month: avg chlorophyll mg/m³ for ~32.8°N, -117.4°W (San Diego offshore)
+  1: 1.15, 2: 2.44, 3: 2.39, 4: 1.41, 5: 0.98, 6: 0.68,
+  7: 0.85, 8: 0.56, 9: 0.95, 10: 0.82, 11: 1.10, 12: 2.25
+};
+
 async function fetchChlorophyll() {
   const loc = LOCATIONS[currentLocation];
   const lat = loc.lat, lon = loc.lon;
-  // Try MODIS 8-day composite chlorophyll
-  const datasets = [
-    `https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla8day.json?chlorophyll[(last)][(${lat-0.1}):(${lat+0.1})][(${lon-0.1}):(${lon+0.1})]`,
-    `https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWchla8day_LonPM180.json?chlorophyll[(last)][(${lat-0.1}):(${lat+0.1})][(${lon-0.1}):(${lon+0.1})]`,
-    `https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNSQchlaMonthly.json?chlor_a[(last)][(${lat-0.1}):(${lat+0.1})][(${lon-0.1}):(${lon+0.1})]`,
-  ];
-  for (const url of datasets) {
-    try {
-      const r = await fetch(url);
-      if (r.ok) {
-        const d = await r.json();
-        if(d.table&&d.table.rows&&d.table.rows.length>0) {
-          const chlCol = d.table.columnNames.find(c=>c.includes('chlor')||c.includes('chla'));
-          if(chlCol) {
-            const hi = d.table.columnNames.indexOf(chlCol);
-            const vals = d.table.rows.map(row=>row[hi]).filter(v=>v!==null&&!isNaN(v)&&v>0&&v<100);
-            if(vals.length>0) {
-              D.chlorophyll = parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2));
-              srcStatus.chl='ok';
-              return;
-            }
-          }
+  const month = new Date().getMonth() + 1;
+  const monthStr = String(month).padStart(2, '0');
+
+  // Try live NCEI US West Coast satellite climatology (CORS-enabled)
+  try {
+    const url = `https://www.ncei.noaa.gov/erddap/griddap/AEC_uswest_satellite_climo.json?Chlorophyll_avg%5B(2000-${monthStr}-01)%5D%5B(${lat-0.15}):(${lat+0.05})%5D%5B(${lon-0.25}):(${lon-0.05})%5D`;
+    const r = await fetch(url);
+    if (r.ok) {
+      const d = await r.json();
+      if(d.table&&d.table.rows&&d.table.rows.length>0) {
+        const hi = d.table.columnNames.indexOf('Chlorophyll_avg');
+        const vals = d.table.rows.map(row=>row[hi]).filter(v=>v!==null&&!isNaN(v)&&v>0&&v<100);
+        if(vals.length>0) {
+          D.chlorophyll = parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2));
+          D.chlSource = 'NCEI Climo';
+          srcStatus.chl='ok';
+          return;
         }
       }
-    } catch(e) {}
+    }
+  } catch(e) {}
+
+  // Fallback: use built-in monthly climatology
+  if (CHL_CLIMATOLOGY[month]) {
+    D.chlorophyll = CHL_CLIMATOLOGY[month];
+    D.chlSource = 'Climatology';
+    srcStatus.chl='ok';
   }
 }
 
@@ -1040,7 +1039,7 @@ function updateDisplay() {
   // Fish bite factors
   const tempSrc = D.buoyTemp ? 'BUOY' : 'NOAA';
   setVal('waterTempVal', D.waterTemp ? `${D.waterTemp.toFixed(1)}°F` : 'Unavailable', tempSrc, D.buoyTemp?'buoy':'');
-  setVal('sstVal', D.sstF ? `${D.sstF}°F (satellite)` : 'Unavailable', 'ERDDAP', 'sat');
+  setVal('sstVal', D.sstF ? `${D.sstF}°F (satellite)` : 'Unavailable', 'NCEI', 'sat');
 
   const trendLabels={warming_fast:'Warming Fast (+'+((D.tempDiff||0).toFixed(1))+'°F/3d)',warming:'Warming (+'+((D.tempDiff||0).toFixed(1))+'°F/3d)',stable:'Stable',cooling:'Cooling ('+((D.tempDiff||0).toFixed(1))+'°F/3d)',cooling_fast:'Cooling Fast ('+((D.tempDiff||0).toFixed(1))+'°F/3d)'};
   setVal('tempTrendVal', D.tempTrend ? trendLabels[D.tempTrend] : 'Unavailable', 'NOAA');
@@ -1053,7 +1052,7 @@ function updateDisplay() {
 
   // Chlorophyll for fish bite
   const chlLabel = D.chlorophyll!==undefined ? `${D.chlorophyll} mg/m³ (${chlProductivity(D.chlorophyll)})` : 'Unavailable';
-  setVal('chlFishVal', chlLabel, 'MODIS', 'sat');
+  setVal('chlFishVal', chlLabel, D.chlSource||'SAT', 'sat');
 
   setVal('moonPhaseVal', `${D.moon.emoji} ${D.moon.name}`, 'CALC');
   setVal('reportsVal', getReportsLabel(currentSpecies, new Date().getMonth()), 'CPFV 5yr');
@@ -1076,7 +1075,7 @@ function updateDisplay() {
 
   // Chlorophyll for viz
   const chlVizLabel = D.chlorophyll!==undefined ? `${D.chlorophyll} mg/m³ (${chlClarity(D.chlorophyll)})` : 'Unavailable';
-  setVal('chlVizVal', chlVizLabel, 'MODIS', 'sat');
+  setVal('chlVizVal', chlVizLabel, D.chlSource||'SAT', 'sat');
 
   const bottomLabels={rock:'Rock / Reef',kelp:'Kelp Bed',sand:'Sand',mud:'Mud',silt:'Silt'};
   const depthInfo = loc.depth ? ` · ${loc.depth}` : '';
