@@ -591,35 +591,53 @@ function getPressureLabel(v) { return {very_low:'Very Low',low:'Low',moderate:'M
 // --- NOAA CO-OPS: Water Temp ---
 async function fetchWaterTemp() {
   const loc = LOCATIONS[currentLocation];
-  for (const station of [loc.tideStation, '9410230', '9410170']) {
-    try {
-      const r = await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station=${station}&product=water_temperature&units=english&time_zone=lst_ldt&format=json`);
-      const d = await r.json();
-      if(d.data&&d.data.length>0) { const t=parseFloat(d.data[0].v); if(!isNaN(t)) { D.waterTemp=t; srcStatus.noaa='ok'; return; } }
-    } catch(e) {}
+  const stations = [loc.tideStation, '9410170', '9410230'].filter((v,i,a)=>a.indexOf(v)===i);
+  // Try date=latest first, then date=recent as fallback
+  for (const dateParam of ['latest', 'recent']) {
+    for (const station of stations) {
+      try {
+        const r = await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=${dateParam}&station=${station}&product=water_temperature&units=english&time_zone=lst_ldt&format=json`);
+        const d = await r.json();
+        if(d.data&&d.data.length>0) {
+          const t=parseFloat(d.data[d.data.length-1].v);
+          if(!isNaN(t)) { D.waterTemp=t; srcStatus.noaa='ok'; return; }
+        }
+      } catch(e) {}
+    }
   }
 }
 
 // --- NOAA CO-OPS: Temp Trend (72h) ---
 async function fetchTempTrend() {
-  try {
-    const now=new Date(), ago=new Date(now.getTime()-72*3600000);
-    const fmt=d=>`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-    const r=await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(ago)}&end_date=${fmt(now)}&station=${LOCATIONS[currentLocation].tideStation}&product=water_temperature&units=english&time_zone=lst_ldt&format=json&interval=h`);
-    const d=await r.json();
-    if(d.data&&d.data.length>=12) {
-      const vals=d.data.map(x=>parseFloat(x.v)).filter(v=>!isNaN(v));
-      if(vals.length>=12) {
-        const early=vals.slice(0,6).reduce((a,b)=>a+b,0)/6, late=vals.slice(-6).reduce((a,b)=>a+b,0)/6;
-        D.tempDiff=late-early;
-        if(D.tempDiff>2) D.tempTrend='warming_fast';
-        else if(D.tempDiff>0.5) D.tempTrend='warming';
-        else if(D.tempDiff>-0.5) D.tempTrend='stable';
-        else if(D.tempDiff>-2) D.tempTrend='cooling';
-        else D.tempTrend='cooling_fast';
+  const loc = LOCATIONS[currentLocation];
+  const stations = [loc.tideStation, '9410170', '9410230'].filter((v,i,a)=>a.indexOf(v)===i);
+  const now=new Date(), ago=new Date(now.getTime()-72*3600000);
+  const fmt=d=>`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  for (const station of stations) {
+    try {
+      const r=await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(ago)}&end_date=${fmt(now)}&station=${station}&product=water_temperature&units=english&time_zone=lst_ldt&format=json`);
+      const d=await r.json();
+      if(d.data&&d.data.length>=12) {
+        // Sample every ~1hr from 6-min data (every 10th reading)
+        const all=d.data.map(x=>parseFloat(x.v)).filter(v=>!isNaN(v));
+        const step=Math.max(1,Math.floor(all.length/72)); // ~72 hourly samples from 3 days
+        const vals=[]; for(let i=0;i<all.length;i+=step) vals.push(all[i]);
+        if(vals.length>=12) {
+          const earlyN=Math.min(6,Math.floor(vals.length/4));
+          const early=vals.slice(0,earlyN).reduce((a,b)=>a+b,0)/earlyN;
+          const late=vals.slice(-earlyN).reduce((a,b)=>a+b,0)/earlyN;
+          D.tempDiff=late-early;
+          if(D.tempDiff>2) D.tempTrend='warming_fast';
+          else if(D.tempDiff>0.5) D.tempTrend='warming';
+          else if(D.tempDiff>-0.5) D.tempTrend='stable';
+          else if(D.tempDiff>-2) D.tempTrend='cooling';
+          else D.tempTrend='cooling_fast';
+          srcStatus.noaa='ok';
+          return;
+        }
       }
-    }
-  } catch(e) {}
+    } catch(e) {}
+  }
 }
 
 // --- NOAA CO-OPS: Tide State & Current Estimate ---
