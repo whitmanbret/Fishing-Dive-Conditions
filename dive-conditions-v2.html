@@ -711,7 +711,7 @@ async function fetchBuoyData() {
     // Method 1: ERDDAP mirror of NDBC data (most reliable, CORS-friendly)
     try {
       const now = new Date(), ago = new Date(now.getTime() - 12*3600000);
-      const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station,time,wd,wspd,wvht,dpd,apd,mwd,wtmp,atmp&station=%22${buoyId}%22&time>=${ago.toISOString()}&orderBy(%22time/desc%22)&orderByLimit(%221%22)`;
+      const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station,time,wd,wspd,wvht,dpd,apd,mwd,wtmp,atmp&station=%22${buoyId}%22&time>=${ago.toISOString()}&orderByMax(%22time%22)`;
       const r = await fetch(url);
       if (r.ok) {
         const d = await r.json();
@@ -763,7 +763,7 @@ async function fetchBuoyData() {
 
   // Method 4: Try IOOS ERDDAP as final fallback
   try {
-    const url = `https://erddap.sensors.ioos.us/erddap/tabledap/cwwcNDBCMet.json?station,time,wvht,dpd,mwd,wspd,wd,wtmp&station=%2246225%22&time>=${new Date(Date.now()-12*3600000).toISOString()}&orderBy(%22time/desc%22)&orderByLimit(%221%22)`;
+    const url = `https://erddap.sensors.ioos.us/erddap/tabledap/cwwcNDBCMet.json?station,time,wvht,dpd,mwd,wspd,wd,wtmp&station=%2246225%22&time>=${new Date(Date.now()-12*3600000).toISOString()}&orderByMax(%22time%22)`;
     const r = await fetch(url);
     if (r.ok) {
       const d = await r.json();
@@ -858,10 +858,10 @@ async function fetchRainfall() {
 async function fetchUpwelling() {
   try {
     const now=new Date(), ago=new Date(now.getTime()-10*86400000);
-    const r=await fetch(`https://upwell.pfeg.noaa.gov/erddap/tabledap/erdUI36mo.json?time,upwelling_index&station=%2233N119W%22&time>=${ago.toISOString()}&orderBy(%22time/desc%22)`);
+    const r=await fetch(`https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdUI336hr.json?time,upwelling_index&time>=${ago.toISOString()}`);
     const d=await r.json();
     if(d.table&&d.table.rows&&d.table.rows.length>0) {
-      const rows=d.table.rows; D.upwellingIndex=rows[0][1];
+      const rows=d.table.rows; D.upwellingIndex=rows[rows.length-1][1];
       let recentStrong=false, activeNow=false;
       for(const row of rows) {
         const daysAgo=(new Date()-new Date(row[0]))/86400000;
@@ -881,10 +881,9 @@ async function fetchUpwelling() {
 async function fetchSST() {
   const loc = LOCATIONS[currentLocation];
   const lat = loc.lat, lon = loc.lon;
-  // MUR SST uses 0-360 longitude
-  const lon360 = lon < 0 ? 360 + lon : lon;
+  // MUR SST uses -180 to 180 longitude
   try {
-    const url = `https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json?analysed_sst[(last)][(${lat-0.05}):(${lat+0.05})][(${lon360-0.05}):(${lon360+0.05})]`;
+    const url = `https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json?analysed_sst[(last)][(${lat-0.05}):(${lat+0.05})][(${lon-0.05}):(${lon+0.05})]`;
     const r = await fetch(url);
     if (r.ok) {
       const d = await r.json();
