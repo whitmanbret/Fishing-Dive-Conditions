@@ -373,7 +373,7 @@
     <div class="breakdown-footer">
       Fish Bite: 0–10 · Dive Visibility: 0–10 · Spearfishing: 0.6F + 0.4V<br>
       Data: <a href="https://tidesandcurrents.noaa.gov" target="_blank">NOAA CO-OPS</a> ·
-      <a href="https://www.ndbc.noaa.gov" target="_blank">NDBC Buoys</a> ·
+      <a href="https://cdip.ucsd.edu" target="_blank">CDIP/UCSD</a> ·
       <a href="https://weather.gov" target="_blank">NWS</a> ·
       <a href="https://coastwatch.pfeg.noaa.gov/erddap/" target="_blank">ERDDAP Satellite</a> ·
       CDFW CPFV Logbooks (2021–2025)<br>
@@ -701,16 +701,68 @@ async function fetchWindForecast() {
   } catch(e) {}
 }
 
-// --- NDBC Buoy: Swell, Wave, Period, Direction ---
-// Tries multiple sources in order: ERDDAP mirror, NDBC direct text, NDBC SOS
+// --- CDIP Station Mapping (CORS-enabled, primary source) ---
+// CDIP = Coastal Data Information Program (cdip.ucsd.edu)
+const CDIP_STATIONS = {
+  lajolla:   { id: '201p1', name: 'Scripps Nearshore' },
+  pointloma: { id: '191p1', name: 'Point Loma South' },
+  mission:   { id: '220p1', name: 'Mission Bay West' },
+  imperial:  { id: '155p1', name: 'Imperial Beach Nearshore' },
+  coronado:  { id: '191p1', name: 'Point Loma South' },
+  torrey:    { id: '100p1', name: 'Torrey Pines Outer' },
+  encinitas: { id: '262p1', name: 'Leucadia Nearshore' },
+  oceanside: { id: '262p1', name: 'Leucadia Nearshore' },
+};
+
+// --- Buoy Data: CDIP primary (CORS), ERDDAP/NDBC fallback ---
 async function fetchBuoyData() {
+  // Method 1: CDIP THREDDS OPeNDAP (CORS-enabled, most reliable)
+  const cdipStation = CDIP_STATIONS[currentLocation] || CDIP_STATIONS.torrey;
+  try {
+    // First get the dataset size to find the last index
+    const ddsUrl = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/realtime/${cdipStation.id}_rt.nc.dds`;
+    const ddsR = await fetch(ddsUrl);
+    if (ddsR.ok) {
+      const ddsText = await ddsR.text();
+      const match = ddsText.match(/waveTime\[waveTime\s*=\s*(\d+)\]/);
+      if (match) {
+        const lastIdx = parseInt(match[1]) - 1;
+        const dataUrl = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/realtime/${cdipStation.id}_rt.nc.ascii?waveHs%5B${lastIdx}%5D,waveTp%5B${lastIdx}%5D,waveDp%5B${lastIdx}%5D,waveTa%5B${lastIdx}%5D,sstSeaSurfaceTemperature%5B${lastIdx}%5D`;
+        const dataR = await fetch(dataUrl);
+        if (dataR.ok) {
+          const text = await dataR.text();
+          const getVal = name => { const m = text.match(new RegExp(name+'\\[1\\]\\n([\\d.\\-]+)')); return m ? parseFloat(m[1]) : null; };
+          const hs = getVal('waveHs');
+          const tp = getVal('waveTp');
+          const dp = getVal('waveDp');
+          const ta = getVal('waveTa');
+          const sst = getVal('sstSeaSurfaceTemperature');
+          if (hs !== null) D.swellFt = parseFloat((hs * 3.28084).toFixed(1));
+          if (tp !== null) D.swellPeriod = Math.round(tp);
+          if (ta !== null) D.avgPeriod = Math.round(ta);
+          if (dp !== null) classifySwellDir(dp);
+          if (sst !== null && D.waterTemp === undefined) {
+            D.waterTemp = parseFloat((sst * 1.8 + 32).toFixed(1));
+            D.buoyTemp = true;
+          }
+          if (D.swellFt) {
+            srcStatus.ndbc = 'ok';
+            D.buoyId = cdipStation.id;
+            D.buoyName = cdipStation.name;
+            D.buoySource = 'CDIP';
+            return;
+          }
+        }
+      }
+    }
+  } catch(e) {}
+
+  // Method 2: ERDDAP mirror of NDBC data (fallback)
   const loc = LOCATIONS[currentLocation];
   const buoys = loc.buoys || ['46225'];
-
   for (const buoyId of buoys) {
-    // Method 1: ERDDAP mirror of NDBC data (most reliable, CORS-friendly)
     try {
-      const now = new Date(), ago = new Date(now.getTime() - 12*3600000);
+      const ago = new Date(Date.now() - 12*3600000);
       const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station,time,wd,wspd,wvht,dpd,apd,mwd,wtmp,atmp&station=%22${buoyId}%22&time>=${ago.toISOString()}&orderByMax(%22time%22)`;
       const r = await fetch(url);
       if (r.ok) {
@@ -721,12 +773,13 @@ async function fetchBuoyData() {
           parseBuoyRow(get);
           srcStatus.ndbc='ok';
           D.buoyId=buoyId;
+          D.buoySource='NDBC';
           return;
         }
       }
     } catch(e) {}
 
-    // Method 2: NDBC realtime text file
+    // Method 3: NDBC direct text file
     try {
       const r = await fetch(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`);
       if (r.ok) {
@@ -737,46 +790,12 @@ async function fetchBuoyData() {
           parseBuoyFields(get);
           srcStatus.ndbc='ok';
           D.buoyId=buoyId;
+          D.buoySource='NDBC';
           return;
         }
       }
     } catch(e) {}
-
-    // Method 3: NDBC spectral data (alternative file)
-    try {
-      const r = await fetch(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.spec`);
-      if (r.ok) {
-        const text = await r.text(), lines = text.trim().split('\n');
-        if(lines.length>=3) {
-          const hdr=lines[0].trim().split(/\s+/), dat=lines[2].trim().split(/\s+/);
-          const get=n=>{const i=hdr.indexOf(n); return (i>=0&&dat[i]!=='MM')?parseFloat(dat[i]):null;};
-          const wvht=get('WVHT'), dpd=get('DPD'), mwd=get('MWD'), apd=get('APD');
-          if(wvht!==null) D.swellFt=parseFloat((wvht*3.28084).toFixed(1));
-          if(dpd!==null) D.swellPeriod=Math.round(dpd);
-          if(apd!==null) D.avgPeriod=Math.round(apd);
-          if(mwd!==null) classifySwellDir(mwd);
-          if(D.swellFt) { srcStatus.ndbc='ok'; D.buoyId=buoyId; return; }
-        }
-      }
-    } catch(e) {}
   }
-
-  // Method 4: Try IOOS ERDDAP as final fallback
-  try {
-    const url = `https://erddap.sensors.ioos.us/erddap/tabledap/cwwcNDBCMet.json?station,time,wvht,dpd,mwd,wspd,wd,wtmp&station=%2246225%22&time>=${new Date(Date.now()-12*3600000).toISOString()}&orderByMax(%22time%22)`;
-    const r = await fetch(url);
-    if (r.ok) {
-      const d = await r.json();
-      if(d.table&&d.table.rows&&d.table.rows.length>0) {
-        const h=d.table.columnNames, row=d.table.rows[0];
-        const get=n=>{const i=h.indexOf(n);return i>=0?row[i]:null;};
-        parseBuoyRow(get);
-        srcStatus.ndbc='ok';
-        D.buoyId='46225';
-        return;
-      }
-    }
-  } catch(e) {}
 }
 
 function parseBuoyRow(get) {
@@ -1000,7 +1019,7 @@ async function fetchAllData() {
 
   // Update footer with active buoy
   const loc = LOCATIONS[currentLocation];
-  const buoyLabel = D.buoyId ? `Buoy: ${D.buoyId}` : `Buoy: ${loc.buoys[0]} (pending)`;
+  const buoyLabel = D.buoyId ? `Buoy: ${D.buoyName||D.buoyId} (${D.buoySource||'NDBC'})` : `Buoy: connecting...`;
   document.getElementById('stationFooter').textContent = `Station: ${loc.name} (${loc.tideStation}) · ${buoyLabel}`;
 
   updateDisplay();
@@ -1045,11 +1064,12 @@ function updateDisplay() {
   const windLabel = D.windSpeedMph!==undefined ? `${D.windSpeedMph} mph ${({none:'Calm',offshore:'Offshore',sideshore:'Side-shore',onshore:'Onshore'}[D.windDir]||'')}` : 'Unavailable';
   setVal('windVal', windLabel, windSrc, D.buoyWind?'buoy':'');
 
+  const buoySrc = D.buoySource || 'BUOY';
   const swellLabel = D.swellFt ? `${D.swellFt} ft @ ${D.swellPeriod||'?'}s` : 'Unavailable';
-  setVal('swellVal', swellLabel, 'BUOY', 'buoy');
+  setVal('swellVal', swellLabel, buoySrc, 'buoy');
   const swellDirLabels={south:'South',sw:'Southwest',west:'West',nw:'Northwest',north:'North'};
-  setVal('swellDirVal', D.swellDir ? `${swellDirLabels[D.swellDir]}${D.swellDirDeg?' ('+Math.round(D.swellDirDeg)+'°)':''}` : 'Unavailable', 'BUOY', 'buoy');
-  setVal('swellPeriodVal', D.swellPeriod ? `${D.swellPeriod}s dominant${D.avgPeriod?' / '+D.avgPeriod+'s avg':''}` : 'Unavailable', 'BUOY', 'buoy');
+  setVal('swellDirVal', D.swellDir ? `${swellDirLabels[D.swellDir]}${D.swellDirDeg?' ('+Math.round(D.swellDirDeg)+'°)':''}` : 'Unavailable', buoySrc, 'buoy');
+  setVal('swellPeriodVal', D.swellPeriod ? `${D.swellPeriod}s dominant${D.avgPeriod?' / '+D.avgPeriod+'s avg':''}` : 'Unavailable', buoySrc, 'buoy');
   setVal('waveEnergyVal', D.waveEnergy ? `${Math.round(D.waveEnergy)} ft²·s` : '--', 'CALC');
   const rainLabels={none:'None (0 in)',trace:'Trace (<0.1 in)',light:'Light (0.1-0.5 in)',moderate:'Moderate (0.5-1 in)',heavy:'Heavy (>1 in)'};
   setVal('rainfallVal', D.rainfall ? rainLabels[D.rainfall] : 'Unavailable', 'NWS');
