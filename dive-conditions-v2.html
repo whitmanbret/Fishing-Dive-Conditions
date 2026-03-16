@@ -281,7 +281,7 @@
     <!-- THREE SCORE GAUGES -->
     <div class="scores-grid">
       <div class="score-gauge">
-        <div class="gauge-label" style="color:var(--fish-color)">Fish Bite Score</div>
+        <div class="gauge-label" style="color:var(--fish-color)">Fish Probability</div>
         <div class="gauge-ring-wrap">
           <svg viewBox="0 0 120 70"><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="fishArc" style="stroke:var(--fish-color)"/></svg>
           <div class="gauge-ring-score" id="fishScore" style="color:var(--text-muted)">--</div>
@@ -295,6 +295,7 @@
           <div class="gauge-ring-score" id="vizScore" style="color:var(--text-muted)">--</div>
         </div>
         <div class="gauge-rating rating-none" id="vizRating">--</div>
+        <div id="vizFeetLabel" style="font-size:11px;color:var(--text-secondary);margin-top:2px;">--</div>
       </div>
       <div class="score-gauge spear-gauge">
         <div class="gauge-label" style="color:var(--spear-color)">Spearfishing Opportunity</div>
@@ -345,9 +346,9 @@
         <span style="font-size:10px; color:var(--text-muted)">Based on current trends</span>
       </div>
       <div class="predictor-grid">
-        <div class="predictor-day"><div class="predictor-day-label">Today</div><div class="predictor-scores"><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">Bite</div><div class="predictor-mini-score" id="pred0Fish">--</div></div><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred0Viz">--</div></div></div><div class="predictor-spear" id="pred0Spear" style="color:var(--text-muted)">--</div><div class="predictor-rating" id="pred0Rating">--</div><div class="predictor-trend" id="pred0Trend"></div></div>
-        <div class="predictor-day"><div class="predictor-day-label">Tomorrow</div><div class="predictor-scores"><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">Bite</div><div class="predictor-mini-score" id="pred1Fish">--</div></div><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred1Viz">--</div></div></div><div class="predictor-spear" id="pred1Spear" style="color:var(--text-muted)">--</div><div class="predictor-rating" id="pred1Rating">--</div><div class="predictor-trend" id="pred1Trend"></div></div>
-        <div class="predictor-day"><div class="predictor-day-label" id="pred2Label">Day After</div><div class="predictor-scores"><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">Bite</div><div class="predictor-mini-score" id="pred2Fish">--</div></div><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred2Viz">--</div></div></div><div class="predictor-spear" id="pred2Spear" style="color:var(--text-muted)">--</div><div class="predictor-rating" id="pred2Rating">--</div><div class="predictor-trend" id="pred2Trend"></div></div>
+        <div class="predictor-day"><div class="predictor-day-label">Today</div><div class="predictor-scores"><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">FISH</div><div class="predictor-mini-score" id="pred0Fish">--</div></div><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred0Viz">--</div></div></div><div class="predictor-spear" id="pred0Spear" style="color:var(--text-muted)">--</div><div class="predictor-rating" id="pred0Rating">--</div><div class="predictor-trend" id="pred0Trend"></div></div>
+        <div class="predictor-day"><div class="predictor-day-label">Tomorrow</div><div class="predictor-scores"><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">FISH</div><div class="predictor-mini-score" id="pred1Fish">--</div></div><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred1Viz">--</div></div></div><div class="predictor-spear" id="pred1Spear" style="color:var(--text-muted)">--</div><div class="predictor-rating" id="pred1Rating">--</div><div class="predictor-trend" id="pred1Trend"></div></div>
+        <div class="predictor-day"><div class="predictor-day-label" id="pred2Label">Day After</div><div class="predictor-scores"><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">FISH</div><div class="predictor-mini-score" id="pred2Fish">--</div></div><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred2Viz">--</div></div></div><div class="predictor-spear" id="pred2Spear" style="color:var(--text-muted)">--</div><div class="predictor-rating" id="pred2Rating">--</div><div class="predictor-trend" id="pred2Trend"></div></div>
       </div>
       <div class="predictor-details" id="predictorDetails">Uses NWS forecast, NOAA tides, buoy data, satellite imagery, and CPFV baselines.</div>
     </section>
@@ -364,14 +365,14 @@
         <div class="source-item"><span>NWS — Wind, rainfall, forecast</span><span class="source-status" id="srcNws">--</span></div>
         <div class="source-item"><span>NCEI ERDDAP — SST (OISST)</span><span class="source-status" id="srcSst">--</span></div>
         <div class="source-item"><span>NCEI ERDDAP — Chlorophyll (Climo)</span><span class="source-status" id="srcChl">--</span></div>
-        <div class="source-item"><span>ERDDAP — Upwelling Index</span><span class="source-status" id="srcUpwell">--</span></div>
+        <div class="source-item"><span>NOAA PFEL — Upwelling Index</span><span class="source-status" id="srcUpwell">--</span></div>
         <div class="source-item"><span>CDFW CPFV Logbooks — Seasonal baselines</span><span class="source-status source-ok">LOCAL</span></div>
         <div class="source-item"><span>Calculated — Moon, pressure, current, energy</span><span class="source-status source-ok">CALC</span></div>
       </div>
     </section>
 
     <div class="breakdown-footer">
-      Fish Bite: 0–10 · Dive Visibility: 0–10 · Spearfishing: 0.6F + 0.4V<br>
+      Fish Probability: 0–10 · Dive Visibility: 0–10 · Spearfishing: 0.6F + 0.4V<br>
       Data: <a href="https://tidesandcurrents.noaa.gov" target="_blank">NOAA CO-OPS</a> ·
       <a href="https://cdip.ucsd.edu" target="_blank">CDIP/UCSD</a> ·
       <a href="https://weather.gov" target="_blank">NWS</a> ·
@@ -873,14 +874,24 @@ async function fetchRainfall() {
   } catch(e) {}
 }
 
-// --- ERDDAP: Upwelling Index ---
+// --- NOAA PFEL Upwelling Index (33N 119W — closest to San Diego) ---
+// Uses JSONP to bypass CORS on oceanview.pfeg.noaa.gov
 async function fetchUpwelling() {
   try {
-    const now=new Date(), ago=new Date(now.getTime()-10*86400000);
-    const r=await fetch(`https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdUI336hr.json?time,upwelling_index&time>=${ago.toISOString()}`);
-    const d=await r.json();
-    if(d.table&&d.table.rows&&d.table.rows.length>0) {
-      const rows=d.table.rows; D.upwellingIndex=rows[rows.length-1][1];
+    // Data lags ~2 weeks; look back 30 days to always find data
+    const ago=new Date(Date.now()-30*86400000);
+    const cbName = '_upwell_' + Date.now();
+    const url = `https://oceanview.pfeg.noaa.gov/erddap/tabledap/erdUI336hr.json?time,upwelling_index&time%3E=${ago.toISOString()}&.jsonp=${cbName}`;
+    const data = await new Promise((resolve, reject) => {
+      window[cbName] = d => { resolve(d); delete window[cbName]; };
+      const s = document.createElement('script');
+      s.src = url;
+      s.onerror = () => { delete window[cbName]; reject(new Error('JSONP failed')); };
+      document.head.appendChild(s);
+      setTimeout(() => { delete window[cbName]; reject(new Error('JSONP timeout')); }, 10000);
+    });
+    if(data.table&&data.table.rows&&data.table.rows.length>0) {
+      const rows=data.table.rows; D.upwellingIndex=rows[rows.length-1][1];
       let recentStrong=false, activeNow=false;
       for(const row of rows) {
         const daysAgo=(new Date()-new Date(row[0]))/86400000;
@@ -1048,7 +1059,9 @@ function updateDisplay() {
   const curStr=D.currentStrength ? `${D.currentStrength.toFixed(1)} kts ${(D.currentDir||'').toUpperCase()}` : 'Est. from tide';
   setVal('currentVal', curStr, 'EST');
   const upLabels={strong_recent:'Strong (2-5 days ago)',moderate_recent:'Moderate (recent)',active_now:'Active Now',weak:'Weak / None'};
-  setVal('upwellingVal', D.upwelling ? upLabels[D.upwelling] : 'Unavailable', 'ERDDAP');
+  let upText = D.upwelling ? upLabels[D.upwelling] : 'Unavailable';
+  if(D.upwellingIndex!==undefined) upText += ` (${Math.round(D.upwellingIndex)})`;
+  setVal('upwellingVal', upText, 'PFEL');
 
   // Chlorophyll for fish bite
   const chlLabel = D.chlorophyll!==undefined ? `${D.chlorophyll} mg/m³ (${chlProductivity(D.chlorophyll)})` : 'Unavailable';
@@ -1102,6 +1115,9 @@ function updateDisplay() {
     } else vizEst='5–12 ft (est.)';
   }
   setVal('estVizVal', vizEst, 'EST');
+  // Update the gauge subtitle with visibility in feet
+  const vizFeetEl = document.getElementById('vizFeetLabel');
+  if (vizFeetEl) vizFeetEl.textContent = vizEst !== '--' ? `Est. ${vizEst}` : '--';
 }
 
 function chlProductivity(c) {
