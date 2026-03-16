@@ -1708,8 +1708,7 @@ function calcBestDiveWindow(periods, dayTideHiLo, dayIdx) {
   if (bestStart + 2 < hourScores.length && hourScores[bestStart + 2].score >= hourScores[bestStart + 1].score * 0.8) {
     endIdx = bestStart + 2;
   }
-  const sun = getSunTimes(hourScores[bestStart].time);
-  const endHour = Math.min(hourScores[endIdx].hour + 1, sun.sunset);
+  const endHour = Math.min(hourScores[endIdx].hour + 1, latestHour);
 
   const formatHour = h => {
     if (h === 0 || h === 24) return '12am';
