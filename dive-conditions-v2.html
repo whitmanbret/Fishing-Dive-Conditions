@@ -603,7 +603,7 @@ const SCORE = {
     bottom: v => ({rock:10,kelp:9,sand:5,mud:3,silt:2}[v]||5),
   },
   wsb: {
-    tip: 'WSB prefer calm, cool water (58–64°F) in kelp beds. Hunt by sound — quiet conditions critical. Peak Apr–Jun.',
+    tip: 'WSB prefer calm, cool water (58–64°F) in kelp beds. Hunt by sound — quiet conditions critical. Best on spring tides (new & full moon). Peak Apr–Jun.',
     waterTemp: f => { if(f>=60&&f<64) return 10; if(f>=58&&f<60) return 8; if(f>=64&&f<67) return 7; if(f>=56&&f<58) return 5; if(f>=67&&f<69) return 4; if(f>=55) return 3; return 2; },
     sst: f => { if(f>=60&&f<64) return 10; if(f>=58&&f<60) return 8; if(f>=64&&f<67) return 7; if(f>=56&&f<58) return 5; if(f>=67&&f<69) return 4; if(f>=55) return 3; return 2; },
     tempTrend: v => ({warming_fast:5,warming:7,stable:9,cooling:6,cooling_fast:3}[v]||5),
@@ -611,7 +611,7 @@ const SCORE = {
     current: k => { if(k>=0.1&&k<=0.4) return 10; if(k<0.1) return 7; if(k<=0.7) return 6; if(k<=1.0) return 3; return 1; },
     upwelling: v => ({strong_recent:7,moderate_recent:6,active_now:4,weak:8}[v]||5),
     chlFish: c => { if(c>=1&&c<=3) return 10; if(c>=0.5&&c<1) return 7; if(c>3&&c<=5) return 6; if(c<0.5) return 4; return 3; },
-    moonPhase: v => ({new:10,full:5,quarter:7,between:6}[v]||5),
+    moonPhase: v => ({new:10,full:9,quarter:4,between:5}[v]||5), // spring tides (new+full) = strongest flow through kelp = best WSB bite; neap tides (quarter) = weak
     reports: null, pressure: null,
     wind: (spd,dir) => {
       let ds = ({none:10,offshore:8,sideshore:5,onshore:2}[dir]||5);
