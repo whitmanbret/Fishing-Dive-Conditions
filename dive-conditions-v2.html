@@ -1564,16 +1564,45 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
 }
 
 // =========================================================================
+// SUNRISE / SUNSET for San Diego (~32.85°N, -117.27°W)
+// =========================================================================
+function getSunTimes(date) {
+  const lat = 32.85, lon = -117.27;
+  const rad = Math.PI / 180;
+  const dayOfYear = Math.floor((date - new Date(date.getFullYear(),0,0)) / 86400000);
+  const decl = -23.45 * Math.cos(rad * 360/365 * (dayOfYear + 10));
+  const ha = Math.acos(
+    (Math.cos(90.833 * rad) - Math.sin(lat * rad) * Math.sin(decl * rad)) /
+    (Math.cos(lat * rad) * Math.cos(decl * rad))
+  ) / rad;
+  // Solar noon in hours UTC
+  const B = 360/365 * (dayOfYear - 81);
+  const EoT = 9.87 * Math.sin(2*B*rad) - 7.53 * Math.cos(B*rad) - 1.5 * Math.sin(B*rad);
+  const solarNoon = 12 - lon/15 - EoT/60; // UTC hours
+  const offset = -7; // Pacific Daylight Time (Mar-Nov for San Diego)
+  const sunrise = Math.round(solarNoon - ha/15 + offset); // local hour
+  const sunset = Math.round(solarNoon + ha/15 + offset);  // local hour
+  return { sunrise: Math.max(5, sunrise), sunset: Math.min(20, sunset) };
+}
+
+// =========================================================================
 // BEST DIVE WINDOW CALCULATOR
 // =========================================================================
 function calcBestDiveWindow(periods, dayTideHiLo, dayIdx) {
   if (!periods || periods.length < 3) return null;
 
-  // Score each daylight hour (5am - 8pm) for dive quality
+  // Get actual sunrise/sunset for this day
+  const dayDate = periods[0].date;
+  const sun = getSunTimes(dayDate);
+  // Usable light: sunrise to sunset (no suggesting dark hours)
+  const earliestHour = sun.sunrise;
+  const latestHour = sun.sunset;
+
+  // Score each daylight hour for dive quality
   const hourScores = [];
   for (const p of periods) {
     const h = p.date.getHours();
-    if (h < 5 || h > 20) continue; // only daylight hours
+    if (h < earliestHour || h >= latestHour) continue; // only during daylight
 
     const windMatch = (p.windSpeed || '').match(/(\d+)/);
     const wind = windMatch ? parseInt(windMatch[1]) : 5;
@@ -1632,8 +1661,8 @@ function calcBestDiveWindow(periods, dayTideHiLo, dayIdx) {
 
     // Time-of-day bonus: early morning and late afternoon often best
     let timeBonus = 0;
-    if (h >= 5 && h <= 8) timeBonus = 1.5; // dawn patrol
-    else if (h >= 16 && h <= 18) timeBonus = 1; // evening bite
+    if (h >= earliestHour && h <= earliestHour + 3) timeBonus = 1.5; // dawn patrol
+    else if (h >= latestHour - 3 && h < latestHour) timeBonus = 1; // evening bite
     else if (h >= 11 && h <= 14) timeBonus = -0.5; // midday often windy
 
     // Precip penalty
@@ -1674,12 +1703,13 @@ function calcBestDiveWindow(periods, dayTideHiLo, dayIdx) {
   }
 
   const startHour = hourScores[bestStart].hour;
-  // Determine window end (2-3 hours)
+  // Determine window end (2-3 hours), clamped to sunset
   let endIdx = bestStart + 1;
   if (bestStart + 2 < hourScores.length && hourScores[bestStart + 2].score >= hourScores[bestStart + 1].score * 0.8) {
     endIdx = bestStart + 2;
   }
-  const endHour = hourScores[endIdx].hour + 1;
+  const sun = getSunTimes(hourScores[bestStart].time);
+  const endHour = Math.min(hourScores[endIdx].hour + 1, sun.sunset);
 
   const formatHour = h => {
     if (h === 0 || h === 24) return '12am';
