@@ -1502,14 +1502,28 @@ function getTimeSlots(periods) {
       if (diff < bestDiff) { bestDiff = diff; best = p; }
     }
     if (best) {
+      // Parse wind speed — NWS gives "8 mph" or "8 to 12 mph"
       const windMatch = (best.windSpeed || '').match(/(\d+)/);
-      const windGustMatch = (best.windSpeed || '').match(/to\s+(\d+)/);
+      const windRangeMatch = (best.windSpeed || '').match(/(\d+)\s+to\s+(\d+)/);
+      // NWS provides windGust as a separate object {value: N, unitCode: "..."} or null
+      let gustVal = null;
+      if (best.windGust && best.windGust.value) {
+        gustVal = Math.round(best.windGust.value * 2.237); // m/s to mph if unitCode is m/s
+        if (best.windGust.unitCode && best.windGust.unitCode.includes('km_h')) {
+          gustVal = Math.round(best.windGust.value * 0.621371);
+        } else if (best.windGust.unitCode && best.windGust.unitCode.includes('mi_h')) {
+          gustVal = Math.round(best.windGust.value);
+        }
+      } else if (windRangeMatch) {
+        // Fallback: "8 to 12 mph" — treat higher number as gust-like
+        gustVal = parseInt(windRangeMatch[2]);
+      }
       slots.push({
         label: labels[i],
         timeLabel: timeLabels[i],
         temp: best.temperature,
         windSpeed: windMatch ? parseInt(windMatch[1]) : 0,
-        windGust: windGustMatch ? parseInt(windGustMatch[1]) : null,
+        windGust: gustVal,
         windDir: best.windDirection || '',
         shortForecast: best.shortForecast || '',
         precip: best.probabilityOfPrecipitation ? best.probabilityOfPrecipitation.value : 0,
@@ -1886,8 +1900,10 @@ function buildWindPanel(slots) {
     html += '<div class="forecast-slot-row">';
     html += `<div><span class="slot-time">${slot.timeLabel}</span></div>`;
     html += `<div class="slot-wind-wrap"><div class="slot-wind-bar-container"><div class="slot-wind-bar" style="height:${barPct}%;background:${windColor}"></div></div><div class="slot-wind-val">${slot.windSpeed}<span style="font-size:10px;color:var(--text-muted)">mph</span></div></div>`;
-    html += `<div class="slot-wind-wrap">${slot.windGust ? `<div class="slot-wind-bar-container"><div class="slot-wind-bar" style="height:${gustPct}%;background:${windColor};opacity:0.6"></div></div><div class="slot-wind-val">${slot.windGust}<span style="font-size:10px;color:var(--text-muted)">mph</span></div>` : '<div style="color:var(--text-muted);font-size:11px">—</div>'}</div>`;
-    html += `<div><div class="slot-wind-dir-label">${slot.windDir}</div></div>`;
+    html += `<div class="slot-wind-wrap">${slot.windGust ? `<div class="slot-wind-bar-container"><div class="slot-wind-bar" style="height:${gustPct}%;background:${windColor};opacity:0.6"></div></div><div class="slot-wind-val">${slot.windGust}<span style="font-size:10px;color:var(--text-muted)">mph</span></div>` : '<div style="color:var(--text-muted);font-size:11px">None</div>'}</div>`;
+    const windType = getWindType(slot.windDir);
+    const windTypeColor = windType === 'offshore' ? 'var(--excellent)' : windType === 'onshore' ? 'var(--poor)' : 'var(--text-secondary)';
+    html += `<div><div class="slot-wind-dir-label" style="font-size:13px;font-weight:700">${slot.windDir || 'Calm'}</div><div style="font-size:9px;color:${windTypeColor};font-weight:600">${windType || ''}</div></div>`;
     html += '</div>';
   }
 
