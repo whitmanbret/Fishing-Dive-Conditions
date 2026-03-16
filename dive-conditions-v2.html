@@ -1206,19 +1206,42 @@ function updateDisplay() {
 
   let vizEst='--';
   if(D.waveEnergy!==undefined||D.rainfall) {
-    if(D.rainfall==='heavy') vizEst='< 4 ft';
-    else if(D.rainfall==='moderate') vizEst='4–10 ft';
-    else if(D.waveEnergy!==undefined) {
-      let base;
-      if(D.waveEnergy<=20) base='25–40 ft';
-      else if(D.waveEnergy<=50) base='15–25 ft';
-      else if(D.waveEnergy<=100) base='8–15 ft';
-      else if(D.waveEnergy<=200) base='4–8 ft';
-      else base='< 4 ft';
-      if(D.chlorophyll>3) vizEst=base+' (green water)';
-      else vizEst=base;
+    // Location-aware visibility: kelp and shelter significantly improve viz
+    const locShelter = loc.shelter || 'low';
+    const locKelp = loc.kelpDensity || 'none';
+    // Shelter multiplier: high kelp beds like Point Loma dampen surge
+    let shelterMult = 1.0;
+    if (locKelp === 'high') shelterMult += 0.45;      // thick kelp = major protection
+    else if (locKelp === 'moderate') shelterMult += 0.25;
+    if (locShelter === 'high') shelterMult += 0.3;
+    else if (locShelter === 'moderate') shelterMult += 0.15;
+
+    if(D.rainfall==='heavy') {
+      const lo = Math.max(1, Math.round(2 * shelterMult));
+      const hi = Math.max(lo+1, Math.round(5 * shelterMult));
+      vizEst=`${lo}–${hi} ft`;
+    } else if(D.rainfall==='moderate') {
+      const lo = Math.max(2, Math.round(4 * shelterMult));
+      const hi = Math.max(lo+1, Math.round(10 * shelterMult));
+      vizEst=`${lo}–${hi} ft`;
+    } else if(D.waveEnergy!==undefined) {
+      let lo, hi;
+      if(D.waveEnergy<=20) { lo=25; hi=40; }
+      else if(D.waveEnergy<=50) { lo=15; hi=25; }
+      else if(D.waveEnergy<=100) { lo=8; hi=15; }
+      else if(D.waveEnergy<=200) { lo=4; hi=8; }
+      else { lo=2; hi=4; }
+      // Apply shelter multiplier
+      lo = Math.max(2, Math.round(lo * shelterMult));
+      hi = Math.max(lo+1, Math.round(hi * shelterMult));
+      // Chlorophyll penalty (green water reduces viz)
+      if(D.chlorophyll>3) { lo = Math.max(1, lo-3); hi = Math.max(lo+1, hi-2); vizEst=`${lo}–${hi} ft (green water)`; }
+      else if(D.chlorophyll>1) { lo = Math.max(1, lo-1); hi = Math.max(lo+1, hi-1); vizEst=`${lo}–${hi} ft`; }
+      else vizEst=`${lo}–${hi} ft`;
     } else if(D.rainfall==='none'||D.rainfall==='trace') {
-      vizEst='10–20 ft (est.)';
+      const lo = Math.round(10 * shelterMult);
+      const hi = Math.round(20 * shelterMult);
+      vizEst=`${lo}–${hi} ft (est.)`;
     } else vizEst='5–12 ft (est.)';
   }
   setVal('estVizVal', vizEst, 'EST');
@@ -1258,50 +1281,110 @@ function toggleSources() {
 }
 
 // =========================================================================
-// SCORE CALCULATOR
+// SCORE CALCULATOR — WEIGHTED by real-world impact
 // =========================================================================
-function recalculate() {
-  const fishScores=[];
-  score('waterTempScore', D.waterTemp, getScorer('waterTemp'), fishScores);
-  score('sstScore', D.sstF, getScorer('sst'), fishScores);
-  score('tempTrendScore', D.tempTrend, getScorer('tempTrend'), fishScores);
-  score('tideStateScore', D.tideState, getScorer('tideState'), fishScores);
-  score('currentScore', D.currentStrength, getScorer('current'), fishScores);
-  score('upwellingScore', D.upwelling, getScorer('upwelling'), fishScores);
-  score('chlFishScore', D.chlorophyll, getScorer('chlFish'), fishScores);
-  score('moonPhaseScore', D.moon.category, getScorer('moonPhase'), fishScores);
-  score('reportsScore', D.reportsScore, getScorer('reports'), fishScores);
-  score('pressureScore', D.pressure, getScorer('pressure'), fishScores);
+// Fish Probability weights — based on actual impact on fish activity
+const FISH_WEIGHTS = {
+  waterTemp:  0.25,  // #1 — fish are cold-blooded, temp is THE trigger
+  tideState:  0.20,  // #2 — tidal movement drives bait, feeding windows
+  reports:    0.15,  // #3 — CPFV catch data = actual fish presence
+  upwelling:  0.12,  // #4 — nutrients → bait → predators (2-5 day lag)
+  chlFish:    0.08,  // #5 — chlorophyll = productivity proxy
+  tempTrend:  0.07,  // #6 — warming trends bring pelagics inshore
+  moonPhase:  0.05,  // #7 — minor but measurable effect on feeding
+  current:    0.04,  // #8 — moderate current = feeding, too much = bad
+  pressure:   0.02,  // #9 — barometric changes, subtle effect
+  sst:        0.02,  // #10 — satellite SST (confirms buoy, low weight to avoid double-counting)
+};
 
-  const vizScores=[];
+// Dive Visibility weights — based on actual impact on underwater viz
+const VIZ_WEIGHTS = {
+  waveEnergy:  0.28, // #1 — surge stirs bottom sediment, THE viz killer
+  rainfall:    0.20, // #2 — runoff destroys viz for 2-4 days
+  wind:        0.18, // #3 — surface chop + onshore pushes dirty water in
+  chlViz:      0.12, // #4 — phytoplankton = green water = reduced viz
+  swellPeriod: 0.08, // #5 — long period = less turbulence at depth
+  swellDir:    0.05, // #6 — determines exposure at each location
+  bottom:      0.05, // #7 — kelp/rock hold viz better than sand/mud
+  swellSize:   0.04, // #8 — partially captured by waveEnergy already
+};
+
+function recalculate() {
+  // --- Fish Probability (weighted) ---
+  const fishEntries = [];
+  scoreW('waterTempScore', D.waterTemp, getScorer('waterTemp'), 'waterTemp', fishEntries);
+  scoreW('sstScore', D.sstF, getScorer('sst'), 'sst', fishEntries);
+  scoreW('tempTrendScore', D.tempTrend, getScorer('tempTrend'), 'tempTrend', fishEntries);
+  scoreW('tideStateScore', D.tideState, getScorer('tideState'), 'tideState', fishEntries);
+  scoreW('currentScore', D.currentStrength, getScorer('current'), 'current', fishEntries);
+  scoreW('upwellingScore', D.upwelling, getScorer('upwelling'), 'upwelling', fishEntries);
+  scoreW('chlFishScore', D.chlorophyll, getScorer('chlFish'), 'chlFish', fishEntries);
+  scoreW('moonPhaseScore', D.moon.category, getScorer('moonPhase'), 'moonPhase', fishEntries);
+  scoreW('reportsScore', D.reportsScore, getScorer('reports'), 'reports', fishEntries);
+  scoreW('pressureScore', D.pressure, getScorer('pressure'), 'pressure', fishEntries);
+
+  // --- Dive Visibility (weighted) ---
+  const vizEntries = [];
   if(D.windSpeedMph!==undefined&&D.windDir) {
     const ws=getScorer('wind')(D.windSpeedMph, D.windDir);
-    setScore('windScore',ws); vizScores.push(ws);
+    setScore('windScore',ws); vizEntries.push({score:ws, key:'wind'});
   } else { setScore('windScore',null); }
-  score('swellScore', D.swellFt, getScorer('swellSize'), vizScores);
-  score('swellDirScore', D.swellDir, getScorer('swellDir'), vizScores);
-  score('swellPeriodScore', D.swellPeriod, getScorer('swellPeriod'), vizScores);
-  score('waveEnergyScore', D.waveEnergy, getScorer('waveEnergy'), vizScores);
-  score('rainfallScore', D.rainfall, getScorer('rainfall'), vizScores);
-  score('chlVizScore', D.chlorophyll, getScorer('chlViz'), vizScores);
-  score('bottomScore', D.bottom, getScorer('bottom'), vizScores);
+  scoreW('swellScore', D.swellFt, getScorer('swellSize'), 'swellSize', vizEntries);
+  scoreW('swellDirScore', D.swellDir, getScorer('swellDir'), 'swellDir', vizEntries);
+  scoreW('swellPeriodScore', D.swellPeriod, getScorer('swellPeriod'), 'swellPeriod', vizEntries);
+  scoreW('waveEnergyScore', D.waveEnergy, getScorer('waveEnergy'), 'waveEnergy', vizEntries);
+  scoreW('rainfallScore', D.rainfall, getScorer('rainfall'), 'rainfall', vizEntries);
+  scoreW('chlVizScore', D.chlorophyll, getScorer('chlViz'), 'chlViz', vizEntries);
+  scoreW('bottomScore', D.bottom, getScorer('bottom'), 'bottom', vizEntries);
 
   if(D.waveEnergy) { const s=getScorer('waveEnergy')(D.waveEnergy); setScore('estVizScore',s); }
   else setScore('estVizScore',null);
 
-  const fishAvg = fishScores.length>=3 ? fishScores.reduce((a,b)=>a+b,0)/fishScores.length : null;
-  const vizAvg = vizScores.length>=2 ? vizScores.reduce((a,b)=>a+b,0)/vizScores.length : null;
+  // Compute weighted averages (re-normalize weights for available factors)
+  const fishAvg = weightedAvg(fishEntries, FISH_WEIGHTS);
+  const vizAvg = weightedAvg(vizEntries, VIZ_WEIGHTS);
+
+  // Apply location shelter bonus for viz (kelp beds dampen surge)
+  const loc = LOCATIONS[currentLocation];
+  let vizFinal = vizAvg;
+  if (vizFinal !== null) {
+    // Kelp density bonus: high kelp = natural wave break
+    if (loc.kelpDensity === 'high') vizFinal = Math.min(10, vizFinal + 1.2);
+    else if (loc.kelpDensity === 'moderate') vizFinal = Math.min(10, vizFinal + 0.6);
+    // Shelter bonus: protected locations hold viz better
+    if (loc.shelter === 'high') vizFinal = Math.min(10, vizFinal + 0.5);
+    else if (loc.shelter === 'moderate') vizFinal = Math.min(10, vizFinal + 0.3);
+  }
+
   let spearAvg = null;
-  if(fishAvg!==null&&vizAvg!==null) spearAvg=0.6*fishAvg+0.4*vizAvg;
+  if(fishAvg!==null&&vizFinal!==null) spearAvg=0.6*fishAvg+0.4*vizFinal;
   else if(fishAvg!==null) spearAvg=fishAvg;
-  else if(vizAvg!==null) spearAvg=vizAvg;
+  else if(vizFinal!==null) spearAvg=vizFinal;
 
   updateGauge('fish',fishAvg,'var(--fish-color)');
-  updateGauge('viz',vizAvg,'var(--viz-color)');
+  updateGauge('viz',vizFinal,'var(--viz-color)');
   updateGauge('spear',spearAvg,'var(--spear-color)');
-  updateInsight(fishAvg,vizAvg);
+  updateInsight(fishAvg,vizFinal);
 
-  D.fishAvg=fishAvg; D.vizAvg=vizAvg; D.spearAvg=spearAvg;
+  D.fishAvg=fishAvg; D.vizAvg=vizFinal; D.spearAvg=spearAvg;
+}
+
+function weightedAvg(entries, weights) {
+  if (entries.length < 2) return null;
+  let totalWeight = 0, totalScore = 0;
+  for (const e of entries) {
+    const w = weights[e.key] || 0.05; // fallback weight for unmapped factors
+    totalWeight += w;
+    totalScore += e.score * w;
+  }
+  return totalWeight > 0 ? totalScore / totalWeight : null;
+}
+
+function scoreW(elId, value, scorer, key, arr) {
+  if(value===undefined||value===null) { setScore(elId,null); return; }
+  const s = typeof scorer==='function' ? scorer(value) : (scorer||5);
+  setScore(elId,s);
+  if(s!==null) arr.push({score:s, key:key});
 }
 
 function score(elId, value, scorer, arr) {
@@ -1535,56 +1618,62 @@ function getTimeSlots(periods) {
 }
 
 function calcSlotForecastScores(slot, dayIdx) {
-  // Use current conditions as base, adjust per-slot wind/precip/time
+  // Use current weighted conditions as base, adjust per-slot
   const baseFish = D.fishAvg || 5;
   const baseViz = D.vizAvg || 5;
 
-  // Wind adjustment for THIS slot
+  // --- VISIBILITY adjustments (wind is the biggest forecast variable) ---
   let windAdj = 0;
   const w = slot.windSpeed;
-  if (w <= 4) windAdj = 0.8;        // glassy
-  else if (w <= 7) windAdj = 0.3;   // light
+  // Wind speed impact (weighted 18% of viz — the main thing that changes slot-to-slot)
+  if (w <= 4) windAdj = 1.0;        // glassy — significant viz boost
+  else if (w <= 7) windAdj = 0.4;   // light breeze
   else if (w <= 10) windAdj = 0;    // moderate
-  else if (w <= 15) windAdj = -0.6; // choppy
-  else windAdj = -1.2;              // rough
+  else if (w <= 15) windAdj = -0.8; // choppy — noticeable viz drop
+  else windAdj = -1.5;              // rough — major viz hit
 
-  // Wind direction bonus/penalty
+  // Wind direction (onshore pushes dirty water in)
   const dir = (slot.windDir || '').toUpperCase();
-  if (['E','NE','ENE','ESE'].includes(dir)) windAdj += 0.4;  // offshore = cleaner
-  else if (['W','NW','WNW','WSW','SW'].includes(dir)) windAdj -= 0.3; // onshore
+  if (['E','NE','ENE','ESE'].includes(dir)) windAdj += 0.5;  // offshore = cleaner water
+  else if (['W','NW','WNW','WSW','SW'].includes(dir)) windAdj -= 0.4; // onshore = worse
 
-  // Precip penalty
+  // Rainfall/precip penalty (weighted 20% — second biggest viz factor)
   const precip = slot.precip || 0;
   let precipAdj = 0;
-  if (precip > 70) precipAdj = -1.5;
-  else if (precip > 50) precipAdj = -0.8;
-  else if (precip > 30) precipAdj = -0.3;
+  if (precip > 70) precipAdj = -2.0;     // heavy rain = runoff disaster
+  else if (precip > 50) precipAdj = -1.2;
+  else if (precip > 30) precipAdj = -0.5;
+  else if (precip > 10) precipAdj = -0.2;
 
-  // Time-of-day fishing bonus (dawn/dusk bite)
+  // --- FISH adjustments ---
+  // Tide-based time-of-day bonus (incoming tide is THE fish trigger)
   let timeAdj = 0;
-  if (slot.timeLabel === '7am') timeAdj = 0.5;      // dawn patrol
-  else if (slot.timeLabel === '6pm') timeAdj = 0.3;  // evening bite
-  else timeAdj = -0.2;                               // midday often slower
+  if (slot.timeLabel === '7am') timeAdj = 0.6;      // dawn patrol — best bite window
+  else if (slot.timeLabel === '6pm') timeAdj = 0.4;  // evening bite — second best
+  else timeAdj = -0.2;                               // midday — typically slowest
 
-  // Temp trend / upwelling / species adjustments (grow with future days)
+  // Species-specific environmental trends (grow with future days)
   let fishAdj = 0;
   if (D.tempDiff !== undefined) {
     const rate = D.tempDiff / 3;
-    if (currentSpecies === 'yellowtail') fishAdj += rate > 0 ? 0.2 * dayIdx : -0.3 * dayIdx;
-    else if (currentSpecies === 'wsb') fishAdj += rate < 0 ? 0.1 * dayIdx : -0.15 * dayIdx;
-    else fishAdj += rate > 0 ? 0.15 * dayIdx : -0.2 * dayIdx;
+    if (currentSpecies === 'yellowtail') fishAdj += rate > 0 ? 0.25 * dayIdx : -0.35 * dayIdx;
+    else if (currentSpecies === 'wsb') fishAdj += rate < 0 ? 0.15 * dayIdx : -0.2 * dayIdx;
+    else fishAdj += rate > 0 ? 0.2 * dayIdx : -0.25 * dayIdx;
   }
-  if (D.upwellingIndex > 100) fishAdj += 0.15;
-  if (D.chlorophyll > 2) fishAdj += 0.1;
+  // Upwelling lagged effect — benefits build 2-5 days out
+  if (D.upwellingIndex > 150) fishAdj += 0.2 * Math.min(dayIdx, 3);
+  else if (D.upwellingIndex > 100) fishAdj += 0.1 * Math.min(dayIdx, 3);
+  // Chlorophyll = bait concentration
+  if (D.chlorophyll > 2) fishAdj += 0.15;
 
-  // Weekend fishing pressure
+  // Weekend fishing pressure (more boats = spookier fish)
   const targetDate = new Date();
   targetDate.setDate(targetDate.getDate() + dayIdx);
   const dow = targetDate.getDay();
   if (dow === 0 || dow === 6) fishAdj -= 0.3;
 
-  // Future-day uncertainty decay
-  const decay = 1 - (dayIdx * 0.04);
+  // Future-day uncertainty decay (confidence drops ~5% per day)
+  const decay = 1 - (dayIdx * 0.05);
 
   const clamp = v => Math.max(1, Math.min(10, v));
   const fish = clamp((baseFish + fishAdj + timeAdj) * decay);
@@ -1614,6 +1703,16 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
     else if (vizScore >= 4) { baseLo = 6; baseHi = 12; }
     else { baseLo = 2; baseHi = 6; }
   }
+
+  // Location shelter/kelp multiplier (same as current-day estimation)
+  const loc = LOCATIONS[currentLocation];
+  let shelterMult = 1.0;
+  if (loc.kelpDensity === 'high') shelterMult += 0.45;
+  else if (loc.kelpDensity === 'moderate') shelterMult += 0.25;
+  if (loc.shelter === 'high') shelterMult += 0.3;
+  else if (loc.shelter === 'moderate') shelterMult += 0.15;
+  baseLo = Math.round(baseLo * shelterMult);
+  baseHi = Math.round(baseHi * shelterMult);
 
   // Adjust for forecast wind (higher wind = more chop = worse viz)
   let windMult = 1;
