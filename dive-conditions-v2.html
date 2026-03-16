@@ -1312,14 +1312,34 @@ function updateGauge(name,score,defaultColor) {
 function updateInsight(fish,viz) {
   const el=document.getElementById('insightText');
   if(fish===null&&viz===null) { el.textContent=SCORE[currentSpecies].tip; return; }
+
+  let msg = '';
   if(fish!==null&&viz!==null) {
     const diff=fish-viz;
-    if(diff>2) el.textContent='Fish are biting but visibility is limited — classic productive water. Predators feed in slightly dirty water near bait.';
-    else if(diff<-2) el.textContent='Crystal clear water but fish activity is low. Great for reef exploring, less ideal for pelagic hunting.';
-    else if(fish>=7&&viz>=7) el.textContent='Both fish activity and visibility are strong. Prime spearfishing window — get in the water.';
-    else if(fish<4&&viz<4) el.textContent='Poor conditions across the board. Consider waiting for improvement.';
-    else el.textContent=SCORE[currentSpecies].tip;
-  } else el.textContent=SCORE[currentSpecies].tip;
+    if(diff>2) msg='Fish are biting but visibility is limited — classic productive water. Predators feed in slightly dirty water near bait.';
+    else if(diff<-2) msg='Crystal clear water but fish activity is low. Great for reef exploring, less ideal for pelagic hunting.';
+    else if(fish>=7&&viz>=7) msg='Both fish activity and visibility are strong. Prime spearfishing window — get in the water.';
+    else if(fish<4&&viz<4) msg='Poor conditions across the board. Consider waiting for improvement.';
+    else msg=SCORE[currentSpecies].tip;
+  } else msg=SCORE[currentSpecies].tip;
+
+  // Add best dive window for today if available
+  if (D.hourlyForecast && D.hourlyForecast.length > 0 && D.multiDayTideHiLo) {
+    const now = new Date();
+    const todayPeriods = D.hourlyForecast.filter(p => {
+      const pd = new Date(p.startTime);
+      return pd.getDate() === now.getDate() && pd.getMonth() === now.getMonth();
+    }).map(p => ({...p, date: new Date(p.startTime)}));
+    const todayTides = D.multiDayTideHiLo.filter(t =>
+      t.time.getDate() === now.getDate() && t.time.getMonth() === now.getMonth()
+    );
+    const bestWindow = calcBestDiveWindow(todayPeriods, todayTides, 0);
+    if (bestWindow) {
+      msg += ` 🎯 Best time today: ${bestWindow.range} (${bestWindow.reason}).`;
+    }
+  }
+
+  el.textContent = msg;
 }
 
 // =========================================================================
@@ -1373,11 +1393,18 @@ function buildForecast() {
       return td.getDate() === d.getDate() && td.getMonth() === d.getMonth();
     });
 
+    // Calculate best dive window for this day
+    const bestWindow = calcBestDiveWindow(periods, dayTides, idx);
+
     const openClass = idx === 0 ? ' open' : '';
 
     html += `<div class="forecast-day${openClass}" id="fDay${idx}">`;
     html += `<div class="forecast-day-summary" onclick="toggleForecastDay(${idx})">`;
-    html += `<div class="forecast-day-label">${dayLabel}</div>`;
+    html += `<div class="forecast-day-label">${dayLabel}`;
+    if (bestWindow) {
+      html += `<div style="font-size:10px;font-weight:600;color:var(--spear-color);margin-top:2px">🎯 ${bestWindow.range}</div>`;
+    }
+    html += `</div>`;
     html += `<div class="forecast-day-scores">`;
     html += `<div class="forecast-mini"><div class="forecast-mini-label" style="color:var(--fish-color)">Fish</div><div class="forecast-mini-val" style="color:${getRating(dayScores.fish).color}">${dayScores.fish.toFixed(1)}</div></div>`;
     html += `<div class="forecast-mini"><div class="forecast-mini-label" style="color:var(--viz-color)">Viz</div><div class="forecast-mini-val" style="color:${getRating(dayScores.viz).color}">${dayScores.viz.toFixed(1)}</div><div style="font-size:9px;color:var(--text-secondary);margin-top:1px">${dayScores.vizFeet}</div></div>`;
@@ -1388,6 +1415,15 @@ function buildForecast() {
 
     // Detail panel
     html += `<div class="forecast-day-detail">`;
+
+    // Best time recommendation banner
+    if (bestWindow) {
+      html += `<div style="background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.3);border-radius:8px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px">`;
+      html += `<span style="font-size:18px">🎯</span>`;
+      html += `<div><div style="font-size:12px;font-weight:700;color:var(--spear-color)">Best Time: ${bestWindow.range}</div>`;
+      html += `<div style="font-size:10px;color:var(--text-secondary)">${bestWindow.reason}</div></div>`;
+      html += `</div>`;
+    }
 
     // Surf/Swell slots
     html += buildSurfPanel(slots);
@@ -1525,6 +1561,148 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
   if (D.chlorophyll > 3) { baseLo = Math.max(1, baseLo - 3); baseHi = Math.max(baseLo + 1, baseHi - 3); }
 
   return `${baseLo}–${baseHi} ft`;
+}
+
+// =========================================================================
+// BEST DIVE WINDOW CALCULATOR
+// =========================================================================
+function calcBestDiveWindow(periods, dayTideHiLo, dayIdx) {
+  if (!periods || periods.length < 3) return null;
+
+  // Score each daylight hour (5am - 8pm) for dive quality
+  const hourScores = [];
+  for (const p of periods) {
+    const h = p.date.getHours();
+    if (h < 5 || h > 20) continue; // only daylight hours
+
+    const windMatch = (p.windSpeed || '').match(/(\d+)/);
+    const wind = windMatch ? parseInt(windMatch[1]) : 5;
+    const precip = p.probabilityOfPrecipitation ? (p.probabilityOfPrecipitation.value || 0) : 0;
+
+    // Wind score (0-10): calm is best
+    let windScore;
+    if (wind <= 3) windScore = 10;
+    else if (wind <= 5) windScore = 9;
+    else if (wind <= 8) windScore = 7;
+    else if (wind <= 12) windScore = 5;
+    else if (wind <= 16) windScore = 3;
+    else windScore = 1;
+
+    // Wind direction score
+    const dir = (p.windDirection || '').toUpperCase();
+    let dirScore = 5;
+    if (['E','NE','ENE','ESE'].includes(dir)) dirScore = 10; // offshore
+    else if (['SE','S','SSE'].includes(dir)) dirScore = 7;
+    else if (['N','NNW','NNE'].includes(dir)) dirScore = 6;
+    else if (['W','NW','WNW','WSW','SW'].includes(dir)) dirScore = 3; // onshore
+
+    // Tide score: incoming tide and slack high are best
+    let tideScore = 6; // default
+    if (dayTideHiLo && dayTideHiLo.length > 0) {
+      // Find which tide phase this hour falls in
+      let prevTide = null, nextTide = null;
+      for (let i = 0; i < dayTideHiLo.length; i++) {
+        if (dayTideHiLo[i].time > p.date) {
+          nextTide = dayTideHiLo[i];
+          prevTide = i > 0 ? dayTideHiLo[i-1] : null;
+          break;
+        }
+        prevTide = dayTideHiLo[i];
+      }
+      if (prevTide && nextTide) {
+        const isIncoming = prevTide.type === 'L' && nextTide.type === 'H';
+        const isOutgoing = prevTide.type === 'H' && nextTide.type === 'L';
+        const progress = (p.date - prevTide.time) / (nextTide.time - prevTide.time);
+
+        if (isIncoming) {
+          // Incoming tide is great - best in middle
+          if (progress >= 0.3 && progress <= 0.8) tideScore = 10;
+          else tideScore = 8;
+        } else if (isOutgoing) {
+          // Early outgoing ok, late outgoing worse
+          if (progress <= 0.3) tideScore = 7; // just past high
+          else if (progress <= 0.6) tideScore = 5;
+          else tideScore = 3;
+        }
+        // Near slack high
+        if (nextTide.type === 'H' && progress > 0.85) tideScore = 9;
+        if (prevTide.type === 'H' && progress < 0.15) tideScore = 9;
+      }
+    }
+
+    // Time-of-day bonus: early morning and late afternoon often best
+    let timeBonus = 0;
+    if (h >= 5 && h <= 8) timeBonus = 1.5; // dawn patrol
+    else if (h >= 16 && h <= 18) timeBonus = 1; // evening bite
+    else if (h >= 11 && h <= 14) timeBonus = -0.5; // midday often windy
+
+    // Precip penalty
+    let precipPenalty = 0;
+    if (precip > 50) precipPenalty = -3;
+    else if (precip > 30) precipPenalty = -1;
+
+    // Composite score: weight wind heavily for viz, tide for fish
+    const composite = (windScore * 0.35) + (dirScore * 0.15) + (tideScore * 0.3) + (timeBonus) + (precipPenalty) + 2; // base offset
+    hourScores.push({
+      hour: h,
+      score: Math.max(0, Math.min(10, composite)),
+      wind, tideScore, windScore,
+      time: p.date,
+    });
+  }
+
+  if (hourScores.length === 0) return null;
+
+  // Find the best contiguous 2-3 hour window
+  let bestStart = 0, bestScore = 0;
+  for (let i = 0; i < hourScores.length - 1; i++) {
+    // 2-hour window score
+    let windowScore = hourScores[i].score + hourScores[i+1].score;
+    let windowLen = 2;
+    if (i + 2 < hourScores.length) {
+      const threeScore = windowScore + hourScores[i+2].score;
+      if (threeScore / 3 >= windowScore / 2) {
+        windowScore = threeScore;
+        windowLen = 3;
+      }
+    }
+    const avg = windowScore / windowLen;
+    if (avg > bestScore) {
+      bestScore = avg;
+      bestStart = i;
+    }
+  }
+
+  const startHour = hourScores[bestStart].hour;
+  // Determine window end (2-3 hours)
+  let endIdx = bestStart + 1;
+  if (bestStart + 2 < hourScores.length && hourScores[bestStart + 2].score >= hourScores[bestStart + 1].score * 0.8) {
+    endIdx = bestStart + 2;
+  }
+  const endHour = hourScores[endIdx].hour + 1;
+
+  const formatHour = h => {
+    if (h === 0 || h === 24) return '12am';
+    if (h === 12) return '12pm';
+    return h < 12 ? `${h}am` : `${h-12}pm`;
+  };
+
+  // Why this window is best
+  const reasons = [];
+  const bestSlot = hourScores[bestStart];
+  if (bestSlot.wind <= 5) reasons.push('light wind');
+  else if (bestSlot.wind <= 8) reasons.push('moderate wind');
+  if (bestSlot.tideScore >= 8) reasons.push('favorable tide');
+  if (startHour <= 8) reasons.push('dawn patrol');
+  else if (startHour >= 16) reasons.push('evening window');
+
+  return {
+    start: formatHour(startHour),
+    end: formatHour(endHour),
+    score: bestScore,
+    reason: reasons.length > 0 ? reasons.join(', ') : 'best overall conditions',
+    range: `${formatHour(startHour)}–${formatHour(endHour)}`,
+  };
 }
 
 function getWindType(dir) {
