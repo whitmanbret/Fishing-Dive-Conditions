@@ -1380,7 +1380,7 @@ function buildForecast() {
     html += `<div class="forecast-day-label">${dayLabel}</div>`;
     html += `<div class="forecast-day-scores">`;
     html += `<div class="forecast-mini"><div class="forecast-mini-label" style="color:var(--fish-color)">Fish</div><div class="forecast-mini-val" style="color:${getRating(dayScores.fish).color}">${dayScores.fish.toFixed(1)}</div></div>`;
-    html += `<div class="forecast-mini"><div class="forecast-mini-label" style="color:var(--viz-color)">Viz</div><div class="forecast-mini-val" style="color:${getRating(dayScores.viz).color}">${dayScores.viz.toFixed(1)}</div></div>`;
+    html += `<div class="forecast-mini"><div class="forecast-mini-label" style="color:var(--viz-color)">Viz</div><div class="forecast-mini-val" style="color:${getRating(dayScores.viz).color}">${dayScores.viz.toFixed(1)}</div><div style="font-size:9px;color:var(--text-secondary);margin-top:1px">${dayScores.vizFeet}</div></div>`;
     html += `<div class="forecast-spear-mini"><div class="forecast-spear-val" style="color:${getRating(dayScores.spear).color}">${dayScores.spear.toFixed(1)}</div><div class="forecast-spear-rating" style="color:${getRating(dayScores.spear).color}">${getRating(dayScores.spear).label}</div></div>`;
     html += `</div>`;
     html += `<span class="forecast-chevron">▼</span>`;
@@ -1478,7 +1478,53 @@ function calcDayForecastScores(slots, dayIdx) {
   const viz = clamp(baseViz + windAdj + precipAdj);
   const spear = 0.6 * fish + 0.4 * viz;
 
-  return { fish, viz, spear };
+  // Estimate visibility in feet based on forecast viz score + conditions
+  let vizFeet = estimateVizFeet(viz, avgWind, maxPrecip, dayIdx);
+
+  return { fish, viz, spear, vizFeet };
+}
+
+function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
+  // Base visibility from current wave energy
+  let baseLo, baseHi;
+  const we = D.waveEnergy;
+  if (we !== undefined) {
+    if (we <= 20) { baseLo = 25; baseHi = 40; }
+    else if (we <= 50) { baseLo = 15; baseHi = 25; }
+    else if (we <= 100) { baseLo = 8; baseHi = 15; }
+    else if (we <= 200) { baseLo = 4; baseHi = 8; }
+    else { baseLo = 1; baseHi = 4; }
+  } else {
+    // Fallback: estimate from viz score
+    if (vizScore >= 8) { baseLo = 20; baseHi = 35; }
+    else if (vizScore >= 6) { baseLo = 12; baseHi = 20; }
+    else if (vizScore >= 4) { baseLo = 6; baseHi = 12; }
+    else { baseLo = 2; baseHi = 6; }
+  }
+
+  // Adjust for forecast wind (higher wind = more chop = worse viz)
+  let windMult = 1;
+  if (avgWind > 15) windMult = 0.5;
+  else if (avgWind > 10) windMult = 0.7;
+  else if (avgWind > 7) windMult = 0.85;
+  else if (avgWind < 4) windMult = 1.15;
+
+  // Adjust for rain probability
+  let rainMult = 1;
+  if (precipPct > 70) rainMult = 0.4;
+  else if (precipPct > 50) rainMult = 0.6;
+  else if (precipPct > 30) rainMult = 0.8;
+
+  // Future days drift slightly toward average (less certainty)
+  const dayDecay = 1 - (dayIdx * 0.05);
+
+  baseLo = Math.max(1, Math.round(baseLo * windMult * rainMult * dayDecay));
+  baseHi = Math.max(baseLo + 1, Math.round(baseHi * windMult * rainMult * dayDecay));
+
+  // Chlorophyll adjustment
+  if (D.chlorophyll > 3) { baseLo = Math.max(1, baseLo - 3); baseHi = Math.max(baseLo + 1, baseHi - 3); }
+
+  return `${baseLo}–${baseHi} ft`;
 }
 
 function getWindType(dir) {
