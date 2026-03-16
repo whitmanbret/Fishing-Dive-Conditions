@@ -1284,18 +1284,47 @@ function toggleSources() {
 // SCORE CALCULATOR — WEIGHTED by real-world impact
 // =========================================================================
 // Fish Probability weights — based on actual impact on fish activity
-const FISH_WEIGHTS = {
-  waterTemp:  0.25,  // #1 — fish are cold-blooded, temp is THE trigger
-  tideState:  0.20,  // #2 — tidal movement drives bait, feeding windows
-  reports:    0.15,  // #3 — CPFV catch data = actual fish presence
-  upwelling:  0.12,  // #4 — nutrients → bait → predators (2-5 day lag)
-  chlFish:    0.08,  // #5 — chlorophyll = productivity proxy
-  tempTrend:  0.07,  // #6 — warming trends bring pelagics inshore
-  moonPhase:  0.05,  // #7 — minor but measurable effect on feeding
-  current:    0.04,  // #8 — moderate current = feeding, too much = bad
-  pressure:   0.02,  // #9 — barometric changes, subtle effect
-  sst:        0.02,  // #10 — satellite SST (confirms buoy, low weight to avoid double-counting)
+// Species-specific fish factor weights — each species responds differently
+const FISH_WEIGHTS_BY_SPECIES = {
+  general: {
+    waterTemp:  0.24,  // #1 — fish are cold-blooded, temp is THE trigger
+    tideState:  0.20,  // #2 — tidal movement drives bait, feeding windows
+    reports:    0.15,  // #3 — CPFV catch data = actual fish presence
+    upwelling:  0.12,  // #4 — nutrients → bait → predators (2-5 day lag)
+    chlFish:    0.08,  // #5 — chlorophyll = productivity proxy
+    tempTrend:  0.07,  // #6 — warming trends bring pelagics inshore
+    moonPhase:  0.05,  // #7 — minor but measurable for mixed species
+    current:    0.04,  // #8 — moderate current = feeding
+    pressure:   0.03,  // #9 — barometric changes
+    sst:        0.02,  // #10 — satellite SST confirmation
+  },
+  yellowtail: {
+    waterTemp:  0.26,  // #1 — YT are extremely temp-sensitive (65-72°F zone)
+    tideState:  0.16,  // #3 — important but less than WSB; YT patrol regardless
+    reports:    0.14,  // #4 — seasonal presence from CPFV data
+    upwelling:  0.14,  // #2 — YT follow bait driven by upwelling productivity
+    tempTrend:  0.10,  // #5 — warming trend = YT push inshore from Coronados
+    chlFish:    0.06,  // #6 — bait concentration matters
+    current:    0.06,  // #7 — YT love moderate current (0.3-0.8 kts) for ambush
+    moonPhase:  0.03,  // #9 — minor for YT, they're visual daytime feeders
+    pressure:   0.03,  // #8 — dropping pressure can trigger bite
+    sst:        0.02,  // #10 — confirmation
+  },
+  wsb: {
+    waterTemp:  0.18,  // #3 — important but WSB tolerate wider range (58-67°F)
+    tideState:  0.22,  // #1 — THE trigger for WSB; incoming tide = feeding frenzy
+    moonPhase:  0.18,  // #2 — HUGE for WSB; new moon = dark nights = aggressive hunting
+    reports:    0.12,  // #4 — seasonal presence
+    upwelling:  0.06,  // #7 — less critical; WSB don't chase bait balls like YT
+    chlFish:    0.04,  // #8 — minor for WSB
+    tempTrend:  0.06,  // #6 — stable preferred, not chasing warm water
+    current:    0.08,  // #5 — WSB need light current (0.1-0.4 kts) to hunt by sound
+    pressure:   0.04,  // #9 — WSB respond to pressure drops
+    sst:        0.02,  // #10 — confirmation
+  },
 };
+// Active weights reference (set during recalculate)
+let FISH_WEIGHTS = FISH_WEIGHTS_BY_SPECIES.general;
 
 // Dive Visibility weights — based on actual impact on underwater viz
 const VIZ_WEIGHTS = {
@@ -1310,6 +1339,9 @@ const VIZ_WEIGHTS = {
 };
 
 function recalculate() {
+  // Set species-specific weights
+  FISH_WEIGHTS = FISH_WEIGHTS_BY_SPECIES[currentSpecies] || FISH_WEIGHTS_BY_SPECIES.general;
+
   // --- Fish Probability (weighted) ---
   const fishEntries = [];
   scoreW('waterTempScore', D.waterTemp, getScorer('waterTemp'), 'waterTemp', fishEntries);
