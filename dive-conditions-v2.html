@@ -79,6 +79,7 @@
     .species-card.active[data-species="general"] { border-color: var(--accent); background: rgba(44,140,255,0.1); color: var(--accent); }
     .species-card.active[data-species="yellowtail"] { border-color: var(--fish-color); background: rgba(240,160,48,0.1); color: var(--fish-color); }
     .species-card.active[data-species="wsb"] { border-color: #90b8e0; background: rgba(144,184,224,0.1); color: #90b8e0; }
+    .species-card.active[data-species="halibut"] { border-color: #8b6d47; background: rgba(139,109,71,0.1); color: #d4a574; }
     .species-label { font-size: 12px; }
     .species-name { font-size: 10px; color: var(--text-muted); font-weight: 400; margin-top: 1px; }
 
@@ -386,6 +387,7 @@
           <option value="general">General (All Species)</option>
           <option value="yellowtail">Yellowtail (S. lalandi)</option>
           <option value="wsb">White Sea Bass (A. nobilis)</option>
+          <option value="halibut">Halibut (P. californicus)</option>
         </select>
       </div>
       <button class="refresh-btn" id="refreshBtn" onclick="fetchAllData()">Refresh</button>
@@ -409,6 +411,9 @@
       </div>
       <div class="species-card" data-species="wsb" onclick="selectSpecies('wsb')">
         <div class="species-label">White Sea Bass</div><div class="species-name">A. nobilis</div>
+      </div>
+      <div class="species-card" data-species="halibut" onclick="selectSpecies('halibut')">
+        <div class="species-label">Halibut</div><div class="species-name">P. californicus</div>
       </div>
     </div>
 
@@ -468,6 +473,7 @@
       <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="moonPhaseScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Reports</div><div class="factor-value" id="reportsVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="reportsScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Fish Pressure</div><div class="factor-value" id="pressureVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="pressureScore">-</div></div>
+      <div class="factor-row" id="grunionRow" style="display:none"><div class="factor-label">🐟 Grunion Run</div><div class="factor-value" id="grunionVal">--</div><div class="factor-score score-none" id="grunionScore">-</div></div>
     </section>
 
     <!-- DIVE VIZ FACTORS (read-only) -->
@@ -551,6 +557,14 @@ const CPFV = {
     peak_month: 5,
     index:          [2,3,6,8,9,10,7,5,4,3,2,1],
   },
+  halibut: {
+    // California halibut — sandy bottom feeders, peak Mar-Jun and Sep-Oct
+    // Grunion season (Mar-Sep) is THE feeding trigger for big halibut
+    catch_per_trip: [0.4, 0.6, 2.1, 3.8, 4.2, 3.5, 2.8, 2.2, 3.1, 2.4, 0.8, 0.3],
+    five_yr_avg:    [0.4, 0.6, 2.1, 3.8, 4.2, 3.5, 2.8, 2.2, 3.1, 2.4, 0.8, 0.3],
+    peak_month: 4, // May
+    index:          [2,2,6,9,10,8,7,6,8,6,3,1],
+  },
   general: {
     catch_per_trip: [4.2, 5.1, 8.3, 12.7, 18.4, 24.6, 28.1, 25.3, 19.8, 14.2, 7.6, 4.8],
     five_yr_avg:    [4.2, 5.1, 8.3, 12.7, 18.4, 24.6, 28.1, 25.3, 19.8, 14.2, 7.6, 4.8],
@@ -624,6 +638,33 @@ const SCORE = {
     waveEnergy: null, rainfall: null, chlViz: null,
     bottom: v => ({rock:7,kelp:10,sand:4,mud:3,silt:2}[v]||5),
   },
+  halibut: {
+    tip: 'Halibut hunt grunion on sandy beaches at night. Best 2-6 nights after new/full moons, Mar-Sep. Target sandy flats near surf line.',
+    // Halibut prefer slightly warmer sand-bottom water; 62-68°F is prime
+    waterTemp: f => { if(f>=62&&f<=68) return 10; if(f>=60&&f<62) return 8; if(f>68&&f<=71) return 7; if(f>=58&&f<60) return 5; if(f>71&&f<=74) return 4; if(f>=56) return 3; return 2; },
+    sst: f => { if(f>=62&&f<=68) return 10; if(f>=60&&f<62) return 8; if(f>68&&f<=71) return 7; if(f>=58&&f<60) return 5; if(f>71&&f<=74) return 4; if(f>=56) return 3; return 2; },
+    tempTrend: v => ({warming_fast:7,warming:8,stable:9,cooling:5,cooling_fast:3}[v]||5),
+    // Halibut key: incoming/high tide pushes grunion onto beach; outgoing = halibut ambush zone
+    tideState: v => ({incoming:9,high:10,outgoing:7,low:3}[v]||5),
+    current: k => { if(k<=0.2) return 9; if(k<=0.5) return 7; if(k<=0.8) return 5; if(k<=1.2) return 3; return 1; }, // halibut like calm water
+    upwelling: v => ({strong_recent:6,moderate_recent:7,active_now:5,weak:7}[v]||5), // less critical for halibut
+    chlFish: c => { if(c>=1&&c<=3) return 8; if(c>=0.5&&c<1) return 6; if(c>3) return 5; return 4; },
+    // Moon is THE trigger via grunion — but handled separately via grunion scorer
+    moonPhase: v => ({new:9,full:9,quarter:3,between:5}[v]||5), // spring tides = grunion runs
+    reports: null, pressure: null,
+    wind: (spd,dir) => {
+      // Halibut: calm conditions for night diving, offshore wind cleans up surf zone
+      let ds = ({none:10,offshore:9,sideshore:5,onshore:3}[dir]||5);
+      let ss; if(spd<=4) ss=10; else if(spd<=7) ss=8; else if(spd<=10) ss=5; else if(spd<=14) ss=3; else ss=1;
+      return (ds+ss)/2;
+    },
+    swellSize: ft => { if(ft<=1.5) return 10; if(ft<=2.5) return 9; if(ft<=4) return 6; if(ft<=6) return 3; return 1; },
+    swellDir: v => ({south:8,sw:6,west:5,nw:4,north:7}[v]||5),
+    swellPeriod: s => { if(s>=16) return 10; if(s>=12) return 8; if(s>=9) return 6; if(s>=7) return 4; return 2; },
+    waveEnergy: null, rainfall: null, chlViz: null,
+    // SAND is #1 for halibut — they bury in sand to ambush
+    bottom: v => ({sand:10,mud:6,silt:4,rock:3,kelp:4}[v]||5),
+  },
 };
 
 function getScorer(key) {
@@ -657,7 +698,74 @@ function getMoon(date) {
   const half=syn/2, dN=Math.min(age,syn-age), dF=Math.abs(age-half);
   let cat; if(dN<=3) cat='new'; else if(dF<=3) cat='full';
   else if((age>=6&&age<=10)||(age>=20.5&&age<=24)) cat='quarter'; else cat='between';
-  return {name,emoji,category:cat};
+  return {name,emoji,category:cat,age:age};
+}
+
+// =========================================================================
+// GRUNION RUN PREDICTOR — Halibut's #1 feeding trigger
+// Grunion spawn on beaches 2-6 nights after new & full moons, Mar-Sep
+// They ride high tides onto sand, making them easy prey for halibut
+// =========================================================================
+function getGrunionStatus(date) {
+  const month = date.getMonth(); // 0-indexed
+  // Grunion season: March (2) through September (8)
+  const inSeason = month >= 2 && month <= 8;
+  if (!inSeason) return { active: false, score: 1, label: 'Off season (Oct-Feb)', daysToRun: null };
+
+  const syn = 29.530588853;
+  const diff = (date.getTime() - new Date(Date.UTC(2000,0,6,18,14,0)).getTime()) / 86400000;
+  const age = ((diff % syn) + syn) % syn;
+
+  // Days since last new moon
+  const daysSinceNew = age;
+  // Days since last full moon
+  const half = syn / 2;
+  const daysSinceFull = age >= half ? age - half : age + half;
+
+  // Grunion run window: 2-6 days after new moon OR full moon
+  const daysAfterNew = daysSinceNew;
+  const daysAfterFull = age >= half ? age - half : null;
+
+  let runIntensity = 0; // 0-10
+  let label = '';
+  let daysToRun = null;
+
+  // Check if we're in a run window (2-6 days after new or full)
+  // Peak runs are nights 3-4 after the moon event
+  if (daysAfterNew >= 2 && daysAfterNew <= 6) {
+    // Days after new moon run
+    if (daysAfterNew >= 3 && daysAfterNew <= 4) runIntensity = 10; // peak
+    else if (daysAfterNew >= 2 && daysAfterNew <= 5) runIntensity = 8;
+    else runIntensity = 6;
+    label = `🐟 GRUNION RUN (night ${Math.round(daysAfterNew)} after new moon)`;
+  } else if (daysAfterFull !== null && daysAfterFull >= 2 && daysAfterFull <= 6) {
+    // Days after full moon run
+    if (daysAfterFull >= 3 && daysAfterFull <= 4) runIntensity = 10;
+    else if (daysAfterFull >= 2 && daysAfterFull <= 5) runIntensity = 8;
+    else runIntensity = 6;
+    label = `🐟 GRUNION RUN (night ${Math.round(daysAfterFull)} after full moon)`;
+  } else {
+    // Not in a run — calculate days until next run
+    let daysToNewRun = (2 - daysAfterNew + syn) % syn;
+    if (daysToNewRun < 0.5) daysToNewRun += syn; // already past, wait for next
+    let daysToFullRun = daysAfterFull !== null ? (2 - daysAfterFull + half) % half : 99;
+    if (daysAfterFull !== null && daysAfterFull < 2) daysToFullRun = 2 - daysAfterFull;
+    else if (daysAfterFull !== null && daysAfterFull > 6) {
+      // Wait for next new moon + 2 days
+      daysToFullRun = (syn - age) + 2;
+      const nextFullRun = (half - age + syn) % syn + 2;
+      daysToFullRun = Math.min(daysToFullRun, nextFullRun);
+    }
+    daysToRun = Math.max(1, Math.round(Math.min(daysToNewRun, daysToFullRun || 99)));
+    if (daysToRun <= 2) { runIntensity = 3; label = `Grunion run in ~${daysToRun} day${daysToRun>1?'s':''}`; }
+    else if (daysToRun <= 5) { runIntensity = 2; label = `Next grunion run in ~${daysToRun} days`; }
+    else { runIntensity = 1; label = `Next grunion run in ~${daysToRun} days`; }
+  }
+
+  // April & May are strongest grunion months — boost
+  if (month === 3 || month === 4) runIntensity = Math.min(10, runIntensity + 1);
+
+  return { active: runIntensity >= 6, score: runIntensity, label, daysToRun };
 }
 
 // =========================================================================
@@ -1182,6 +1290,17 @@ function updateDisplay() {
   setVal('reportsVal', getReportsLabel(currentSpecies, new Date().getMonth()), 'CPFV 5yr');
   setVal('pressureVal', getPressureLabel(D.pressure), 'CALC');
 
+  // Grunion run display — show only for halibut
+  const grunionRow = document.getElementById('grunionRow');
+  const grunion = getGrunionStatus(new Date());
+  if (currentSpecies === 'halibut') {
+    grunionRow.style.display = '';
+    setVal('grunionVal', grunion.label, 'CALC');
+    setScore('grunionScore', grunion.score);
+  } else {
+    grunionRow.style.display = 'none';
+  }
+
   const windSrc = D.buoyWind ? 'BUOY' : 'NWS';
   const windLabel = D.windSpeedMph!==undefined ? `${D.windSpeedMph} mph ${({none:'Calm',offshore:'Offshore',sideshore:'Side-shore',onshore:'Onshore'}[D.windDir]||'')}` : 'Unavailable';
   setVal('windVal', windLabel, windSrc, D.buoyWind?'buoy':'');
@@ -1313,7 +1432,7 @@ const FISH_WEIGHTS_BY_SPECIES = {
   wsb: {
     waterTemp:  0.18,  // #3 — important but WSB tolerate wider range (58-67°F)
     tideState:  0.22,  // #1 — THE trigger for WSB; incoming tide = feeding frenzy
-    moonPhase:  0.18,  // #2 — HUGE for WSB; new moon = dark nights = aggressive hunting
+    moonPhase:  0.18,  // #2 — HUGE for WSB; spring tides = strongest flow through kelp
     reports:    0.12,  // #4 — seasonal presence
     upwelling:  0.06,  // #7 — less critical; WSB don't chase bait balls like YT
     chlFish:    0.04,  // #8 — minor for WSB
@@ -1321,6 +1440,20 @@ const FISH_WEIGHTS_BY_SPECIES = {
     current:    0.08,  // #5 — WSB need light current (0.1-0.4 kts) to hunt by sound
     pressure:   0.04,  // #9 — WSB respond to pressure drops
     sst:        0.02,  // #10 — confirmation
+  },
+  halibut: {
+    grunion:    0.28,  // #1 — THE factor: grunion runs = halibut feeding frenzy on sand
+    tideState:  0.20,  // #2 — high/incoming tide pushes grunion onto beach, halibut follow
+    moonPhase:  0.14,  // #3 — spring tides trigger grunion runs (2-6 days after new/full)
+    waterTemp:  0.10,  // #4 — halibut tolerate wide range, less temp-sensitive
+    reports:    0.08,  // #5 — seasonal presence data
+    bottom:     0.06,  // extra weight — sand is essential for halibut (they bury to ambush)
+    current:    0.04,  // #6 — calm water preferred for sand hunting
+    upwelling:  0.03,  // minor
+    chlFish:    0.02,  // minor
+    tempTrend:  0.02,  // minor
+    pressure:   0.02,  // minor
+    sst:        0.01,  // confirmation only
   },
 };
 // Active weights reference (set during recalculate)
@@ -1354,6 +1487,13 @@ function recalculate() {
   scoreW('moonPhaseScore', D.moon.category, getScorer('moonPhase'), 'moonPhase', fishEntries);
   scoreW('reportsScore', D.reportsScore, getScorer('reports'), 'reports', fishEntries);
   scoreW('pressureScore', D.pressure, getScorer('pressure'), 'pressure', fishEntries);
+
+  // Grunion run factor — only affects halibut scoring (weight = 0 for other species)
+  const grunion = getGrunionStatus(new Date());
+  D.grunion = grunion;
+  if (currentSpecies === 'halibut') {
+    fishEntries.push({score: grunion.score, key: 'grunion'});
+  }
 
   // --- Dive Visibility (weighted) ---
   const vizEntries = [];
@@ -1462,6 +1602,15 @@ function updateInsight(fish,viz) {
     else if(fish<4&&viz<4) msg='Poor conditions across the board. Consider waiting for improvement.';
     else msg=SCORE[currentSpecies].tip;
   } else msg=SCORE[currentSpecies].tip;
+
+  // Halibut-specific grunion alert
+  if (currentSpecies === 'halibut' && D.grunion) {
+    if (D.grunion.active) {
+      msg = `🐟 GRUNION RUN ACTIVE — Prime halibut hunting tonight! Target sandy beaches near surf line around high tide. ${msg}`;
+    } else if (D.grunion.daysToRun && D.grunion.daysToRun <= 3) {
+      msg = `🐟 Grunion run starting in ~${D.grunion.daysToRun} day${D.grunion.daysToRun>1?'s':''}. Plan your halibut night dive! ${msg}`;
+    }
+  }
 
   // Add best dive window for today if available
   if (D.hourlyForecast && D.hourlyForecast.length > 0 && D.multiDayTideHiLo) {
@@ -1698,6 +1847,17 @@ function calcSlotForecastScores(slot, dayIdx) {
   // Chlorophyll = bait concentration
   if (D.chlorophyll > 2) fishAdj += 0.15;
 
+  // Halibut grunion run bonus — check for each forecast day
+  if (currentSpecies === 'halibut') {
+    const forecastDate = new Date();
+    forecastDate.setDate(forecastDate.getDate() + dayIdx);
+    const grunionForecast = getGrunionStatus(forecastDate);
+    if (grunionForecast.active) {
+      fishAdj += (grunionForecast.score / 10) * 1.5; // up to +1.5 during peak grunion
+      if (slot.timeLabel === '6pm') fishAdj += 0.8; // evening = approaching grunion time
+    }
+  }
+
   // Weekend fishing pressure (more boats = spookier fish)
   const targetDate = new Date();
   targetDate.setDate(targetDate.getDate() + dayIdx);
@@ -1798,6 +1958,43 @@ function getSunTimes(date) {
 // =========================================================================
 function calcBestDiveWindow(periods, dayTideHiLo, dayIdx) {
   if (!periods || periods.length < 3) return null;
+
+  // Halibut + grunion run: suggest nighttime dive near high tide
+  if (currentSpecies === 'halibut') {
+    const dayDate = periods[0].date;
+    const grunion = getGrunionStatus(dayDate);
+    if (grunion.active && dayTideHiLo && dayTideHiLo.length > 0) {
+      // Find evening/night high tide (after 6pm or before 6am)
+      const sun = getSunTimes(dayDate);
+      let bestNightTide = null;
+      for (const t of dayTideHiLo) {
+        if (t.type === 'H') {
+          const h = t.time.getHours();
+          // Night window: after sunset or before sunrise
+          if (h >= sun.sunset - 1 || h <= sun.sunrise + 1) {
+            bestNightTide = t;
+          }
+        }
+      }
+      if (bestNightTide) {
+        const h = bestNightTide.time.getHours();
+        const startH = Math.max(0, h - 1);
+        const endH = Math.min(23, h + 2);
+        const formatHour = h => { if (h === 0 || h === 24) return '12am'; if (h === 12) return '12pm'; return h < 12 ? `${h}am` : `${h-12}pm`; };
+        return {
+          start: formatHour(startH), end: formatHour(endH),
+          score: 9, reason: '🐟 grunion run + high tide — halibut feeding on beach',
+          range: `${formatHour(startH)}–${formatHour(endH)} (night dive)`,
+        };
+      }
+      // Fallback: suggest sunset for halibut during grunion
+      return {
+        start: `${sun.sunset-1}pm`, end: `${sun.sunset+1}pm`,
+        score: 8, reason: '🐟 grunion run tonight — hunt halibut at sunset/dusk',
+        range: `${sun.sunset-1 > 12 ? sun.sunset-13 : sun.sunset-1}pm–dark (night dive)`,
+      };
+    }
+  }
 
   // Get actual sunrise/sunset for this day
   const dayDate = periods[0].date;
@@ -2116,6 +2313,16 @@ function selectSpecies(species) {
   document.querySelectorAll('.species-card').forEach(c=>c.classList.toggle('active',c.dataset.species===species));
   D.reportsScore=getReportsScore(species,new Date().getMonth());
   setVal('reportsVal',getReportsLabel(species,new Date().getMonth()),'CPFV 5yr');
+  // Show/hide grunion row for halibut
+  const grunionRow = document.getElementById('grunionRow');
+  if (species === 'halibut') {
+    grunionRow.style.display = '';
+    const grunion = getGrunionStatus(new Date());
+    setVal('grunionVal', grunion.label, 'CALC');
+    setScore('grunionScore', grunion.score);
+  } else {
+    grunionRow.style.display = 'none';
+  }
   recalculate();
   buildForecast();
 }
