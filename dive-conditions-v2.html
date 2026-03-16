@@ -117,6 +117,139 @@
       font-style: italic; line-height: 1.5;
     }
 
+    /* ===== 5-DAY FORECAST (Surfline-style) ===== */
+    .forecast-section {
+      background: var(--bg-secondary); border-radius: 12px;
+      border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
+    }
+    .forecast-title {
+      padding: 12px 14px; font-size: 13px; font-weight: 700;
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .forecast-day {
+      border-bottom: 1px solid var(--border);
+    }
+    .forecast-day:last-child { border-bottom: none; }
+    .forecast-day-summary {
+      display: flex; align-items: center; padding: 10px 14px; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .forecast-day-summary:hover { background: rgba(44,140,255,0.04); }
+    .forecast-day-label {
+      font-size: 13px; font-weight: 600; min-width: 110px;
+    }
+    .forecast-day-scores {
+      flex: 1; display: flex; gap: 12px; justify-content: center; align-items: center;
+    }
+    .forecast-mini { text-align: center; }
+    .forecast-mini-label { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .forecast-mini-val { font-size: 18px; font-weight: 800; line-height: 1.2; }
+    .forecast-spear-mini { text-align: center; margin-left: 8px; }
+    .forecast-spear-val { font-size: 22px; font-weight: 800; line-height: 1; }
+    .forecast-spear-rating { font-size: 9px; font-weight: 600; text-transform: uppercase; }
+    .forecast-chevron {
+      font-size: 12px; color: var(--text-muted); transition: transform 0.2s; margin-left: 8px;
+    }
+    .forecast-day.open .forecast-chevron { transform: rotate(180deg); }
+    .forecast-day-detail {
+      display: none; padding: 0 14px 14px; animation: fadeIn 0.2s;
+    }
+    .forecast-day.open .forecast-day-detail { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Forecast data panels (surf, wind, tide) */
+    .forecast-panel {
+      background: var(--bg-card); border-radius: 10px; padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .forecast-panel:last-child { margin-bottom: 0; }
+    .forecast-panel-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px;
+    }
+    .forecast-panel-value {
+      font-size: 22px; font-weight: 800; line-height: 1;
+    }
+    .forecast-panel-sub {
+      font-size: 11px; color: var(--text-secondary); margin-top: 2px;
+    }
+
+    /* Forecast slots (Morning/Noon/Evening) */
+    .forecast-slots {
+      display: grid; grid-template-columns: auto 1fr 1fr 1fr; gap: 0;
+      margin-bottom: 10px; border-radius: 8px; overflow: hidden;
+      background: var(--bg-card);
+    }
+    .forecast-slot-header {
+      display: contents;
+    }
+    .forecast-slot-header > span {
+      padding: 6px 8px; font-size: 9px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--text-muted); background: rgba(0,0,0,0.2);
+      border-bottom: 1px solid var(--border); text-align: center;
+    }
+    .forecast-slot-row {
+      display: contents;
+    }
+    .forecast-slot-row > div {
+      padding: 8px; border-bottom: 1px solid rgba(30,53,88,0.5);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .forecast-slot-row:last-child > div { border-bottom: none; }
+    .slot-time {
+      font-size: 11px; font-weight: 600; color: var(--text-secondary);
+    }
+    .slot-surf-wrap { text-align: center; }
+    .slot-surf-bar-container {
+      height: 32px; width: 40px; margin: 0 auto 2px;
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .slot-surf-bar {
+      width: 26px; border-radius: 3px 3px 0 0;
+      background: linear-gradient(to top, #1a8a4a, #2ecc71);
+      transition: height 0.3s;
+    }
+    .slot-surf-val { font-size: 13px; font-weight: 700; }
+    .slot-swell-info { font-size: 10px; color: var(--text-secondary); }
+
+    /* Wind bars */
+    .slot-wind-wrap { text-align: center; }
+    .slot-wind-bar-container {
+      height: 32px; width: 40px; margin: 0 auto 2px;
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .slot-wind-bar {
+      width: 26px; border-radius: 3px 3px 0 0;
+      transition: height 0.3s;
+    }
+    .slot-wind-val { font-size: 13px; font-weight: 700; }
+    .slot-wind-dir-label { font-size: 10px; color: var(--text-secondary); font-weight: 600; }
+
+    /* Tide chart */
+    .forecast-tide-wrap {
+      background: var(--bg-card); border-radius: 10px; padding: 10px 12px;
+    }
+    .tide-chart-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px;
+    }
+    .tide-chart-svg { width: 100%; height: 60px; }
+    .tide-chart-svg .tide-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+    .tide-chart-svg .tide-fill { fill: rgba(44,140,255,0.15); stroke: none; }
+    .tide-chart-svg .tide-zero { stroke: rgba(255,255,255,0.1); stroke-width: 1; stroke-dasharray: 4; }
+    .tide-event-labels {
+      display: flex; justify-content: space-around; margin-top: 4px;
+      font-size: 10px; color: var(--text-secondary);
+    }
+    .tide-event { text-align: center; }
+    .tide-event-time { font-weight: 600; }
+    .tide-event-height { font-size: 9px; color: var(--text-muted); }
+
+    /* Swell direction arrows */
+    .swell-arrow { display: inline-block; transition: transform 0.3s; }
+
     /* Factor Display (read-only) */
     .factors-section {
       background: var(--bg-secondary); border-radius: 12px;
@@ -153,32 +286,6 @@
     .score-none { color: var(--text-muted); }
     .loading-pulse { animation: pulse 1.5s ease-in-out infinite; }
     @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
-
-    /* Predictor */
-    .predictor-section {
-      background: var(--bg-secondary); border-radius: 12px;
-      border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
-    }
-    .predictor-header {
-      padding: 12px 14px; font-size: 13px; font-weight: 700;
-      border-bottom: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .predictor-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; }
-    .predictor-day { text-align: center; padding: 14px 8px; border-right: 1px solid var(--border); }
-    .predictor-day:last-child { border-right: none; }
-    .predictor-day-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
-    .predictor-scores { display: flex; justify-content: center; gap: 12px; margin-bottom: 4px; }
-    .predictor-mini { text-align: center; }
-    .predictor-mini-label { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .predictor-mini-score { font-size: 20px; font-weight: 800; line-height: 1.2; }
-    .predictor-spear { font-size: 28px; font-weight: 800; line-height: 1; margin-top: 4px; }
-    .predictor-rating { font-size: 10px; font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .predictor-trend { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
-    .predictor-details { padding: 10px 14px; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border); line-height: 1.6; }
-    .trend-up { color: var(--excellent); }
-    .trend-down { color: var(--poor); }
-    .trend-stable { color: var(--text-secondary); }
 
     /* Data Sources Panel */
     .sources-panel {
@@ -218,8 +325,10 @@
       .spear-gauge .gauge-ring-score { font-size: 30px; }
       .species-card { padding: 8px 4px; font-size: 12px; }
       .controls { gap: 6px; }
-      .predictor-mini-score { font-size: 16px; }
-      .predictor-spear { font-size: 22px; }
+      .forecast-mini-val { font-size: 14px; }
+      .forecast-spear-val { font-size: 18px; }
+      .forecast-day-label { min-width: 80px; font-size: 12px; }
+      .forecast-slots { font-size: 11px; }
     }
   </style>
 </head>
@@ -310,6 +419,17 @@
 
     <div class="insight-text" id="insightText">Loading conditions...</div>
 
+    <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
+    <section class="forecast-section" id="forecastSection">
+      <div class="forecast-title">
+        <span>5-Day Forecast</span>
+        <span style="font-size:10px; color:var(--text-muted)">NWS · NOAA Tides · CDIP Swell</span>
+      </div>
+      <div id="forecastDays">
+        <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;" class="loading-pulse">Loading forecast data...</div>
+      </div>
+    </section>
+
     <!-- FISH BITE FACTORS (read-only) -->
     <section class="factors-section">
       <div class="category-header">Fish Bite Factors <span class="cat-tag cat-fish">BITE</span></div>
@@ -337,20 +457,6 @@
       <div class="factor-row"><div class="factor-label">Chlorophyll</div><div class="factor-value" id="chlVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="chlVizScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Bottom Type</div><div class="factor-value" id="bottomVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="bottomScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Est. Visibility</div><div class="factor-value" id="estVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="estVizScore">-</div></div>
-    </section>
-
-    <!-- 48-HOUR PREDICTOR -->
-    <section class="predictor-section">
-      <div class="predictor-header">
-        <span>48-Hour Predictor</span>
-        <span style="font-size:10px; color:var(--text-muted)">Based on current trends</span>
-      </div>
-      <div class="predictor-grid">
-        <div class="predictor-day"><div class="predictor-day-label">Today</div><div class="predictor-scores"><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">FISH</div><div class="predictor-mini-score" id="pred0Fish">--</div></div><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred0Viz">--</div></div></div><div class="predictor-spear" id="pred0Spear" style="color:var(--text-muted)">--</div><div class="predictor-rating" id="pred0Rating">--</div><div class="predictor-trend" id="pred0Trend"></div></div>
-        <div class="predictor-day"><div class="predictor-day-label">Tomorrow</div><div class="predictor-scores"><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">FISH</div><div class="predictor-mini-score" id="pred1Fish">--</div></div><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred1Viz">--</div></div></div><div class="predictor-spear" id="pred1Spear" style="color:var(--text-muted)">--</div><div class="predictor-rating" id="pred1Rating">--</div><div class="predictor-trend" id="pred1Trend"></div></div>
-        <div class="predictor-day"><div class="predictor-day-label" id="pred2Label">Day After</div><div class="predictor-scores"><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--fish-color)">FISH</div><div class="predictor-mini-score" id="pred2Fish">--</div></div><div class="predictor-mini"><div class="predictor-mini-label" style="color:var(--viz-color)">Viz</div><div class="predictor-mini-score" id="pred2Viz">--</div></div></div><div class="predictor-spear" id="pred2Spear" style="color:var(--text-muted)">--</div><div class="predictor-rating" id="pred2Rating">--</div><div class="predictor-trend" id="pred2Trend"></div></div>
-      </div>
-      <div class="predictor-details" id="predictorDetails">Uses NWS forecast, NOAA tides, buoy data, satellite imagery, and CPFV baselines.</div>
     </section>
 
     <!-- DATA SOURCES PANEL -->
@@ -406,27 +512,24 @@ let srcStatus = {}; // track data source status
 
 // =========================================================================
 // CPFV FISH COUNT DATA — San Diego half-day boats, 5-year avg (2021-2025)
-// catch_per_trip: average fish caught per boat trip that month
-// trips: average number of trips reported that month
-// Index 0=Jan, 11=Dec
 // =========================================================================
 const CPFV = {
   yellowtail: {
     catch_per_trip: [0.2, 0.3, 0.8, 2.1, 5.8, 12.4, 15.6, 13.2, 9.1, 4.7, 1.2, 0.4],
     five_yr_avg:    [0.2, 0.3, 0.8, 2.1, 5.8, 12.4, 15.6, 13.2, 9.1, 4.7, 1.2, 0.4],
-    peak_month: 6, // July
+    peak_month: 6,
     index:          [1,1,2,3,6,9,10,9,7,5,2,1],
   },
   wsb: {
     catch_per_trip: [0.3, 0.5, 1.4, 3.2, 5.1, 6.8, 4.2, 2.8, 1.9, 1.1, 0.4, 0.2],
     five_yr_avg:    [0.3, 0.5, 1.4, 3.2, 5.1, 6.8, 4.2, 2.8, 1.9, 1.1, 0.4, 0.2],
-    peak_month: 5, // June
+    peak_month: 5,
     index:          [2,3,6,8,9,10,7,5,4,3,2,1],
   },
   general: {
     catch_per_trip: [4.2, 5.1, 8.3, 12.7, 18.4, 24.6, 28.1, 25.3, 19.8, 14.2, 7.6, 4.8],
     five_yr_avg:    [4.2, 5.1, 8.3, 12.7, 18.4, 24.6, 28.1, 25.3, 19.8, 14.2, 7.6, 4.8],
-    peak_month: 6, // July
+    peak_month: 6,
     index:          [2,2,4,5,7,9,10,9,7,5,3,2],
   },
 };
@@ -445,7 +548,7 @@ const SCORE = {
     upwelling: v => ({strong_recent:9,moderate_recent:7,active_now:4,weak:5}[v]||5),
     chlFish: c => { if(c>=5) return 10; if(c>=2) return 8; if(c>=1) return 6; if(c>=0.5) return 4; return 2; },
     moonPhase: v => ({new:8,full:9,quarter:5,between:4}[v]||5),
-    reports: (v) => v, // score passed directly from getReportsScore()
+    reports: (v) => v,
     pressure: v => ({very_low:10,low:8,moderate:6,high:3,very_high:1}[v]||5),
     wind: (spd,dir) => {
       let ds = ({none:9,offshore:10,sideshore:6,onshore:2}[dir]||5);
@@ -542,7 +645,6 @@ function getReportsData(species, month) {
   const idx = data.index[month];
   const peakCatch = Math.max(...data.catch_per_trip);
   const pctOfPeak = Math.round((catchRate / peakCatch) * 100);
-  // Compare current month to avg — simulate "above/below average" reporting
   const ratio = avg > 0 ? catchRate / avg : 1;
   let trend;
   if(ratio >= 1.3) trend = 'well_above';
@@ -557,21 +659,13 @@ function getReportsLabel(species, month) {
   const r = getReportsData(species, month);
   const speciesName = species === 'yellowtail' ? 'YT' : species === 'wsb' ? 'WSB' : 'All';
   const catchStr = r.catchRate.toFixed(1);
-  const statusLabels = {
-    well_above: 'HOT',
-    above: 'Above Avg',
-    average: 'Average',
-    below: 'Below Avg',
-    well_below: 'Slow',
-  };
+  const statusLabels = { well_above: 'HOT', above: 'Above Avg', average: 'Average', below: 'Below Avg', well_below: 'Slow' };
   return `${speciesName}: ${catchStr}/trip (${statusLabels[r.trend]}) · ${r.pctOfPeak}% of peak`;
 }
 
 function getReportsScore(species, month) {
   const r = getReportsData(species, month);
-  // Score based on catch rate index AND whether it's above/below average
-  let base = r.idx; // 1-10 seasonal index
-  // Bonus/penalty for above/below 5-year average
+  let base = r.idx;
   const trendAdj = {well_above: 1, above: 0.5, average: 0, below: -0.5, well_below: -1};
   return Math.max(1, Math.min(10, base + (trendAdj[r.trend]||0)));
 }
@@ -593,7 +687,6 @@ function getPressureLabel(v) { return {very_low:'Very Low',low:'Low',moderate:'M
 async function fetchWaterTemp() {
   const loc = LOCATIONS[currentLocation];
   const stations = [loc.tideStation, '9410170', '9410230'].filter((v,i,a)=>a.indexOf(v)===i);
-  // Try date=latest first, then date=recent as fallback
   for (const dateParam of ['latest', 'recent']) {
     for (const station of stations) {
       try {
@@ -619,9 +712,8 @@ async function fetchTempTrend() {
       const r=await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(ago)}&end_date=${fmt(now)}&station=${station}&product=water_temperature&units=english&time_zone=lst_ldt&format=json`);
       const d=await r.json();
       if(d.data&&d.data.length>=12) {
-        // Sample every ~1hr from 6-min data (every 10th reading)
         const all=d.data.map(x=>parseFloat(x.v)).filter(v=>!isNaN(v));
-        const step=Math.max(1,Math.floor(all.length/72)); // ~72 hourly samples from 3 days
+        const step=Math.max(1,Math.floor(all.length/72));
         const vals=[]; for(let i=0;i<all.length;i+=step) vals.push(all[i]);
         if(vals.length>=12) {
           const earlyN=Math.min(6,Math.floor(vals.length/4));
@@ -691,7 +783,20 @@ async function fetchWind() {
   } catch(e) {}
 }
 
-// --- NWS: Wind Forecast ---
+// --- NWS: Hourly Forecast (5-day, for forecast section) ---
+async function fetchHourlyForecast() {
+  try {
+    const r=await fetch('https://api.weather.gov/gridpoints/SGX/55,17/forecast/hourly',{
+      headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
+    });
+    const d=await r.json();
+    if(d.properties&&d.properties.periods) {
+      D.hourlyForecast=d.properties.periods; // ~156 hours
+    }
+  } catch(e) {}
+}
+
+// --- NWS: Wind Forecast (legacy 12h periods) ---
 async function fetchWindForecast() {
   try {
     const r=await fetch('https://api.weather.gov/gridpoints/SGX/55,17/forecast',{
@@ -702,8 +807,32 @@ async function fetchWindForecast() {
   } catch(e) {}
 }
 
-// --- CDIP Station Mapping (CORS-enabled, primary source) ---
-// CDIP = Coastal Data Information Program (cdip.ucsd.edu)
+// --- NOAA CO-OPS: 5-Day Tide Predictions ---
+async function fetchMultiDayTides() {
+  try {
+    const now=new Date();
+    const end=new Date(now.getTime()+5*86400000);
+    const fmt=d=>`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    // Fetch hi/lo predictions for 5 days
+    const r=await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(now)}&end_date=${fmt(end)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`);
+    const d=await r.json();
+    if(d.predictions) {
+      D.multiDayTideHiLo=d.predictions.map(p=>({
+        time:new Date(p.t.replace(' ','T')), type:p.type, value:parseFloat(p.v)
+      }));
+    }
+    // Fetch hourly predictions for tide curve
+    const r2=await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(now)}&end_date=${fmt(end)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=h`);
+    const d2=await r2.json();
+    if(d2.predictions) {
+      D.multiDayTideHourly=d2.predictions.map(p=>({
+        time:new Date(p.t.replace(' ','T')), value:parseFloat(p.v)
+      }));
+    }
+  } catch(e) {}
+}
+
+// --- CDIP Station Mapping ---
 const CDIP_STATIONS = {
   lajolla:   { id: '201p1', name: 'Scripps Nearshore' },
   pointloma: { id: '191p1', name: 'Point Loma South' },
@@ -715,12 +844,10 @@ const CDIP_STATIONS = {
   oceanside: { id: '262p1', name: 'Leucadia Nearshore' },
 };
 
-// --- Buoy Data: CDIP primary (CORS), ERDDAP/NDBC fallback ---
+// --- Buoy Data: CDIP primary ---
 async function fetchBuoyData() {
-  // Method 1: CDIP THREDDS OPeNDAP (CORS-enabled, most reliable)
   const cdipStation = CDIP_STATIONS[currentLocation] || CDIP_STATIONS.torrey;
   try {
-    // First get the dataset size to find the last index
     const ddsUrl = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/realtime/${cdipStation.id}_rt.nc.dds`;
     const ddsR = await fetch(ddsUrl);
     if (ddsR.ok) {
@@ -758,7 +885,7 @@ async function fetchBuoyData() {
     }
   } catch(e) {}
 
-  // Method 2: ERDDAP mirror of NDBC data (fallback)
+  // Fallback: ERDDAP/NDBC
   const loc = LOCATIONS[currentLocation];
   const buoys = loc.buoys || ['46225'];
   for (const buoyId of buoys) {
@@ -772,15 +899,11 @@ async function fetchBuoyData() {
           const h=d.table.columnNames, row=d.table.rows[0];
           const get=n=>{const i=h.indexOf(n);return i>=0?row[i]:null;};
           parseBuoyRow(get);
-          srcStatus.ndbc='ok';
-          D.buoyId=buoyId;
-          D.buoySource='NDBC';
+          srcStatus.ndbc='ok'; D.buoyId=buoyId; D.buoySource='NDBC';
           return;
         }
       }
     } catch(e) {}
-
-    // Method 3: NDBC direct text file
     try {
       const r = await fetch(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`);
       if (r.ok) {
@@ -789,9 +912,7 @@ async function fetchBuoyData() {
           const hdr=lines[0].trim().split(/\s+/), dat=lines[2].trim().split(/\s+/);
           const get=n=>{const i=hdr.indexOf(n); return (i>=0&&dat[i]!=='MM')?parseFloat(dat[i]):null;};
           parseBuoyFields(get);
-          srcStatus.ndbc='ok';
-          D.buoyId=buoyId;
-          D.buoySource='NDBC';
+          srcStatus.ndbc='ok'; D.buoyId=buoyId; D.buoySource='NDBC';
           return;
         }
       }
@@ -806,22 +927,14 @@ function parseBuoyRow(get) {
   if(dpd!==null&&!isNaN(dpd)) D.swellPeriod=Math.round(dpd);
   if(apd!==null&&!isNaN(apd)) D.avgPeriod=Math.round(apd);
   if(mwd!==null&&!isNaN(mwd)) classifySwellDir(mwd);
-  // Buoy wind as fallback
-  if(wspd!==null&&!isNaN(wspd)&&D.windSpeedMph===undefined) {
-    D.windSpeedMph=Math.round(wspd*2.23694); // m/s to mph
-    D.buoyWind=true;
-  }
+  if(wspd!==null&&!isNaN(wspd)&&D.windSpeedMph===undefined) { D.windSpeedMph=Math.round(wspd*2.23694); D.buoyWind=true; }
   if(wd!==null&&!isNaN(wd)&&D.windDir===undefined) {
     if(!D.windSpeedMph||D.windSpeedMph<3) D.windDir='none';
     else if(wd>=30&&wd<=150) D.windDir='offshore';
     else if(wd>=210&&wd<=330) D.windDir='onshore';
     else D.windDir='sideshore';
   }
-  // Buoy water temp as fallback
-  if(wtmp!==null&&!isNaN(wtmp)&&D.waterTemp===undefined) {
-    D.waterTemp=parseFloat((wtmp*1.8+32).toFixed(1)); // C to F
-    D.buoyTemp=true;
-  }
+  if(wtmp!==null&&!isNaN(wtmp)&&D.waterTemp===undefined) { D.waterTemp=parseFloat((wtmp*1.8+32).toFixed(1)); D.buoyTemp=true; }
 }
 
 function parseBuoyFields(get) {
@@ -831,20 +944,14 @@ function parseBuoyFields(get) {
   if(dpd!==null) D.swellPeriod=Math.round(dpd);
   if(apd!==null) D.avgPeriod=Math.round(apd);
   if(mwd!==null) classifySwellDir(mwd);
-  if(wspd!==null&&D.windSpeedMph===undefined) {
-    D.windSpeedMph=Math.round(wspd*2.23694);
-    D.buoyWind=true;
-  }
+  if(wspd!==null&&D.windSpeedMph===undefined) { D.windSpeedMph=Math.round(wspd*2.23694); D.buoyWind=true; }
   if(wdir!==null&&D.windDir===undefined) {
     if(!D.windSpeedMph||D.windSpeedMph<3) D.windDir='none';
     else if(wdir>=30&&wdir<=150) D.windDir='offshore';
     else if(wdir>=210&&wdir<=330) D.windDir='onshore';
     else D.windDir='sideshore';
   }
-  if(wtmp!==null&&D.waterTemp===undefined) {
-    D.waterTemp=parseFloat((wtmp*1.8+32).toFixed(1));
-    D.buoyTemp=true;
-  }
+  if(wtmp!==null&&D.waterTemp===undefined) { D.waterTemp=parseFloat((wtmp*1.8+32).toFixed(1)); D.buoyTemp=true; }
 }
 
 function classifySwellDir(mwd) {
@@ -874,11 +981,9 @@ async function fetchRainfall() {
   } catch(e) {}
 }
 
-// --- NOAA PFEL Upwelling Index (33N 119W — closest to San Diego) ---
-// Uses JSONP to bypass CORS on oceanview.pfeg.noaa.gov
+// --- NOAA PFEL Upwelling Index (JSONP) ---
 async function fetchUpwelling() {
   try {
-    // Data lags ~2 weeks; look back 30 days to always find data
     const ago=new Date(Date.now()-30*86400000);
     const cbName = '_upwell_' + Date.now();
     const url = `https://oceanview.pfeg.noaa.gov/erddap/tabledap/erdUI336hr.json?time,upwelling_index&time%3E=${ago.toISOString()}&.jsonp=${cbName}`;
@@ -907,17 +1012,13 @@ async function fetchUpwelling() {
   } catch(e) {}
 }
 
-// --- NCEI ERDDAP: Satellite SST (OISST, CORS-enabled) ---
+// --- NCEI ERDDAP: Satellite SST ---
 async function fetchSST() {
   const loc = LOCATIONS[currentLocation];
   const lat = loc.lat, lon = loc.lon;
-  // NCEI ERDDAP OISST — CORS-enabled, 0.25° resolution, ~1-day lag
-  // Uses 0-360 longitude convention (e.g., -117.3 → 242.7)
   const lon360 = lon < 0 ? 360 + lon : lon;
   const datasets = [
-    // Preliminary (most recent, ~1 day lag)
     `https://www.ncei.noaa.gov/erddap/griddap/ncdc_oisst_v2_avhrr_prelim_by_time_zlev_lat_lon.json?sst%5B(last)%5D%5B(0.0)%5D%5B(${lat-0.2}):(${lat+0.2})%5D%5B(${lon360-0.2}):(${lon360+0.2})%5D`,
-    // Final quality (may be ~2 weeks behind)
     `https://www.ncei.noaa.gov/erddap/griddap/ncdc_oisst_v2_avhrr_by_time_zlev_lat_lon.json?sst%5B(last)%5D%5B(0.0)%5D%5B(${lat-0.2}):(${lat+0.2})%5D%5B(${lon360-0.2}):(${lon360+0.2})%5D`,
   ];
   for (const url of datasets) {
@@ -942,10 +1043,8 @@ async function fetchSST() {
   }
 }
 
-// --- Chlorophyll: NCEI US West Coast climatology (CORS-enabled) ---
-// Monthly averages for San Diego offshore waters (mg/m³)
+// --- Chlorophyll ---
 const CHL_CLIMATOLOGY = {
-  // Month: avg chlorophyll mg/m³ for ~32.8°N, -117.4°W (San Diego offshore)
   1: 1.15, 2: 2.44, 3: 2.39, 4: 1.41, 5: 0.98, 6: 0.68,
   7: 0.85, 8: 0.56, 9: 0.95, 10: 0.82, 11: 1.10, 12: 2.25
 };
@@ -955,8 +1054,6 @@ async function fetchChlorophyll() {
   const lat = loc.lat, lon = loc.lon;
   const month = new Date().getMonth() + 1;
   const monthStr = String(month).padStart(2, '0');
-
-  // Try live NCEI US West Coast satellite climatology (CORS-enabled)
   try {
     const url = `https://www.ncei.noaa.gov/erddap/griddap/AEC_uswest_satellite_climo.json?Chlorophyll_avg%5B(2000-${monthStr}-01)%5D%5B(${lat-0.15}):(${lat+0.05})%5D%5B(${lon-0.25}):(${lon-0.05})%5D`;
     const r = await fetch(url);
@@ -974,8 +1071,6 @@ async function fetchChlorophyll() {
       }
     }
   } catch(e) {}
-
-  // Fallback: use built-in monthly climatology
   if (CHL_CLIMATOLOGY[month]) {
     D.chlorophyll = CHL_CLIMATOLOGY[month];
     D.chlSource = 'Climatology';
@@ -994,7 +1089,6 @@ async function fetchAllData() {
   statusEl.className='data-status';
   D={}; srcStatus={};
 
-  // Local calcs
   const now=new Date();
   const moon=getMoon(now);
   D.moon=moon;
@@ -1002,20 +1096,17 @@ async function fetchAllData() {
   D.pressure=calcPressure(now);
   D.bottom=LOCATIONS[currentLocation].bottom;
 
-  // Fetch all APIs in parallel
   await Promise.allSettled([
     fetchWaterTemp(), fetchTempTrend(), fetchTideState(),
-    fetchWind(), fetchWindForecast(), fetchBuoyData(),
-    fetchRainfall(), fetchUpwelling(),
-    fetchSST(), fetchChlorophyll(),
+    fetchWind(), fetchWindForecast(), fetchHourlyForecast(),
+    fetchBuoyData(), fetchRainfall(), fetchUpwelling(),
+    fetchSST(), fetchChlorophyll(), fetchMultiDayTides(),
   ]);
 
-  // Compute wave energy from buoy data
   if(D.swellFt&&D.swellPeriod) D.waveEnergy=D.swellFt*D.swellFt*D.swellPeriod;
 
-  // Count data sources
   const liveSources = Object.keys(srcStatus).filter(k=>srcStatus[k]==='ok').length;
-  const totalSources = 6; // noaa, ndbc, nws, sst, chl, upwell
+  const totalSources = 6;
   const timeStr=now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
 
   if(liveSources>=4) { statusEl.textContent=`${liveSources}/${totalSources} data sources connected · Updated ${timeStr}`; statusEl.className='data-status success'; }
@@ -1023,18 +1114,15 @@ async function fetchAllData() {
   else { statusEl.textContent=`Live APIs unavailable — using calculated data only · ${timeStr}`; statusEl.className='data-status error'; }
 
   btn.disabled=false; btn.textContent='Refresh';
-
-  // Update source status panel
   updateSourceStatus();
 
-  // Update footer with active buoy
   const loc = LOCATIONS[currentLocation];
   const buoyLabel = D.buoyId ? `Buoy: ${D.buoyName||D.buoyId} (${D.buoySource||'NDBC'})` : `Buoy: connecting...`;
   document.getElementById('stationFooter').textContent = `Station: ${loc.name} (${loc.tideStation}) · ${buoyLabel}`;
 
   updateDisplay();
   recalculate();
-  updatePredictor();
+  buildForecast();
 }
 
 // =========================================================================
@@ -1047,7 +1135,6 @@ function updateDisplay() {
   document.getElementById('moonBadge').textContent=`${D.moon.emoji} ${D.moon.name}`;
   document.getElementById('locationBadge').textContent=loc.name;
 
-  // Fish bite factors
   const tempSrc = D.buoyTemp ? 'BUOY' : 'NOAA';
   setVal('waterTempVal', D.waterTemp ? `${D.waterTemp.toFixed(1)}°F` : 'Unavailable', tempSrc, D.buoyTemp?'buoy':'');
   setVal('sstVal', D.sstF ? `${D.sstF}°F (satellite)` : 'Unavailable', 'NCEI', 'sat');
@@ -1063,7 +1150,6 @@ function updateDisplay() {
   if(D.upwellingIndex!==undefined) upText += ` (${Math.round(D.upwellingIndex)})`;
   setVal('upwellingVal', upText, 'PFEL');
 
-  // Chlorophyll for fish bite
   const chlLabel = D.chlorophyll!==undefined ? `${D.chlorophyll} mg/m³ (${chlProductivity(D.chlorophyll)})` : 'Unavailable';
   setVal('chlFishVal', chlLabel, D.chlSource||'SAT', 'sat');
 
@@ -1071,7 +1157,6 @@ function updateDisplay() {
   setVal('reportsVal', getReportsLabel(currentSpecies, new Date().getMonth()), 'CPFV 5yr');
   setVal('pressureVal', getPressureLabel(D.pressure), 'CALC');
 
-  // Viz factors
   const windSrc = D.buoyWind ? 'BUOY' : 'NWS';
   const windLabel = D.windSpeedMph!==undefined ? `${D.windSpeedMph} mph ${({none:'Calm',offshore:'Offshore',sideshore:'Side-shore',onshore:'Onshore'}[D.windDir]||'')}` : 'Unavailable';
   setVal('windVal', windLabel, windSrc, D.buoyWind?'buoy':'');
@@ -1086,7 +1171,6 @@ function updateDisplay() {
   const rainLabels={none:'None (0 in)',trace:'Trace (<0.1 in)',light:'Light (0.1-0.5 in)',moderate:'Moderate (0.5-1 in)',heavy:'Heavy (>1 in)'};
   setVal('rainfallVal', D.rainfall ? rainLabels[D.rainfall] : 'Unavailable', 'NWS');
 
-  // Chlorophyll for viz
   const chlVizLabel = D.chlorophyll!==undefined ? `${D.chlorophyll} mg/m³ (${chlClarity(D.chlorophyll)})` : 'Unavailable';
   setVal('chlVizVal', chlVizLabel, D.chlSource||'SAT', 'sat');
 
@@ -1095,7 +1179,6 @@ function updateDisplay() {
   const kelpInfo = loc.kelpDensity && loc.kelpDensity !== 'none' ? ` · Kelp: ${loc.kelpDensity}` : '';
   setVal('bottomVal', (bottomLabels[D.bottom]||D.bottom) + depthInfo + kelpInfo, loc.name);
 
-  // Est visibility
   let vizEst='--';
   if(D.waveEnergy!==undefined||D.rainfall) {
     if(D.rainfall==='heavy') vizEst='< 4 ft';
@@ -1107,7 +1190,6 @@ function updateDisplay() {
       else if(D.waveEnergy<=100) base='8–15 ft';
       else if(D.waveEnergy<=200) base='4–8 ft';
       else base='< 4 ft';
-      // Adjust for chlorophyll (green water reduces viz)
       if(D.chlorophyll>3) vizEst=base+' (green water)';
       else vizEst=base;
     } else if(D.rainfall==='none'||D.rainfall==='trace') {
@@ -1115,24 +1197,17 @@ function updateDisplay() {
     } else vizEst='5–12 ft (est.)';
   }
   setVal('estVizVal', vizEst, 'EST');
-  // Update the gauge subtitle with visibility in feet
   const vizFeetEl = document.getElementById('vizFeetLabel');
   if (vizFeetEl) vizFeetEl.textContent = vizEst !== '--' ? `Est. ${vizEst}` : '--';
 }
 
 function chlProductivity(c) {
-  if(c>=5) return 'very productive';
-  if(c>=2) return 'productive';
-  if(c>=1) return 'moderate';
-  if(c>=0.5) return 'low';
-  return 'oligotrophic';
+  if(c>=5) return 'very productive'; if(c>=2) return 'productive';
+  if(c>=1) return 'moderate'; if(c>=0.5) return 'low'; return 'oligotrophic';
 }
 function chlClarity(c) {
-  if(c<0.3) return 'blue water';
-  if(c<0.5) return 'clear';
-  if(c<1) return 'slightly green';
-  if(c<3) return 'green tint';
-  return 'green water';
+  if(c<0.3) return 'blue water'; if(c<0.5) return 'clear';
+  if(c<1) return 'slightly green'; if(c<3) return 'green tint'; return 'green water';
 }
 
 function setVal(id, text, source, badgeClass) {
@@ -1161,7 +1236,6 @@ function toggleSources() {
 // SCORE CALCULATOR
 // =========================================================================
 function recalculate() {
-  // Fish bite scores
   const fishScores=[];
   score('waterTempScore', D.waterTemp, getScorer('waterTemp'), fishScores);
   score('sstScore', D.sstF, getScorer('sst'), fishScores);
@@ -1174,7 +1248,6 @@ function recalculate() {
   score('reportsScore', D.reportsScore, getScorer('reports'), fishScores);
   score('pressureScore', D.pressure, getScorer('pressure'), fishScores);
 
-  // Viz scores
   const vizScores=[];
   if(D.windSpeedMph!==undefined&&D.windDir) {
     const ws=getScorer('wind')(D.windSpeedMph, D.windDir);
@@ -1188,11 +1261,9 @@ function recalculate() {
   score('chlVizScore', D.chlorophyll, getScorer('chlViz'), vizScores);
   score('bottomScore', D.bottom, getScorer('bottom'), vizScores);
 
-  // Est viz gets same score as wave energy (derived)
   if(D.waveEnergy) { const s=getScorer('waveEnergy')(D.waveEnergy); setScore('estVizScore',s); }
   else setScore('estVizScore',null);
 
-  // Averages
   const fishAvg = fishScores.length>=3 ? fishScores.reduce((a,b)=>a+b,0)/fishScores.length : null;
   const vizAvg = vizScores.length>=2 ? vizScores.reduce((a,b)=>a+b,0)/vizScores.length : null;
   let spearAvg = null;
@@ -1252,68 +1323,305 @@ function updateInsight(fish,viz) {
 }
 
 // =========================================================================
-// PREDICTOR
+// 5-DAY FORECAST (Surfline-style)
 // =========================================================================
-function updatePredictor() {
-  if(D.fishAvg===null&&D.vizAvg===null) {
-    for(let i=0;i<3;i++) { ['Fish','Viz','Spear','Rating'].forEach(s=>document.getElementById(`pred${i}${s}`).textContent='--'); }
+function buildForecast() {
+  const container = document.getElementById('forecastDays');
+  const hourly = D.hourlyForecast || [];
+  const tideHiLo = D.multiDayTideHiLo || [];
+  const tideHourly = D.multiDayTideHourly || [];
+
+  if (!hourly.length) {
+    container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:12px;">Forecast data unavailable</div>';
     return;
   }
-  setPredDay(0,D.fishAvg,D.vizAvg);
-  const fA=[0,0],vA=[0,0];
-  if(D.tempDiff!==undefined) {
-    const rate=D.tempDiff/3;
-    if(currentSpecies==='yellowtail') { fA[0]+=rate>0?0.3:-0.5; fA[1]+=rate>0?0.5:-0.8; }
-    else if(currentSpecies==='wsb') { fA[0]+=rate<0?0.2:rate>0.5?-0.3:0; fA[1]+=rate<0?0.3:rate>0.5?-0.5:0; }
-    else { fA[0]+=rate>0?0.2:-0.3; fA[1]+=rate>0?0.3:-0.5; }
+
+  // Group hourly periods by day
+  const dayGroups = {};
+  for (const p of hourly) {
+    const d = new Date(p.startTime);
+    const key = d.toLocaleDateString('en-US', {year:'numeric',month:'2-digit',day:'2-digit'});
+    if (!dayGroups[key]) dayGroups[key] = [];
+    dayGroups[key].push({...p, date: d});
   }
-  if(D.windForecast) {
-    for(let i=0;i<2;i++) {
-      const p=D.windForecast[i+1];
-      if(p) { const m=(p.windSpeed||'').match(/(\d+)/); if(m) { const fw=parseInt(m[1]),cw=D.windSpeedMph||10; if(fw<cw-5) vA[i]+=0.5; else if(fw>cw+5) vA[i]-=0.5; } }
-    }
-  }
-  if(D.upwellingIndex>100) { fA[0]+=0.3; fA[1]+=0.5; }
-  // Chlorophyll boost for fishing
-  if(D.chlorophyll>2) { fA[0]+=0.2; fA[1]+=0.3; }
-  const tmrw=new Date(); tmrw.setDate(tmrw.getDate()+1);
-  const dayA=new Date(); dayA.setDate(dayA.getDate()+2);
-  const today=new Date().getDay();
-  if((today===0||today===6)&&tmrw.getDay()>=1&&tmrw.getDay()<=5) fA[0]+=0.3;
-  if((today===5||today===4)&&(dayA.getDay()===0||dayA.getDay()===6)) fA[1]-=0.3;
-  const clamp=(v)=>Math.max(1,Math.min(10,v));
-  setPredDay(1,D.fishAvg!==null?clamp(D.fishAvg+fA[0]):null,D.vizAvg!==null?clamp(D.vizAvg+vA[0]):null);
-  setPredDay(2,D.fishAvg!==null?clamp(D.fishAvg+fA[1]):null,D.vizAvg!==null?clamp(D.vizAvg+vA[1]):null);
-  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  document.getElementById('pred2Label').textContent=days[dayA.getDay()];
-  for(let i=0;i<2;i++) {
-    const tEl=document.getElementById(`pred${i+1}Trend`);
-    const tot=fA[i]+vA[i];
-    if(tot>0.3){tEl.textContent='▲ Improving';tEl.className='predictor-trend trend-up';}
-    else if(tot<-0.3){tEl.textContent='▼ Declining';tEl.className='predictor-trend trend-down';}
-    else{tEl.textContent='▸ Stable';tEl.className='predictor-trend trend-stable';}
-  }
-  const trends=[];
-  if(D.tempDiff>0.5) trends.push('Water warming'); else if(D.tempDiff<-0.5) trends.push('Water cooling');
-  if(D.upwellingIndex>100) trends.push('Post-upwelling nutrients');
-  if(D.chlorophyll>2) trends.push(`Chl-a ${D.chlorophyll} mg/m³ (productive)`);
-  if(D.windForecast&&D.windForecast[1]) {
-    const t=(D.windForecast[1].shortForecast||'').toLowerCase();
-    if(t.includes('calm')||t.includes('light')) trends.push('Calmer winds expected');
-    if(t.includes('rain')) trends.push('Rain incoming');
-  }
-  if(trends.length>0) document.getElementById('predictorDetails').textContent='Key trends: '+trends.join(' · ');
+
+  const dayKeys = Object.keys(dayGroups).slice(0, 5);
+  const now = new Date();
+
+  let html = '';
+  dayKeys.forEach((key, idx) => {
+    const periods = dayGroups[key];
+    const d = periods[0].date;
+    const isToday = idx === 0;
+    const dayLabel = isToday ? `Today, ${d.getMonth()+1}/${d.getDate()}` :
+      idx === 1 ? `Tomorrow, ${d.getMonth()+1}/${d.getDate()}` :
+      `${d.toLocaleDateString('en-US',{weekday:'short'})}, ${d.getMonth()+1}/${d.getDate()}`;
+
+    // Get 3 time slots: 7am, 12pm, 6pm
+    const slots = getTimeSlots(periods);
+
+    // Calculate forecast scores for this day
+    const dayScores = calcDayForecastScores(slots, idx);
+
+    // Get tide events for this day
+    const dayTides = tideHiLo.filter(t => {
+      const td = t.time;
+      return td.getDate() === d.getDate() && td.getMonth() === d.getMonth();
+    });
+    const dayTideHourly = tideHourly.filter(t => {
+      const td = t.time;
+      return td.getDate() === d.getDate() && td.getMonth() === d.getMonth();
+    });
+
+    const openClass = idx === 0 ? ' open' : '';
+
+    html += `<div class="forecast-day${openClass}" id="fDay${idx}">`;
+    html += `<div class="forecast-day-summary" onclick="toggleForecastDay(${idx})">`;
+    html += `<div class="forecast-day-label">${dayLabel}</div>`;
+    html += `<div class="forecast-day-scores">`;
+    html += `<div class="forecast-mini"><div class="forecast-mini-label" style="color:var(--fish-color)">Fish</div><div class="forecast-mini-val" style="color:${getRating(dayScores.fish).color}">${dayScores.fish.toFixed(1)}</div></div>`;
+    html += `<div class="forecast-mini"><div class="forecast-mini-label" style="color:var(--viz-color)">Viz</div><div class="forecast-mini-val" style="color:${getRating(dayScores.viz).color}">${dayScores.viz.toFixed(1)}</div></div>`;
+    html += `<div class="forecast-spear-mini"><div class="forecast-spear-val" style="color:${getRating(dayScores.spear).color}">${dayScores.spear.toFixed(1)}</div><div class="forecast-spear-rating" style="color:${getRating(dayScores.spear).color}">${getRating(dayScores.spear).label}</div></div>`;
+    html += `</div>`;
+    html += `<span class="forecast-chevron">▼</span>`;
+    html += `</div>`;
+
+    // Detail panel
+    html += `<div class="forecast-day-detail">`;
+
+    // Surf/Swell slots
+    html += buildSurfPanel(slots);
+
+    // Wind panel
+    html += buildWindPanel(slots);
+
+    // Tide chart
+    html += buildTidePanel(dayTides, dayTideHourly, d);
+
+    html += `</div></div>`;
+  });
+
+  container.innerHTML = html;
 }
 
-function setPredDay(idx,fish,viz) {
-  const fE=document.getElementById(`pred${idx}Fish`),vE=document.getElementById(`pred${idx}Viz`);
-  const sE=document.getElementById(`pred${idx}Spear`),rE=document.getElementById(`pred${idx}Rating`);
-  if(fish!==null){fE.textContent=fish.toFixed(1);fE.style.color=getRating(fish).color;}else fE.textContent='--';
-  if(viz!==null){vE.textContent=viz.toFixed(1);vE.style.color=getRating(viz).color;}else vE.textContent='--';
-  let sp=null;
-  if(fish!==null&&viz!==null) sp=0.6*fish+0.4*viz; else if(fish!==null) sp=fish; else if(viz!==null) sp=viz;
-  if(sp!==null){sE.textContent=sp.toFixed(1);const r=getRating(sp);sE.style.color=r.color;rE.textContent=r.label;rE.style.color=r.color;}
-  else{sE.textContent='--';rE.textContent='--';}
+function getTimeSlots(periods) {
+  // Find periods closest to 7am, 12pm, 6pm
+  const targets = [7, 12, 18];
+  const labels = ['Morning', 'Noon', 'Evening'];
+  const timeLabels = ['7am', 'Noon', '6pm'];
+  const slots = [];
+
+  for (let i = 0; i < targets.length; i++) {
+    let best = null, bestDiff = 99;
+    for (const p of periods) {
+      const h = p.date.getHours();
+      const diff = Math.abs(h - targets[i]);
+      if (diff < bestDiff) { bestDiff = diff; best = p; }
+    }
+    if (best) {
+      const windMatch = (best.windSpeed || '').match(/(\d+)/);
+      const windGustMatch = (best.windSpeed || '').match(/to\s+(\d+)/);
+      slots.push({
+        label: labels[i],
+        timeLabel: timeLabels[i],
+        temp: best.temperature,
+        windSpeed: windMatch ? parseInt(windMatch[1]) : 0,
+        windGust: windGustMatch ? parseInt(windGustMatch[1]) : null,
+        windDir: best.windDirection || '',
+        shortForecast: best.shortForecast || '',
+        precip: best.probabilityOfPrecipitation ? best.probabilityOfPrecipitation.value : 0,
+        isDaytime: best.isDaytime,
+      });
+    }
+  }
+  return slots;
+}
+
+function calcDayForecastScores(slots, dayIdx) {
+  // Use current conditions as base, adjust by forecast wind/precip
+  const baseFish = D.fishAvg || 5;
+  const baseViz = D.vizAvg || 5;
+
+  // Wind adjustment from forecast
+  let windAdj = 0;
+  const avgWind = slots.reduce((sum, s) => sum + s.windSpeed, 0) / (slots.length || 1);
+  const currentWind = D.windSpeedMph || 8;
+  if (avgWind < currentWind - 3) windAdj = 0.5;
+  else if (avgWind > currentWind + 5) windAdj = -0.8;
+  else if (avgWind > currentWind + 3) windAdj = -0.4;
+
+  // Precip penalty
+  const maxPrecip = Math.max(...slots.map(s => s.precip || 0));
+  let precipAdj = 0;
+  if (maxPrecip > 60) precipAdj = -1.5;
+  else if (maxPrecip > 30) precipAdj = -0.5;
+
+  // Temp trend / upwelling / day-of-week adjustments (same as old predictor)
+  let fishAdj = 0;
+  if (D.tempDiff !== undefined) {
+    const rate = D.tempDiff / 3;
+    if (currentSpecies === 'yellowtail') fishAdj += rate > 0 ? 0.2 * dayIdx : -0.3 * dayIdx;
+    else if (currentSpecies === 'wsb') fishAdj += rate < 0 ? 0.1 * dayIdx : -0.15 * dayIdx;
+    else fishAdj += rate > 0 ? 0.15 * dayIdx : -0.2 * dayIdx;
+  }
+  if (D.upwellingIndex > 100) fishAdj += 0.2 * dayIdx;
+  if (D.chlorophyll > 2) fishAdj += 0.1 * dayIdx;
+
+  // Weekend pressure
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() + dayIdx);
+  const dow = targetDate.getDay();
+  if (dow === 0 || dow === 6) fishAdj -= 0.2; // more pressure
+
+  const clamp = v => Math.max(1, Math.min(10, v));
+  const fish = clamp(baseFish + fishAdj);
+  const viz = clamp(baseViz + windAdj + precipAdj);
+  const spear = 0.6 * fish + 0.4 * viz;
+
+  return { fish, viz, spear };
+}
+
+function buildSurfPanel(slots) {
+  // Use current swell as base for today, persist for forecast
+  const swellFt = D.swellFt || 0;
+  const swellPer = D.swellPeriod || 0;
+  const swellDirDeg = D.swellDirDeg || 0;
+  const maxSurf = Math.max(swellFt * 1.5, 6); // scale for bar height
+
+  let html = '<div class="forecast-panel">';
+  html += '<div class="forecast-panel-label">Surf & Swell</div>';
+  html += '<div class="forecast-slots">';
+
+  // Header row
+  html += '<div class="forecast-slot-header">';
+  html += '<span></span><span>Surf (ft)</span><span>Swell</span><span>Forecast</span>';
+  html += '</div>';
+
+  for (const slot of slots) {
+    // Estimate surf: swell height ± wind effect
+    let surfEst = swellFt;
+    if (slot.windSpeed > 15) surfEst *= 1.2;
+    else if (slot.windSpeed > 10) surfEst *= 1.1;
+    const surfLo = Math.max(1, Math.round(surfEst - 0.5));
+    const surfHi = Math.round(surfEst + 0.5);
+    const barPct = Math.min(95, (surfEst / maxSurf) * 100);
+
+    // Bar color based on surf height (for diving: lower=greener)
+    let barColor;
+    if (surfEst <= 2) barColor = 'linear-gradient(to top, #1a8a4a, #2ecc71)';
+    else if (surfEst <= 3.5) barColor = 'linear-gradient(to top, #1a8a4a, #2ecc71, #f0a030)';
+    else if (surfEst <= 5) barColor = 'linear-gradient(to top, #f0a030, #e67e22)';
+    else barColor = 'linear-gradient(to top, #e74c3c, #c0392b)';
+
+    html += '<div class="forecast-slot-row">';
+    html += `<div><span class="slot-time">${slot.timeLabel}</span></div>`;
+    html += `<div class="slot-surf-wrap"><div class="slot-surf-bar-container"><div class="slot-surf-bar" style="height:${barPct}%;background:${barColor}"></div></div><div class="slot-surf-val">${surfLo}-${surfHi}</div></div>`;
+    html += `<div><div class="slot-swell-info">${swellFt.toFixed(1)}ft</div><div class="slot-swell-info">${swellPer}s</div><div class="slot-swell-info"><span class="swell-arrow" style="transform:rotate(${swellDirDeg}deg)">↓</span> ${Math.round(swellDirDeg)}°</div></div>`;
+    html += `<div><div class="slot-swell-info">${slot.shortForecast}</div></div>`;
+    html += '</div>';
+  }
+
+  html += '</div></div>';
+  return html;
+}
+
+function buildWindPanel(slots) {
+  const maxWind = Math.max(20, ...slots.map(s => s.windGust || s.windSpeed));
+
+  let html = '<div class="forecast-panel">';
+  html += '<div class="forecast-panel-label">Wind</div>';
+  html += '<div class="forecast-slots">';
+
+  html += '<div class="forecast-slot-header">';
+  html += '<span></span><span>Speed</span><span>Gust</span><span>Dir</span>';
+  html += '</div>';
+
+  for (const slot of slots) {
+    const barPct = Math.min(95, (slot.windSpeed / maxWind) * 100);
+    const gustPct = slot.windGust ? Math.min(95, (slot.windGust / maxWind) * 100) : 0;
+
+    // Wind bar color: lower = calmer = better for diving
+    let windColor;
+    if (slot.windSpeed <= 5) windColor = 'linear-gradient(to top, #1a5a8a, #2c8cff)';
+    else if (slot.windSpeed <= 10) windColor = 'linear-gradient(to top, #1a5a8a, #2c8cff, #5ac8fa)';
+    else if (slot.windSpeed <= 15) windColor = 'linear-gradient(to top, #f0a030, #e67e22)';
+    else windColor = 'linear-gradient(to top, #e74c3c, #c0392b)';
+
+    html += '<div class="forecast-slot-row">';
+    html += `<div><span class="slot-time">${slot.timeLabel}</span></div>`;
+    html += `<div class="slot-wind-wrap"><div class="slot-wind-bar-container"><div class="slot-wind-bar" style="height:${barPct}%;background:${windColor}"></div></div><div class="slot-wind-val">${slot.windSpeed}<span style="font-size:10px;color:var(--text-muted)">kts</span></div></div>`;
+    html += `<div class="slot-wind-wrap">${slot.windGust ? `<div class="slot-wind-bar-container"><div class="slot-wind-bar" style="height:${gustPct}%;background:${windColor};opacity:0.6"></div></div><div class="slot-wind-val">${slot.windGust}<span style="font-size:10px;color:var(--text-muted)">kts</span></div>` : '<div style="color:var(--text-muted);font-size:11px">—</div>'}</div>`;
+    html += `<div><div class="slot-wind-dir-label">${slot.windDir}</div></div>`;
+    html += '</div>';
+  }
+
+  html += '</div></div>';
+  return html;
+}
+
+function buildTidePanel(dayTides, dayTideHourly, date) {
+  let html = '<div class="forecast-tide-wrap">';
+  html += '<div class="tide-chart-label">Tide</div>';
+
+  if (dayTideHourly.length >= 4) {
+    // Build SVG tide curve
+    const vals = dayTideHourly.map(t => t.value);
+    const minV = Math.min(...vals, 0);
+    const maxV = Math.max(...vals);
+    const range = maxV - minV || 1;
+    const w = 300, h = 50, pad = 4;
+
+    let points = '';
+    let fillPoints = '';
+    const step = w / (vals.length - 1);
+
+    for (let i = 0; i < vals.length; i++) {
+      const x = pad + i * ((w - 2*pad) / (vals.length - 1));
+      const y = pad + (1 - (vals[i] - minV) / range) * (h - 2*pad);
+      points += `${x},${y} `;
+      fillPoints += `${x},${y} `;
+    }
+
+    // Close fill path
+    const firstX = pad;
+    const lastX = pad + (vals.length - 1) * ((w - 2*pad) / (vals.length - 1));
+    fillPoints = `${firstX},${h} ` + fillPoints + `${lastX},${h}`;
+
+    // Zero line
+    const zeroY = pad + (1 - (0 - minV) / range) * (h - 2*pad);
+
+    html += `<svg class="tide-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">`;
+    html += `<line x1="${pad}" y1="${zeroY}" x2="${w-pad}" y2="${zeroY}" class="tide-zero"/>`;
+    html += `<polygon points="${fillPoints}" class="tide-fill"/>`;
+    html += `<polyline points="${points}" class="tide-line"/>`;
+    html += '</svg>';
+
+    // Time axis labels
+    html += '<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);padding:0 4px">';
+    html += '<span>12am</span><span>6am</span><span>Noon</span><span>6pm</span>';
+    html += '</div>';
+  }
+
+  // Hi/Lo events
+  if (dayTides.length > 0) {
+    html += '<div class="tide-event-labels">';
+    for (const t of dayTides) {
+      const timeStr = t.time.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+      const typeStr = t.type === 'H' ? 'High' : 'Low';
+      html += `<div class="tide-event"><div class="tide-event-time">${timeStr}</div><div class="tide-event-height">${t.value.toFixed(1)}ft ${typeStr}</div></div>`;
+    }
+    html += '</div>';
+  } else {
+    html += '<div style="font-size:11px;color:var(--text-muted);text-align:center;padding:8px">Tide data unavailable for this day</div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function toggleForecastDay(idx) {
+  const el = document.getElementById('fDay' + idx);
+  if (el) el.classList.toggle('open');
 }
 
 // =========================================================================
@@ -1326,7 +1634,7 @@ function selectSpecies(species) {
   D.reportsScore=getReportsScore(species,new Date().getMonth());
   setVal('reportsVal',getReportsLabel(species,new Date().getMonth()),'CPFV 5yr');
   recalculate();
-  updatePredictor();
+  buildForecast();
 }
 
 function onLocationChange() {
