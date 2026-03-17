@@ -634,10 +634,13 @@ let srcStatus = {}; // track data source status
 // =========================================================================
 const CPFV = {
   yellowtail: {
-    catch_per_trip: [0.2, 0.3, 0.8, 2.1, 5.8, 12.4, 15.6, 13.2, 9.1, 4.7, 1.2, 0.4],
+    // 2024 actual data: 11,282 YT, 14,765 angler-trips
+    // Peak: Oct (1.04), Aug (1.03), Jul (0.93). Jun low (0.14) — possible anomaly
+    catch_per_trip: [0.07, 0.0, 0.09, 0.59, 0.37, 0.14, 0.93, 1.03, 0.36, 1.04, 0.38, 0.42],
     five_yr_avg:    [0.2, 0.3, 0.8, 2.1, 5.8, 12.4, 15.6, 13.2, 9.1, 4.7, 1.2, 0.4],
-    peak_month: 6,
-    index:          [1,1,2,3,6,9,10,9,7,5,2,1],
+    peak_month: 7, // Aug in 2024 data
+    // Index: blend of 2024 data + historical (Jun smoothed up — likely anomalous in 2024)
+    index:          [1,1,1,4,4,6,9,10,4,10,3,2],
   },
   wsb: {
     // Aalbers & Sepulveda 2015: 95% recaptures Apr-Oct, spawning Mar-Jul
@@ -649,12 +652,14 @@ const CPFV = {
     index:          [2,3,6,8,9,10,7,5,4,3,2,1],
   },
   halibut: {
-    // California halibut — sandy bottom feeders, peak Mar-Jun and Sep-Oct
-    // Grunion season (Mar-Sep) is THE feeding trigger for big halibut
-    catch_per_trip: [0.4, 0.6, 2.1, 3.8, 4.2, 3.5, 2.8, 2.2, 3.1, 2.4, 0.8, 0.3],
+    // 2024 data: 208 halibut, 3,417 angler-trips. Peak: Apr (0.63), Mar (0.31)
+    // Spring is clearly best; summer is steady but low rate (~0.05/angler)
+    // May=0 anglers is a data gap (not targeting halibut), not actual absence
+    catch_per_trip: [0.08, 0.04, 0.31, 0.63, 0.0, 0.05, 0.04, 0.05, 0.05, 0.05, 0.07, 0.0],
     five_yr_avg:    [0.4, 0.6, 2.1, 3.8, 4.2, 3.5, 2.8, 2.2, 3.1, 2.4, 0.8, 0.3],
-    peak_month: 4, // May
-    index:          [2,2,6,9,10,8,7,6,8,6,3,1],
+    peak_month: 3, // April in 2024 data
+    // Index: blend 2024 spring peak + historical summer/fall presence
+    index:          [2,2,8,10,7,6,5,5,6,5,2,1],
   },
   general: {
     catch_per_trip: [4.2, 5.1, 8.3, 12.7, 18.4, 24.6, 28.1, 25.3, 19.8, 14.2, 7.6, 4.8],
@@ -694,15 +699,20 @@ const SCORE = {
     bottom: v => ({rock:9,kelp:8,sand:6,mud:3,silt:2}[v]||5),
   },
   yellowtail: {
-    tip: 'Yellowtail favor 65–72°F water with moderate current near structure. Best 2–5 days after upwelling. Peak Jun–Aug.',
-    waterTemp: f => { if(f>=67&&f<=71) return 10; if(f>=65&&f<67) return 8; if(f>71&&f<=74) return 7; if(f>=63&&f<65) return 5; if(f>74&&f<=77) return 4; if(f>=60&&f<63) return 3; return 1; },
-    sst: f => { if(f>=67&&f<=71) return 10; if(f>=65&&f<67) return 8; if(f>71&&f<=74) return 7; if(f>=63&&f<65) return 5; if(f>74&&f<=77) return 4; if(f>=60&&f<63) return 3; return 1; },
+    // 2024 CPFV data: 11,282 YT caught, 14,765 angler-trips
+    // Best SST: 73°F (1.23/angler), 69°F (0.97), 65°F (0.82) — warmer than expected
+    // Best months: Oct (1.04), Aug (1.03), Jul (0.93) — late summer/fall peak
+    // Moon: Full (0.85) > Quarter (0.83) > Between (0.76) > New (0.64)
+    // Weekday advantage: Tue (1.01) vs Sat (0.53) — 2x better with less pressure
+    tip: 'Yellowtail bite hardest at 69–73°F (2024 data: 1.2 fish/angler at 73°F). Full/quarter moons outperform new. Peak Jul–Oct. Weekdays 2x better than weekends.',
+    waterTemp: f => { if(f>=69&&f<=73) return 10; if(f>=66&&f<69) return 8; if(f>73&&f<=76) return 8; if(f>=64&&f<66) return 6; if(f>76&&f<=78) return 5; if(f>=60&&f<64) return 3; return 1; },
+    sst: f => { if(f>=69&&f<=73) return 10; if(f>=66&&f<69) return 8; if(f>73&&f<=76) return 8; if(f>=64&&f<66) return 6; if(f>76&&f<=78) return 5; if(f>=60&&f<64) return 3; return 1; },
     tempTrend: v => ({warming_fast:8,warming:10,stable:6,cooling:3,cooling_fast:1}[v]||5),
     tideState: v => ({incoming:10,high:7,outgoing:5,low:3}[v]||5),
     current: k => { if(k>=0.3&&k<=0.8) return 10; if(k>=0.1&&k<0.3) return 7; if(k>0.8&&k<=1.2) return 6; if(k<0.1) return 4; return 2; },
     upwelling: v => ({strong_recent:10,moderate_recent:8,active_now:3,weak:4}[v]||5),
     chlFish: c => { if(c>=3) return 10; if(c>=1.5) return 8; if(c>=0.8) return 6; if(c>=0.3) return 4; return 3; },
-    moonPhase: v => ({new:9,full:7,quarter:5,between:4}[v]||5),
+    moonPhase: v => ({new:5,full:10,quarter:9,between:7}[v]||5), // 2024 data: full (0.85) > quarter (0.83) > between (0.76) > new (0.64)
     reports: null, pressure: null,
     wind: null, swellSize: null, swellDir: null, swellPeriod: null, waveEnergy: null, rainfall: null, chlViz: null,
     bottom: v => ({rock:10,kelp:9,sand:5,mud:3,silt:2}[v]||5),
@@ -736,10 +746,14 @@ const SCORE = {
     bottom: v => ({rock:7,kelp:10,sand:4,mud:3,silt:2}[v]||5),
   },
   halibut: {
-    tip: 'Halibut hunt grunion on sandy beaches at night. Best 2-6 nights after new/full moons, Mar-Sep. Target sandy flats near surf line.',
-    // Halibut prefer slightly warmer sand-bottom water; 62-68°F is prime
-    waterTemp: f => { if(f>=62&&f<=68) return 10; if(f>=60&&f<62) return 8; if(f>68&&f<=71) return 7; if(f>=58&&f<60) return 5; if(f>71&&f<=74) return 4; if(f>=56) return 3; return 2; },
-    sst: f => { if(f>=62&&f<=68) return 10; if(f>=60&&f<62) return 8; if(f>68&&f<=71) return 7; if(f>=58&&f<60) return 5; if(f>71&&f<=74) return 4; if(f>=56) return 3; return 2; },
+    // 2024 CPFV data: 208 halibut caught, 3,417 angler-trips
+    // Best SST: 61°F (0.38/angler) — cooler water than expected, Mar-Apr peak
+    // Best months: Apr (0.63), Mar (0.31) — spring peak, NOT grunion summer
+    // Moon: Quarter (0.10) > Between (0.06) > New/Full (0.04) — neap tides outperform spring
+    // Note: grunion hunting is still valid for spearfishing but CPFV data shows spring is king
+    tip: 'Halibut peak Mar-Apr at 60-62°F (2024 data: 0.63/angler in Apr). Quarter moons outperform spring tides in CPFV data. Night grunion runs still prime for spearfishing.',
+    waterTemp: f => { if(f>=60&&f<=63) return 10; if(f>=58&&f<60) return 8; if(f>63&&f<=66) return 7; if(f>=56&&f<58) return 5; if(f>66&&f<=70) return 6; if(f>70&&f<=74) return 4; if(f>=54) return 3; return 2; },
+    sst: f => { if(f>=60&&f<=63) return 10; if(f>=58&&f<60) return 8; if(f>63&&f<=66) return 7; if(f>=56&&f<58) return 5; if(f>66&&f<=70) return 6; if(f>70&&f<=74) return 4; if(f>=54) return 3; return 2; },
     tempTrend: v => ({warming_fast:7,warming:8,stable:9,cooling:5,cooling_fast:3}[v]||5),
     // Halibut key: incoming/high tide pushes grunion onto beach; outgoing = halibut ambush zone
     tideState: v => ({incoming:9,high:10,outgoing:7,low:3}[v]||5),
@@ -747,7 +761,7 @@ const SCORE = {
     upwelling: v => ({strong_recent:6,moderate_recent:7,active_now:5,weak:7}[v]||5), // less critical for halibut
     chlFish: c => { if(c>=1&&c<=3) return 8; if(c>=0.5&&c<1) return 6; if(c>3) return 5; return 4; },
     // Moon is THE trigger via grunion — but handled separately via grunion scorer
-    moonPhase: v => ({new:9,full:9,quarter:3,between:5}[v]||5), // spring tides = grunion runs
+    moonPhase: v => ({new:6,full:6,quarter:10,between:7}[v]||5), // 2024 data: quarter (0.10) >> new/full (0.04); grunion scorer handles spring tide bonus separately
     reports: null, pressure: null,
     wind: (spd,dir) => {
       // Halibut: calm conditions for night diving, offshore wind cleans up surf zone
@@ -1984,11 +1998,13 @@ function calcSlotForecastScores(slot, dayIdx) {
     }
   }
 
-  // Weekend fishing pressure (more boats = spookier fish)
+  // Weekend fishing pressure — 2024 data: Tue-Thu ~1.0 fish/angler vs Sat 0.53 (YT)
+  // Nearly 2x catch rate on weekdays across all species
   const targetDate = new Date();
   targetDate.setDate(targetDate.getDate() + dayIdx);
   const dow = targetDate.getDay();
-  if (dow === 0 || dow === 6) fishAdj -= 0.3;
+  if (dow === 0 || dow === 6) fishAdj -= 0.6;          // weekend penalty (real: ~47% lower rate)
+  else if (dow >= 2 && dow <= 4) fishAdj += 0.3;       // Tue-Thu bonus (real: ~30% higher rate)
 
   // Future-day uncertainty decay (confidence drops ~5% per day)
   const decay = 1 - (dayIdx * 0.05);
