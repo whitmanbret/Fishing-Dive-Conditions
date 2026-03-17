@@ -1502,33 +1502,43 @@ function updateDisplay() {
   let vizEst='--';
   let vizSource = 'EST';
   if(D.waveEnergy!==undefined||D.rainfall||D.turbidity!==undefined) {
-    // Location-aware visibility: kelp and shelter significantly improve viz
+    // Location-aware visibility: kelp and shelter improve viz, but capped to stay realistic
     const locShelter = loc.shelter || 'low';
     const locKelp = loc.kelpDensity || 'none';
-    // Shelter multiplier: high kelp beds like Point Loma dampen surge
+    // Shelter multiplier — capped at 1.25 to avoid unrealistic 70+ ft estimates
     let shelterMult = 1.0;
-    if (locKelp === 'high') shelterMult += 0.45;      // thick kelp = major protection
-    else if (locKelp === 'moderate') shelterMult += 0.25;
-    if (locShelter === 'high') shelterMult += 0.3;
-    else if (locShelter === 'moderate') shelterMult += 0.15;
+    if (locKelp === 'high') shelterMult += 0.15;
+    else if (locKelp === 'moderate') shelterMult += 0.10;
+    if (locShelter === 'high') shelterMult += 0.10;
+    else if (locShelter === 'moderate') shelterMult += 0.05;
 
     // PRIORITY 1: If we have real-time turbidity from SASS, use NTU-based estimate
     // Calibrated from Dec 2024 NTU data + Scripps Pier camera piling distances (4/11/14/30 ft)
+    // NOTE: Scripps Pier is under-pier at 5m; open water dive sites are typically better.
+    // Shelter multiplier is capped at 1.25 for turbidity — it's already a direct measurement.
     if (D.turbidity !== undefined) {
       let lo, hi;
       const ntu = D.turbidity;
-      if(ntu < 0.3)      { lo=30; hi=45; }  // pilings visible to 30ft+
-      else if(ntu < 0.5)  { lo=20; hi=35; }  // can see 14ft piling clearly
-      else if(ntu < 0.8)  { lo=12; hi=22; }  // 14ft piling faint
+      if(ntu < 0.3)      { lo=25; hi=35; }  // pilings visible to 30ft+
+      else if(ntu < 0.5)  { lo=18; hi=28; }  // can see 14ft piling clearly
+      else if(ntu < 0.8)  { lo=12; hi=20; }  // 14ft piling faint
       else if(ntu < 1.2)  { lo=8;  hi=15; }  // 11ft piling visible
       else if(ntu < 2.0)  { lo=5;  hi=11; }  // 4ft piling clear, 11ft faint
       else if(ntu < 3.5)  { lo=3;  hi=7;  }  // only 4ft piling visible
       else if(ntu < 5.0)  { lo=2;  hi=4;  }
       else                 { lo=1;  hi=3;  }
-      // Apply shelter multiplier
-      lo = Math.max(1, Math.round(lo * shelterMult));
-      hi = Math.max(lo+1, Math.round(hi * shelterMult));
-      // Blend with swell estimate if available (turbidity is pier-based, swell affects open water)
+      // Mild shelter adjustment — turbidity is direct measurement, so only small boost for kelp
+      const turbShelter = Math.min(1.25, shelterMult);
+      lo = Math.max(1, Math.round(lo * turbShelter));
+      hi = Math.max(lo+1, Math.round(hi * turbShelter));
+      // If swell is also high, blend downward (pier is sheltered, open water will be worse)
+      if (D.waveEnergy !== undefined && D.waveEnergy > 100) {
+        lo = Math.max(1, Math.round(lo * 0.7));
+        hi = Math.max(lo+1, Math.round(hi * 0.7));
+      } else if (D.waveEnergy !== undefined && D.waveEnergy > 50) {
+        lo = Math.max(1, Math.round(lo * 0.85));
+        hi = Math.max(lo+1, Math.round(hi * 0.85));
+      }
       let suffix = '';
       if (D.chlorophyll > 8) suffix = ' (bloom)';
       else if (D.chlorophyll > 3) suffix = ' (green water)';
@@ -1545,25 +1555,29 @@ function updateDisplay() {
       const hi = Math.max(lo+1, Math.round(10 * shelterMult));
       vizEst=`${lo}–${hi} ft`;
     }
-    // PRIORITY 3: Wave energy based estimate
+    // PRIORITY 3: Wave energy based estimate (same ranges as forecast estimateVizFeet)
     else if(D.waveEnergy!==undefined) {
       let lo, hi;
-      if(D.waveEnergy<=20) { lo=25; hi=40; }
-      else if(D.waveEnergy<=50) { lo=15; hi=25; }
-      else if(D.waveEnergy<=100) { lo=8; hi=15; }
-      else if(D.waveEnergy<=200) { lo=4; hi=8; }
-      else { lo=2; hi=4; }
+      if(D.waveEnergy<=20) { lo=20; hi=35; }
+      else if(D.waveEnergy<=50) { lo=12; hi=22; }
+      else if(D.waveEnergy<=100) { lo=6; hi=14; }
+      else if(D.waveEnergy<=200) { lo=3; hi=7; }
+      else { lo=1; hi=4; }
       // Apply shelter multiplier
-      lo = Math.max(2, Math.round(lo * shelterMult));
+      lo = Math.max(1, Math.round(lo * shelterMult));
       hi = Math.max(lo+1, Math.round(hi * shelterMult));
       // Chlorophyll penalty — HABs 17yr data: Apr-May avg 10-13 mg/m³ = bloom season
       if(D.chlorophyll>8) { lo = Math.max(1, lo-5); hi = Math.max(lo+1, hi-4); vizEst=`${lo}–${hi} ft (bloom)`; }
-      else if(D.chlorophyll>3) { lo = Math.max(1, lo-3); hi = Math.max(lo+1, hi-2); vizEst=`${lo}–${hi} ft (green water)`; }
+      else if(D.chlorophyll>3) { lo = Math.max(1, lo-2); hi = Math.max(lo+1, hi-2); vizEst=`${lo}–${hi} ft (green water)`; }
       else if(D.chlorophyll>1) { lo = Math.max(1, lo-1); hi = Math.max(lo+1, hi-1); vizEst=`${lo}–${hi} ft`; }
       else vizEst=`${lo}–${hi} ft`;
+      // Cap at 40ft (San Diego rarely exceeds this)
+      hi = Math.min(40, hi);
+      lo = Math.min(lo, hi - 1);
+      vizEst = vizEst.replace(/\d+–\d+ ft/, `${lo}–${hi} ft`);
     } else if(D.rainfall==='none'||D.rainfall==='trace') {
       const lo = Math.round(10 * shelterMult);
-      const hi = Math.round(20 * shelterMult);
+      const hi = Math.min(25, Math.round(20 * shelterMult));
       vizEst=`${lo}–${hi} ft (est.)`;
     } else vizEst='5–12 ft (est.)';
   }
@@ -1758,11 +1772,11 @@ function recalculate() {
   const loc = LOCATIONS[currentLocation];
   let vizFinal = vizAvg;
   if (vizFinal !== null) {
-    // Kelp density bonus: high kelp = natural wave break
-    if (loc.kelpDensity === 'high') vizFinal = Math.min(10, vizFinal + 1.2);
-    else if (loc.kelpDensity === 'moderate') vizFinal = Math.min(10, vizFinal + 0.6);
+    // Kelp density bonus: high kelp = natural wave break (reduced from 1.2 to 0.6)
+    if (loc.kelpDensity === 'high') vizFinal = Math.min(10, vizFinal + 0.6);
+    else if (loc.kelpDensity === 'moderate') vizFinal = Math.min(10, vizFinal + 0.3);
     // Shelter bonus: protected locations hold viz better
-    if (loc.shelter === 'high') vizFinal = Math.min(10, vizFinal + 0.5);
+    if (loc.shelter === 'high') vizFinal = Math.min(10, vizFinal + 0.3);
     else if (loc.shelter === 'moderate') vizFinal = Math.min(10, vizFinal + 0.3);
   }
 
@@ -2146,30 +2160,45 @@ function calcSlotForecastScores(slot, dayIdx) {
 }
 
 function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
-  // Base visibility from current wave energy
+  // Start from the SAME base as the current-day estimate for consistency
   let baseLo, baseHi;
-  const we = D.waveEnergy;
-  if (we !== undefined) {
-    if (we <= 20) { baseLo = 25; baseHi = 40; }
-    else if (we <= 50) { baseLo = 15; baseHi = 25; }
-    else if (we <= 100) { baseLo = 8; baseHi = 15; }
-    else if (we <= 200) { baseLo = 4; baseHi = 8; }
-    else { baseLo = 1; baseHi = 4; }
+
+  // If today (dayIdx=0) and we have turbidity, use same NTU-based estimate as main panel
+  if (dayIdx === 0 && D.turbidity !== undefined) {
+    const ntu = D.turbidity;
+    if(ntu < 0.3)      { baseLo=25; baseHi=35; }
+    else if(ntu < 0.5)  { baseLo=18; baseHi=28; }
+    else if(ntu < 0.8)  { baseLo=12; baseHi=20; }
+    else if(ntu < 1.2)  { baseLo=8;  baseHi=15; }
+    else if(ntu < 2.0)  { baseLo=5;  baseHi=11; }
+    else if(ntu < 3.5)  { baseLo=3;  baseHi=7;  }
+    else if(ntu < 5.0)  { baseLo=2;  baseHi=4;  }
+    else                 { baseLo=1;  baseHi=3;  }
   } else {
-    // Fallback: estimate from viz score
-    if (vizScore >= 8) { baseLo = 20; baseHi = 35; }
-    else if (vizScore >= 6) { baseLo = 12; baseHi = 20; }
-    else if (vizScore >= 4) { baseLo = 6; baseHi = 12; }
-    else { baseLo = 2; baseHi = 6; }
+    // Future days or no turbidity: use wave energy estimate
+    const we = D.waveEnergy;
+    if (we !== undefined) {
+      if (we <= 20) { baseLo = 20; baseHi = 35; }
+      else if (we <= 50) { baseLo = 12; baseHi = 22; }
+      else if (we <= 100) { baseLo = 6; baseHi = 14; }
+      else if (we <= 200) { baseLo = 3; baseHi = 7; }
+      else { baseLo = 1; baseHi = 4; }
+    } else {
+      // Fallback: estimate from viz score
+      if (vizScore >= 8) { baseLo = 18; baseHi = 30; }
+      else if (vizScore >= 6) { baseLo = 10; baseHi = 18; }
+      else if (vizScore >= 4) { baseLo = 5; baseHi = 10; }
+      else { baseLo = 2; baseHi = 5; }
+    }
   }
 
-  // Location shelter/kelp multiplier (same as current-day estimation)
+  // Location shelter/kelp multiplier — capped to avoid unrealistic numbers
   const loc = LOCATIONS[currentLocation];
   let shelterMult = 1.0;
-  if (loc.kelpDensity === 'high') shelterMult += 0.45;
-  else if (loc.kelpDensity === 'moderate') shelterMult += 0.25;
-  if (loc.shelter === 'high') shelterMult += 0.3;
-  else if (loc.shelter === 'moderate') shelterMult += 0.15;
+  if (loc.kelpDensity === 'high') shelterMult += 0.15;       // kelp helps, but modestly
+  else if (loc.kelpDensity === 'moderate') shelterMult += 0.10;
+  if (loc.shelter === 'high') shelterMult += 0.10;
+  else if (loc.shelter === 'moderate') shelterMult += 0.05;
   baseLo = Math.round(baseLo * shelterMult);
   baseHi = Math.round(baseHi * shelterMult);
 
@@ -2178,7 +2207,7 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
   if (avgWind > 15) windMult = 0.5;
   else if (avgWind > 10) windMult = 0.7;
   else if (avgWind > 7) windMult = 0.85;
-  else if (avgWind < 4) windMult = 1.15;
+  else if (avgWind < 4) windMult = 1.1;
 
   // Adjust for rain probability
   let rainMult = 1;
@@ -2186,14 +2215,26 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
   else if (precipPct > 50) rainMult = 0.6;
   else if (precipPct > 30) rainMult = 0.8;
 
+  // Swell degradation for open water (pier turbidity doesn't capture this)
+  let swellMult = 1;
+  if (D.waveEnergy !== undefined) {
+    if (D.waveEnergy > 100) swellMult = 0.7;
+    else if (D.waveEnergy > 50) swellMult = 0.85;
+  }
+
   // Future days drift slightly toward average (less certainty)
-  const dayDecay = 1 - (dayIdx * 0.05);
+  const dayDecay = 1 - (dayIdx * 0.04);
 
-  baseLo = Math.max(1, Math.round(baseLo * windMult * rainMult * dayDecay));
-  baseHi = Math.max(baseLo + 1, Math.round(baseHi * windMult * rainMult * dayDecay));
+  baseLo = Math.max(1, Math.round(baseLo * windMult * rainMult * swellMult * dayDecay));
+  baseHi = Math.max(baseLo + 1, Math.round(baseHi * windMult * rainMult * swellMult * dayDecay));
 
-  // Chlorophyll adjustment
-  if (D.chlorophyll > 3) { baseLo = Math.max(1, baseLo - 3); baseHi = Math.max(baseLo + 1, baseHi - 3); }
+  // Chlorophyll adjustment — HABs scale: bloom >8, green water >3
+  if (D.chlorophyll > 8) { baseLo = Math.max(1, baseLo - 5); baseHi = Math.max(baseLo + 1, baseHi - 4); }
+  else if (D.chlorophyll > 3) { baseLo = Math.max(1, baseLo - 2); baseHi = Math.max(baseLo + 1, baseHi - 2); }
+
+  // Cap at realistic max (San Diego rarely exceeds 40ft)
+  baseHi = Math.min(40, baseHi);
+  baseLo = Math.min(baseLo, baseHi - 1);
 
   return `${baseLo}–${baseHi} ft`;
 }
