@@ -640,9 +640,12 @@ const CPFV = {
     index:          [1,1,2,3,6,9,10,9,7,5,2,1],
   },
   wsb: {
+    // Aalbers & Sepulveda 2015: 95% recaptures Apr-Oct, spawning Mar-Jul
+    // Shallow profiles in summer (10.5m Aug), deep in winter (31.1m Jan)
+    // Only 1 recapture Dec-Mar — fish retreat to depth, effectively unavailable
     catch_per_trip: [0.3, 0.5, 1.4, 3.2, 5.1, 6.8, 4.2, 2.8, 1.9, 1.1, 0.4, 0.2],
     five_yr_avg:    [0.3, 0.5, 1.4, 3.2, 5.1, 6.8, 4.2, 2.8, 1.9, 1.1, 0.4, 0.2],
-    peak_month: 5,
+    peak_month: 5, // June — aligns with spawning peak (Aalbers 2008)
     index:          [2,3,6,8,9,10,7,5,4,3,2,1],
   },
   halibut: {
@@ -705,9 +708,15 @@ const SCORE = {
     bottom: v => ({rock:10,kelp:9,sand:5,mud:3,silt:2}[v]||5),
   },
   wsb: {
-    tip: 'WSB prefer calm, cool water (58–64°F) in kelp beds. Hunt by sound — quiet conditions critical. Best on spring tides (new & full moon). Peak Apr–Jun.',
-    waterTemp: f => { if(f>=60&&f<64) return 10; if(f>=58&&f<60) return 8; if(f>=64&&f<67) return 7; if(f>=56&&f<58) return 5; if(f>=67&&f<69) return 4; if(f>=55) return 3; return 2; },
-    sst: f => { if(f>=60&&f<64) return 10; if(f>=58&&f<60) return 8; if(f>=64&&f<67) return 7; if(f>=56&&f<58) return 5; if(f>=67&&f<69) return 4; if(f>=55) return 3; return 2; },
+    // Aalbers & Sepulveda 2015: 173 DST-tagged WSB off CA coast (2008-2011)
+    // Core temp range: 13-16°C (55-61°F at depth), peak at 14°C (57°F)
+    // Fish at mean 15m depth → surface reads ~3°F warmer → optimal surface: 59-63°F
+    // 95% of catches Apr-Oct, spawning Mar-Jul, crepuscular feeders (dawn/dusk VROM +24%)
+    // Shallow profiles in summer (10.5m Aug), deep in winter (31.1m Jan)
+    // Lunar luminosity correlation LOW (r=0.01-0.19) — moon matters via TIDAL flow, not light
+    tip: 'WSB occupy 55–61°F at depth (surface 59–63°F). Crepuscular feeders — dawn & dusk best (Aalbers 2015: +24% activity at twilight). Spring tides drive kelp flow. Peak Apr–Jun.',
+    waterTemp: f => { if(f>=59&&f<=63) return 10; if(f>=57&&f<59) return 8; if(f>63&&f<=66) return 7; if(f>=55&&f<57) return 5; if(f>66&&f<=68) return 4; if(f>=53&&f<55) return 3; return 2; },
+    sst: f => { if(f>=59&&f<=63) return 10; if(f>=57&&f<59) return 8; if(f>63&&f<=66) return 7; if(f>=55&&f<57) return 5; if(f>66&&f<=68) return 4; if(f>=53&&f<55) return 3; return 2; },
     tempTrend: v => ({warming_fast:5,warming:7,stable:9,cooling:6,cooling_fast:3}[v]||5),
     tideState: v => ({incoming:10,high:9,outgoing:5,low:4}[v]||5),
     current: k => { if(k>=0.1&&k<=0.4) return 10; if(k<0.1) return 7; if(k<=0.7) return 6; if(k<=1.0) return 3; return 1; },
@@ -1518,14 +1527,16 @@ const FISH_WEIGHTS_BY_SPECIES = {
     sst:        0.02,  // #10 — confirmation
   },
   wsb: {
-    waterTemp:  0.18,  // #3 — important but WSB tolerate wider range (58-67°F)
-    tideState:  0.22,  // #1 — THE trigger for WSB; incoming tide = feeding frenzy
-    moonPhase:  0.18,  // #2 — HUGE for WSB; spring tides = strongest flow through kelp
-    reports:    0.12,  // #4 — seasonal presence
+    // Aalbers & Sepulveda 2015: WSB occupy narrow 13-16°C (55-61°F) thermal niche
+    // Temp acts as binary gate — when in zone, tides + moon drive feeding
+    waterTemp:  0.16,  // #3 — narrow thermal niche (55-61°F at depth); binary trigger
+    tideState:  0.22,  // #1 — THE trigger; depth shifts correlate with tidal frequencies (3-4 cpd)
+    moonPhase:  0.18,  // #2 — spring tides = strongest kelp flow; lunar luminosity r=0.01-0.19 (not light, FLOW)
+    reports:    0.12,  // #4 — seasonal presence; 95% of catches Apr-Oct
     upwelling:  0.06,  // #7 — less critical; WSB don't chase bait balls like YT
-    chlFish:    0.04,  // #8 — minor for WSB
-    tempTrend:  0.06,  // #6 — stable preferred, not chasing warm water
-    current:    0.08,  // #5 — WSB need light current (0.1-0.4 kts) to hunt by sound
+    chlFish:    0.04,  // #8 — minor; WSB hunt by sound not sight
+    tempTrend:  0.08,  // #5 — stable preferred; fish alter depth to maintain thermal niche
+    current:    0.08,  // #6 — light current (0.1-0.4 kts); hunt by sound/lateral line
     pressure:   0.04,  // #9 — WSB respond to pressure drops
     sst:        0.02,  // #10 — confirmation
   },
@@ -1690,6 +1701,25 @@ function updateInsight(fish,viz) {
     else if(fish<4&&viz<4) msg='Poor conditions across the board. Consider waiting for improvement.';
     else msg=SCORE[currentSpecies].tip;
   } else msg=SCORE[currentSpecies].tip;
+
+  // WSB-specific crepuscular advice (Aalbers & Sepulveda 2015)
+  if (currentSpecies === 'wsb') {
+    const hr = new Date().getHours();
+    if (hr >= 4 && hr <= 7) {
+      msg += ' 🌅 Dawn window NOW — WSB vertical activity peaks at twilight (+24% movement rate). Get in the water.';
+    } else if (hr >= 16 && hr <= 19) {
+      msg += ' 🌇 Dusk window approaching — WSB spawn and feed at sunset. Prime ambush time in kelp beds.';
+    } else if (hr >= 10 && hr <= 15) {
+      msg += ' 💡 WSB tip: fish go deeper midday. Best chances are dawn (first light) and dusk (last 2 hrs before dark).';
+    }
+    // Seasonal availability (95% of catches Apr-Oct, spawning Mar-Jul)
+    const mo = new Date().getMonth(); // 0-indexed
+    if (mo >= 3 && mo <= 5) {
+      msg += ' 📅 Peak WSB season — fish are shallow for spawning.';
+    } else if (mo >= 9 || mo <= 1) {
+      msg += ' ❄️ WSB go deep in winter (avg 31m Jan). Catches drop significantly Oct-Mar.';
+    }
+  }
 
   // Halibut-specific grunion alert
   if (currentSpecies === 'halibut' && D.grunion) {
@@ -1915,11 +1945,19 @@ function calcSlotForecastScores(slot, dayIdx) {
   else if (precip > 10) precipAdj = -0.2;
 
   // --- FISH adjustments ---
-  // Tide-based time-of-day bonus (incoming tide is THE fish trigger)
+  // Time-of-day bonus — species-specific based on feeding behavior
   let timeAdj = 0;
-  if (slot.timeLabel === '7am') timeAdj = 0.6;      // dawn patrol — best bite window
-  else if (slot.timeLabel === '6pm') timeAdj = 0.4;  // evening bite — second best
-  else timeAdj = -0.2;                               // midday — typically slowest
+  if (currentSpecies === 'wsb') {
+    // Aalbers 2015: WSB VROM +24% during twilight (48.9 m/h vs 39.6 day)
+    // Crepuscular feeders — dawn and dusk are significantly better
+    if (slot.timeLabel === '7am') timeAdj = 1.0;       // dawn = peak WSB activity
+    else if (slot.timeLabel === '6pm') timeAdj = 0.8;   // dusk = spawning + feeding
+    else timeAdj = -0.5;                                // midday = WSB deeper, less active
+  } else {
+    if (slot.timeLabel === '7am') timeAdj = 0.6;      // dawn patrol — best bite window
+    else if (slot.timeLabel === '6pm') timeAdj = 0.4;  // evening bite — second best
+    else timeAdj = -0.2;                               // midday — typically slowest
+  }
 
   // Species-specific environmental trends (grow with future days)
   let fishAdj = 0;
@@ -2152,11 +2190,20 @@ function calcBestDiveWindow(periods, dayTideHiLo, dayIdx) {
       }
     }
 
-    // Time-of-day bonus: early morning and late afternoon often best
+    // Time-of-day bonus: species-specific
     let timeBonus = 0;
-    if (h >= earliestHour && h <= earliestHour + 3) timeBonus = 1.5; // dawn patrol
-    else if (h >= latestHour - 3 && h < latestHour) timeBonus = 1; // evening bite
-    else if (h >= 11 && h <= 14) timeBonus = -0.5; // midday often windy
+    if (currentSpecies === 'wsb') {
+      // Aalbers 2015: WSB are crepuscular — VROM 48.9 m/h at twilight vs 39.6 daytime
+      // Surface-oriented behavior peaks 0900-1600 AND 2300-0300 but feeding is twilight
+      if (h >= earliestHour && h <= earliestHour + 2) timeBonus = 2.5; // dawn = peak WSB
+      else if (h >= latestHour - 2 && h <= latestHour) timeBonus = 2.0; // dusk = spawning + feeding
+      else if (h >= 11 && h <= 14) timeBonus = -1.0; // midday = WSB go deeper, less vulnerable
+      else timeBonus = 0; // transition periods
+    } else {
+      if (h >= earliestHour && h <= earliestHour + 3) timeBonus = 1.5; // dawn patrol
+      else if (h >= latestHour - 3 && h < latestHour) timeBonus = 1; // evening bite
+      else if (h >= 11 && h <= 14) timeBonus = -0.5; // midday often windy
+    }
 
     // Precip penalty
     let precipPenalty = 0;
