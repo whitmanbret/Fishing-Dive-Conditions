@@ -574,8 +574,14 @@
       <div class="factor-row"><div class="factor-label">Wave Energy</div><div class="factor-value" id="waveEnergyVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="waveEnergyScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Rainfall (72h)</div><div class="factor-value" id="rainfallVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="rainfallScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Chlorophyll</div><div class="factor-value" id="chlVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="chlVizScore">-</div></div>
+      <div class="factor-row"><div class="factor-label">Turbidity</div><div class="factor-value" id="turbidityVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="turbidityScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Bottom Type</div><div class="factor-value" id="bottomVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="bottomScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Est. Visibility</div><div class="factor-value" id="estVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="estVizScore">-</div></div>
+      <div class="factor-row" style="border-top:1px solid rgba(255,255,255,0.06); padding-top:6px; margin-top:4px">
+        <div class="factor-label">🎥 Pier Cam</div>
+        <div class="factor-value"><a href="https://coollab.ucsd.edu/pierviz/" target="_blank" style="color:var(--accent);text-decoration:none">Scripps Pier Live ↗</a> <span style="font-size:0.7em;opacity:0.5">pilings at 4, 11, 14, 30 ft</span></div>
+        <div class="factor-score" style="background:none"></div>
+      </div>
     </section>
 
     <!-- DATA SOURCES PANEL -->
@@ -590,6 +596,7 @@
         <div class="source-item"><span>NWS — Wind, rainfall, forecast</span><span class="source-status" id="srcNws">--</span></div>
         <div class="source-item"><span>NCEI ERDDAP — SST (OISST)</span><span class="source-status" id="srcSst">--</span></div>
         <div class="source-item"><span>NCEI ERDDAP — Chlorophyll (Climo)</span><span class="source-status" id="srcChl">--</span></div>
+        <div class="source-item"><span>SCCOOS SASS — Scripps Pier Turbidity/Chl (Live)</span><span class="source-status" id="srcSass">--</span></div>
         <div class="source-item"><span>NOAA PFEL — Upwelling Index</span><span class="source-status" id="srcUpwell">--</span></div>
         <div class="source-item"><span>CDFW CPFV Logbooks — Seasonal baselines</span><span class="source-status source-ok">LOCAL</span></div>
         <div class="source-item"><span>Calculated — Moon, pressure, current, energy</span><span class="source-status source-ok">CALC</span></div>
@@ -602,6 +609,8 @@
       <a href="https://cdip.ucsd.edu" target="_blank">CDIP/UCSD</a> ·
       <a href="https://weather.gov" target="_blank">NWS</a> ·
       <a href="https://www.ncei.noaa.gov/erddap/" target="_blank">NCEI Satellite</a> ·
+      <a href="https://sccoos.org/autoss/" target="_blank">SCCOOS SASS</a> ·
+      <a href="https://coollab.ucsd.edu/pierviz/" target="_blank">Scripps Pier Cam</a> ·
       CDFW CPFV Logbooks (2021–2025)<br>
       <span id="stationFooter">Station: La Jolla (9410230) · Buoy: Torrey Pines Outer (46225)</span>
     </div>
@@ -699,7 +708,7 @@ const SCORE = {
     swellPeriod: s => { if(s>=18) return 10; if(s>=14) return 8; if(s>=11) return 6; if(s>=8) return 4; return 2; },
     waveEnergy: e => { if(e<=20) return 10; if(e<=50) return 8; if(e<=100) return 5; if(e<=200) return 3; return 1; },
     rainfall: v => ({none:10,trace:8,light:6,moderate:3,heavy:1}[v]||5),
-    chlViz: c => { if(c<0.3) return 10; if(c<0.5) return 8; if(c<1) return 6; if(c<3) return 4; return 2; },
+    chlViz: c => { if(c<0.5) return 10; if(c<1) return 9; if(c<2) return 7; if(c<4) return 6; if(c<8) return 4; if(c<15) return 2; return 1; }, // HABs 17yr: normal 2-3, bloom 10+, red tide 50+
     bottom: v => ({rock:9,kelp:8,sand:6,mud:3,silt:2}[v]||5),
   },
   yellowtail: {
@@ -1294,10 +1303,12 @@ async function fetchSST() {
 }
 
 // --- Chlorophyll ---
+// HABs 17-year weekly average (2008-2025) from CalHABMAP Scripps Pier — lab-measured, most reliable
 const CHL_CLIMATOLOGY = {
-  1: 1.15, 2: 2.44, 3: 2.39, 4: 1.41, 5: 0.98, 6: 0.68,
-  7: 0.85, 8: 0.56, 9: 0.95, 10: 0.82, 11: 1.10, 12: 2.25
+  1: 1.95, 2: 2.03, 3: 3.31, 4: 12.73, 5: 10.38, 6: 3.81,
+  7: 2.31, 8: 2.03, 9: 2.93, 10: 3.33, 11: 2.12, 12: 2.42
 };
+// Apr-May = bloom season (10-13 mg/m³ avg, can spike to 400+ during red tide)
 
 async function fetchChlorophyll() {
   const loc = LOCATIONS[currentLocation];
@@ -1323,8 +1334,45 @@ async function fetchChlorophyll() {
   } catch(e) {}
   if (CHL_CLIMATOLOGY[month]) {
     D.chlorophyll = CHL_CLIMATOLOGY[month];
-    D.chlSource = 'Climatology';
+    D.chlSource = 'HABs 17yr';
     srcStatus.chl='ok';
+  }
+}
+
+// --- Scripps Pier Automated Shore Station (SASS) — real-time turbidity + chlorophyll ---
+// ECO sensor at 5m depth, ~4min resolution. Turbidity in NTU, chlorophyll in µg/L.
+// Installed Dec 2024. Falls back gracefully if sensor offline.
+async function fetchScrippsSASS() {
+  try {
+    // Get last 24h of turbidity + chlorophyll from CalOOS ERDDAP
+    const now = new Date();
+    const yesterday = new Date(now - 24*60*60*1000);
+    const fmt = d => d.toISOString().split('.')[0]+'Z';
+    const url = `https://erddap.caloos.org/erddap/tabledap/scripps-pier-automated-shore-sta-1.json?time,sea_water_turbidity_eco,mass_concentration_of_chlorophyll_in_sea_water_eco&time%3E=${fmt(yesterday)}&time%3C=${fmt(now)}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('SASS fetch failed');
+    const d = await r.json();
+    if (d.table && d.table.rows && d.table.rows.length > 0) {
+      const cols = d.table.columnNames;
+      const ti = cols.indexOf('sea_water_turbidity_eco');
+      const ci = cols.indexOf('mass_concentration_of_chlorophyll_in_sea_water_eco');
+      const turbVals = d.table.rows.map(r=>r[ti]).filter(v=>v!==null&&!isNaN(v));
+      const chlVals = d.table.rows.map(r=>r[ci]).filter(v=>v!==null&&!isNaN(v));
+      if (turbVals.length > 0) {
+        D.turbidity = parseFloat((turbVals.reduce((a,b)=>a+b,0)/turbVals.length).toFixed(2));
+        D.turbSource = 'SASS Live';
+        srcStatus.sass = 'ok';
+      }
+      if (chlVals.length > 0) {
+        // Override satellite chlorophyll with live sensor data (much more accurate)
+        D.chlorophyll = parseFloat((chlVals.reduce((a,b)=>a+b,0)/chlVals.length).toFixed(2));
+        D.chlSource = 'SASS Live';
+        srcStatus.chl = 'ok';
+      }
+    }
+  } catch(e) {
+    // SASS sensor may be offline — fail silently, satellite/climo chlorophyll still works
+    srcStatus.sass = 'err';
   }
 }
 
@@ -1351,6 +1399,7 @@ async function fetchAllData() {
     fetchWind(), fetchWindForecast(), fetchHourlyForecast(),
     fetchBuoyData(), fetchRainfall(), fetchUpwelling(),
     fetchSST(), fetchChlorophyll(), fetchMultiDayTides(),
+    fetchScrippsSASS(),  // real-time turbidity + chlorophyll from Scripps Pier
   ]);
 
   if(D.swellFt&&D.swellPeriod) D.waveEnergy=D.swellFt*D.swellFt*D.swellPeriod;
@@ -1435,13 +1484,24 @@ function updateDisplay() {
   const chlVizLabel = D.chlorophyll!==undefined ? `${D.chlorophyll} mg/m³ (${chlClarity(D.chlorophyll)})` : 'Unavailable';
   setVal('chlVizVal', chlVizLabel, D.chlSource||'SAT', 'sat');
 
+  // Turbidity from Scripps Pier SASS (real-time when available)
+  if (D.turbidity !== undefined) {
+    const turbLabel = turbClarity(D.turbidity);
+    setVal('turbidityVal', `${D.turbidity} NTU (${turbLabel})`, D.turbSource||'SASS', 'sass');
+    setScore('turbidityScore', turbScore(D.turbidity));
+  } else {
+    setVal('turbidityVal', 'Sensor offline', '--');
+    setScore('turbidityScore', null);
+  }
+
   const bottomLabels={rock:'Rock / Reef',kelp:'Kelp Bed',sand:'Sand',mud:'Mud',silt:'Silt'};
   const depthInfo = loc.depth ? ` · ${loc.depth}` : '';
   const kelpInfo = loc.kelpDensity && loc.kelpDensity !== 'none' ? ` · Kelp: ${loc.kelpDensity}` : '';
   setVal('bottomVal', (bottomLabels[D.bottom]||D.bottom) + depthInfo + kelpInfo, loc.name);
 
   let vizEst='--';
-  if(D.waveEnergy!==undefined||D.rainfall) {
+  let vizSource = 'EST';
+  if(D.waveEnergy!==undefined||D.rainfall||D.turbidity!==undefined) {
     // Location-aware visibility: kelp and shelter significantly improve viz
     const locShelter = loc.shelter || 'low';
     const locKelp = loc.kelpDensity || 'none';
@@ -1452,7 +1512,31 @@ function updateDisplay() {
     if (locShelter === 'high') shelterMult += 0.3;
     else if (locShelter === 'moderate') shelterMult += 0.15;
 
-    if(D.rainfall==='heavy') {
+    // PRIORITY 1: If we have real-time turbidity from SASS, use NTU-based estimate
+    // Calibrated from Dec 2024 NTU data + Scripps Pier camera piling distances (4/11/14/30 ft)
+    if (D.turbidity !== undefined) {
+      let lo, hi;
+      const ntu = D.turbidity;
+      if(ntu < 0.3)      { lo=30; hi=45; }  // pilings visible to 30ft+
+      else if(ntu < 0.5)  { lo=20; hi=35; }  // can see 14ft piling clearly
+      else if(ntu < 0.8)  { lo=12; hi=22; }  // 14ft piling faint
+      else if(ntu < 1.2)  { lo=8;  hi=15; }  // 11ft piling visible
+      else if(ntu < 2.0)  { lo=5;  hi=11; }  // 4ft piling clear, 11ft faint
+      else if(ntu < 3.5)  { lo=3;  hi=7;  }  // only 4ft piling visible
+      else if(ntu < 5.0)  { lo=2;  hi=4;  }
+      else                 { lo=1;  hi=3;  }
+      // Apply shelter multiplier
+      lo = Math.max(1, Math.round(lo * shelterMult));
+      hi = Math.max(lo+1, Math.round(hi * shelterMult));
+      // Blend with swell estimate if available (turbidity is pier-based, swell affects open water)
+      let suffix = '';
+      if (D.chlorophyll > 8) suffix = ' (bloom)';
+      else if (D.chlorophyll > 3) suffix = ' (green water)';
+      vizEst = `${lo}–${hi} ft${suffix}`;
+      vizSource = 'SASS';
+    }
+    // PRIORITY 2: Rain overrides swell-based estimate
+    else if(D.rainfall==='heavy') {
       const lo = Math.max(1, Math.round(2 * shelterMult));
       const hi = Math.max(lo+1, Math.round(5 * shelterMult));
       vizEst=`${lo}–${hi} ft`;
@@ -1460,7 +1544,9 @@ function updateDisplay() {
       const lo = Math.max(2, Math.round(4 * shelterMult));
       const hi = Math.max(lo+1, Math.round(10 * shelterMult));
       vizEst=`${lo}–${hi} ft`;
-    } else if(D.waveEnergy!==undefined) {
+    }
+    // PRIORITY 3: Wave energy based estimate
+    else if(D.waveEnergy!==undefined) {
       let lo, hi;
       if(D.waveEnergy<=20) { lo=25; hi=40; }
       else if(D.waveEnergy<=50) { lo=15; hi=25; }
@@ -1470,8 +1556,9 @@ function updateDisplay() {
       // Apply shelter multiplier
       lo = Math.max(2, Math.round(lo * shelterMult));
       hi = Math.max(lo+1, Math.round(hi * shelterMult));
-      // Chlorophyll penalty (green water reduces viz)
-      if(D.chlorophyll>3) { lo = Math.max(1, lo-3); hi = Math.max(lo+1, hi-2); vizEst=`${lo}–${hi} ft (green water)`; }
+      // Chlorophyll penalty — HABs 17yr data: Apr-May avg 10-13 mg/m³ = bloom season
+      if(D.chlorophyll>8) { lo = Math.max(1, lo-5); hi = Math.max(lo+1, hi-4); vizEst=`${lo}–${hi} ft (bloom)`; }
+      else if(D.chlorophyll>3) { lo = Math.max(1, lo-3); hi = Math.max(lo+1, hi-2); vizEst=`${lo}–${hi} ft (green water)`; }
       else if(D.chlorophyll>1) { lo = Math.max(1, lo-1); hi = Math.max(lo+1, hi-1); vizEst=`${lo}–${hi} ft`; }
       else vizEst=`${lo}–${hi} ft`;
     } else if(D.rainfall==='none'||D.rainfall==='trace') {
@@ -1480,7 +1567,7 @@ function updateDisplay() {
       vizEst=`${lo}–${hi} ft (est.)`;
     } else vizEst='5–12 ft (est.)';
   }
-  setVal('estVizVal', vizEst, 'EST');
+  setVal('estVizVal', vizEst, vizSource);
   const vizFeetEl = document.getElementById('vizFeetLabel');
   if (vizFeetEl) vizFeetEl.textContent = vizEst !== '--' ? `Est. ${vizEst}` : '--';
 }
@@ -1490,8 +1577,33 @@ function chlProductivity(c) {
   if(c>=1) return 'moderate'; if(c>=0.5) return 'low'; return 'oligotrophic';
 }
 function chlClarity(c) {
-  if(c<0.3) return 'blue water'; if(c<0.5) return 'clear';
-  if(c<1) return 'slightly green'; if(c<3) return 'green tint'; return 'green water';
+  if(c<0.5) return 'clear'; if(c<1) return 'good';
+  if(c<3) return 'slight green'; if(c<8) return 'green tint';
+  if(c<15) return 'bloom'; return 'red tide';
+}
+
+// Turbidity scoring from Scripps Pier SASS (NTU → vis quality)
+// Calibrated from Dec 2024 concurrent NTU + underwater camera observations
+// Pilings visible at: 4ft (always), 11ft, 14ft, 30ft
+function turbClarity(ntu) {
+  if(ntu<0.4) return 'excellent (30ft+)';
+  if(ntu<0.8) return 'good (15-30ft)';
+  if(ntu<1.5) return 'fair (10-15ft)';
+  if(ntu<3.0) return 'murky (5-10ft)';
+  if(ntu<5.0) return 'poor (3-5ft)';
+  return 'blown out (<3ft)';
+}
+function turbScore(ntu) {
+  if(ntu<0.3) return 10;
+  if(ntu<0.5) return 9;
+  if(ntu<0.8) return 8;
+  if(ntu<1.2) return 7;
+  if(ntu<1.8) return 6;
+  if(ntu<2.5) return 5;
+  if(ntu<3.5) return 4;
+  if(ntu<5.0) return 3;
+  if(ntu<8.0) return 2;
+  return 1;
 }
 
 function setVal(id, text, source, badgeClass) {
@@ -1581,14 +1693,15 @@ let FISH_WEIGHTS = FISH_WEIGHTS_BY_SPECIES.general;
 
 // Dive Visibility weights — based on actual impact on underwater viz
 const VIZ_WEIGHTS = {
-  waveEnergy:  0.28, // #1 — surge stirs bottom sediment, THE viz killer
-  rainfall:    0.20, // #2 — runoff destroys viz for 2-4 days
-  wind:        0.18, // #3 — surface chop + onshore pushes dirty water in
-  chlViz:      0.12, // #4 — phytoplankton = green water = reduced viz
-  swellPeriod: 0.08, // #5 — long period = less turbulence at depth
-  swellDir:    0.05, // #6 — determines exposure at each location
-  bottom:      0.05, // #7 — kelp/rock hold viz better than sand/mud
-  swellSize:   0.04, // #8 — partially captured by waveEnergy already
+  waveEnergy:  0.24, // #1 — surge stirs bottom sediment, THE viz killer
+  rainfall:    0.18, // #2 — runoff destroys viz for 2-4 days
+  wind:        0.16, // #3 — surface chop + onshore pushes dirty water in
+  turbidity:   0.14, // #4 — real-time NTU from Scripps Pier SASS (when available)
+  chlViz:      0.10, // #5 — phytoplankton = green water = reduced viz
+  swellPeriod: 0.06, // #6 — long period = less turbulence at depth
+  swellDir:    0.05, // #7 — determines exposure at each location
+  bottom:      0.04, // #8 — kelp/rock hold viz better than sand/mud
+  swellSize:   0.03, // #9 — partially captured by waveEnergy already
 };
 
 function recalculate() {
@@ -1627,6 +1740,11 @@ function recalculate() {
   scoreW('waveEnergyScore', D.waveEnergy, getScorer('waveEnergy'), 'waveEnergy', vizEntries);
   scoreW('rainfallScore', D.rainfall, getScorer('rainfall'), 'rainfall', vizEntries);
   scoreW('chlVizScore', D.chlorophyll, getScorer('chlViz'), 'chlViz', vizEntries);
+  // Turbidity from SASS (only contributes when sensor is online)
+  if (D.turbidity !== undefined) {
+    const ts = turbScore(D.turbidity);
+    vizEntries.push({score: ts, key: 'turbidity'});
+  }
   scoreW('bottomScore', D.bottom, getScorer('bottom'), 'bottom', vizEntries);
 
   if(D.waveEnergy) { const s=getScorer('waveEnergy')(D.waveEnergy); setScore('estVizScore',s); }
