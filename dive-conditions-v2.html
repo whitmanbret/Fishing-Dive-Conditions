@@ -724,18 +724,15 @@ const SCORE = {
     bottom: v => ({rock:10,kelp:9,sand:5,mud:3,silt:2}[v]||5),
   },
   wsb: {
-    // Aalbers & Sepulveda 2015: 173 DST-tagged WSB off CA coast (2008-2011)
-    // Core temp range: 13-16°C (55-61°F at depth), peak at 14°C (57°F)
-    // Fish at mean 15m depth → surface reads ~3°F warmer → optimal surface: 59-63°F
-    // 95% of catches Apr-Oct, spawning Mar-Jul, crepuscular feeders (dawn/dusk VROM +24%)
-    // Shallow profiles in summer (10.5m Aug), deep in winter (31.1m Jan)
-    // Lunar luminosity correlation LOW (r=0.01-0.19) — moon matters via TIDAL flow, not light
-    // 4yr CPFV: new moon 5x better than full (0.152 vs 0.031) — darkness + tide = ambush
-    // Best SST: 63°F (0.19), 65°F (0.12) — cooler than YT, aligns with Aalbers 13-16°C core
-    tip: 'WSB: new moons 5x better than full (4yr data). Dawn/dusk feeders (+24% activity). Surface 59–65°F optimal. Peak Jun. Darkness + spring tide = best ambush conditions.',
-    waterTemp: f => { if(f>=59&&f<=63) return 10; if(f>=57&&f<59) return 8; if(f>63&&f<=66) return 7; if(f>=55&&f<57) return 5; if(f>66&&f<=68) return 4; if(f>=53&&f<55) return 3; return 2; },
-    sst: f => { if(f>=59&&f<=63) return 10; if(f>=57&&f<59) return 8; if(f>63&&f<=66) return 7; if(f>=55&&f<57) return 5; if(f>66&&f<=68) return 4; if(f>=53&&f<55) return 3; return 2; },
-    tempTrend: v => ({warming_fast:5,warming:7,stable:9,cooling:6,cooling_fast:3}[v]||5),
+    // Aalbers & Sepulveda 2015: 173 DST-tagged WSB, core 13-16°C (55-61°F at depth)
+    // MacNamara et al. 2025: 161 WSB caught at Catalina, capture temps 62-71°F surface, mean 65°F
+    // CDFW ESR: catches increase at start of cool-water periods; WSB move north/west seeking preferred temps
+    // 4yr CPFV: new moon 5x better than full (0.152 vs 0.031); best SST 63-65°F surface
+    // Combined: surface sweet spot 60-66°F (Aalbers depth + offset, MacNamara surface, CPFV peak)
+    tip: 'WSB: new moons 5x better than full (4yr data). Dawn/dusk feeders (+24% activity). Surface 60–66°F optimal (MacNamara 2025: mean 65°F at capture). Peak Jun. Cooling water entering the zone = best window.',
+    waterTemp: f => { if(f>=60&&f<=66) return 10; if(f>=57&&f<60) return 8; if(f>66&&f<=68) return 7; if(f>=55&&f<57) return 5; if(f>68&&f<=71) return 4; if(f>=53&&f<55) return 3; return 2; },
+    sst: f => { if(f>=60&&f<=66) return 10; if(f>=57&&f<60) return 8; if(f>66&&f<=68) return 7; if(f>=55&&f<57) return 5; if(f>68&&f<=71) return 4; if(f>=53&&f<55) return 3; return 2; },
+    tempTrend: v => ({warming_fast:4,warming:6,stable:8,cooling:10,cooling_fast:5}[v]||5), // CDFW: catches best at start of cool-water period; cooling into the zone = prime
     tideState: v => ({incoming:10,high:9,outgoing:5,low:4}[v]||5),
     current: k => { if(k>=0.1&&k<=0.4) return 10; if(k<0.1) return 7; if(k<=0.7) return 6; if(k<=1.0) return 3; return 1; },
     upwelling: v => ({strong_recent:7,moderate_recent:6,active_now:4,weak:8}[v]||5),
@@ -1550,9 +1547,10 @@ const FISH_WEIGHTS_BY_SPECIES = {
     sst:        0.02,  // #10 — confirmation
   },
   wsb: {
-    // Aalbers & Sepulveda 2015: WSB occupy narrow 13-16°C (55-61°F) thermal niche
+    // Aalbers 2015 + MacNamara 2025 + CDFW ESR: WSB occupy 55-61°F at depth (60-66°F surface)
     // Temp acts as binary gate — when in zone, tides + moon drive feeding
-    waterTemp:  0.16,  // #3 — narrow thermal niche (55-61°F at depth); binary trigger
+    // CDFW: cooling SST entering the zone = best catches; tempTrend matters more than stable
+    waterTemp:  0.16,  // #3 — narrow thermal niche (60-66°F surface); binary trigger
     tideState:  0.22,  // #1 — THE trigger; depth shifts correlate with tidal frequencies (3-4 cpd)
     moonPhase:  0.18,  // #2 — spring tides = strongest kelp flow; lunar luminosity r=0.01-0.19 (not light, FLOW)
     reports:    0.12,  // #4 — seasonal presence; 95% of catches Apr-Oct
