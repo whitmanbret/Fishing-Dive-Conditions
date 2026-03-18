@@ -1854,21 +1854,20 @@ function recalculate() {
   else if(fishAvg!==null) spearAvg=fishAvg;
   else if(vizFinal!==null) spearAvg=vizFinal;
 
-  // Marine reserve locations: show "Not Permitted" for fish & spearfishing
+  // Marine reserve locations: keep Fish Probability (snorkelers/scuba want it),
+  // but show "Not Permitted" for Spearfishing only
+  updateGauge('fish',fishAvg,'var(--fish-color)');
+  updateGauge('viz',vizFinal,'var(--viz-color)');
   if (loc.marineReserve) {
-    updateGaugeNotPermitted('fish');
-    updateGauge('viz',vizFinal,'var(--viz-color)');
     updateGaugeNotPermitted('spear');
   } else {
-    updateGauge('fish',fishAvg,'var(--fish-color)');
-    updateGauge('viz',vizFinal,'var(--viz-color)');
     updateGauge('spear',spearAvg,'var(--spear-color)');
   }
   // Show small score under viz feet hero
   const vizSmall = document.getElementById('vizScoreSmall');
   if (vizSmall && vizFinal !== null) vizSmall.textContent = `Score: ${vizFinal.toFixed(1)} / 10`;
   if (loc.marineReserve) {
-    updateInsightReserve(vizFinal);
+    updateInsightReserve(fishAvg, vizFinal);
   } else {
     updateInsight(fishAvg,vizFinal);
   }
@@ -1937,10 +1936,16 @@ function updateGaugeNotPermitted(name) {
   setArc(name+'Arc', 0, '#e74c3c33');
 }
 
-function updateInsightReserve(viz) {
+function updateInsightReserve(fish, viz) {
   const el = document.getElementById('insightText');
-  let msg = '🏛️ La Jolla Shores is within the San Diego-La Jolla Ecological Reserve — spearfishing and the take of all marine life are prohibited. Dive conditions shown for recreational/scuba divers.';
-  if (viz !== null) {
+  let msg = '🏛️ La Jolla Shores is within the San Diego-La Jolla Ecological Reserve — spearfishing and the take of all marine life are prohibited.';
+  if (viz !== null && fish !== null) {
+    if (viz >= 7 && fish >= 7) msg += ' Excellent conditions — great visibility and high fish activity. Perfect day for snorkeling or scuba!';
+    else if (viz >= 7) msg += ' Visibility is looking great for a dive today!';
+    else if (fish >= 7) msg += ' Fish activity is high — bring a camera!';
+    else if (viz >= 4) msg += ' Decent conditions for recreational diving.';
+    else msg += ' Visibility is limited — consider waiting for improvement.';
+  } else if (viz !== null) {
     if (viz >= 7) msg += ' Visibility is looking great for a dive today!';
     else if (viz >= 4) msg += ' Decent conditions for recreational diving.';
     else msg += ' Visibility is limited — consider waiting for improvement.';
@@ -2090,18 +2095,18 @@ function buildForecast() {
       const isReserve = LOCATIONS[currentLocation] && LOCATIONS[currentLocation].marineReserve;
       html += `<div class="forecast-time-col${isBest && !isReserve ? ' best-slot' : ''}">`;
       html += `<div class="ftc-time">${slot.timeLabel}</div>`;
-      if (isReserve) {
-        html += `<div class="ftc-fish-label" style="color:#e74c3c">Spearfishing</div>`;
-        html += `<div class="ftc-fish-val" style="color:#e74c3c;font-size:9px">Not Permitted</div>`;
-      } else {
-        html += `<div class="ftc-fish-label">Fish</div>`;
-        html += `<div class="ftc-fish-val" style="color:${getRating(sc.fish).color}">${sc.fish.toFixed(1)}</div>`;
-      }
+      // Fish score always shown (snorkelers/scuba divers want fish activity info)
+      html += `<div class="ftc-fish-label">Fish</div>`;
+      html += `<div class="ftc-fish-val" style="color:${getRating(sc.fish).color}">${sc.fish.toFixed(1)}</div>`;
       html += `<div class="ftc-divider"></div>`;
       html += `<div class="ftc-viz-label">Visibility</div>`;
       html += `<div class="ftc-viz-feet" style="color:${getRating(sc.viz).color}">${sc.vizFeet}</div>`;
       html += `<div class="ftc-viz-rating" style="color:${getRating(sc.viz).color}">${getRating(sc.viz).label}</div>`;
-      if (!isReserve) {
+      if (isReserve) {
+        html += `<div class="ftc-divider"></div>`;
+        html += `<div class="ftc-fish-label" style="color:#e74c3c;font-size:7px">Spearfishing</div>`;
+        html += `<div class="ftc-fish-val" style="color:#e74c3c;font-size:9px">Not Permitted</div>`;
+      } else {
         html += `<div class="ftc-divider"></div>`;
         html += `<div class="ftc-spear-val" style="color:${getRating(sc.spear).color}">${sc.spear.toFixed(1)}</div>`;
         html += `<div class="ftc-spear-rating" style="color:${getRating(sc.spear).color}">${getRating(sc.spear).label}</div>`;
@@ -2776,16 +2781,15 @@ function onLocationChange() {
   const fishLabel = document.getElementById('fishGaugeLabel');
   const spearLabel = document.getElementById('spearGaugeLabel');
   const spearFormula = document.getElementById('spearFormula');
+  // Fish Probability always shows normally (snorkelers/scuba divers want to see fish activity)
+  fishLabel.textContent = 'Fish Probability';
+  fishLabel.style.color = 'var(--fish-color)';
   if (loc.marineReserve) {
-    fishLabel.textContent = 'Fish Probability';
-    fishLabel.style.color = '#e74c3c';
     spearLabel.textContent = 'Spearfishing — Not Permitted';
     spearLabel.style.color = '#e74c3c';
     spearFormula.textContent = '🏛️ Marine Reserve — Take of marine life prohibited';
     spearFormula.style.color = '#e74c3c';
   } else {
-    fishLabel.textContent = 'Fish Probability';
-    fishLabel.style.color = 'var(--fish-color)';
     spearLabel.textContent = 'Spearfishing Opportunity';
     spearLabel.style.color = 'var(--spear-color)';
     spearFormula.textContent = 'S = 0.6 × Fish + 0.4 × Visibility';
