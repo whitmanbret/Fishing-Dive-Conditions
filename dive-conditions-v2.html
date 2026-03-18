@@ -1519,16 +1519,18 @@ function updateDisplay() {
     if (D.turbidity !== undefined) {
       let lo, hi;
       const ntu = D.turbidity;
-      if(ntu < 0.3)      { lo=25; hi=35; }  // pilings visible to 30ft+
-      else if(ntu < 0.5)  { lo=18; hi=28; }  // can see 14ft piling clearly
-      else if(ntu < 0.8)  { lo=12; hi=20; }  // 14ft piling faint
-      else if(ntu < 1.2)  { lo=8;  hi=15; }  // 11ft piling visible
-      else if(ntu < 2.0)  { lo=5;  hi=11; }  // 4ft piling clear, 11ft faint
-      else if(ntu < 3.5)  { lo=3;  hi=7;  }  // only 4ft piling visible
+      // Calibrated 2026-03-17: 0.25 NTU at pier = 20ft at Pt Loma (dusk, cloudy)
+      // Pier reads cleaner than open water; conservative estimates are more accurate
+      if(ntu < 0.3)      { lo=15; hi=25; }  // very clear at pier → good at dive site
+      else if(ntu < 0.5)  { lo=12; hi=20; }  // can see 14ft piling clearly
+      else if(ntu < 0.8)  { lo=8;  hi=16; }  // 14ft piling faint
+      else if(ntu < 1.2)  { lo=6;  hi=12; }  // 11ft piling visible
+      else if(ntu < 2.0)  { lo=4;  hi=9;  }  // 4ft piling clear, 11ft faint
+      else if(ntu < 3.5)  { lo=3;  hi=6;  }  // only 4ft piling visible
       else if(ntu < 5.0)  { lo=2;  hi=4;  }
       else                 { lo=1;  hi=3;  }
       // Mild shelter adjustment — turbidity is direct measurement, so only small boost for kelp
-      const turbShelter = Math.min(1.25, shelterMult);
+      const turbShelter = Math.min(1.15, shelterMult);
       lo = Math.max(1, Math.round(lo * turbShelter));
       hi = Math.max(lo+1, Math.round(hi * turbShelter));
       // If swell is also high, blend downward (pier is sheltered, open water will be worse)
@@ -1556,11 +1558,12 @@ function updateDisplay() {
       vizEst=`${lo}–${hi} ft`;
     }
     // PRIORITY 3: Wave energy based estimate (same ranges as forecast estimateVizFeet)
+    // Calibrated 2026-03-17: ground truth 20ft at Pt Loma on a clear/low-swell day
     else if(D.waveEnergy!==undefined) {
       let lo, hi;
-      if(D.waveEnergy<=20) { lo=20; hi=35; }
-      else if(D.waveEnergy<=50) { lo=12; hi=22; }
-      else if(D.waveEnergy<=100) { lo=6; hi=14; }
+      if(D.waveEnergy<=20) { lo=15; hi=25; }
+      else if(D.waveEnergy<=50) { lo=10; hi=18; }
+      else if(D.waveEnergy<=100) { lo=5; hi=12; }
       else if(D.waveEnergy<=200) { lo=3; hi=7; }
       else { lo=1; hi=4; }
       // Apply shelter multiplier
@@ -2164,30 +2167,32 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
   let baseLo, baseHi;
 
   // If today (dayIdx=0) and we have turbidity, use same NTU-based estimate as main panel
+  // Calibrated 2026-03-17: 0.25 NTU at pier = 20ft at Pt Loma (dusk, cloudy)
   if (dayIdx === 0 && D.turbidity !== undefined) {
     const ntu = D.turbidity;
-    if(ntu < 0.3)      { baseLo=25; baseHi=35; }
-    else if(ntu < 0.5)  { baseLo=18; baseHi=28; }
-    else if(ntu < 0.8)  { baseLo=12; baseHi=20; }
-    else if(ntu < 1.2)  { baseLo=8;  baseHi=15; }
-    else if(ntu < 2.0)  { baseLo=5;  baseHi=11; }
-    else if(ntu < 3.5)  { baseLo=3;  baseHi=7;  }
+    if(ntu < 0.3)      { baseLo=15; baseHi=25; }
+    else if(ntu < 0.5)  { baseLo=12; baseHi=20; }
+    else if(ntu < 0.8)  { baseLo=8;  baseHi=16; }
+    else if(ntu < 1.2)  { baseLo=6;  baseHi=12; }
+    else if(ntu < 2.0)  { baseLo=4;  baseHi=9;  }
+    else if(ntu < 3.5)  { baseLo=3;  baseHi=6;  }
     else if(ntu < 5.0)  { baseLo=2;  baseHi=4;  }
     else                 { baseLo=1;  baseHi=3;  }
   } else {
     // Future days or no turbidity: use wave energy estimate
+    // Calibrated 2026-03-17: ground truth 20ft at Pt Loma on clear/low-swell day
     const we = D.waveEnergy;
     if (we !== undefined) {
-      if (we <= 20) { baseLo = 20; baseHi = 35; }
-      else if (we <= 50) { baseLo = 12; baseHi = 22; }
-      else if (we <= 100) { baseLo = 6; baseHi = 14; }
+      if (we <= 20) { baseLo = 15; baseHi = 25; }
+      else if (we <= 50) { baseLo = 10; baseHi = 18; }
+      else if (we <= 100) { baseLo = 5; baseHi = 12; }
       else if (we <= 200) { baseLo = 3; baseHi = 7; }
       else { baseLo = 1; baseHi = 4; }
     } else {
       // Fallback: estimate from viz score
-      if (vizScore >= 8) { baseLo = 18; baseHi = 30; }
-      else if (vizScore >= 6) { baseLo = 10; baseHi = 18; }
-      else if (vizScore >= 4) { baseLo = 5; baseHi = 10; }
+      if (vizScore >= 8) { baseLo = 14; baseHi = 22; }
+      else if (vizScore >= 6) { baseLo = 8; baseHi = 15; }
+      else if (vizScore >= 4) { baseLo = 4; baseHi = 9; }
       else { baseLo = 2; baseHi = 5; }
     }
   }
