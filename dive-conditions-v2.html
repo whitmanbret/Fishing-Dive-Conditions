@@ -239,9 +239,8 @@
     /* 3-column time slot grid */
     .forecast-time-grid {
       display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;
-      padding: 4px 10px 8px; cursor: pointer;
+      padding: 4px 10px 8px;
     }
-    .forecast-time-grid:hover { background: rgba(44,140,255,0.02); }
     .forecast-time-col {
       text-align: center; background: var(--bg-card); border-radius: 8px;
       padding: 6px 4px 6px; position: relative;
@@ -2007,8 +2006,8 @@ function buildForecast() {
     html += `<span class="forecast-chevron">▼</span>`;
     html += `</div>`;
 
-    // 3-column time slot grid (always visible)
-    html += `<div class="forecast-time-grid" onclick="toggleForecastDay(${idx})">`;
+    // 3-column time slot grid (always visible) — no onclick, prevents scroll hijack on mobile
+    html += `<div class="forecast-time-grid">`;
     slots.forEach((slot, si) => {
       const sc = slotScores[si];
       const isBest = si === bestSlotIdx;
