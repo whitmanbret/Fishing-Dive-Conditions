@@ -111,11 +111,18 @@
       --viz-color: #2c8cff;
       --spear-color: #2ecc71;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
       background: var(--bg-primary); color: var(--text-primary);
-      min-height: 100vh; line-height: 1.5;
+      line-height: 1.5;
+      /* Critical for mobile/iframe scroll — no height constraints */
+      height: auto !important;
+      min-height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: auto;
     }
     .container { max-width: 700px; margin: 0 auto; padding: 16px; }
 
@@ -2686,6 +2693,31 @@ function onLocationChange() {
 
 // INIT
 fetchAllData();
+
+// =========================================================================
+// IFRAME SCROLL FIX — Wix embeds this page in an iframe with fixed height.
+// This sends the actual page height to the parent so the iframe can resize,
+// and prevents the iOS rubber-band bounce-back inside iframes.
+// =========================================================================
+(function() {
+  function sendHeight() {
+    const h = document.documentElement.scrollHeight;
+    try {
+      window.parent.postMessage({ type: 'setHeight', height: h }, '*');
+    } catch(e) {}
+  }
+  // Send height after load and after any DOM changes
+  sendHeight();
+  setTimeout(sendHeight, 1000);
+  setTimeout(sendHeight, 3000);
+  setTimeout(sendHeight, 6000);
+  // Observe DOM changes (forecast rendering, expanding sections)
+  if (window.MutationObserver) {
+    new MutationObserver(sendHeight).observe(document.body, { childList: true, subtree: true, attributes: true });
+  }
+  // Also send on resize
+  window.addEventListener('resize', sendHeight);
+})();
 </script>
 </body>
 </html>
