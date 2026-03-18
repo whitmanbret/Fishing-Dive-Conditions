@@ -119,49 +119,49 @@
     }
     .container { max-width: 700px; margin: 0 auto; padding: 16px; }
 
-    .header { text-align: center; padding: 20px 0 12px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
-    .header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
-    .header .subtitle { color: var(--text-secondary); font-size: 14px; margin-top: 2px; }
+    .header { text-align: center; padding: 10px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+    .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+    .header .subtitle { color: var(--text-secondary); font-size: 12px; margin-top: 1px; }
 
     /* Controls Row */
     .controls {
-      display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;
+      display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; align-items: center;
     }
-    .control-group { flex: 1; min-width: 140px; }
-    .control-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 3px; }
+    .control-group { flex: 1; min-width: 120px; }
+    .control-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 2px; }
     .control-group select {
       width: 100%; background: var(--bg-input); border: 1px solid var(--border);
-      color: var(--text-primary); border-radius: 8px; padding: 8px 10px;
-      font-size: 13px; font-family: inherit; appearance: auto; cursor: pointer;
+      color: var(--text-primary); border-radius: 8px; padding: 6px 8px;
+      font-size: 12px; font-family: inherit; appearance: auto; cursor: pointer;
     }
     .control-group select:focus { outline: none; border-color: var(--accent); }
     .refresh-btn {
       background: var(--accent); border: none; color: #fff; border-radius: 8px;
-      padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+      padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
       transition: opacity 0.2s; align-self: flex-end;
     }
     .refresh-btn:hover { opacity: 0.85; }
     .refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .data-status { font-size: 11px; color: var(--text-muted); text-align: center; margin-bottom: 12px; }
+    .data-status { font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 8px; }
     .data-status.error { color: var(--poor); }
     .data-status.success { color: var(--excellent); }
 
     /* Moon / date bar */
     .info-bar {
-      display: flex; justify-content: center; gap: 16px; margin-bottom: 16px;
-      font-size: 12px; color: var(--text-secondary); flex-wrap: wrap;
+      display: flex; justify-content: center; gap: 10px; margin-bottom: 10px;
+      font-size: 11px; color: var(--text-secondary); flex-wrap: wrap;
     }
     .info-badge {
       background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 20px; padding: 3px 12px; font-size: 12px;
+      border-radius: 20px; padding: 2px 10px; font-size: 11px;
     }
 
     /* Species Selector */
-    .species-selector { display: flex; gap: 8px; margin-bottom: 16px; }
+    .species-selector { display: flex; gap: 6px; margin-bottom: 10px; }
     .species-card {
-      flex: 1; text-align: center; padding: 10px 8px; border-radius: 10px;
+      flex: 1; text-align: center; padding: 7px 4px; border-radius: 8px;
       border: 2px solid var(--border); background: var(--bg-secondary);
-      cursor: pointer; transition: all 0.2s; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-size: 12px; font-weight: 600;
     }
     .species-card:hover { border-color: var(--text-muted); }
     .species-card.active[data-species="general"] { border-color: var(--accent); background: rgba(44,140,255,0.1); color: var(--accent); }
@@ -172,27 +172,30 @@
     .species-name { font-size: 10px; color: var(--text-muted); font-weight: 400; margin-top: 1px; }
 
     /* Score Gauges */
-    .scores-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .scores-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
     .score-gauge {
       background: var(--bg-secondary); border: 1px solid var(--border);
-      border-radius: 14px; padding: 16px 12px; text-align: center;
+      border-radius: 12px; padding: 10px 8px; text-align: center;
     }
-    .score-gauge.spear-gauge { grid-column: 1 / -1; border-width: 2px; }
-    .gauge-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
-    .gauge-ring-wrap { width: 120px; height: 70px; margin: 0 auto 4px; position: relative; }
-    .gauge-ring-wrap svg { width: 120px; height: 70px; }
+    .score-gauge.spear-gauge { grid-column: 1 / -1; border-width: 2px; padding: 10px 8px; }
+    .gauge-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 4px; }
+    .gauge-ring-wrap { width: 100px; height: 60px; margin: 0 auto 2px; position: relative; }
+    .gauge-ring-wrap svg { width: 100px; height: 60px; }
     .gauge-arc-bg { fill: none; stroke: var(--bg-card); stroke-width: 8; }
     .gauge-arc { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease, stroke 0.3s; }
-    .gauge-ring-score { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 28px; font-weight: 800; line-height: 1; }
-    .spear-gauge .gauge-ring-wrap { width: 160px; height: 90px; }
-    .spear-gauge .gauge-ring-wrap svg { width: 160px; height: 90px; }
+    .gauge-ring-score { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: 800; line-height: 1; }
+    .spear-gauge .gauge-ring-wrap { width: 130px; height: 75px; }
+    .spear-gauge .gauge-ring-wrap svg { width: 130px; height: 75px; }
     .spear-gauge .gauge-arc-bg, .spear-gauge .gauge-arc { stroke-width: 10; }
-    .spear-gauge .gauge-ring-score { font-size: 36px; }
+    .spear-gauge .gauge-ring-score { font-size: 30px; }
     .gauge-rating {
-      display: inline-block; margin-top: 6px; padding: 3px 14px; border-radius: 16px;
-      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
+      display: inline-block; margin-top: 4px; padding: 2px 10px; border-radius: 16px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
     }
-    .gauge-formula { font-size: 10px; color: var(--text-muted); margin-top: 6px; }
+    .gauge-formula { font-size: 9px; color: var(--text-muted); margin-top: 4px; }
+    /* Viz feet prominent display */
+    .viz-feet-hero { font-size: 22px; font-weight: 800; color: var(--viz-color); line-height: 1; margin: 2px 0; }
+    .viz-score-small { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
     .rating-excellent { background: rgba(46,204,113,0.15); color: var(--excellent); border: 1px solid var(--excellent); }
     .rating-good { background: rgba(52,152,219,0.15); color: var(--good); border: 1px solid var(--good); }
     .rating-fair { background: rgba(243,156,18,0.15); color: var(--fair); border: 1px solid var(--fair); }
@@ -200,19 +203,19 @@
     .rating-none { background: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border); }
 
     .insight-text {
-      text-align: center; font-size: 13px; color: var(--text-secondary);
-      margin-bottom: 16px; padding: 10px 16px;
+      text-align: center; font-size: 12px; color: var(--text-secondary);
+      margin-bottom: 10px; padding: 8px 12px;
       background: var(--bg-secondary); border-radius: 10px; border: 1px solid var(--border);
-      font-style: italic; line-height: 1.5;
+      font-style: italic; line-height: 1.4;
     }
 
     /* ===== 5-DAY FORECAST (Surfline-style) ===== */
     .forecast-section {
-      background: var(--bg-secondary); border-radius: 12px;
-      border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
+      background: var(--bg-secondary); border-radius: 10px;
+      border: 1px solid var(--border); overflow: hidden; margin-bottom: 12px;
     }
     .forecast-title {
-      padding: 12px 14px; font-size: 13px; font-weight: 700;
+      padding: 8px 12px; font-size: 12px; font-weight: 700;
       border-bottom: 1px solid var(--border);
       display: flex; justify-content: space-between; align-items: center;
     }
@@ -222,47 +225,47 @@
     .forecast-day:last-child { border-bottom: none; }
     .forecast-day-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 14px 4px; cursor: pointer; transition: background 0.15s;
+      padding: 6px 12px 2px; cursor: pointer; transition: background 0.15s;
     }
     .forecast-day-header:hover { background: rgba(44,140,255,0.04); }
     .forecast-day-label {
-      font-size: 13px; font-weight: 600;
+      font-size: 12px; font-weight: 600;
     }
     .forecast-chevron {
-      font-size: 12px; color: var(--text-muted); transition: transform 0.2s;
+      font-size: 11px; color: var(--text-muted); transition: transform 0.2s;
     }
     .forecast-day.open .forecast-chevron { transform: rotate(180deg); }
 
     /* 3-column time slot grid */
     .forecast-time-grid {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
-      padding: 6px 14px 12px; cursor: pointer;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;
+      padding: 4px 10px 8px; cursor: pointer;
     }
     .forecast-time-grid:hover { background: rgba(44,140,255,0.02); }
     .forecast-time-col {
-      text-align: center; background: var(--bg-card); border-radius: 10px;
-      padding: 10px 6px 8px; position: relative;
+      text-align: center; background: var(--bg-card); border-radius: 8px;
+      padding: 6px 4px 6px; position: relative;
     }
     .forecast-time-col.best-slot {
       border: 1px solid rgba(46,204,113,0.4);
       background: rgba(46,204,113,0.05);
     }
     .forecast-time-col.best-slot::after {
-      content: '🎯'; position: absolute; top: 4px; right: 6px; font-size: 10px;
+      content: '🎯'; position: absolute; top: 2px; right: 4px; font-size: 9px;
     }
     .ftc-time {
-      font-size: 11px; font-weight: 700; color: var(--text-secondary);
-      margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+      font-size: 10px; font-weight: 700; color: var(--text-secondary);
+      margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;
     }
-    .ftc-fish-label { font-size: 8px; font-weight: 700; color: var(--fish-color); text-transform: uppercase; letter-spacing: 0.5px; }
-    .ftc-fish-val { font-size: 20px; font-weight: 800; line-height: 1.2; }
-    .ftc-viz-label { font-size: 8px; font-weight: 700; color: var(--viz-color); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
-    .ftc-viz-val { font-size: 20px; font-weight: 800; line-height: 1.2; }
-    .ftc-viz-feet { font-size: 9px; color: var(--text-secondary); margin-top: 1px; }
-    .ftc-spear-val { font-size: 24px; font-weight: 800; line-height: 1.1; margin-top: 6px; }
-    .ftc-spear-rating { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .ftc-wind-info { font-size: 9px; color: var(--text-muted); margin-top: 6px; line-height: 1.3; }
-    .ftc-divider { height: 1px; background: var(--border); margin: 6px 0; }
+    .ftc-fish-label { font-size: 7px; font-weight: 700; color: var(--fish-color); text-transform: uppercase; letter-spacing: 0.5px; }
+    .ftc-fish-val { font-size: 16px; font-weight: 800; line-height: 1.2; }
+    .ftc-viz-label { font-size: 7px; font-weight: 700; color: var(--viz-color); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+    .ftc-viz-feet { font-size: 16px; font-weight: 800; color: var(--viz-color); line-height: 1.2; }
+    .ftc-viz-rating { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 1px; }
+    .ftc-spear-val { font-size: 20px; font-weight: 800; line-height: 1.1; margin-top: 4px; }
+    .ftc-spear-rating { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .ftc-wind-info { font-size: 8px; color: var(--text-muted); margin-top: 4px; line-height: 1.3; }
+    .ftc-divider { height: 1px; background: var(--border); margin: 4px 0; }
 
     .forecast-day-detail {
       display: none; padding: 0 14px 14px; animation: fadeIn 0.2s;
@@ -426,23 +429,44 @@
     .breakdown-footer a { color: var(--accent); text-decoration: none; }
 
     @media (max-width: 480px) {
-      .container { padding: 10px; }
-      .header h1 { font-size: 18px; }
-      .scores-grid { gap: 8px; }
-      .gauge-ring-wrap { width: 100px; height: 60px; }
-      .gauge-ring-wrap svg { width: 100px; height: 60px; }
-      .gauge-ring-score { font-size: 22px; }
-      .spear-gauge .gauge-ring-wrap { width: 130px; height: 75px; }
-      .spear-gauge .gauge-ring-wrap svg { width: 130px; height: 75px; }
-      .spear-gauge .gauge-ring-score { font-size: 30px; }
-      .species-card { padding: 8px 4px; font-size: 12px; }
-      .controls { gap: 6px; }
-      .forecast-time-grid { gap: 4px; padding: 4px 10px 10px; }
-      .forecast-time-col { padding: 8px 4px 6px; }
-      .ftc-fish-val, .ftc-viz-val { font-size: 16px; }
-      .ftc-spear-val { font-size: 20px; }
-      .forecast-day-label { font-size: 12px; }
-      .forecast-slots { font-size: 11px; }
+      .container { padding: 8px; }
+      .header { padding: 6px 0 5px; margin-bottom: 6px; }
+      .header h1 { font-size: 16px; }
+      .header .subtitle { font-size: 10px; }
+      .info-bar { gap: 6px; margin-bottom: 6px; font-size: 10px; }
+      .info-badge { padding: 1px 8px; font-size: 10px; }
+      .controls { gap: 4px; margin-bottom: 6px; }
+      .control-group { min-width: 100px; }
+      .control-label { font-size: 8px; }
+      .control-group select { padding: 5px 6px; font-size: 11px; }
+      .refresh-btn { padding: 5px 10px; font-size: 11px; }
+      .scores-grid { gap: 6px; margin-bottom: 8px; }
+      .score-gauge { padding: 8px 6px; border-radius: 10px; }
+      .gauge-label { font-size: 9px; letter-spacing: 1px; margin-bottom: 2px; }
+      .gauge-ring-wrap { width: 80px; height: 48px; }
+      .gauge-ring-wrap svg { width: 80px; height: 48px; }
+      .gauge-ring-score { font-size: 20px; }
+      .spear-gauge .gauge-ring-wrap { width: 110px; height: 62px; }
+      .spear-gauge .gauge-ring-wrap svg { width: 110px; height: 62px; }
+      .spear-gauge .gauge-ring-score { font-size: 26px; }
+      .gauge-rating { font-size: 9px; padding: 2px 8px; margin-top: 2px; }
+      .gauge-formula { font-size: 8px; }
+      .viz-feet-hero { font-size: 18px; }
+      .species-card { padding: 5px 2px; font-size: 11px; }
+      .species-label { font-size: 11px; }
+      .species-name { font-size: 9px; }
+      .insight-text { font-size: 11px; padding: 6px 8px; margin-bottom: 6px; }
+      .forecast-title { padding: 6px 10px; font-size: 11px; }
+      .forecast-day-header { padding: 4px 10px 2px; }
+      .forecast-day-label { font-size: 11px; }
+      .forecast-time-grid { gap: 3px; padding: 3px 8px 6px; }
+      .forecast-time-col { padding: 5px 3px 4px; border-radius: 6px; }
+      .ftc-time { font-size: 9px; margin-bottom: 3px; }
+      .ftc-fish-val { font-size: 14px; }
+      .ftc-viz-feet { font-size: 14px; }
+      .ftc-spear-val { font-size: 16px; }
+      .ftc-spear-rating { font-size: 7px; }
+      .ftc-wind-info { font-size: 7px; }
     }
   </style>
 </head>
@@ -517,12 +541,12 @@
       </div>
       <div class="score-gauge">
         <div class="gauge-label" style="color:var(--viz-color)">Dive Visibility</div>
-        <div class="gauge-ring-wrap">
-          <svg viewBox="0 0 120 70"><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="vizArc" style="stroke:var(--viz-color)"/></svg>
-          <div class="gauge-ring-score" id="vizScore" style="color:var(--text-muted)">--</div>
-        </div>
+        <div class="viz-feet-hero" id="vizFeetHero">--</div>
         <div class="gauge-rating rating-none" id="vizRating">--</div>
-        <div id="vizFeetLabel" style="font-size:11px;color:var(--text-secondary);margin-top:2px;">--</div>
+        <div class="viz-score-small" id="vizScoreSmall"></div>
+        <div id="vizFeetLabel" style="display:none">--</div>
+        <!-- Hidden gauge for score calc -->
+        <div style="display:none"><svg viewBox="0 0 120 70"><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="vizArc" style="stroke:var(--viz-color)"/></svg><div id="vizScore">--</div></div>
       </div>
       <div class="score-gauge spear-gauge">
         <div class="gauge-label" style="color:var(--spear-color)">Spearfishing Opportunity</div>
@@ -1587,6 +1611,9 @@ function updateDisplay() {
   setVal('estVizVal', vizEst, vizSource);
   const vizFeetEl = document.getElementById('vizFeetLabel');
   if (vizFeetEl) vizFeetEl.textContent = vizEst !== '--' ? `Est. ${vizEst}` : '--';
+  // Update the hero feet display
+  const vizHeroEl = document.getElementById('vizFeetHero');
+  if (vizHeroEl) vizHeroEl.textContent = vizEst !== '--' ? vizEst : '--';
 }
 
 function chlProductivity(c) {
@@ -1791,6 +1818,9 @@ function recalculate() {
   updateGauge('fish',fishAvg,'var(--fish-color)');
   updateGauge('viz',vizFinal,'var(--viz-color)');
   updateGauge('spear',spearAvg,'var(--spear-color)');
+  // Show small score under viz feet hero
+  const vizSmall = document.getElementById('vizScoreSmall');
+  if (vizSmall && vizFinal !== null) vizSmall.textContent = `Score: ${vizFinal.toFixed(1)} / 10`;
   updateInsight(fishAvg,vizFinal);
 
   D.fishAvg=fishAvg; D.vizAvg=vizFinal; D.spearAvg=spearAvg;
@@ -1986,9 +2016,9 @@ function buildForecast() {
       html += `<div class="ftc-fish-label">Fish</div>`;
       html += `<div class="ftc-fish-val" style="color:${getRating(sc.fish).color}">${sc.fish.toFixed(1)}</div>`;
       html += `<div class="ftc-divider"></div>`;
-      html += `<div class="ftc-viz-label">Viz</div>`;
-      html += `<div class="ftc-viz-val" style="color:${getRating(sc.viz).color}">${sc.viz.toFixed(1)}</div>`;
-      html += `<div class="ftc-viz-feet">${sc.vizFeet}</div>`;
+      html += `<div class="ftc-viz-label">Visibility</div>`;
+      html += `<div class="ftc-viz-feet" style="color:${getRating(sc.viz).color}">${sc.vizFeet}</div>`;
+      html += `<div class="ftc-viz-rating" style="color:${getRating(sc.viz).color}">${getRating(sc.viz).label}</div>`;
       html += `<div class="ftc-divider"></div>`;
       html += `<div class="ftc-spear-val" style="color:${getRating(sc.spear).color}">${sc.spear.toFixed(1)}</div>`;
       html += `<div class="ftc-spear-rating" style="color:${getRating(sc.spear).color}">${getRating(sc.spear).label}</div>`;
