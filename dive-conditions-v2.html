@@ -498,6 +498,7 @@
       <div class="control-group">
         <div class="control-label">Location</div>
         <select id="locationSelect" onchange="onLocationChange()">
+          <option value="ljshores">La Jolla Shores</option>
           <option value="lajolla">La Jolla Kelp Beds</option>
           <option value="pointloma">Point Loma Kelp</option>
           <option value="mission">Mission Bay / Jetties</option>
@@ -547,7 +548,7 @@
     <!-- THREE SCORE GAUGES -->
     <div class="scores-grid">
       <div class="score-gauge">
-        <div class="gauge-label" style="color:var(--fish-color)">Fish Probability</div>
+        <div class="gauge-label" id="fishGaugeLabel" style="color:var(--fish-color)">Fish Probability</div>
         <div class="gauge-ring-wrap">
           <svg viewBox="0 0 120 70"><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="fishArc" style="stroke:var(--fish-color)"/></svg>
           <div class="gauge-ring-score" id="fishScore" style="color:var(--text-muted)">--</div>
@@ -564,13 +565,13 @@
         <div style="display:none"><svg viewBox="0 0 120 70"><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="vizArc" style="stroke:var(--viz-color)"/></svg><div id="vizScore">--</div></div>
       </div>
       <div class="score-gauge spear-gauge">
-        <div class="gauge-label" style="color:var(--spear-color)">Spearfishing Opportunity</div>
+        <div class="gauge-label" id="spearGaugeLabel" style="color:var(--spear-color)">Spearfishing Opportunity</div>
         <div class="gauge-ring-wrap">
           <svg viewBox="0 0 160 90"><path d="M 10 85 A 70 70 0 0 1 150 85" class="gauge-arc-bg"/><path d="M 10 85 A 70 70 0 0 1 150 85" class="gauge-arc" id="spearArc" style="stroke:var(--spear-color)"/></svg>
           <div class="gauge-ring-score" id="spearScore" style="color:var(--text-muted)">--</div>
         </div>
         <div class="gauge-rating rating-none" id="spearRating">--</div>
-        <div class="gauge-formula">S = 0.6 × Fish + 0.4 × Visibility</div>
+        <div class="gauge-formula" id="spearFormula">S = 0.6 × Fish + 0.4 × Visibility</div>
       </div>
     </div>
 
@@ -660,6 +661,7 @@
 // CONFIGURATION
 // =========================================================================
 const LOCATIONS = {
+  ljshores:  { name: 'La Jolla Shores', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8586, lon: -117.2572, depth: '10-40 ft', kelpDensity: 'moderate', marineReserve: true, scrippsProximity: true },
   lajolla:   { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high' },
   pointloma: { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.67, lon: -117.26, depth: '20-100 ft', kelpDensity: 'high' },
   mission:   { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low' },
@@ -1132,6 +1134,7 @@ async function fetchMultiDayTides() {
 
 // --- CDIP Station Mapping ---
 const CDIP_STATIONS = {
+  ljshores:  { id: '201p1', name: 'Scripps Nearshore' },
   lajolla:   { id: '201p1', name: 'Scripps Nearshore' },
   pointloma: { id: '191p1', name: 'Point Loma South' },
   mission:   { id: '220p1', name: 'Mission Bay West' },
@@ -1555,30 +1558,50 @@ function updateDisplay() {
     // Calibrated from Dec 2024 NTU data + Scripps Pier camera piling distances (4/11/14/30 ft)
     // NOTE: Scripps Pier is under-pier at 5m; open water dive sites are typically better.
     // Shelter multiplier is capped at 1.25 for turbidity — it's already a direct measurement.
+    // EXCEPTION: La Jolla Shores (scrippsProximity) — SASS is the direct source, no shelter boost.
     if (D.turbidity !== undefined) {
       let lo, hi;
       const ntu = D.turbidity;
-      // Calibrated 2026-03-17: 0.25 NTU at pier = 20ft at Pt Loma (dusk, cloudy)
-      // Pier reads cleaner than open water; conservative estimates are more accurate
-      if(ntu < 0.3)      { lo=18; hi=23; }  // very clear at pier → good at dive site
-      else if(ntu < 0.5)  { lo=14; hi=19; }  // can see 14ft piling clearly
-      else if(ntu < 0.8)  { lo=10; hi=15; }  // 14ft piling faint
-      else if(ntu < 1.2)  { lo=7;  hi=12; }  // 11ft piling visible
-      else if(ntu < 2.0)  { lo=5;  hi=9;  }  // 4ft piling clear, 11ft faint
-      else if(ntu < 3.5)  { lo=3;  hi=6;  }  // only 4ft piling visible
-      else if(ntu < 5.0)  { lo=2;  hi=4;  }
-      else                 { lo=1;  hi=3;  }
+      if (loc.scrippsProximity) {
+        // La Jolla Shores: SASS sensor is RIGHT HERE — use NTU directly, no adjustments
+        // These are the most accurate estimates in the entire app
+        if(ntu < 0.2)      { lo=22; hi=27; }  // exceptional clarity
+        else if(ntu < 0.3)  { lo=18; hi=23; }  // very clear — can see 30ft piling
+        else if(ntu < 0.5)  { lo=14; hi=19; }  // can see 14ft piling clearly
+        else if(ntu < 0.8)  { lo=10; hi=15; }  // 14ft piling faint
+        else if(ntu < 1.2)  { lo=7;  hi=12; }  // 11ft piling visible
+        else if(ntu < 2.0)  { lo=5;  hi=9;  }  // 4ft piling clear, 11ft faint
+        else if(ntu < 3.5)  { lo=3;  hi=6;  }  // only 4ft piling visible
+        else if(ntu < 5.0)  { lo=2;  hi=4;  }
+        else                 { lo=1;  hi=3;  }
+        vizSource = 'Scripps Pier (direct)';
+      } else {
+        // Other locations: pier reads cleaner than open water; conservative estimates
+        // Calibrated 2026-03-17: 0.25 NTU at pier = 20ft at Pt Loma (dusk, cloudy)
+        if(ntu < 0.3)      { lo=18; hi=23; }  // very clear at pier → good at dive site
+        else if(ntu < 0.5)  { lo=14; hi=19; }  // can see 14ft piling clearly
+        else if(ntu < 0.8)  { lo=10; hi=15; }  // 14ft piling faint
+        else if(ntu < 1.2)  { lo=7;  hi=12; }  // 11ft piling visible
+        else if(ntu < 2.0)  { lo=5;  hi=9;  }  // 4ft piling clear, 11ft faint
+        else if(ntu < 3.5)  { lo=3;  hi=6;  }  // only 4ft piling visible
+        else if(ntu < 5.0)  { lo=2;  hi=4;  }
+        else                 { lo=1;  hi=3;  }
+      }
       // Mild shelter adjustment — turbidity is direct measurement, so only small boost for kelp
-      const turbShelter = Math.min(1.15, shelterMult);
+      // Skip for scrippsProximity — the sensor IS the location
+      const turbShelter = loc.scrippsProximity ? 1.0 : Math.min(1.15, shelterMult);
       lo = Math.max(1, Math.round(lo * turbShelter));
       hi = Math.max(lo+1, Math.round(hi * turbShelter));
       // If swell is also high, blend downward (pier is sheltered, open water will be worse)
+      // Reduced impact for scrippsProximity — Shores is also somewhat sheltered by the canyon
+      const swellDamp = loc.scrippsProximity ? 0.85 : 0.7;
+      const swellDampMod = loc.scrippsProximity ? 0.92 : 0.85;
       if (D.waveEnergy !== undefined && D.waveEnergy > 100) {
-        lo = Math.max(1, Math.round(lo * 0.7));
-        hi = Math.max(lo+1, Math.round(hi * 0.7));
+        lo = Math.max(1, Math.round(lo * swellDamp));
+        hi = Math.max(lo+1, Math.round(hi * swellDamp));
       } else if (D.waveEnergy !== undefined && D.waveEnergy > 50) {
-        lo = Math.max(1, Math.round(lo * 0.85));
-        hi = Math.max(lo+1, Math.round(hi * 0.85));
+        lo = Math.max(1, Math.round(lo * swellDampMod));
+        hi = Math.max(lo+1, Math.round(hi * swellDampMod));
       }
       // Cap range spread to 5ft max
       if (hi - lo > 5) hi = lo + 5;
@@ -1831,13 +1854,24 @@ function recalculate() {
   else if(fishAvg!==null) spearAvg=fishAvg;
   else if(vizFinal!==null) spearAvg=vizFinal;
 
-  updateGauge('fish',fishAvg,'var(--fish-color)');
-  updateGauge('viz',vizFinal,'var(--viz-color)');
-  updateGauge('spear',spearAvg,'var(--spear-color)');
+  // Marine reserve locations: show "Not Permitted" for fish & spearfishing
+  if (loc.marineReserve) {
+    updateGaugeNotPermitted('fish');
+    updateGauge('viz',vizFinal,'var(--viz-color)');
+    updateGaugeNotPermitted('spear');
+  } else {
+    updateGauge('fish',fishAvg,'var(--fish-color)');
+    updateGauge('viz',vizFinal,'var(--viz-color)');
+    updateGauge('spear',spearAvg,'var(--spear-color)');
+  }
   // Show small score under viz feet hero
   const vizSmall = document.getElementById('vizScoreSmall');
   if (vizSmall && vizFinal !== null) vizSmall.textContent = `Score: ${vizFinal.toFixed(1)} / 10`;
-  updateInsight(fishAvg,vizFinal);
+  if (loc.marineReserve) {
+    updateInsightReserve(vizFinal);
+  } else {
+    updateInsight(fishAvg,vizFinal);
+  }
 
   D.fishAvg=fishAvg; D.vizAvg=vizFinal; D.spearAvg=spearAvg;
 }
@@ -1888,6 +1922,29 @@ function updateGauge(name,score,defaultColor) {
   const r=getRating(score);
   sEl.style.color=r.color; rEl.textContent=r.label; rEl.className=`gauge-rating ${r.cls}`;
   setArc(name+'Arc',score/10,r.color);
+}
+
+function updateGaugeNotPermitted(name) {
+  const sEl = document.getElementById(name+'Score');
+  const rEl = document.getElementById(name+'Rating');
+  sEl.textContent = '—';
+  sEl.style.color = 'var(--text-muted)';
+  rEl.textContent = 'Not Permitted';
+  rEl.className = 'gauge-rating rating-none';
+  rEl.style.color = '#e74c3c';
+  rEl.style.fontSize = '11px';
+  setArc(name+'Arc', 0, 'var(--bg-card)');
+}
+
+function updateInsightReserve(viz) {
+  const el = document.getElementById('insightText');
+  let msg = '🏛️ La Jolla Shores is within the San Diego-La Jolla Ecological Reserve — spearfishing and the take of all marine life are prohibited. Dive conditions shown for recreational/scuba divers.';
+  if (viz !== null) {
+    if (viz >= 7) msg += ' Visibility is looking great for a dive today!';
+    else if (viz >= 4) msg += ' Decent conditions for recreational diving.';
+    else msg += ' Visibility is limited — consider waiting for improvement.';
+  }
+  el.textContent = msg;
 }
 
 function updateInsight(fish,viz) {
@@ -2016,7 +2073,9 @@ function buildForecast() {
     html += `<div>`;
     html += `<div class="forecast-day-label">${dayLabel}</div>`;
     if (bestWindow) {
-      html += `<div style="font-size:10px;font-weight:600;color:var(--spear-color);margin-top:1px">🎯 ${bestWindow.range} <span style="font-weight:400;color:var(--text-muted)">${bestWindow.reason}</span></div>`;
+      const bwColor = LOCATIONS[currentLocation] && LOCATIONS[currentLocation].marineReserve ? 'var(--viz-color)' : 'var(--spear-color)';
+      const bwIcon = LOCATIONS[currentLocation] && LOCATIONS[currentLocation].marineReserve ? '🤿' : '🎯';
+      html += `<div style="font-size:10px;font-weight:600;color:${bwColor};margin-top:1px">${bwIcon} ${bestWindow.range} <span style="font-weight:400;color:var(--text-muted)">${bestWindow.reason}</span></div>`;
     }
     html += `</div>`;
     html += `<span class="forecast-chevron">▼</span>`;
@@ -2027,17 +2086,25 @@ function buildForecast() {
     slots.forEach((slot, si) => {
       const sc = slotScores[si];
       const isBest = si === bestSlotIdx;
-      html += `<div class="forecast-time-col${isBest ? ' best-slot' : ''}">`;
+      const isReserve = LOCATIONS[currentLocation] && LOCATIONS[currentLocation].marineReserve;
+      html += `<div class="forecast-time-col${isBest && !isReserve ? ' best-slot' : ''}">`;
       html += `<div class="ftc-time">${slot.timeLabel}</div>`;
-      html += `<div class="ftc-fish-label">Fish</div>`;
-      html += `<div class="ftc-fish-val" style="color:${getRating(sc.fish).color}">${sc.fish.toFixed(1)}</div>`;
+      if (isReserve) {
+        html += `<div class="ftc-fish-label" style="color:#e74c3c">Spearfishing</div>`;
+        html += `<div class="ftc-fish-val" style="color:#e74c3c;font-size:9px">Not Permitted</div>`;
+      } else {
+        html += `<div class="ftc-fish-label">Fish</div>`;
+        html += `<div class="ftc-fish-val" style="color:${getRating(sc.fish).color}">${sc.fish.toFixed(1)}</div>`;
+      }
       html += `<div class="ftc-divider"></div>`;
       html += `<div class="ftc-viz-label">Visibility</div>`;
       html += `<div class="ftc-viz-feet" style="color:${getRating(sc.viz).color}">${sc.vizFeet}</div>`;
       html += `<div class="ftc-viz-rating" style="color:${getRating(sc.viz).color}">${getRating(sc.viz).label}</div>`;
-      html += `<div class="ftc-divider"></div>`;
-      html += `<div class="ftc-spear-val" style="color:${getRating(sc.spear).color}">${sc.spear.toFixed(1)}</div>`;
-      html += `<div class="ftc-spear-rating" style="color:${getRating(sc.spear).color}">${getRating(sc.spear).label}</div>`;
+      if (!isReserve) {
+        html += `<div class="ftc-divider"></div>`;
+        html += `<div class="ftc-spear-val" style="color:${getRating(sc.spear).color}">${sc.spear.toFixed(1)}</div>`;
+        html += `<div class="ftc-spear-rating" style="color:${getRating(sc.spear).color}">${getRating(sc.spear).label}</div>`;
+      }
       // Wind summary
       html += `<div class="ftc-wind-info">💨 ${slot.windSpeed}mph ${slot.windDir}</div>`;
       html += `</div>`;
@@ -2210,13 +2277,17 @@ function calcSlotForecastScores(slot, dayIdx) {
 
 function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
   // Start from the SAME base as the current-day estimate for consistency
+  const loc = LOCATIONS[currentLocation];
   let baseLo, baseHi;
 
   // If today (dayIdx=0) and we have turbidity, use same NTU-based estimate as main panel
   // Calibrated 2026-03-17: 0.25 NTU at pier = 20ft at Pt Loma (dusk, cloudy)
   if (dayIdx === 0 && D.turbidity !== undefined) {
     const ntu = D.turbidity;
-    if(ntu < 0.3)      { baseLo=18; baseHi=23; }
+    const isScripps = loc.scrippsProximity;
+    // La Jolla Shores gets slightly better brackets (sensor is right there)
+    if (isScripps && ntu < 0.2) { baseLo=22; baseHi=27; }
+    else if(ntu < 0.3)  { baseLo=18; baseHi=23; }
     else if(ntu < 0.5)  { baseLo=14; baseHi=19; }
     else if(ntu < 0.8)  { baseLo=10; baseHi=15; }
     else if(ntu < 1.2)  { baseLo=7;  baseHi=12; }
@@ -2243,12 +2314,14 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
   }
 
   // Location shelter/kelp multiplier — capped to avoid unrealistic numbers
-  const loc = LOCATIONS[currentLocation];
+  // Skip for scrippsProximity — SASS is the direct source
   let shelterMult = 1.0;
-  if (loc.kelpDensity === 'high') shelterMult += 0.15;       // kelp helps, but modestly
-  else if (loc.kelpDensity === 'moderate') shelterMult += 0.10;
-  if (loc.shelter === 'high') shelterMult += 0.10;
-  else if (loc.shelter === 'moderate') shelterMult += 0.05;
+  if (!loc.scrippsProximity) {
+    if (loc.kelpDensity === 'high') shelterMult += 0.15;       // kelp helps, but modestly
+    else if (loc.kelpDensity === 'moderate') shelterMult += 0.10;
+    if (loc.shelter === 'high') shelterMult += 0.10;
+    else if (loc.shelter === 'moderate') shelterMult += 0.05;
+  }
   baseLo = Math.round(baseLo * shelterMult);
   baseHi = Math.round(baseHi * shelterMult);
 
@@ -2697,6 +2770,26 @@ function selectSpecies(species) {
 
 function onLocationChange() {
   currentLocation=document.getElementById('locationSelect').value;
+  const loc = LOCATIONS[currentLocation];
+  // Update gauge labels for marine reserves
+  const fishLabel = document.getElementById('fishGaugeLabel');
+  const spearLabel = document.getElementById('spearGaugeLabel');
+  const spearFormula = document.getElementById('spearFormula');
+  if (loc.marineReserve) {
+    fishLabel.textContent = 'Fish Probability';
+    fishLabel.style.color = '#e74c3c';
+    spearLabel.textContent = 'Spearfishing';
+    spearLabel.style.color = '#e74c3c';
+    spearFormula.textContent = '🏛️ Marine Reserve — Take of marine life prohibited';
+    spearFormula.style.color = '#e74c3c';
+  } else {
+    fishLabel.textContent = 'Fish Probability';
+    fishLabel.style.color = 'var(--fish-color)';
+    spearLabel.textContent = 'Spearfishing Opportunity';
+    spearLabel.style.color = 'var(--spear-color)';
+    spearFormula.textContent = 'S = 0.6 × Fish + 0.4 × Visibility';
+    spearFormula.style.color = 'var(--text-muted)';
+  }
   fetchAllData();
 }
 
