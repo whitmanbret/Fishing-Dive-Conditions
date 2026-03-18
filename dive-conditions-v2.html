@@ -845,6 +845,16 @@ function getRating(s) {
   if(s>=4) return {label:'Fair',cls:'rating-fair',color:'var(--fair)'};
   return {label:'Poor',cls:'rating-poor',color:'var(--poor)'};
 }
+// Rating based on visibility feet string (e.g. "12–17 ft") — keeps label consistent with feet
+function getVizRatingFromFeet(vizFeetStr) {
+  const m = vizFeetStr.match(/(\d+)/);
+  if (!m) return getRating(0);
+  const lo = parseInt(m[1], 10);
+  if (lo >= 18) return {label:'Excellent',cls:'rating-excellent',color:'var(--excellent)'};
+  if (lo >= 12) return {label:'Good',cls:'rating-good',color:'var(--good)'};
+  if (lo >= 7)  return {label:'Fair',cls:'rating-fair',color:'var(--fair)'};
+  return {label:'Poor',cls:'rating-poor',color:'var(--poor)'};
+}
 
 // =========================================================================
 // MOON PHASE
@@ -1653,6 +1663,8 @@ function updateDisplay() {
   // Update the hero feet display
   const vizHeroEl = document.getElementById('vizFeetHero');
   if (vizHeroEl) vizHeroEl.textContent = vizEst !== '--' ? vizEst : '--';
+  // Store for rating sync — the viz gauge rating should match the feet estimate
+  D.vizFeetStr = vizEst;
 }
 
 function chlProductivity(c) {
@@ -1918,7 +1930,13 @@ function updateGauge(name,score,defaultColor) {
   const sEl=document.getElementById(name+'Score'), rEl=document.getElementById(name+'Rating');
   if(score===null) { sEl.textContent='--'; sEl.style.color='var(--text-muted)'; rEl.textContent='No Data'; rEl.className='gauge-rating rating-none'; setArc(name+'Arc',0,'var(--bg-card)'); return; }
   sEl.textContent=score.toFixed(1);
-  const r=getRating(score);
+  // For viz gauge, derive rating from feet estimate so label matches the feet display
+  let r;
+  if (name === 'viz' && D.vizFeetStr && D.vizFeetStr !== '--') {
+    r = getVizRatingFromFeet(D.vizFeetStr);
+  } else {
+    r = getRating(score);
+  }
   sEl.style.color=r.color; rEl.textContent=r.label; rEl.className=`gauge-rating ${r.cls}`;
   setArc(name+'Arc',score/10,r.color);
 }
@@ -2100,8 +2118,9 @@ function buildForecast() {
       html += `<div class="ftc-fish-val" style="color:${getRating(sc.fish).color}">${sc.fish.toFixed(1)}</div>`;
       html += `<div class="ftc-divider"></div>`;
       html += `<div class="ftc-viz-label">Visibility</div>`;
-      html += `<div class="ftc-viz-feet" style="color:${getRating(sc.viz).color}">${sc.vizFeet}</div>`;
-      html += `<div class="ftc-viz-rating" style="color:${getRating(sc.viz).color}">${getRating(sc.viz).label}</div>`;
+      const vizR = getVizRatingFromFeet(sc.vizFeet);
+      html += `<div class="ftc-viz-feet" style="color:${vizR.color}">${sc.vizFeet}</div>`;
+      html += `<div class="ftc-viz-rating" style="color:${vizR.color}">${vizR.label}</div>`;
       if (isReserve) {
         html += `<div class="ftc-divider"></div>`;
         html += `<div class="ftc-fish-label" style="color:#e74c3c;font-size:7px">Spearfishing</div>`;
@@ -2286,12 +2305,11 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
   const loc = LOCATIONS[currentLocation];
   let baseLo, baseHi;
 
-  // If today (dayIdx=0) and we have turbidity, use same NTU-based estimate as main panel
+  // Use turbidity as base when available (even for future days — water clarity has inertia)
   // Calibrated 2026-03-17: 0.25 NTU at pier = 20ft at Pt Loma (dusk, cloudy)
-  if (dayIdx === 0 && D.turbidity !== undefined) {
+  const isScripps = loc.scrippsProximity;
+  if (D.turbidity !== undefined) {
     const ntu = D.turbidity;
-    const isScripps = loc.scrippsProximity;
-    // La Jolla Shores gets slightly better brackets (sensor is right there)
     if (isScripps && ntu < 0.2) { baseLo=22; baseHi=27; }
     else if(ntu < 0.3)  { baseLo=18; baseHi=23; }
     else if(ntu < 0.5)  { baseLo=14; baseHi=19; }
@@ -2301,22 +2319,20 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
     else if(ntu < 3.5)  { baseLo=3;  baseHi=6;  }
     else if(ntu < 5.0)  { baseLo=2;  baseHi=4;  }
     else                 { baseLo=1;  baseHi=3;  }
-  } else {
-    // Future days or no turbidity: use wave energy estimate
+  } else if (D.waveEnergy !== undefined) {
+    // No turbidity available — fall back to wave energy
     const we = D.waveEnergy;
-    if (we !== undefined) {
-      if (we <= 20) { baseLo = 18; baseHi = 23; }
-      else if (we <= 50) { baseLo = 12; baseHi = 17; }
-      else if (we <= 100) { baseLo = 7; baseHi = 12; }
-      else if (we <= 200) { baseLo = 4; baseHi = 7; }
-      else { baseLo = 1; baseHi = 4; }
-    } else {
-      // Fallback: estimate from viz score
-      if (vizScore >= 8) { baseLo = 16; baseHi = 21; }
-      else if (vizScore >= 6) { baseLo = 10; baseHi = 15; }
-      else if (vizScore >= 4) { baseLo = 5; baseHi = 9; }
-      else { baseLo = 2; baseHi = 5; }
-    }
+    if (we <= 20) { baseLo = 18; baseHi = 23; }
+    else if (we <= 50) { baseLo = 12; baseHi = 17; }
+    else if (we <= 100) { baseLo = 7; baseHi = 12; }
+    else if (we <= 200) { baseLo = 4; baseHi = 7; }
+    else { baseLo = 1; baseHi = 4; }
+  } else {
+    // Fallback: estimate from viz score
+    if (vizScore >= 8) { baseLo = 16; baseHi = 21; }
+    else if (vizScore >= 6) { baseLo = 10; baseHi = 15; }
+    else if (vizScore >= 4) { baseLo = 5; baseHi = 9; }
+    else { baseLo = 2; baseHi = 5; }
   }
 
   // Location shelter/kelp multiplier — capped to avoid unrealistic numbers
@@ -2344,9 +2360,9 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
   else if (precipPct > 50) rainMult = 0.6;
   else if (precipPct > 30) rainMult = 0.8;
 
-  // Swell degradation for open water (pier turbidity doesn't capture this)
+  // Swell degradation — only apply if base came from turbidity (not already wave-energy-based)
   let swellMult = 1;
-  if (D.waveEnergy !== undefined) {
+  if (D.turbidity !== undefined && D.waveEnergy !== undefined) {
     if (D.waveEnergy > 100) swellMult = 0.7;
     else if (D.waveEnergy > 50) swellMult = 0.85;
   }
