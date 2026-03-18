@@ -559,7 +559,7 @@
         <div class="gauge-label" style="color:var(--viz-color)">Dive Visibility</div>
         <div class="viz-feet-hero" id="vizFeetHero">--</div>
         <div class="gauge-rating rating-none" id="vizRating">--</div>
-        <div class="viz-score-small" id="vizScoreSmall"></div>
+        <div class="viz-score-small" id="vizScoreSmall" style="display:none"></div>
         <div id="vizFeetLabel" style="display:none">--</div>
         <!-- Hidden gauge for score calc -->
         <div style="display:none"><svg viewBox="0 0 120 70"><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="vizArc" style="stroke:var(--viz-color)"/></svg><div id="vizScore">--</div></div>
@@ -571,7 +571,7 @@
           <div class="gauge-ring-score" id="spearScore" style="color:var(--text-muted)">--</div>
         </div>
         <div class="gauge-rating rating-none" id="spearRating">--</div>
-        <div class="gauge-formula" id="spearFormula">S = 0.6 × Fish + 0.4 × Visibility</div>
+        <div class="gauge-formula" id="spearFormula" style="display:none">S = 0.6 × Fish + 0.4 × Visibility</div>
       </div>
     </div>
 
@@ -588,25 +588,25 @@
       </div>
     </section>
 
-    <!-- KEY CONDITIONS — Fish Bite -->
+    <!-- KEY CONDITIONS — Fish Bite (scores hidden to protect algorithm) -->
     <section class="factors-section">
       <div class="category-header">Key Conditions</div>
-      <div class="factor-row"><div class="factor-label">Water Temp</div><div class="factor-value" id="waterTempVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="waterTempScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="sstScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="tideStateScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="moonPhaseScore">-</div></div>
+      <div class="factor-row"><div class="factor-label">Water Temp</div><div class="factor-value" id="waterTempVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waterTempScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tideStateScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="moonPhaseScore" style="display:none">-</div></div>
     </section>
 
-    <!-- DIVE VISIBILITY CONDITIONS -->
+    <!-- DIVE VISIBILITY CONDITIONS (scores hidden to protect algorithm) -->
     <section class="factors-section">
       <div class="category-header">Dive Visibility Conditions</div>
-      <div class="factor-row"><div class="factor-label">Wind</div><div class="factor-value" id="windVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="windScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Swell</div><div class="factor-value" id="swellVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="swellScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Swell Dir</div><div class="factor-value" id="swellDirVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="swellDirScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Swell Period</div><div class="factor-value" id="swellPeriodVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="swellPeriodScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Wave Energy</div><div class="factor-value" id="waveEnergyVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="waveEnergyScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Chlorophyll</div><div class="factor-value" id="chlVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="chlVizScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Rainfall (72h)</div><div class="factor-value" id="rainfallVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="rainfallScore">-</div></div>
+      <div class="factor-row"><div class="factor-label">Wind</div><div class="factor-value" id="windVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="windScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Swell</div><div class="factor-value" id="swellVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Swell Dir</div><div class="factor-value" id="swellDirVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellDirScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Swell Period</div><div class="factor-value" id="swellPeriodVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellPeriodScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Wave Energy</div><div class="factor-value" id="waveEnergyVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waveEnergyScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Chlorophyll</div><div class="factor-value" id="chlVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="chlVizScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Rainfall (72h)</div><div class="factor-value" id="rainfallVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="rainfallScore" style="display:none">-</div></div>
     </section>
 
     <!-- Hidden elements needed by scoring JS but not displayed -->
@@ -644,7 +644,7 @@
     </section>
 
     <div class="breakdown-footer">
-      Fish Probability: 0–10 · Dive Visibility: 0–10 · Spearfishing: 0.6F + 0.4V<br>
+      Fish Probability · Dive Visibility · Spearfishing Opportunity<br>
       Data: <a href="https://tidesandcurrents.noaa.gov" target="_blank">NOAA CO-OPS</a> ·
       <a href="https://cdip.ucsd.edu" target="_blank">CDIP/UCSD</a> ·
       <a href="https://weather.gov" target="_blank">NWS</a> ·
