@@ -588,24 +588,34 @@
       </div>
     </section>
 
-    <!-- FISH BITE FACTORS (read-only) -->
+    <!-- KEY CONDITIONS — always visible -->
     <section class="factors-section">
-      <div class="category-header">Fish Bite Factors <span class="cat-tag cat-fish">BITE</span></div>
+      <div class="category-header">Key Conditions</div>
       <div class="factor-row"><div class="factor-label">Water Temp</div><div class="factor-value" id="waterTempVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="waterTempScore">-</div></div>
       <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="sstScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Temp Trend</div><div class="factor-value" id="tempTrendVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="tempTrendScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="tideStateScore">-</div></div>
+      <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="moonPhaseScore">-</div></div>
+    </section>
+
+    <!-- Toggle for full scoring details -->
+    <div style="text-align:center;margin:8px 0">
+      <button onclick="toggleFactors()" id="factorsToggleBtn" style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-muted);padding:6px 16px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:0.5px">Show All Scoring Details ▼</button>
+    </div>
+
+    <!-- FISH BITE FACTORS (hidden by default) -->
+    <section class="factors-section" id="fishFactorsSection" style="display:none">
+      <div class="category-header">Fish Bite Factors <span class="cat-tag cat-fish">BITE</span></div>
+      <div class="factor-row"><div class="factor-label">Temp Trend</div><div class="factor-value" id="tempTrendVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="tempTrendScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Current</div><div class="factor-value" id="currentVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="currentScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Upwelling</div><div class="factor-value" id="upwellingVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="upwellingScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Chlorophyll</div><div class="factor-value" id="chlFishVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="chlFishScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="moonPhaseScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Reports</div><div class="factor-value" id="reportsVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="reportsScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Fish Pressure</div><div class="factor-value" id="pressureVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="pressureScore">-</div></div>
       <div class="factor-row" id="grunionRow" style="display:none"><div class="factor-label">🐟 Grunion Run</div><div class="factor-value" id="grunionVal">--</div><div class="factor-score score-none" id="grunionScore">-</div></div>
     </section>
 
-    <!-- DIVE VIZ FACTORS (read-only) -->
-    <section class="factors-section">
+    <!-- DIVE VIZ FACTORS (hidden by default) -->
+    <section class="factors-section" id="vizFactorsSection" style="display:none">
       <div class="category-header">Dive Visibility Factors <span class="cat-tag cat-viz">VIZ</span></div>
       <div class="factor-row"><div class="factor-label">Wind</div><div class="factor-value" id="windVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="windScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Swell</div><div class="factor-value" id="swellVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="swellScore">-</div></div>
@@ -1714,6 +1724,16 @@ function updateSourceStatus() {
     if(srcStatus[key]==='ok') { el.textContent='OK'; el.className='source-status source-ok'; }
     else { el.textContent='FAIL'; el.className='source-status source-fail'; }
   }
+}
+
+function toggleFactors() {
+  const fish = document.getElementById('fishFactorsSection');
+  const viz = document.getElementById('vizFactorsSection');
+  const btn = document.getElementById('factorsToggleBtn');
+  const showing = fish.style.display !== 'none';
+  fish.style.display = showing ? 'none' : '';
+  viz.style.display = showing ? 'none' : '';
+  btn.textContent = showing ? 'Show Scoring Details ▼' : 'Hide Scoring Details ▲';
 }
 
 function toggleSources() {
