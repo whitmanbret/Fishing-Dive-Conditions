@@ -1927,13 +1927,14 @@ function updateGauge(name,score,defaultColor) {
 function updateGaugeNotPermitted(name) {
   const sEl = document.getElementById(name+'Score');
   const rEl = document.getElementById(name+'Rating');
-  sEl.textContent = '—';
-  sEl.style.color = 'var(--text-muted)';
-  rEl.textContent = 'Not Permitted';
+  sEl.textContent = '🚫';
+  sEl.style.color = '#e74c3c';
+  sEl.style.fontSize = '28px';
+  rEl.textContent = 'Not Permitted — Marine Preserve';
   rEl.className = 'gauge-rating rating-none';
   rEl.style.color = '#e74c3c';
   rEl.style.fontSize = '11px';
-  setArc(name+'Arc', 0, 'var(--bg-card)');
+  setArc(name+'Arc', 0, '#e74c3c33');
 }
 
 function updateInsightReserve(viz) {
@@ -2778,7 +2779,7 @@ function onLocationChange() {
   if (loc.marineReserve) {
     fishLabel.textContent = 'Fish Probability';
     fishLabel.style.color = '#e74c3c';
-    spearLabel.textContent = 'Spearfishing';
+    spearLabel.textContent = 'Spearfishing — Not Permitted';
     spearLabel.style.color = '#e74c3c';
     spearFormula.textContent = '🏛️ Marine Reserve — Take of marine life prohibited';
     spearFormula.style.color = '#e74c3c';
