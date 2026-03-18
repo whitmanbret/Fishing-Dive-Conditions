@@ -588,7 +588,7 @@
       </div>
     </section>
 
-    <!-- KEY CONDITIONS — always visible -->
+    <!-- KEY CONDITIONS — Fish Bite -->
     <section class="factors-section">
       <div class="category-header">Key Conditions</div>
       <div class="factor-row"><div class="factor-label">Water Temp</div><div class="factor-value" id="waterTempVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="waterTempScore">-</div></div>
@@ -597,42 +597,32 @@
       <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="moonPhaseScore">-</div></div>
     </section>
 
-    <!-- Toggle for full scoring details -->
-    <div style="text-align:center;margin:8px 0">
-      <button onclick="toggleFactors()" id="factorsToggleBtn" style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-muted);padding:6px 16px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;letter-spacing:0.5px">Show All Scoring Details ▼</button>
-    </div>
-
-    <!-- FISH BITE FACTORS (hidden by default) -->
-    <section class="factors-section" id="fishFactorsSection" style="display:none">
-      <div class="category-header">Fish Bite Factors <span class="cat-tag cat-fish">BITE</span></div>
-      <div class="factor-row"><div class="factor-label">Temp Trend</div><div class="factor-value" id="tempTrendVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="tempTrendScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Current</div><div class="factor-value" id="currentVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="currentScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Upwelling</div><div class="factor-value" id="upwellingVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="upwellingScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Chlorophyll</div><div class="factor-value" id="chlFishVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="chlFishScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Reports</div><div class="factor-value" id="reportsVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="reportsScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Fish Pressure</div><div class="factor-value" id="pressureVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="pressureScore">-</div></div>
-      <div class="factor-row" id="grunionRow" style="display:none"><div class="factor-label">🐟 Grunion Run</div><div class="factor-value" id="grunionVal">--</div><div class="factor-score score-none" id="grunionScore">-</div></div>
-    </section>
-
-    <!-- DIVE VIZ FACTORS (hidden by default) -->
-    <section class="factors-section" id="vizFactorsSection" style="display:none">
-      <div class="category-header">Dive Visibility Factors <span class="cat-tag cat-viz">VIZ</span></div>
+    <!-- DIVE VISIBILITY CONDITIONS -->
+    <section class="factors-section">
+      <div class="category-header">Dive Visibility Conditions</div>
       <div class="factor-row"><div class="factor-label">Wind</div><div class="factor-value" id="windVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="windScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Swell</div><div class="factor-value" id="swellVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="swellScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Swell Dir</div><div class="factor-value" id="swellDirVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="swellDirScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Swell Period</div><div class="factor-value" id="swellPeriodVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="swellPeriodScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Wave Energy</div><div class="factor-value" id="waveEnergyVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="waveEnergyScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Rainfall (72h)</div><div class="factor-value" id="rainfallVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="rainfallScore">-</div></div>
       <div class="factor-row"><div class="factor-label">Chlorophyll</div><div class="factor-value" id="chlVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="chlVizScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Turbidity</div><div class="factor-value" id="turbidityVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="turbidityScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Bottom Type</div><div class="factor-value" id="bottomVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="bottomScore">-</div></div>
-      <div class="factor-row"><div class="factor-label">Est. Visibility</div><div class="factor-value" id="estVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="estVizScore">-</div></div>
-      <div class="factor-row" style="border-top:1px solid rgba(255,255,255,0.06); padding-top:6px; margin-top:4px">
-        <div class="factor-label">🎥 Pier Cam</div>
-        <div class="factor-value"><a href="https://coollab.ucsd.edu/pierviz/" target="_blank" style="color:var(--accent);text-decoration:none">Scripps Pier Live ↗</a> <span style="font-size:0.7em;opacity:0.5">pilings at 4, 11, 14, 30 ft</span></div>
-        <div class="factor-score" style="background:none"></div>
-      </div>
+      <div class="factor-row"><div class="factor-label">Rainfall (72h)</div><div class="factor-value" id="rainfallVal"><span class="loading-pulse">loading...</span></div><div class="factor-score score-none" id="rainfallScore">-</div></div>
     </section>
+
+    <!-- Hidden elements needed by scoring JS but not displayed -->
+    <div style="display:none">
+      <span id="tempTrendVal"></span><span id="tempTrendScore"></span>
+      <span id="currentVal"></span><span id="currentScore"></span>
+      <span id="upwellingVal"></span><span id="upwellingScore"></span>
+      <span id="chlFishVal"></span><span id="chlFishScore"></span>
+      <span id="reportsVal"></span><span id="reportsScore"></span>
+      <span id="pressureVal"></span><span id="pressureScore"></span>
+      <span id="grunionVal"></span><span id="grunionScore"></span>
+      <span id="turbidityVal"></span><span id="turbidityScore"></span>
+      <span id="bottomVal"></span><span id="bottomScore"></span>
+      <span id="estVizVal"></span><span id="estVizScore"></span>
+    </div>
+    <div id="grunionRow" style="display:none"></div>
 
     <!-- DATA SOURCES PANEL -->
     <section class="sources-panel" style="display:none">
@@ -1724,16 +1714,6 @@ function updateSourceStatus() {
     if(srcStatus[key]==='ok') { el.textContent='OK'; el.className='source-status source-ok'; }
     else { el.textContent='FAIL'; el.className='source-status source-fail'; }
   }
-}
-
-function toggleFactors() {
-  const fish = document.getElementById('fishFactorsSection');
-  const viz = document.getElementById('vizFactorsSection');
-  const btn = document.getElementById('factorsToggleBtn');
-  const showing = fish.style.display !== 'none';
-  fish.style.display = showing ? 'none' : '';
-  viz.style.display = showing ? 'none' : '';
-  btn.textContent = showing ? 'Show Scoring Details ▼' : 'Hide Scoring Details ▲';
 }
 
 function toggleSources() {
