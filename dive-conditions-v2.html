@@ -1545,11 +1545,11 @@ function updateDisplay() {
       const ntu = D.turbidity;
       // Calibrated 2026-03-17: 0.25 NTU at pier = 20ft at Pt Loma (dusk, cloudy)
       // Pier reads cleaner than open water; conservative estimates are more accurate
-      if(ntu < 0.3)      { lo=15; hi=25; }  // very clear at pier → good at dive site
-      else if(ntu < 0.5)  { lo=12; hi=20; }  // can see 14ft piling clearly
-      else if(ntu < 0.8)  { lo=8;  hi=16; }  // 14ft piling faint
-      else if(ntu < 1.2)  { lo=6;  hi=12; }  // 11ft piling visible
-      else if(ntu < 2.0)  { lo=4;  hi=9;  }  // 4ft piling clear, 11ft faint
+      if(ntu < 0.3)      { lo=18; hi=23; }  // very clear at pier → good at dive site
+      else if(ntu < 0.5)  { lo=14; hi=19; }  // can see 14ft piling clearly
+      else if(ntu < 0.8)  { lo=10; hi=15; }  // 14ft piling faint
+      else if(ntu < 1.2)  { lo=7;  hi=12; }  // 11ft piling visible
+      else if(ntu < 2.0)  { lo=5;  hi=9;  }  // 4ft piling clear, 11ft faint
       else if(ntu < 3.5)  { lo=3;  hi=6;  }  // only 4ft piling visible
       else if(ntu < 5.0)  { lo=2;  hi=4;  }
       else                 { lo=1;  hi=3;  }
@@ -1565,6 +1565,8 @@ function updateDisplay() {
         lo = Math.max(1, Math.round(lo * 0.85));
         hi = Math.max(lo+1, Math.round(hi * 0.85));
       }
+      // Cap range spread to 5ft max
+      if (hi - lo > 5) hi = lo + 5;
       let suffix = '';
       if (D.chlorophyll > 8) suffix = ' (bloom)';
       else if (D.chlorophyll > 3) suffix = ' (green water)';
@@ -1574,39 +1576,38 @@ function updateDisplay() {
     // PRIORITY 2: Rain overrides swell-based estimate
     else if(D.rainfall==='heavy') {
       const lo = Math.max(1, Math.round(2 * shelterMult));
-      const hi = Math.max(lo+1, Math.round(5 * shelterMult));
+      const hi = Math.min(lo + 4, Math.max(lo+1, Math.round(5 * shelterMult)));
       vizEst=`${lo}–${hi} ft`;
     } else if(D.rainfall==='moderate') {
-      const lo = Math.max(2, Math.round(4 * shelterMult));
-      const hi = Math.max(lo+1, Math.round(10 * shelterMult));
+      const lo = Math.max(2, Math.round(5 * shelterMult));
+      const hi = Math.min(lo + 5, Math.max(lo+1, Math.round(9 * shelterMult)));
       vizEst=`${lo}–${hi} ft`;
     }
     // PRIORITY 3: Wave energy based estimate (same ranges as forecast estimateVizFeet)
     // Calibrated 2026-03-17: ground truth 20ft at Pt Loma on a clear/low-swell day
     else if(D.waveEnergy!==undefined) {
       let lo, hi;
-      if(D.waveEnergy<=20) { lo=15; hi=25; }
-      else if(D.waveEnergy<=50) { lo=10; hi=18; }
-      else if(D.waveEnergy<=100) { lo=5; hi=12; }
-      else if(D.waveEnergy<=200) { lo=3; hi=7; }
+      if(D.waveEnergy<=20) { lo=18; hi=23; }
+      else if(D.waveEnergy<=50) { lo=12; hi=17; }
+      else if(D.waveEnergy<=100) { lo=7; hi=12; }
+      else if(D.waveEnergy<=200) { lo=4; hi=7; }
       else { lo=1; hi=4; }
       // Apply shelter multiplier
       lo = Math.max(1, Math.round(lo * shelterMult));
       hi = Math.max(lo+1, Math.round(hi * shelterMult));
       // Chlorophyll penalty — HABs 17yr data: Apr-May avg 10-13 mg/m³ = bloom season
-      if(D.chlorophyll>8) { lo = Math.max(1, lo-5); hi = Math.max(lo+1, hi-4); vizEst=`${lo}–${hi} ft (bloom)`; }
-      else if(D.chlorophyll>3) { lo = Math.max(1, lo-2); hi = Math.max(lo+1, hi-2); vizEst=`${lo}–${hi} ft (green water)`; }
-      else if(D.chlorophyll>1) { lo = Math.max(1, lo-1); hi = Math.max(lo+1, hi-1); vizEst=`${lo}–${hi} ft`; }
-      else vizEst=`${lo}–${hi} ft`;
-      // Cap at 40ft (San Diego rarely exceeds this)
-      hi = Math.min(40, hi);
-      lo = Math.min(lo, hi - 1);
-      vizEst = vizEst.replace(/\d+–\d+ ft/, `${lo}–${hi} ft`);
+      let suffix2 = '';
+      if(D.chlorophyll>8) { lo = Math.max(1, lo-4); hi = Math.max(lo+1, hi-4); suffix2 = ' (bloom)'; }
+      else if(D.chlorophyll>3) { lo = Math.max(1, lo-2); hi = Math.max(lo+1, hi-2); suffix2 = ' (green water)'; }
+      else if(D.chlorophyll>1) { lo = Math.max(1, lo-1); hi = Math.max(lo+1, hi-1); }
+      // Cap range spread to 5ft max
+      if (hi - lo > 5) hi = lo + 5;
+      vizEst = `${lo}–${hi} ft${suffix2}`;
     } else if(D.rainfall==='none'||D.rainfall==='trace') {
-      const lo = Math.round(10 * shelterMult);
-      const hi = Math.min(25, Math.round(20 * shelterMult));
+      const lo = Math.round(12 * shelterMult);
+      const hi = Math.min(lo + 5, Math.round(17 * shelterMult));
       vizEst=`${lo}–${hi} ft (est.)`;
-    } else vizEst='5–12 ft (est.)';
+    } else vizEst='6–10 ft (est.)';
   }
   setVal('estVizVal', vizEst, vizSource);
   const vizFeetEl = document.getElementById('vizFeetLabel');
@@ -2200,29 +2201,28 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
   // Calibrated 2026-03-17: 0.25 NTU at pier = 20ft at Pt Loma (dusk, cloudy)
   if (dayIdx === 0 && D.turbidity !== undefined) {
     const ntu = D.turbidity;
-    if(ntu < 0.3)      { baseLo=15; baseHi=25; }
-    else if(ntu < 0.5)  { baseLo=12; baseHi=20; }
-    else if(ntu < 0.8)  { baseLo=8;  baseHi=16; }
-    else if(ntu < 1.2)  { baseLo=6;  baseHi=12; }
-    else if(ntu < 2.0)  { baseLo=4;  baseHi=9;  }
+    if(ntu < 0.3)      { baseLo=18; baseHi=23; }
+    else if(ntu < 0.5)  { baseLo=14; baseHi=19; }
+    else if(ntu < 0.8)  { baseLo=10; baseHi=15; }
+    else if(ntu < 1.2)  { baseLo=7;  baseHi=12; }
+    else if(ntu < 2.0)  { baseLo=5;  baseHi=9;  }
     else if(ntu < 3.5)  { baseLo=3;  baseHi=6;  }
     else if(ntu < 5.0)  { baseLo=2;  baseHi=4;  }
     else                 { baseLo=1;  baseHi=3;  }
   } else {
     // Future days or no turbidity: use wave energy estimate
-    // Calibrated 2026-03-17: ground truth 20ft at Pt Loma on clear/low-swell day
     const we = D.waveEnergy;
     if (we !== undefined) {
-      if (we <= 20) { baseLo = 15; baseHi = 25; }
-      else if (we <= 50) { baseLo = 10; baseHi = 18; }
-      else if (we <= 100) { baseLo = 5; baseHi = 12; }
-      else if (we <= 200) { baseLo = 3; baseHi = 7; }
+      if (we <= 20) { baseLo = 18; baseHi = 23; }
+      else if (we <= 50) { baseLo = 12; baseHi = 17; }
+      else if (we <= 100) { baseLo = 7; baseHi = 12; }
+      else if (we <= 200) { baseLo = 4; baseHi = 7; }
       else { baseLo = 1; baseHi = 4; }
     } else {
       // Fallback: estimate from viz score
-      if (vizScore >= 8) { baseLo = 14; baseHi = 22; }
-      else if (vizScore >= 6) { baseLo = 8; baseHi = 15; }
-      else if (vizScore >= 4) { baseLo = 4; baseHi = 9; }
+      if (vizScore >= 8) { baseLo = 16; baseHi = 21; }
+      else if (vizScore >= 6) { baseLo = 10; baseHi = 15; }
+      else if (vizScore >= 4) { baseLo = 5; baseHi = 9; }
       else { baseLo = 2; baseHi = 5; }
     }
   }
@@ -2267,8 +2267,9 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
   if (D.chlorophyll > 8) { baseLo = Math.max(1, baseLo - 5); baseHi = Math.max(baseLo + 1, baseHi - 4); }
   else if (D.chlorophyll > 3) { baseLo = Math.max(1, baseLo - 2); baseHi = Math.max(baseLo + 1, baseHi - 2); }
 
-  // Cap at realistic max (San Diego rarely exceeds 40ft)
-  baseHi = Math.min(40, baseHi);
+  // Cap range spread to 5ft max, and realistic max of 30ft
+  if (baseHi - baseLo > 5) baseHi = baseLo + 5;
+  baseHi = Math.min(30, baseHi);
   baseLo = Math.min(baseLo, baseHi - 1);
 
   return `${baseLo}–${baseHi} ft`;
