@@ -6,7 +6,7 @@
   <script>
     // If loaded inside an iframe (e.g. Wix embed), break out to direct URL for proper mobile scrolling
     if (window !== window.top) {
-      try { window.top.location.href = 'http://conditions.spearfactor.com/dive-conditions-v2.html'; } catch(e) {}
+      try { window.top.location.href = 'https://conditions.spearfactor.com/dive-conditions-v2.html'; } catch(e) {}
     }
   </script>
   <title>San Diego Spearfishing Conditions — Live Dive & Fish Forecast | SpearFactor</title>
@@ -21,7 +21,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://conditions.spearfactor.com/dive-conditions-v2.html">
   <meta property="og:site_name" content="SpearFactor">
-  <meta property="og:image" content="http://conditions.spearfactor.com/og-image.jpg">
+  <meta property="og:image" content="https://conditions.spearfactor.com/og-image.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="800">
 
@@ -29,7 +29,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="San Diego Spearfishing Conditions — Live Forecast">
   <meta name="twitter:description" content="Real-time dive visibility & fish scores for La Jolla, Point Loma, Coronado & more. Updated every refresh.">
-  <meta name="twitter:image" content="http://conditions.spearfactor.com/og-image.jpg">
+  <meta name="twitter:image" content="https://conditions.spearfactor.com/og-image.jpg">
 
   <!-- JSON-LD Structured Data for Google -->
   <script type="application/ld+json">
@@ -990,6 +990,17 @@ function calcPressure(date) {
 function getPressureLabel(v) { return {very_low:'Very Low',low:'Low',moderate:'Moderate',high:'High',very_high:'Very High'}[v]||v; }
 
 // =========================================================================
+// FETCH WITH TIMEOUT — prevents page from hanging when APIs are down
+// =========================================================================
+function fetchWithTimeout(url, opts, ms=8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  const signal = controller.signal;
+  const mergedOpts = opts ? {...opts, signal} : {signal};
+  return fetch(url, mergedOpts).finally(() => clearTimeout(timer));
+}
+
+// =========================================================================
 // API FETCHES
 // =========================================================================
 
@@ -1000,7 +1011,7 @@ async function fetchWaterTemp() {
   for (const dateParam of ['latest', 'recent']) {
     for (const station of stations) {
       try {
-        const r = await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=${dateParam}&station=${station}&product=water_temperature&units=english&time_zone=lst_ldt&format=json`);
+        const r = await fetchWithTimeout(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=${dateParam}&station=${station}&product=water_temperature&units=english&time_zone=lst_ldt&format=json`);
         const d = await r.json();
         if(d.data&&d.data.length>0) {
           const t=parseFloat(d.data[d.data.length-1].v);
@@ -1019,7 +1030,7 @@ async function fetchTempTrend() {
   const fmt=d=>`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
   for (const station of stations) {
     try {
-      const r=await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(ago)}&end_date=${fmt(now)}&station=${station}&product=water_temperature&units=english&time_zone=lst_ldt&format=json`);
+      const r=await fetchWithTimeout(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(ago)}&end_date=${fmt(now)}&station=${station}&product=water_temperature&units=english&time_zone=lst_ldt&format=json`);
       const d=await r.json();
       if(d.data&&d.data.length>=12) {
         const all=d.data.map(x=>parseFloat(x.v)).filter(v=>!isNaN(v));
@@ -1046,7 +1057,7 @@ async function fetchTempTrend() {
 // --- NOAA CO-OPS: Tide State & Current Estimate ---
 async function fetchTideState() {
   try {
-    const r=await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`);
+    const r=await fetchWithTimeout(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`);
     const d=await r.json();
     if(d.predictions&&d.predictions.length>0) {
       const now=new Date();
@@ -1072,7 +1083,7 @@ async function fetchTideState() {
 // --- NWS: Wind ---
 async function fetchWind() {
   try {
-    const r=await fetch(`https://api.weather.gov/stations/${WEATHER_STATION}/observations/latest`,{
+    const r=await fetchWithTimeout(`https://api.weather.gov/stations/${WEATHER_STATION}/observations/latest`,{
       headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
     });
     const d=await r.json(), p=d.properties;
@@ -1096,7 +1107,7 @@ async function fetchWind() {
 // --- NWS: Hourly Forecast (5-day, for forecast section) ---
 async function fetchHourlyForecast() {
   try {
-    const r=await fetch('https://api.weather.gov/gridpoints/SGX/55,17/forecast/hourly',{
+    const r=await fetchWithTimeout('https://api.weather.gov/gridpoints/SGX/55,17/forecast/hourly',{
       headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
     });
     const d=await r.json();
@@ -1109,7 +1120,7 @@ async function fetchHourlyForecast() {
 // --- NWS: Wind Forecast (legacy 12h periods) ---
 async function fetchWindForecast() {
   try {
-    const r=await fetch('https://api.weather.gov/gridpoints/SGX/55,17/forecast',{
+    const r=await fetchWithTimeout('https://api.weather.gov/gridpoints/SGX/55,17/forecast',{
       headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
     });
     const d=await r.json();
@@ -1124,7 +1135,7 @@ async function fetchMultiDayTides() {
     const end=new Date(now.getTime()+5*86400000);
     const fmt=d=>`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
     // Fetch hi/lo predictions for 5 days
-    const r=await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(now)}&end_date=${fmt(end)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`);
+    const r=await fetchWithTimeout(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(now)}&end_date=${fmt(end)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`);
     const d=await r.json();
     if(d.predictions) {
       D.multiDayTideHiLo=d.predictions.map(p=>({
@@ -1132,7 +1143,7 @@ async function fetchMultiDayTides() {
       }));
     }
     // Fetch hourly predictions for tide curve
-    const r2=await fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(now)}&end_date=${fmt(end)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=h`);
+    const r2=await fetchWithTimeout(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(now)}&end_date=${fmt(end)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=h`);
     const d2=await r2.json();
     if(d2.predictions) {
       D.multiDayTideHourly=d2.predictions.map(p=>({
@@ -1160,14 +1171,14 @@ async function fetchBuoyData() {
   const cdipStation = CDIP_STATIONS[currentLocation] || CDIP_STATIONS.torrey;
   try {
     const ddsUrl = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/realtime/${cdipStation.id}_rt.nc.dds`;
-    const ddsR = await fetch(ddsUrl);
+    const ddsR = await fetchWithTimeout(ddsUrl);
     if (ddsR.ok) {
       const ddsText = await ddsR.text();
       const match = ddsText.match(/waveTime\[waveTime\s*=\s*(\d+)\]/);
       if (match) {
         const lastIdx = parseInt(match[1]) - 1;
         const dataUrl = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/realtime/${cdipStation.id}_rt.nc.ascii?waveHs%5B${lastIdx}%5D,waveTp%5B${lastIdx}%5D,waveDp%5B${lastIdx}%5D,waveTa%5B${lastIdx}%5D,sstSeaSurfaceTemperature%5B${lastIdx}%5D`;
-        const dataR = await fetch(dataUrl);
+        const dataR = await fetchWithTimeout(dataUrl);
         if (dataR.ok) {
           const text = await dataR.text();
           const getVal = name => { const m = text.match(new RegExp(name+'\\[1\\]\\n([\\d.\\-]+)')); return m ? parseFloat(m[1]) : null; };
@@ -1203,7 +1214,7 @@ async function fetchBuoyData() {
     try {
       const ago = new Date(Date.now() - 12*3600000);
       const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station,time,wd,wspd,wvht,dpd,apd,mwd,wtmp,atmp&station=%22${buoyId}%22&time>=${ago.toISOString()}&orderByMax(%22time%22)`;
-      const r = await fetch(url);
+      const r = await fetchWithTimeout(url);
       if (r.ok) {
         const d = await r.json();
         if(d.table&&d.table.rows&&d.table.rows.length>0) {
@@ -1216,7 +1227,7 @@ async function fetchBuoyData() {
       }
     } catch(e) {}
     try {
-      const r = await fetch(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`);
+      const r = await fetchWithTimeout(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`);
       if (r.ok) {
         const text = await r.text(), lines = text.trim().split('\n');
         if(lines.length>=3) {
@@ -1277,7 +1288,7 @@ function classifySwellDir(mwd) {
 // --- NWS: Rainfall ---
 async function fetchRainfall() {
   try {
-    const r=await fetch(`https://api.weather.gov/stations/${WEATHER_STATION}/observations?limit=72`,{
+    const r=await fetchWithTimeout(`https://api.weather.gov/stations/${WEATHER_STATION}/observations?limit=72`,{
       headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
     });
     const d=await r.json();
@@ -1334,7 +1345,7 @@ async function fetchSST() {
   ];
   for (const url of datasets) {
     try {
-      const r = await fetch(url);
+      const r = await fetchWithTimeout(url);
       if (r.ok) {
         const d = await r.json();
         if(d.table&&d.table.rows&&d.table.rows.length>0) {
@@ -1369,7 +1380,7 @@ async function fetchChlorophyll() {
   const monthStr = String(month).padStart(2, '0');
   try {
     const url = `https://www.ncei.noaa.gov/erddap/griddap/AEC_uswest_satellite_climo.json?Chlorophyll_avg%5B(2000-${monthStr}-01)%5D%5B(${lat-0.15}):(${lat+0.05})%5D%5B(${lon-0.25}):(${lon-0.05})%5D`;
-    const r = await fetch(url);
+    const r = await fetchWithTimeout(url);
     if (r.ok) {
       const d = await r.json();
       if(d.table&&d.table.rows&&d.table.rows.length>0) {
@@ -1401,7 +1412,7 @@ async function fetchScrippsSASS() {
     const yesterday = new Date(now - 24*60*60*1000);
     const fmt = d => d.toISOString().split('.')[0]+'Z';
     const url = `https://erddap.caloos.org/erddap/tabledap/scripps-pier-automated-shore-sta-1.json?time,sea_water_turbidity_eco,mass_concentration_of_chlorophyll_in_sea_water_eco&time%3E=${fmt(yesterday)}&time%3C=${fmt(now)}`;
-    const r = await fetch(url);
+    const r = await fetchWithTimeout(url);
     if (!r.ok) throw new Error('SASS fetch failed');
     const d = await r.json();
     if (d.table && d.table.rows && d.table.rows.length > 0) {
