@@ -9,9 +9,9 @@
       try { window.top.location.href = 'https://conditions.spearfactor.com/dive-conditions-v2.html'; } catch(e) {}
     }
   </script>
-  <title>San Diego Spearfishing Conditions — Live Dive & Fish Forecast | SpearFactor</title>
-  <meta name="description" content="Live spearfishing conditions for San Diego & SoCal. Real-time dive visibility, fish probability scores, swell, tide, wind, and 5-day forecast for La Jolla, Point Loma, Del Mar Reefs, Coronado Islands, and Catalina Island.">
-  <meta name="keywords" content="San Diego spearfishing conditions, dive visibility forecast, spearfishing forecast, La Jolla diving conditions, Point Loma kelp diving, Del Mar Reefs diving, Catalina Island diving, fish report San Diego, yellowtail forecast, white sea bass conditions, halibut grunion run, ocean conditions today">
+  <title>California Spearfishing Conditions — Live Dive & Fish Forecast | SpearFactor</title>
+  <meta name="description" content="Live spearfishing conditions for all of California. Real-time dive visibility, fish probability scores, swell, tide, wind, and 5-day forecast for 30+ dive sites from San Diego to Humboldt.">
+  <meta name="keywords" content="California spearfishing conditions, dive visibility forecast, spearfishing forecast, La Jolla diving, Point Loma kelp, Palos Verdes diving, Catalina Island diving, Santa Barbara spearfishing, Monterey diving, fish report California, yellowtail forecast, white sea bass conditions, halibut, lingcod, ocean conditions today">
   <meta name="author" content="SpearFactor">
   <link rel="canonical" href="https://conditions.spearfactor.com/dive-conditions-v2.html">
 
@@ -24,8 +24,8 @@
   <meta name="theme-color" content="#0a1628">
 
   <!-- Open Graph (Facebook, iMessage, etc.) -->
-  <meta property="og:title" content="San Diego Spearfishing Conditions — Live Forecast">
-  <meta property="og:description" content="Real-time dive visibility & fish probability scores for 8 San Diego dive sites. Swell, tide, wind, grunion runs, and 5-day forecast.">
+  <meta property="og:title" content="California Spearfishing Conditions — Live Forecast">
+  <meta property="og:description" content="Real-time dive visibility & fish probability scores for 30+ California dive sites. Swell, tide, wind, and 5-day forecast from San Diego to Humboldt.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://conditions.spearfactor.com/dive-conditions-v2.html">
   <meta property="og:site_name" content="SpearFactor">
@@ -35,7 +35,7 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="San Diego Spearfishing Conditions — Live Forecast">
+  <meta name="twitter:title" content="California Spearfishing Conditions — Live Forecast">
   <meta name="twitter:description" content="Real-time dive visibility & fish scores for La Jolla, Point Loma, Coronado & more. Updated every refresh.">
   <meta name="twitter:image" content="https://conditions.spearfactor.com/og-image.jpg">
 
@@ -509,25 +509,31 @@
 
     <header class="header">
       <h1>Fish & Dive Conditions</h1>
-      <p class="subtitle">San Diego County — Live Oceanographic Model</p>
+      <p class="subtitle" id="subtitleRegion">California — Live Oceanographic Model</p>
     </header>
 
     <!-- CONTROLS -->
     <div class="controls">
       <div class="control-group">
-        <div class="control-label">Location</div>
+        <div class="control-label">County / Region</div>
+        <select id="countySelect" onchange="onCountyChange()">
+          <option value="sandiego" selected>San Diego County</option>
+          <option value="orange">Orange County</option>
+          <option value="la">Los Angeles County</option>
+          <option value="ventura">Ventura County</option>
+          <option value="santabarbara">Santa Barbara County</option>
+          <option value="islands">Channel Islands</option>
+          <option value="slo">San Luis Obispo County</option>
+          <option value="monterey">Monterey County</option>
+          <option value="sanmateo">San Mateo County</option>
+          <option value="sonoma">Sonoma County</option>
+          <option value="mendocino">Mendocino County</option>
+          <option value="humboldt">Humboldt County</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <div class="control-label">Dive Spot</div>
         <select id="locationSelect" onchange="onLocationChange()">
-          <option value="ljshores">La Jolla Shores</option>
-          <option value="lajolla">La Jolla Kelp Beds</option>
-          <option value="pointloma">Point Loma Kelp</option>
-          <option value="mission">Mission Bay / Jetties</option>
-          <option value="imperial">Imperial Beach</option>
-          <option value="coronado">Coronado Islands (MX)</option>
-          <option value="delmar">Del Mar Reefs</option>
-          <option value="encinitas">Encinitas / Swamis</option>
-          <option value="oceanside">Oceanside</option>
-          <option disabled>── Offshore / Islands ──</option>
-          <option value="catalina">Catalina Island (Avalon)</option>
         </select>
       </div>
       <div class="control-group">
@@ -705,19 +711,47 @@
 // CONFIGURATION
 // =========================================================================
 const LOCATIONS = {
-  ljshores:  { name: 'La Jolla Shores', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8586, lon: -117.2572, depth: '10-40 ft', kelpDensity: 'moderate', marineReserve: true, scrippsProximity: true },
-  lajolla:   { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high' },
-  pointloma: { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.67, lon: -117.26, depth: '20-100 ft', kelpDensity: 'high' },
-  mission:   { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low', riverInfluence: true },
-  imperial:  { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low', buoys: ['46225','46235'], lat: 32.58, lon: -117.14, depth: '10-40 ft', kelpDensity: 'none', riverInfluence: true },
-  coronado:  { name: 'Coronado Islands (MX)', bottom: 'rock', tideStation: '9410170', coast: 300, shelter: 'low', buoys: ['46225','46235'], lat: 32.42, lon: -117.25, depth: '30-150 ft', kelpDensity: 'moderate', offshore: true },
-  delmar:    { name: 'Del Mar Reefs', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.95, lon: -117.28, depth: '20-70 ft', kelpDensity: 'moderate' },
-  encinitas: { name: 'Encinitas / Swamis', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.03, lon: -117.30, depth: '15-50 ft', kelpDensity: 'moderate' },
-  oceanside: { name: 'Oceanside', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225'], lat: 33.19, lon: -117.40, depth: '15-60 ft', kelpDensity: 'low' },
-  catalina:  { name: 'Catalina Island (Avalon)', bottom: 'kelp', tideStation: '9411340', coast: 90, shelter: 'moderate', buoys: ['46248','46225'], lat: 33.34, lon: -118.33, depth: '30-120 ft', kelpDensity: 'high', offshore: true },
+  // ── San Diego County (south → north) ──
+  coronado:    { name: 'Coronado Islands (MX)', bottom: 'rock', tideStation: '9410170', coast: 300, shelter: 'low', buoys: ['46225','46235'], lat: 32.42, lon: -117.25, depth: '30-150 ft', kelpDensity: 'moderate', offshore: true, nwsGrid: 'SGX/54,20' },
+  imperial:    { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low', buoys: ['46225','46235'], lat: 32.58, lon: -117.14, depth: '10-40 ft', kelpDensity: 'none', riverInfluence: true, nwsGrid: 'SGX/56,8' },
+  pointloma:   { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.67, lon: -117.26, depth: '20-100 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20' },
+  mission:     { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low', riverInfluence: true, nwsGrid: 'SGX/54,20' },
+  ljshores:    { name: 'La Jolla Shores', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8586, lon: -117.2572, depth: '10-60 ft', kelpDensity: 'moderate', marineReserve: true, scrippsProximity: true, nwsGrid: 'SGX/54,20' },
+  lajolla:     { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20' },
+  birdrock:    { name: 'Bird Rock / Windansea', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225','46254'], lat: 32.81, lon: -117.27, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20' },
+  delmar:      { name: 'Del Mar Reefs', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.95, lon: -117.28, depth: '10-25 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20' },
+  encinitas:   { name: 'Encinitas / Swamis', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.03, lon: -117.30, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20' },
+  carlsbad:    { name: 'Carlsbad Reef', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.12, lon: -117.35, depth: '25-45 ft', kelpDensity: 'low', nwsGrid: 'SGX/54,20' },
+  oceanside:   { name: 'Oceanside', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225'], lat: 33.19, lon: -117.40, depth: '15-60 ft', kelpDensity: 'low', nwsGrid: 'SGX/54,20' },
+  // ── Orange County ──
+  newport:     { name: 'Newport / Corona del Mar', bottom: 'rock', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.59, lon: -117.87, depth: '10-30 ft', kelpDensity: 'low', nwsGrid: 'SGX/35,58' },
+  huntington:  { name: 'Huntington Cliffs', bottom: 'sand', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.65, lon: -117.98, depth: '8-20 ft', kelpDensity: 'none', nwsGrid: 'SGX/35,58' },
+  // ── Los Angeles County ──
+  pv:          { name: 'Palos Verdes', bottom: 'rock', tideStation: '9410660', coast: 225, shelter: 'moderate', buoys: ['46222'], lat: 33.74, lon: -118.41, depth: '10-55 ft', kelpDensity: 'high', nwsGrid: 'LOX/147,32' },
+  horseshoe:   { name: 'Horseshoe Kelp (LA)', bottom: 'kelp', tideStation: '9410660', coast: 270, shelter: 'low', buoys: ['46222'], lat: 33.70, lon: -118.35, depth: '20-60 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/147,32' },
+  malibu:      { name: 'Malibu / Point Dume', bottom: 'rock', tideStation: '9410660', coast: 200, shelter: 'moderate', buoys: ['46222'], lat: 34.00, lon: -118.80, depth: '8-50 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/135,46' },
+  leocarrillo: { name: 'Leo Carrillo', bottom: 'rock', tideStation: '9410660', coast: 210, shelter: 'low', buoys: ['46222'], lat: 34.04, lon: -118.93, depth: '8-30 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/135,46' },
+  // ── Ventura County ──
+  ventura:     { name: 'Ventura / Pt Mugu', bottom: 'rock', tideStation: '9411270', coast: 210, shelter: 'moderate', buoys: ['46217'], lat: 34.25, lon: -119.26, depth: '8-45 ft', kelpDensity: 'low', nwsGrid: 'LOX/119,62' },
+  // ── Santa Barbara County ──
+  sb:          { name: 'Santa Barbara (Hendry\'s)', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46054','46217'], lat: 34.40, lon: -119.74, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/105,70' },
+  refugio:     { name: 'Refugio / Gaviota', bottom: 'rock', tideStation: '9411340', coast: 210, shelter: 'low', buoys: ['46054'], lat: 34.47, lon: -120.07, depth: '8-50 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/105,70' },
+  // ── Channel Islands ──
+  anacapa:     { name: 'Anacapa Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46217'], lat: 34.01, lon: -119.36, depth: '10-60 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/119,62' },
+  santacruz:   { name: 'Santa Cruz Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46054'], lat: 34.00, lon: -119.73, depth: '10-80 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/105,70' },
+  catalina:    { name: 'Catalina Island', bottom: 'kelp', tideStation: '9410660', coast: 90, shelter: 'moderate', buoys: ['46248','46222'], lat: 33.34, lon: -118.33, depth: '10-100 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/147,32' },
+  // ── Central Coast (San Luis Obispo / Monterey) ──
+  morro:       { name: 'Morro Bay / Montana de Oro', bottom: 'rock', tideStation: '9412110', coast: 250, shelter: 'moderate', buoys: ['46028'], lat: 35.37, lon: -120.87, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/72,120' },
+  monterey:    { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46042'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },
+  carmel:      { name: 'Carmel / Point Lobos', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46042'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },
+  // ── Northern California ──
+  halfmoon:    { name: 'Half Moon Bay', bottom: 'rock', tideStation: '9414290', coast: 270, shelter: 'low', buoys: ['46012'], lat: 37.50, lon: -122.47, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/80,93' },
+  bodega:      { name: 'Bodega Bay / Sonoma', bottom: 'rock', tideStation: '9415020', coast: 270, shelter: 'moderate', buoys: ['46013'], lat: 38.33, lon: -123.06, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/68,134' },
+  fortbragg:   { name: 'Fort Bragg / Mendocino', bottom: 'rock', tideStation: '9416841', coast: 270, shelter: 'low', buoys: ['46014'], lat: 39.45, lon: -123.81, depth: '10-55 ft', kelpDensity: 'moderate', nwsGrid: 'EKA/61,45' },
+  trinidad:    { name: 'Trinidad / Humboldt', bottom: 'rock', tideStation: '9418767', coast: 270, shelter: 'moderate', buoys: ['46022'], lat: 40.77, lon: -124.20, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'EKA/61,107' },
 };
 
-const WEATHER_STATION = 'KSAN';
+const WEATHER_STATION = 'KSAN'; // fallback; overridden per-region in fetchWeather
 
 let currentSpecies = 'general';
 let currentLocation = 'ljshores';
@@ -1168,7 +1202,8 @@ async function fetchWind() {
 // --- NWS: Hourly Forecast (5-day, for forecast section) ---
 async function fetchHourlyForecast() {
   try {
-    const r=await fetchWithTimeout('https://api.weather.gov/gridpoints/SGX/55,17/forecast/hourly',{
+    const grid = LOCATIONS[currentLocation].nwsGrid || 'SGX/55,17';
+    const r=await fetchWithTimeout(`https://api.weather.gov/gridpoints/${grid}/forecast/hourly`,{
       headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
     });
     const d=await r.json();
@@ -1181,7 +1216,8 @@ async function fetchHourlyForecast() {
 // --- NWS: Wind Forecast (legacy 12h periods) ---
 async function fetchWindForecast() {
   try {
-    const r=await fetchWithTimeout('https://api.weather.gov/gridpoints/SGX/55,17/forecast',{
+    const grid = LOCATIONS[currentLocation].nwsGrid || 'SGX/55,17';
+    const r=await fetchWithTimeout(`https://api.weather.gov/gridpoints/${grid}/forecast`,{
       headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
     });
     const d=await r.json();
@@ -1216,15 +1252,43 @@ async function fetchMultiDayTides() {
 
 // --- CDIP Station Mapping ---
 const CDIP_STATIONS = {
-  ljshores:  { id: '201p1', name: 'Scripps Nearshore' },
-  lajolla:   { id: '201p1', name: 'Scripps Nearshore' },
-  pointloma: { id: '191p1', name: 'Point Loma South' },
-  mission:   { id: '220p1', name: 'Mission Bay West' },
-  imperial:  { id: '155p1', name: 'Imperial Beach Nearshore' },
-  coronado:  { id: '191p1', name: 'Point Loma South' },
-  delmar:    { id: '100p1', name: 'Torrey Pines Outer' },
-  encinitas: { id: '262p1', name: 'Leucadia Nearshore' },
-  oceanside: { id: '262p1', name: 'Leucadia Nearshore' },
+  // San Diego
+  ljshores:    { id: '201p1', name: 'Scripps Nearshore' },
+  lajolla:     { id: '201p1', name: 'Scripps Nearshore' },
+  birdrock:    { id: '201p1', name: 'Scripps Nearshore' },
+  pointloma:   { id: '191p1', name: 'Point Loma South' },
+  mission:     { id: '220p1', name: 'Mission Bay West' },
+  imperial:    { id: '155p1', name: 'Imperial Beach Nearshore' },
+  coronado:    { id: '191p1', name: 'Point Loma South' },
+  delmar:      { id: '100p1', name: 'Torrey Pines Outer' },
+  encinitas:   { id: '262p1', name: 'Leucadia Nearshore' },
+  carlsbad:    { id: '262p1', name: 'Leucadia Nearshore' },
+  oceanside:   { id: '262p1', name: 'Leucadia Nearshore' },
+  // Orange County — uses San Pedro buoy
+  newport:     { id: '092p1', name: 'San Pedro' },
+  huntington:  { id: '092p1', name: 'San Pedro' },
+  // LA County
+  pv:          { id: '092p1', name: 'San Pedro' },
+  horseshoe:   { id: '092p1', name: 'San Pedro' },
+  malibu:      { id: '092p1', name: 'San Pedro' },
+  leocarrillo: { id: '092p1', name: 'San Pedro' },
+  // Ventura / Santa Barbara
+  ventura:     { id: '183p1', name: 'Santa Barbara Channel' },
+  sb:          { id: '183p1', name: 'Santa Barbara Channel' },
+  refugio:     { id: '183p1', name: 'Santa Barbara Channel' },
+  // Channel Islands
+  anacapa:     { id: '183p1', name: 'Santa Barbara Channel' },
+  santacruz:   { id: '183p1', name: 'Santa Barbara Channel' },
+  catalina:    { id: '092p1', name: 'San Pedro' },
+  // Central Coast
+  morro:       { id: '076p1', name: 'Diablo Canyon' },
+  monterey:    { id: '156p1', name: 'Monterey Bay' },
+  carmel:      { id: '156p1', name: 'Monterey Bay' },
+  // NorCal — CDIP coverage is sparse; fall back to NDBC buoys
+  halfmoon:    { id: '162p1', name: 'Point Reyes' },
+  bodega:      { id: '162p1', name: 'Point Reyes' },
+  fortbragg:   { id: '162p1', name: 'Point Reyes' },
+  trinidad:    { id: '162p1', name: 'Point Reyes' },
 };
 
 // --- Buoy Data: CDIP primary ---
@@ -2735,10 +2799,11 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
 }
 
 // =========================================================================
-// SUNRISE / SUNSET for San Diego (~32.85°N, -117.27°W)
+// SUNRISE / SUNSET — uses current location's lat/lon
 // =========================================================================
 function getSunTimes(date) {
-  const lat = 32.85, lon = -117.27;
+  const loc = LOCATIONS[currentLocation] || { lat: 32.85, lon: -117.27 };
+  const lat = loc.lat, lon = -Math.abs(loc.lon); // ensure negative for west
   const rad = Math.PI / 180;
   const dayOfYear = Math.floor((date - new Date(date.getFullYear(),0,0)) / 86400000);
   const decl = -23.45 * Math.cos(rad * 360/365 * (dayOfYear + 10));
@@ -3180,6 +3245,37 @@ function selectSpecies(species) {
   buildForecast();
 }
 
+// County → Spots mapping (south to north within each county)
+const COUNTY_SPOTS = {
+  sandiego:     ['coronado','imperial','pointloma','mission','birdrock','ljshores','lajolla','delmar','encinitas','carlsbad','oceanside'],
+  orange:       ['newport','huntington'],
+  la:           ['pv','horseshoe','malibu','leocarrillo'],
+  ventura:      ['ventura'],
+  santabarbara: ['sb','refugio'],
+  islands:      ['catalina','anacapa','santacruz'],
+  slo:          ['morro'],
+  monterey:     ['monterey','carmel'],
+  sanmateo:     ['halfmoon'],
+  sonoma:       ['bodega'],
+  mendocino:    ['fortbragg'],
+  humboldt:     ['trinidad'],
+};
+
+function onCountyChange() {
+  const county = document.getElementById('countySelect').value;
+  const spots = COUNTY_SPOTS[county] || [];
+  const sel = document.getElementById('locationSelect');
+  sel.innerHTML = '';
+  spots.forEach((key, i) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = LOCATIONS[key].name;
+    if (i === 0) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  onLocationChange();
+}
+
 function onLocationChange() {
   currentLocation=document.getElementById('locationSelect').value;
   const loc = LOCATIONS[currentLocation];
@@ -3201,6 +3297,10 @@ function onLocationChange() {
     spearFormula.textContent = 'S = 0.6 × Fish + 0.4 × Visibility';
     spearFormula.style.color = 'var(--text-muted)';
   }
+  // Update region subtitle from county selector
+  const countySel = document.getElementById('countySelect');
+  const regionLabel = countySel.options[countySel.selectedIndex].textContent;
+  document.getElementById('subtitleRegion').textContent = regionLabel + ' — Live Oceanographic Model';
   // Clear stale insight text and forecast immediately on location switch
   document.getElementById('insightText').textContent = 'Loading conditions for ' + loc.name + '...';
   document.getElementById('forecastDays').innerHTML = '<div class="forecast-loading">Loading forecast data...</div>';
@@ -3364,7 +3464,21 @@ function applyVizCalibration(vizEst) {
   return vizEst;
 }
 
-// INIT
+// INIT — populate spot dropdown for default county, then fetch
+(function initSpots() {
+  const county = document.getElementById('countySelect').value;
+  const spots = COUNTY_SPOTS[county] || [];
+  const sel = document.getElementById('locationSelect');
+  sel.innerHTML = '';
+  spots.forEach(key => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = LOCATIONS[key].name;
+    sel.appendChild(opt);
+  });
+  sel.value = 'ljshores'; // default to La Jolla Shores
+  currentLocation = 'ljshores';
+})();
 fetchAllData();
 
 // =========================================================================
