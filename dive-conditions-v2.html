@@ -1008,7 +1008,7 @@ function getPressureLabel(v) { return {very_low:'Very Low',low:'Low',moderate:'M
 // =========================================================================
 // FETCH WITH TIMEOUT — prevents page from hanging when APIs are down
 // =========================================================================
-function fetchWithTimeout(url, opts, ms=8000) {
+function fetchWithTimeout(url, opts, ms=4000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ms);
   const signal = controller.signal;
@@ -1359,25 +1359,27 @@ async function fetchSST() {
     `https://www.ncei.noaa.gov/erddap/griddap/ncdc_oisst_v2_avhrr_prelim_by_time_zlev_lat_lon.json?sst%5B(last)%5D%5B(0.0)%5D%5B(${lat-0.2}):(${lat+0.2})%5D%5B(${lon360-0.2}):(${lon360+0.2})%5D`,
     `https://www.ncei.noaa.gov/erddap/griddap/ncdc_oisst_v2_avhrr_by_time_zlev_lat_lon.json?sst%5B(last)%5D%5B(0.0)%5D%5B(${lat-0.2}):(${lat+0.2})%5D%5B(${lon360-0.2}):(${lon360+0.2})%5D`,
   ];
-  for (const url of datasets) {
-    try {
-      const r = await fetchWithTimeout(url);
-      if (r.ok) {
-        const d = await r.json();
-        if(d.table&&d.table.rows&&d.table.rows.length>0) {
-          const hi = d.table.columnNames.indexOf('sst');
-          const vals = d.table.rows.map(row=>row[hi]).filter(v=>v!==null&&!isNaN(v));
-          if(vals.length>0) {
-            const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
-            D.sstC = avg;
-            D.sstF = parseFloat((avg*1.8+32).toFixed(1));
-            D.sstDate = d.table.rows[0][d.table.columnNames.indexOf('time')];
-            srcStatus.sst='ok';
-            return;
-          }
-        }
-      }
-    } catch(e) {}
+  // Race both URLs in parallel — use whichever responds first
+  const results = await Promise.allSettled(datasets.map(async url => {
+    const r = await fetchWithTimeout(url, null, 3000);
+    if (!r.ok) throw new Error('not ok');
+    const d = await r.json();
+    if(d.table&&d.table.rows&&d.table.rows.length>0) {
+      const hi = d.table.columnNames.indexOf('sst');
+      const vals = d.table.rows.map(row=>row[hi]).filter(v=>v!==null&&!isNaN(v));
+      if(vals.length>0) return { vals, time: d.table.rows[0][d.table.columnNames.indexOf('time')] };
+    }
+    throw new Error('no data');
+  }));
+  for (const r of results) {
+    if (r.status === 'fulfilled') {
+      const avg = r.value.vals.reduce((a,b)=>a+b,0)/r.value.vals.length;
+      D.sstC = avg;
+      D.sstF = parseFloat((avg*1.8+32).toFixed(1));
+      D.sstDate = r.value.time;
+      srcStatus.sst='ok';
+      return;
+    }
   }
 }
 
@@ -1390,27 +1392,8 @@ const CHL_CLIMATOLOGY = {
 // Apr-May = bloom season (10-13 mg/m³ avg, can spike to 400+ during red tide)
 
 async function fetchChlorophyll() {
-  const loc = LOCATIONS[currentLocation];
-  const lat = loc.lat, lon = loc.lon;
+  // Use HABs 17-year Scripps Pier climatology directly — more reliable than NCEI ERDDAP
   const month = new Date().getMonth() + 1;
-  const monthStr = String(month).padStart(2, '0');
-  try {
-    const url = `https://www.ncei.noaa.gov/erddap/griddap/AEC_uswest_satellite_climo.json?Chlorophyll_avg%5B(2000-${monthStr}-01)%5D%5B(${lat-0.15}):(${lat+0.05})%5D%5B(${lon-0.25}):(${lon-0.05})%5D`;
-    const r = await fetchWithTimeout(url);
-    if (r.ok) {
-      const d = await r.json();
-      if(d.table&&d.table.rows&&d.table.rows.length>0) {
-        const hi = d.table.columnNames.indexOf('Chlorophyll_avg');
-        const vals = d.table.rows.map(row=>row[hi]).filter(v=>v!==null&&!isNaN(v)&&v>0&&v<100);
-        if(vals.length>0) {
-          D.chlorophyll = parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2));
-          D.chlSource = 'NCEI Climo';
-          srcStatus.chl='ok';
-          return;
-        }
-      }
-    }
-  } catch(e) {}
   if (CHL_CLIMATOLOGY[month]) {
     D.chlorophyll = CHL_CLIMATOLOGY[month];
     D.chlSource = 'HABs 17yr';
