@@ -10,8 +10,8 @@
     }
   </script>
   <title>San Diego Spearfishing Conditions — Live Dive & Fish Forecast | SpearFactor</title>
-  <meta name="description" content="Live spearfishing conditions for San Diego. Real-time dive visibility, fish probability scores, swell, tide, wind, and 5-day forecast for La Jolla, Point Loma, Coronado Islands, and more.">
-  <meta name="keywords" content="San Diego spearfishing conditions, dive visibility forecast, spearfishing forecast, La Jolla diving conditions, Point Loma kelp diving, fish report San Diego, yellowtail forecast, white sea bass conditions, halibut grunion run, ocean conditions today">
+  <meta name="description" content="Live spearfishing conditions for San Diego & SoCal. Real-time dive visibility, fish probability scores, swell, tide, wind, and 5-day forecast for La Jolla, Point Loma, Coronado Islands, Catalina, San Clemente Island, and La Bufadora.">
+  <meta name="keywords" content="San Diego spearfishing conditions, dive visibility forecast, spearfishing forecast, La Jolla diving conditions, Point Loma kelp diving, Catalina Island diving, La Bufadora spearfishing, fish report San Diego, yellowtail forecast, white sea bass conditions, halibut grunion run, ocean conditions today">
   <meta name="author" content="SpearFactor">
   <link rel="canonical" href="https://conditions.spearfactor.com/dive-conditions-v2.html">
 
@@ -20,7 +20,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SpearFactor">
-  <link rel="apple-touch-icon" href="/og-image.jpg">
+  <link rel="apple-touch-icon" href="/icon-192.jpg">
   <meta name="theme-color" content="#0a1628">
 
   <!-- Open Graph (Facebook, iMessage, etc.) -->
@@ -526,6 +526,10 @@
           <option value="torrey">Torrey Pines</option>
           <option value="encinitas">Encinitas / Swamis</option>
           <option value="oceanside">Oceanside</option>
+          <option disabled>── Offshore / Islands ──</option>
+          <option value="catalina">Catalina Island (Avalon)</option>
+          <option value="sanclemente">San Clemente Island</option>
+          <option value="labufadora">La Bufadora (Baja MX)</option>
         </select>
       </div>
       <div class="control-group">
@@ -538,6 +542,7 @@
         </select>
       </div>
       <button class="refresh-btn" id="refreshBtn" onclick="fetchAllData()">Refresh</button>
+      <button class="refresh-btn" id="shareBtn" onclick="shareConditions()" style="margin-left:6px;background:rgba(46,204,113,0.15);border-color:var(--excellent)">Share</button>
     </div>
 
     <div class="data-status" id="dataStatus">Fetching live oceanographic data...</div>
@@ -705,12 +710,15 @@ const LOCATIONS = {
   ljshores:  { name: 'La Jolla Shores', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8586, lon: -117.2572, depth: '10-40 ft', kelpDensity: 'moderate', marineReserve: true, scrippsProximity: true },
   lajolla:   { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high' },
   pointloma: { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.67, lon: -117.26, depth: '20-100 ft', kelpDensity: 'high' },
-  mission:   { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low' },
-  imperial:  { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low', buoys: ['46225','46235'], lat: 32.58, lon: -117.14, depth: '10-40 ft', kelpDensity: 'none' },
+  mission:   { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low', riverInfluence: true },
+  imperial:  { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low', buoys: ['46225','46235'], lat: 32.58, lon: -117.14, depth: '10-40 ft', kelpDensity: 'none', riverInfluence: true },
   coronado:  { name: 'Coronado Islands (MX)', bottom: 'rock', tideStation: '9410170', coast: 300, shelter: 'low', buoys: ['46225','46235'], lat: 32.42, lon: -117.25, depth: '30-150 ft', kelpDensity: 'moderate', offshore: true },
   torrey:    { name: 'Torrey Pines', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.90, lon: -117.27, depth: '15-60 ft', kelpDensity: 'low' },
   encinitas: { name: 'Encinitas / Swamis', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.03, lon: -117.30, depth: '15-50 ft', kelpDensity: 'moderate' },
   oceanside: { name: 'Oceanside', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225'], lat: 33.19, lon: -117.40, depth: '15-60 ft', kelpDensity: 'low' },
+  catalina:  { name: 'Catalina Island (Avalon)', bottom: 'kelp', tideStation: '9411340', coast: 90, shelter: 'moderate', buoys: ['46248','46225'], lat: 33.34, lon: -118.33, depth: '30-120 ft', kelpDensity: 'high', offshore: true },
+  sanclemente: { name: 'San Clemente Island', bottom: 'rock', tideStation: '9410170', coast: 180, shelter: 'high', buoys: ['46254','46225'], lat: 32.87, lon: -118.57, depth: '40-200 ft', kelpDensity: 'moderate', offshore: true },
+  labufadora: { name: 'La Bufadora (Baja MX)', bottom: 'rock', tideStation: '9410170', coast: 195, shelter: 'moderate', buoys: ['46225','46235'], lat: 31.76, lon: -116.41, depth: '20-80 ft', kelpDensity: 'high', offshore: true },
 };
 
 const WEATHER_STATION = 'KSAN';
@@ -1565,6 +1573,52 @@ function getWW3Swell(targetTime) {
 }
 
 // =========================================================================
+// WIND-DRIVEN ROLLOVER DETECTION
+// High sustained winds (20+ mph for 12+ hours) mix the water column,
+// destroying the thermocline. Makes water uniformly cold with poor viz.
+// WSB won't be in <8ft visibility at 50ft depth during rollover.
+// =========================================================================
+function detectRollover() {
+  D.rollover = false;
+  D.rolloverSeverity = 0;
+  if (!D.hourlyForecast || D.hourlyForecast.length === 0) return;
+
+  const now = new Date();
+  // Check past 36 hours of NWS hourly data for sustained high winds
+  let highWindHours = 0;
+  let maxWind = 0;
+  let recentPeriods = D.hourlyForecast.filter(p => {
+    const t = new Date(p.startTime);
+    return t <= now; // past periods only
+  }).slice(-36); // last 36 hours
+
+  // Also check NWS observations if available (current wind)
+  if (D.windSpeedMph >= 20) highWindHours++;
+
+  for (const p of recentPeriods) {
+    const windMatch = (p.windSpeed || '').match(/(\d+)/);
+    const wind = windMatch ? parseInt(windMatch[1]) : 0;
+    if (wind >= 20) highWindHours++;
+    if (wind > maxWind) maxWind = wind;
+  }
+
+  // Rollover thresholds:
+  // Mild: 8+ hours of 20+ mph — thermocline weakened
+  // Moderate: 12+ hours of 20+ mph — thermocline destroyed
+  // Severe: 18+ hours or gusts 30+ — complete mixing, cold murky water
+  if (highWindHours >= 18 || maxWind >= 35) {
+    D.rollover = true;
+    D.rolloverSeverity = 3; // severe
+  } else if (highWindHours >= 12) {
+    D.rollover = true;
+    D.rolloverSeverity = 2; // moderate
+  } else if (highWindHours >= 8) {
+    D.rollover = true;
+    D.rolloverSeverity = 1; // mild
+  }
+}
+
+// =========================================================================
 // MASTER FETCH
 // =========================================================================
 let _fetchGen = 0; // generation counter to discard stale fetch results on location switch
@@ -1598,6 +1652,9 @@ async function fetchAllData() {
   if (thisGen !== _fetchGen) return;
 
   if(D.swellFt&&D.swellPeriod) D.waveEnergy=D.swellFt*D.swellFt*D.swellPeriod;
+
+  // Detect wind-driven rollover — sustained 20+ mph winds destroy thermocline
+  detectRollover();
 
   const liveSources = Object.keys(srcStatus).filter(k=>srcStatus[k]==='ok').length;
   const totalSources = 8;
@@ -1830,6 +1887,9 @@ function updateDisplay() {
       vizEst=`${lo}–${hi} ft (est.)`;
     } else vizEst='6–10 ft (est.)';
   }
+  // Auto-calibrate from diver reports — adjust estimate based on crowd feedback
+  vizEst = applyVizCalibration(vizEst);
+
   setVal('estVizVal', vizEst, vizSource);
   const vizFeetEl = document.getElementById('vizFeetLabel');
   if (vizFeetEl) vizFeetEl.textContent = vizEst !== '--' ? `Est. ${vizEst}` : '--';
@@ -2032,6 +2092,27 @@ function recalculate() {
     // Shelter bonus: protected locations hold viz better
     if (loc.shelter === 'high') vizFinal = Math.min(10, vizFinal + 0.3);
     else if (loc.shelter === 'moderate') vizFinal = Math.min(10, vizFinal + 0.3);
+
+    // Tide-specific viz: outgoing at river mouths dumps turbid water
+    if (D.tideState) {
+      if (loc.riverInfluence) {
+        // Mission Bay, Imperial Beach near Tijuana River — outgoing tide = dirty
+        if (D.tideState === 'outgoing') vizFinal = Math.max(1, vizFinal - 1.2);
+        else if (D.tideState === 'incoming') vizFinal = Math.min(10, vizFinal + 0.4);
+      } else if (loc.kelpDensity === 'high' || loc.kelpDensity === 'moderate') {
+        // Kelp beds — incoming tide pushes cleaner offshore water in
+        if (D.tideState === 'incoming') vizFinal = Math.min(10, vizFinal + 0.5);
+        else if (D.tideState === 'outgoing') vizFinal = Math.max(1, vizFinal - 0.3);
+      }
+    }
+  }
+
+  // Wind-driven rollover penalty — destroys thermocline, drops viz, kills WSB bite
+  if (D.rollover) {
+    const penalty = D.rolloverSeverity === 3 ? 2.5 : D.rolloverSeverity === 2 ? 1.5 : 0.8;
+    if (vizFinal !== null) vizFinal = Math.max(1, vizFinal - penalty);
+    if (fishAvg !== null && currentSpecies === 'wsb') fishAvg = Math.max(1, fishAvg - penalty * 1.5);
+    else if (fishAvg !== null) fishAvg = Math.max(1, fishAvg - penalty * 0.5);
   }
 
   let spearAvg = null;
@@ -2163,6 +2244,14 @@ function updateInsight(fish,viz) {
     else msg=SCORE[currentSpecies].tip;
   } else msg=SCORE[currentSpecies].tip;
 
+  // Rollover alert — high winds mixed the water column
+  if (D.rollover) {
+    const sev = D.rolloverSeverity;
+    if (sev >= 3) msg = '⚠️ ROLLOVER — Sustained high winds have mixed the water column. No thermocline, cold water throughout, poor visibility. Wait 2-3 days for conditions to settle. ' + msg;
+    else if (sev >= 2) msg = '⚠️ Water column rollover likely — sustained winds have weakened/destroyed the thermocline. Expect cold, murky water at depth. ' + msg;
+    else msg = '💨 High winds detected — thermocline may be weakened. Water could be mixed and cooler than usual at depth. ' + msg;
+  }
+
   // WSB-specific crepuscular advice (Aalbers & Sepulveda 2015)
   if (currentSpecies === 'wsb') {
     const hr = new Date().getHours();
@@ -2235,7 +2324,35 @@ function buildForecast() {
 
   const dayKeys = Object.keys(dayGroups).slice(0, 5);
 
+  // Pre-calculate scores for all days to find the best day
+  const dayScoreSummaries = dayKeys.map((key, idx) => {
+    const periods = dayGroups[key];
+    const slots = getTimeSlots(periods);
+    const scores = slots.map(s => calcSlotForecastScores(s, idx));
+    const avgSpear = scores.reduce((sum, s) => sum + s.spear, 0) / scores.length;
+    const avgFish = scores.reduce((sum, s) => sum + s.fish, 0) / scores.length;
+    const avgViz = scores.reduce((sum, s) => sum + s.viz, 0) / scores.length;
+    const d = periods[0].date;
+    const dayLabel = idx === 0 ? 'Today' : idx === 1 ? 'Tomorrow' :
+      d.toLocaleDateString('en-US', {weekday: 'short'});
+    return { idx, dayLabel, avgSpear, avgFish, avgViz, date: d };
+  });
+
+  const isReserve = LOCATIONS[currentLocation] && LOCATIONS[currentLocation].marineReserve;
+  const bestDay = dayScoreSummaries.reduce((best, d) =>
+    (isReserve ? d.avgViz : d.avgSpear) > (isReserve ? best.avgViz : best.avgSpear) ? d : best
+  );
+
+  // Best day banner
   let html = '';
+  const bestRating = getRating(isReserve ? bestDay.avgViz : bestDay.avgSpear);
+  const bestMetric = isReserve ? `Viz: ${bestDay.avgViz.toFixed(1)}/10` : `Score: ${bestDay.avgSpear.toFixed(1)}/10`;
+  html += `<div style="background:linear-gradient(135deg,rgba(46,204,113,0.12),rgba(52,152,219,0.12));border:1px solid rgba(46,204,113,0.3);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px">`;
+  html += `<span style="font-size:22px">🏆</span>`;
+  html += `<div><div style="font-size:12px;font-weight:700;color:${bestRating.color}">Best Day: ${bestDay.dayLabel} (${bestDay.date.getMonth()+1}/${bestDay.date.getDate()})</div>`;
+  html += `<div style="font-size:10px;color:var(--text-secondary)">${bestRating.label} · ${bestMetric} · Fish: ${bestDay.avgFish.toFixed(1)} · Viz: ${bestDay.avgViz.toFixed(1)}</div></div>`;
+  html += `</div>`;
+
   dayKeys.forEach((key, idx) => {
     const periods = dayGroups[key];
     const d = periods[0].date;
@@ -3182,6 +3299,73 @@ function initVizReport() {
     document.getElementById('vizThanks').style.display = 'none';
     renderVizHistory();
   }
+}
+
+// =========================================================================
+// SHARE CONDITIONS
+// =========================================================================
+function shareConditions() {
+  const loc = LOCATIONS[currentLocation];
+  const viz = D.vizFeetStr || '--';
+  const spear = D.spearAvg !== null ? D.spearAvg.toFixed(1) : '--';
+  const rating = D.spearAvg !== null ? getRating(D.spearAvg).label : '';
+  const wind = D.windSpeedMph !== undefined ? `${D.windSpeedMph}mph` : '';
+  const swell = D.swellFt ? `${D.swellFt}ft @${D.swellPeriod}s` : '';
+
+  let text = `${loc.name} conditions: ${rating} (${spear}/10)`;
+  if (viz !== '--') text += ` · Viz: ${viz}`;
+  if (swell) text += ` · Swell: ${swell}`;
+  if (wind) text += ` · Wind: ${wind}`;
+  text += `\n\nhttps://conditions.spearfactor.com/dive-conditions-v2.html`;
+
+  if (navigator.share) {
+    navigator.share({ title: `${loc.name} — SpearFactor`, text: text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('shareBtn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Share'; }, 2000);
+    }).catch(() => {});
+  }
+}
+
+// =========================================================================
+// VIZ AUTO-CALIBRATION — learns from diver reports to adjust predictions
+// =========================================================================
+function applyVizCalibration(vizEst) {
+  if (vizEst === '--') return vizEst;
+  const reports = getVizReports().filter(r => r.location === currentLocation && !r.accurate);
+  if (reports.length < 5) return vizEst; // need 5+ inaccurate reports to calibrate
+
+  // Parse predicted midpoints from reports and compare to actual
+  let totalError = 0;
+  let count = 0;
+  for (const r of reports) {
+    const predMatch = (r.predicted || '').match(/(\d+)/);
+    if (!predMatch) continue;
+    const predicted = parseInt(predMatch[0]);
+    // Convert actual range to midpoint
+    const actualMid = {'0-5': 3, '6-10': 8, '11-15': 13, '16-20': 18, '21-25': 23, '26+': 30}[r.actual];
+    if (!actualMid) continue;
+    totalError += actualMid - predicted; // positive = we under-predicted
+    count++;
+  }
+  if (count < 3) return vizEst; // not enough comparable reports
+
+  const avgError = totalError / count;
+  // Only calibrate if consistent bias (>2ft avg error)
+  if (Math.abs(avgError) < 2) return vizEst;
+
+  // Apply correction (cap at ±5ft adjustment)
+  const correction = Math.max(-5, Math.min(5, Math.round(avgError)));
+  const match = vizEst.match(/(\d+)–(\d+)\s*ft/);
+  if (match) {
+    let lo = Math.max(1, parseInt(match[1]) + correction);
+    let hi = Math.max(lo + 1, parseInt(match[2]) + correction);
+    const suffix = vizEst.includes('(') ? vizEst.slice(vizEst.indexOf('(') - 1) : ' ft';
+    return `${lo}–${hi}${suffix.startsWith(' ft') ? ' ft' : suffix}`;
+  }
+  return vizEst;
 }
 
 // INIT
