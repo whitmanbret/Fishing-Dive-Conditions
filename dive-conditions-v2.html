@@ -581,7 +581,7 @@
     <section class="forecast-section" id="forecastSection">
       <div class="forecast-title">
         <span>5-Day Forecast</span>
-        <span style="font-size:10px; color:var(--text-muted)">NWS · NOAA Tides · CDIP Swell</span>
+        <span style="font-size:10px; color:var(--text-muted)">NWS · NOAA Tides · WW3 Swell</span>
       </div>
       <div id="forecastDays">
         <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;" class="loading-pulse">Loading forecast data...</div>
@@ -649,6 +649,7 @@
       <a href="https://cdip.ucsd.edu" target="_blank">CDIP/UCSD</a> (raw buoy — includes all wave energy, may differ from Surfline/iWindSurf which filter swell bands) ·
       <a href="https://weather.gov" target="_blank">NWS</a> ·
       <a href="https://www.ncei.noaa.gov/erddap/" target="_blank">NCEI Satellite</a> ·
+      <a href="https://pae-paha.pacioos.hawaii.edu/erddap/" target="_blank">WaveWatch III</a> (NOAA/PacIOOS swell forecast) ·
       <a href="https://sccoos.org/autoss/" target="_blank">SCCOOS SASS</a> ·
       <a href="https://coollab.ucsd.edu/pierviz/" target="_blank">Scripps Pier Cam</a> ·
       CDFW CPFV Logbooks (2021–2025)<br>
@@ -1439,6 +1440,50 @@ async function fetchScrippsSASS() {
 }
 
 // =========================================================================
+// WW3 SWELL FORECAST (NOAA WaveWatch III via PacIOOS ERDDAP)
+// =========================================================================
+async function fetchSwellForecast() {
+  try {
+    const loc = LOCATIONS[currentLocation];
+    // WW3 grid uses 0-360° longitude; snap to nearest 0.5° grid point
+    const lat = (Math.round(loc.lat * 2) / 2).toFixed(1);
+    const lon = (Math.round((loc.lon + 360) * 2) / 2).toFixed(1);
+    const now = new Date();
+    const start = now.toISOString().replace(/\.\d+Z/, 'Z');
+    const end = new Date(now.getTime() + 5 * 86400000).toISOString().replace(/\.\d+Z/, 'Z');
+    // Fetch swell height, period, direction — stride 1 gets 3-hourly data
+    const url = `https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ww3_global.json?shgt%5B(${start}):1:(${end})%5D%5B(0.0)%5D%5B(${lat})%5D%5B(${lon})%5D,sper%5B(${start}):1:(${end})%5D%5B(0.0)%5D%5B(${lat})%5D%5B(${lon})%5D,sdir%5B(${start}):1:(${end})%5D%5B(0.0)%5D%5B(${lat})%5D%5B(${lon})%5D`;
+    const r = await fetchWithTimeout(url, null, 6000);
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d.table || !d.table.rows || d.table.rows.length === 0) return;
+    const cols = d.table.columnNames;
+    const iTime = cols.indexOf('time'), iHgt = cols.indexOf('shgt'), iPer = cols.indexOf('sper'), iDir = cols.indexOf('sdir');
+    D.swellForecast = d.table.rows.map(row => ({
+      time: new Date(row[iTime]),
+      ft: parseFloat((row[iHgt] * 3.28084).toFixed(1)),
+      per: Math.round(row[iPer]),
+      dirDeg: Math.round(row[iDir])
+    })).filter(r => !isNaN(r.ft) && r.ft > 0);
+    if (D.swellForecast.length > 0) srcStatus.ww3 = 'ok';
+  } catch(e) {}
+}
+
+// Helper: get WW3 swell forecast for a specific time slot
+function getWW3Swell(targetTime) {
+  if (!D.swellForecast || D.swellForecast.length === 0) return null;
+  const t = targetTime.getTime();
+  let best = null, bestDiff = Infinity;
+  for (const entry of D.swellForecast) {
+    const diff = Math.abs(entry.time.getTime() - t);
+    if (diff < bestDiff) { bestDiff = diff; best = entry; }
+  }
+  // Only use if within 3 hours of target
+  if (bestDiff > 3 * 3600000) return null;
+  return best;
+}
+
+// =========================================================================
 // MASTER FETCH
 // =========================================================================
 let _fetchGen = 0; // generation counter to discard stale fetch results on location switch
@@ -1464,6 +1509,7 @@ async function fetchAllData() {
     fetchBuoyData(), fetchRainfall(), fetchUpwelling(),
     fetchSST(), fetchChlorophyll(), fetchMultiDayTides(),
     fetchScrippsSASS(),  // real-time turbidity + chlorophyll from Scripps Pier
+    fetchSwellForecast(),  // WW3 5-day swell forecast from NOAA/PacIOOS
   ]);
 
   // If location changed while we were fetching, discard these stale results
@@ -1472,7 +1518,7 @@ async function fetchAllData() {
   if(D.swellFt&&D.swellPeriod) D.waveEnergy=D.swellFt*D.swellFt*D.swellPeriod;
 
   const liveSources = Object.keys(srcStatus).filter(k=>srcStatus[k]==='ok').length;
-  const totalSources = 6;
+  const totalSources = 7;
   const timeStr=now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
 
   if(liveSources>=4) { statusEl.textContent=`${liveSources}/${totalSources} data sources connected · Updated ${timeStr}`; statusEl.className='data-status success'; }
@@ -2250,6 +2296,7 @@ function getTimeSlots(periods) {
       slots.push({
         label: labels[i],
         timeLabel: timeLabels[i],
+        date: best.date,
         temp: best.temperature,
         windSpeed: windMatch ? parseInt(windMatch[1]) : 0,
         windGust: gustVal,
@@ -2684,30 +2731,43 @@ function getWindType(dir) {
 }
 
 function buildSurfPanel(slots, dayIdx) {
-  // Current buoy swell reading — accurate for today only
-  const baseSwellFt = D.swellFt || 0;
-  const baseSwellPer = D.swellPeriod || 0;
-  const baseSwellDirDeg = D.swellDirDeg || 0;
   const swellDirLabels={south:'SSW',sw:'SW',west:'W',nw:'NW',north:'N'};
 
-  // For future days, swell decays toward seasonal average unless NWS hints at new swell
-  // San Diego avg swell: ~3ft winter, ~2ft summer — use 2.5ft baseline
-  const seasonalAvg = 2.5;
-  // Blend toward seasonal average: day0=100% buoy, day1=80%, day2=60%, etc.
-  const buoyWeight = Math.max(0.2, 1.0 - dayIdx * 0.2);
-  const daySwellFt = baseSwellFt * buoyWeight + seasonalAvg * (1 - buoyWeight);
-  // Period tends toward 10-12s average for SD
-  const daySwellPer = Math.round(baseSwellPer * buoyWeight + 11 * (1 - buoyWeight));
-  // Direction stays roughly the same (dominant swell direction persists)
-  const daySwellDirDeg = baseSwellDirDeg;
+  // Get swell data for each slot — prefer WW3 model forecast, fall back to decayed buoy
+  const slotSwells = slots.map(slot => {
+    const ww3 = slot.date ? getWW3Swell(slot.date) : null;
+    if (ww3) return { ft: ww3.ft, per: ww3.per, dirDeg: ww3.dirDeg, source: 'WW3' };
+    // Fallback: decay current buoy reading
+    const baseFt = D.swellFt || 0;
+    const basePer = D.swellPeriod || 0;
+    const baseDirDeg = D.swellDirDeg || 0;
+    const buoyWeight = Math.max(0.2, 1.0 - dayIdx * 0.2);
+    let timeDecay = 1.0;
+    if (slot.timeLabel === 'Noon') timeDecay = 0.93;
+    else if (slot.timeLabel === '6pm') timeDecay = 0.80;
+    return {
+      ft: (baseFt * buoyWeight + 2.5 * (1 - buoyWeight)) * timeDecay,
+      per: Math.round(basePer * buoyWeight + 11 * (1 - buoyWeight)),
+      dirDeg: baseDirDeg,
+      source: 'buoy'
+    };
+  });
 
-  const maxSurf = Math.max(daySwellFt * 1.5, 6);
+  // Use morning slot for header summary
+  const headerSwell = slotSwells[0] || slotSwells[slotSwells.length - 1];
+  const headerFt = headerSwell.ft;
+  const headerPer = headerSwell.per;
+  const headerDirDeg = headerSwell.dirDeg;
+  const dirLabel = headerDirDeg >= 135 && headerDirDeg < 202 ? 'SSW' :
+                   headerDirDeg >= 202 && headerDirDeg < 248 ? 'SW' :
+                   headerDirDeg >= 248 && headerDirDeg < 293 ? 'W' :
+                   headerDirDeg >= 293 && headerDirDeg < 338 ? 'NW' : 'N';
+  const maxSurf = Math.max(headerFt * 1.5, 6);
 
   let html = '<div class="forecast-panel">';
   html += '<div class="forecast-panel-label" style="display:flex;justify-content:space-between;align-items:center">Surf & Swell';
-  const estLabel = dayIdx > 0 ? ' est' : '';
-  // Show morning peak in header (matches what buoy/Surfline show as the day's headline)
-  html += `<span style="font-size:12px;font-weight:600;color:var(--text-primary);text-transform:none;letter-spacing:0">${daySwellFt.toFixed(1)}ft · ${daySwellPer}s · ${swellDirLabels[D.swellDir] || ''} ${Math.round(daySwellDirDeg)}°${estLabel}</span>`;
+  const srcTag = headerSwell.source === 'WW3' ? '' : ' est';
+  html += `<span style="font-size:12px;font-weight:600;color:var(--text-primary);text-transform:none;letter-spacing:0">${headerFt.toFixed(1)}ft · ${headerPer}s · ${dirLabel} ${Math.round(headerDirDeg)}°${srcTag}</span>`;
   html += '</div>';
   html += '<div class="forecast-slots">';
 
@@ -2716,21 +2776,15 @@ function buildSurfPanel(slots, dayIdx) {
   html += '<span></span><span>Surf (ft)</span><span>Swell</span><span>Forecast</span>';
   html += '</div>';
 
-  for (const slot of slots) {
-    // Intra-day swell decay: swells typically peak in the morning and decline through the day
-    // Pattern matches Surfline observations (e.g., 2.9ft→2.7ft→2.2ft over a day)
-    // Morning ~100%, Noon ~93%, Evening ~80% of day's base swell
-    let timeDecay = 1.0;
-    if (slot.timeLabel === 'Noon') timeDecay = 0.93;
-    else if (slot.timeLabel === '6pm') timeDecay = 0.80;
-    const slotBaseSwellFt = daySwellFt * timeDecay;
+  for (let si = 0; si < slots.length; si++) {
+    const slot = slots[si];
+    const sw = slotSwells[si];
 
     // Wind effects on surf height
-    let surfEst = slotBaseSwellFt;
+    let surfEst = sw.ft;
     if (slot.windSpeed > 15) surfEst *= 1.3;
     else if (slot.windSpeed > 10) surfEst *= 1.15;
     else if (slot.windSpeed <= 4) surfEst *= 0.9;
-    // Onshore wind builds local wind swell
     const dir = (slot.windDir || '').toUpperCase();
     if (['W','NW','WNW','WSW','SW'].includes(dir) && slot.windSpeed > 8) surfEst += 0.5;
 
@@ -2738,25 +2792,16 @@ function buildSurfPanel(slots, dayIdx) {
     const surfHi = Math.round(surfEst + 0.5);
     const barPct = Math.min(95, (surfEst / maxSurf) * 100);
 
-    // Bar color based on surf height (for diving: lower=greener)
     let barColor;
     if (surfEst <= 2) barColor = 'linear-gradient(to top, #1a8a4a, #2ecc71)';
     else if (surfEst <= 3.5) barColor = 'linear-gradient(to top, #1a8a4a, #2ecc71, #f0a030)';
     else if (surfEst <= 5) barColor = 'linear-gradient(to top, #f0a030, #e67e22)';
     else barColor = 'linear-gradient(to top, #e74c3c, #c0392b)';
 
-    // Per-slot swell with time decay + wind effects
-    const slotSwellFt = slotBaseSwellFt + (slot.windSpeed > 12 ? 0.3 : 0);
-    // Period slightly lengthens as shorter-period energy dissipates first
-    const slotSwellPer = daySwellPer + (slot.timeLabel === '6pm' ? 1 : 0) + (slot.windSpeed > 12 ? -1 : 0);
-    // Direction can shift slightly through the day (afternoon tends more westerly)
-    let slotDirDeg = daySwellDirDeg;
-    if (slot.timeLabel === '6pm') slotDirDeg = daySwellDirDeg - 3; // subtle westward shift
-
     html += '<div class="forecast-slot-row">';
     html += `<div><span class="slot-time">${slot.timeLabel}</span></div>`;
     html += `<div class="slot-surf-wrap"><div class="slot-surf-bar-container"><div class="slot-surf-bar" style="height:${barPct}%;background:${barColor}"></div></div><div class="slot-surf-val">${surfLo}-${surfHi}</div></div>`;
-    html += `<div><div class="slot-swell-info">${slotSwellFt.toFixed(1)}ft</div><div class="slot-swell-info">${slotSwellPer}s</div><div class="slot-swell-info"><span class="swell-arrow" style="transform:rotate(${slotDirDeg}deg)">↓</span> ${Math.round(slotDirDeg)}°</div></div>`;
+    html += `<div><div class="slot-swell-info">${sw.ft.toFixed(1)}ft</div><div class="slot-swell-info">${sw.per}s</div><div class="slot-swell-info"><span class="swell-arrow" style="transform:rotate(${sw.dirDeg}deg)">↓</span> ${Math.round(sw.dirDeg)}°</div></div>`;
     html += `<div><div class="slot-swell-info">${slot.shortForecast}</div></div>`;
     html += '</div>';
   }
