@@ -10,8 +10,8 @@
     }
   </script>
   <title>San Diego Spearfishing Conditions — Live Dive & Fish Forecast | SpearFactor</title>
-  <meta name="description" content="Live spearfishing conditions for San Diego & SoCal. Real-time dive visibility, fish probability scores, swell, tide, wind, and 5-day forecast for La Jolla, Point Loma, Coronado Islands, Catalina, San Clemente Island, and La Bufadora.">
-  <meta name="keywords" content="San Diego spearfishing conditions, dive visibility forecast, spearfishing forecast, La Jolla diving conditions, Point Loma kelp diving, Catalina Island diving, La Bufadora spearfishing, fish report San Diego, yellowtail forecast, white sea bass conditions, halibut grunion run, ocean conditions today">
+  <meta name="description" content="Live spearfishing conditions for San Diego & SoCal. Real-time dive visibility, fish probability scores, swell, tide, wind, and 5-day forecast for La Jolla, Point Loma, Del Mar Reefs, Coronado Islands, and Catalina Island.">
+  <meta name="keywords" content="San Diego spearfishing conditions, dive visibility forecast, spearfishing forecast, La Jolla diving conditions, Point Loma kelp diving, Del Mar Reefs diving, Catalina Island diving, fish report San Diego, yellowtail forecast, white sea bass conditions, halibut grunion run, ocean conditions today">
   <meta name="author" content="SpearFactor">
   <link rel="canonical" href="https://conditions.spearfactor.com/dive-conditions-v2.html">
 
@@ -523,7 +523,7 @@
           <option value="mission">Mission Bay / Jetties</option>
           <option value="imperial">Imperial Beach</option>
           <option value="coronado">Coronado Islands (MX)</option>
-          <option value="torrey">Torrey Pines</option>
+          <option value="delmar">Del Mar Reefs</option>
           <option value="encinitas">Encinitas / Swamis</option>
           <option value="oceanside">Oceanside</option>
           <option disabled>── Offshore / Islands ──</option>
@@ -696,7 +696,7 @@
       <a href="https://sccoos.org/autoss/" target="_blank">SCCOOS SASS</a> ·
       <a href="https://coollab.ucsd.edu/pierviz/" target="_blank">Scripps Pier Cam</a> ·
       CDFW CPFV Logbooks (2021–2025)<br>
-      <span id="stationFooter">Station: La Jolla (9410230) · Buoy: Torrey Pines Outer (46225)</span>
+      <span id="stationFooter">Station: La Jolla (9410230) · Buoy: connecting...</span>
     </div>
   </div>
 
@@ -711,7 +711,7 @@ const LOCATIONS = {
   mission:   { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low', riverInfluence: true },
   imperial:  { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low', buoys: ['46225','46235'], lat: 32.58, lon: -117.14, depth: '10-40 ft', kelpDensity: 'none', riverInfluence: true },
   coronado:  { name: 'Coronado Islands (MX)', bottom: 'rock', tideStation: '9410170', coast: 300, shelter: 'low', buoys: ['46225','46235'], lat: 32.42, lon: -117.25, depth: '30-150 ft', kelpDensity: 'moderate', offshore: true },
-  torrey:    { name: 'Torrey Pines', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.90, lon: -117.27, depth: '15-60 ft', kelpDensity: 'low' },
+  delmar:    { name: 'Del Mar Reefs', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.95, lon: -117.28, depth: '20-70 ft', kelpDensity: 'moderate' },
   encinitas: { name: 'Encinitas / Swamis', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.03, lon: -117.30, depth: '15-50 ft', kelpDensity: 'moderate' },
   oceanside: { name: 'Oceanside', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225'], lat: 33.19, lon: -117.40, depth: '15-60 ft', kelpDensity: 'low' },
   catalina:  { name: 'Catalina Island (Avalon)', bottom: 'kelp', tideStation: '9411340', coast: 90, shelter: 'moderate', buoys: ['46248','46225'], lat: 33.34, lon: -118.33, depth: '30-120 ft', kelpDensity: 'high', offshore: true },
@@ -1222,14 +1222,14 @@ const CDIP_STATIONS = {
   mission:   { id: '220p1', name: 'Mission Bay West' },
   imperial:  { id: '155p1', name: 'Imperial Beach Nearshore' },
   coronado:  { id: '191p1', name: 'Point Loma South' },
-  torrey:    { id: '100p1', name: 'Torrey Pines Outer' },
+  delmar:    { id: '100p1', name: 'Torrey Pines Outer' },
   encinitas: { id: '262p1', name: 'Leucadia Nearshore' },
   oceanside: { id: '262p1', name: 'Leucadia Nearshore' },
 };
 
 // --- Buoy Data: CDIP primary ---
 async function fetchBuoyData() {
-  const cdipStation = CDIP_STATIONS[currentLocation] || CDIP_STATIONS.torrey;
+  const cdipStation = CDIP_STATIONS[currentLocation] || CDIP_STATIONS.delmar;
   try {
     const ddsUrl = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/realtime/${cdipStation.id}_rt.nc.dds`;
     const ddsR = await fetchWithTimeout(ddsUrl);
