@@ -650,6 +650,7 @@
       <a href="https://weather.gov" target="_blank">NWS</a> ·
       <a href="https://www.ncei.noaa.gov/erddap/" target="_blank">NCEI Satellite</a> ·
       <a href="https://pae-paha.pacioos.hawaii.edu/erddap/" target="_blank">WaveWatch III</a> (NOAA/PacIOOS swell forecast) ·
+      <a href="https://hfradar.ioos.us/" target="_blank">HF Radar</a> (SIO/IOOS surface currents) ·
       <a href="https://sccoos.org/autoss/" target="_blank">SCCOOS SASS</a> ·
       <a href="https://coollab.ucsd.edu/pierviz/" target="_blank">Scripps Pier Cam</a> ·
       CDFW CPFV Logbooks (2021–2025)<br>
@@ -1440,6 +1441,47 @@ async function fetchScrippsSASS() {
 }
 
 // =========================================================================
+// HF RADAR SURFACE CURRENTS (UCSD/SIO via IOOS ERDDAP)
+// =========================================================================
+async function fetchHFRadarCurrent() {
+  try {
+    const loc = LOCATIONS[currentLocation];
+    // Snap to nearest grid point on ucsdHfrW6 (6km, 0.054° spacing)
+    const lat = loc.lat.toFixed(1);
+    const lon = loc.lon.toFixed(1);
+    // Use JSONP to bypass CORS on CoastWatch ERDDAP
+    const cbName = '_hfr_' + Date.now();
+    const url = `https://coastwatch.pfeg.noaa.gov/erddap/griddap/ucsdHfrW6.json?water_u%5B(last)%5D%5B(${lat})%5D%5B(${lon})%5D,water_v%5B(last)%5D%5B(${lat})%5D%5B(${lon})%5D&.jsonp=${cbName}`;
+    const data = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 5000);
+      window[cbName] = d => { cleanup(); resolve(d); };
+      const script = document.createElement('script');
+      script.src = url;
+      script.onerror = () => { cleanup(); reject(new Error('load failed')); };
+      const cleanup = () => { clearTimeout(timer); delete window[cbName]; script.remove(); };
+      document.head.appendChild(script);
+    });
+    if (!data.table || !data.table.rows || data.table.rows.length === 0) return;
+    const row = data.table.rows[0];
+    const cols = data.table.columnNames;
+    const u = row[cols.indexOf('water_u')]; // m/s east
+    const v = row[cols.indexOf('water_v')]; // m/s north
+    if (u === null || v === null) return;
+    const speedMs = Math.sqrt(u * u + v * v);
+    const speedKts = speedMs * 1.94384;
+    const dirDeg = (Math.atan2(u, v) * 180 / Math.PI + 360) % 360;
+    const dirLabel = dirDeg >= 315 || dirDeg < 45 ? 'north' :
+                     dirDeg >= 45 && dirDeg < 135 ? 'east' :
+                     dirDeg >= 135 && dirDeg < 225 ? 'south' : 'west';
+    D.currentStrength = parseFloat(speedKts.toFixed(2));
+    D.currentDir = dirLabel;
+    D.currentDirDeg = Math.round(dirDeg);
+    D.currentSource = 'HF Radar';
+    srcStatus.hfr = 'ok';
+  } catch(e) {}
+}
+
+// =========================================================================
 // WW3 SWELL FORECAST (NOAA WaveWatch III via PacIOOS ERDDAP)
 // =========================================================================
 async function fetchSwellForecast() {
@@ -1510,6 +1552,7 @@ async function fetchAllData() {
     fetchSST(), fetchChlorophyll(), fetchMultiDayTides(),
     fetchScrippsSASS(),  // real-time turbidity + chlorophyll from Scripps Pier
     fetchSwellForecast(),  // WW3 5-day swell forecast from NOAA/PacIOOS
+    fetchHFRadarCurrent(),  // real-time surface current from SIO HF Radar
   ]);
 
   // If location changed while we were fetching, discard these stale results
@@ -1518,7 +1561,7 @@ async function fetchAllData() {
   if(D.swellFt&&D.swellPeriod) D.waveEnergy=D.swellFt*D.swellFt*D.swellPeriod;
 
   const liveSources = Object.keys(srcStatus).filter(k=>srcStatus[k]==='ok').length;
-  const totalSources = 7;
+  const totalSources = 8;
   const timeStr=now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
 
   if(liveSources>=4) { statusEl.textContent=`${liveSources}/${totalSources} data sources connected · Updated ${timeStr}`; statusEl.className='data-status success'; }
@@ -1555,8 +1598,8 @@ function updateDisplay() {
   setVal('tempTrendVal', D.tempTrend ? trendLabels[D.tempTrend] : 'Unavailable', 'NOAA');
   const tideLabels={incoming:'Incoming (Low → High)',high:'High Tide',low:'Low Tide',outgoing:'Outgoing (High → Low)'};
   setVal('tideStateVal', D.tideState ? tideLabels[D.tideState] : 'Unavailable', 'NOAA');
-  const curStr=D.currentStrength ? `${D.currentStrength.toFixed(1)} kts ${(D.currentDir||'').toUpperCase()}` : 'Est. from tide';
-  setVal('currentVal', curStr, 'EST');
+  const curStr=D.currentStrength ? `${D.currentStrength.toFixed(1)} kts ${(D.currentDir||'').toUpperCase()}${D.currentDirDeg !== undefined ? ' ('+D.currentDirDeg+'°)' : ''}` : 'Est. from tide';
+  setVal('currentVal', curStr, D.currentSource === 'HF Radar' ? 'HF Radar' : 'EST');
   const upLabels={strong_recent:'Strong (2-5 days ago)',moderate_recent:'Moderate (recent)',active_now:'Active Now',weak:'Weak / None'};
   let upText = D.upwelling ? upLabels[D.upwelling] : 'Unavailable';
   if(D.upwellingIndex!==undefined) upText += ` (${Math.round(D.upwellingIndex)})`;
