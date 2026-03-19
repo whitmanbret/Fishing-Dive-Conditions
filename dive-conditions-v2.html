@@ -759,8 +759,82 @@ let D = {}; // all fetched data stored here
 let srcStatus = {}; // track data source status
 
 // =========================================================================
-// CPFV FISH COUNT DATA — San Diego half-day boats, 5-year avg (2021-2025)
+// CPFV FISH COUNT DATA — Regional, scraped from fishreports.com (30-day avg)
 // =========================================================================
+// Region assignment per location
+const REGION_MAP = {
+  // San Diego
+  coronado: 'sd', imperial: 'sd', pointloma: 'sd', mission: 'sd', birdrock: 'sd',
+  ljshores: 'sd', lajolla: 'sd', delmar: 'sd', encinitas: 'sd', carlsbad: 'sd', oceanside: 'sd',
+  // LA / Orange County / Ventura
+  newport: 'socal', huntington: 'socal', pv: 'socal', horseshoe: 'socal',
+  malibu: 'socal', leocarrillo: 'socal', ventura: 'socal',
+  // Santa Barbara
+  sb: 'sb', refugio: 'sb',
+  // Channel Islands
+  anacapa: 'islands', santacruz: 'islands', catalina: 'socal',
+  // Central Coast
+  morro: 'central', monterey: 'central', carmel: 'central',
+  // NorCal
+  halfmoon: 'norcal', bodega: 'norcal', fortbragg: 'norcal', trinidad: 'norcal',
+};
+
+// SoCal (LA/OC/Ventura) CPFV data — Mar 2026 scrape, 8567 anglers
+const CPFV_SOCAL = {
+  yellowtail: { index: [1,1,1,2,5,7,9,10,8,6,3,1], peak_month: 7 },  // rare in winter, summer peak
+  wsb:        { index: [1,1,2,5,8,10,8,6,4,3,1,1], peak_month: 5 },  // spring/summer
+  halibut:    { index: [3,4,6,8,6,5,4,3,4,5,7,4], peak_month: 3 },   // spring peak
+  general:    { index: [3,3,5,6,7,8,9,10,8,7,5,3], peak_month: 7 },
+  // Top current species: sculpin (2.33/angler), sheephead (0.36), calico (0.24)
+};
+
+// Santa Barbara CPFV data — similar to SoCal but colder, more lingcod
+const CPFV_SB = {
+  yellowtail: { index: [1,1,1,1,3,5,8,10,7,5,2,1], peak_month: 7 },  // less common than SD
+  wsb:        { index: [1,1,2,4,7,10,8,5,3,2,1,1], peak_month: 5 },
+  halibut:    { index: [2,3,5,7,5,4,3,3,3,4,6,3], peak_month: 3 },
+  general:    { index: [3,3,5,6,7,8,10,9,8,6,4,3], peak_month: 6 },
+  // Top species: sheephead, calico, lingcod, rockfish, whitefish
+};
+
+// Channel Islands — best overall fishing, warmer water pockets
+const CPFV_ISLANDS = {
+  yellowtail: { index: [1,1,2,4,7,8,10,10,7,6,3,1], peak_month: 6 },
+  wsb:        { index: [1,1,3,6,9,10,8,6,4,3,1,1], peak_month: 5 },
+  halibut:    { index: [2,3,5,6,4,3,3,3,3,4,5,3], peak_month: 3 },
+  general:    { index: [3,3,5,7,8,9,10,10,8,7,4,3], peak_month: 6 },
+  // Top species: calico, WSB, sheephead, lingcod, yellowtail, rockfish
+};
+
+// Central Coast (SLO/Monterey) — cold water, lingcod/rockfish dominant
+const CPFV_CENTRAL = {
+  yellowtail: { index: [1,1,1,1,1,2,4,5,3,2,1,1], peak_month: 7 },   // very rare
+  wsb:        { index: [1,1,1,2,3,5,4,3,2,1,1,1], peak_month: 5 },   // uncommon
+  halibut:    { index: [2,3,5,7,6,5,4,3,3,4,5,3], peak_month: 3 },   // sandy areas
+  general:    { index: [4,4,5,6,7,8,9,10,8,7,5,4], peak_month: 7 },
+  // Top species: lingcod, rockfish, cabezon, kelp greenling
+};
+
+// NorCal — very cold, limited species, sparse data
+const CPFV_NORCAL = {
+  yellowtail: { index: [1,1,1,1,1,1,1,2,1,1,1,1], peak_month: 7 },   // essentially absent
+  wsb:        { index: [1,1,1,1,1,1,1,1,1,1,1,1], peak_month: 5 },   // not present
+  halibut:    { index: [2,2,4,5,6,5,5,4,3,3,3,2], peak_month: 4 },   // SF Bay halibut
+  general:    { index: [3,3,4,5,6,7,8,9,8,7,5,3], peak_month: 7 },
+  // Top species: lingcod, rockfish, cabezon, striped bass, dungeness crab
+};
+
+function getRegionalCPFV() {
+  const region = REGION_MAP[currentLocation] || 'sd';
+  if (region === 'socal') return CPFV_SOCAL;
+  if (region === 'sb') return CPFV_SB;
+  if (region === 'islands') return CPFV_ISLANDS;
+  if (region === 'central') return CPFV_CENTRAL;
+  if (region === 'norcal') return CPFV_NORCAL;
+  return null; // SD uses main CPFV object
+}
+
+// San Diego CPFV — half-day boats, 5-year avg (2021-2025)
 const CPFV = {
   yellowtail: {
     // 4-year data (2021-2024): 44,279 YT, 52,915 angler-trips
@@ -1037,12 +1111,30 @@ const LANDING_SEASONALITY = {
 };
 
 function getReportsData(species, month) {
-  const data = CPFV[species] || CPFV.general;
-  const catchRate = data.catch_per_trip[month];
-  const avg = data.five_yr_avg[month];
-  const idx = data.index[month];
-  const peakCatch = Math.max(...data.catch_per_trip);
-  const pctOfPeak = Math.round((catchRate / peakCatch) * 100);
+  // Use regional CPFV data for non-SD locations
+  const regionalCPFV = getRegionalCPFV();
+  let data, catchRate, avg, idx, peakCatch, pctOfPeak;
+
+  if (regionalCPFV) {
+    // Regional data: only has index arrays, no detailed catch_per_trip
+    const rData = regionalCPFV[species] || regionalCPFV.general;
+    idx = rData.index[month];
+    // Synthesize catch rate from index (scale 1-10 → approximate catch/trip)
+    catchRate = idx / 10;
+    avg = rData.index.reduce((a,b) => a+b, 0) / 12 / 10;
+    peakCatch = Math.max(...rData.index) / 10;
+    pctOfPeak = Math.round((idx / Math.max(...rData.index)) * 100);
+    data = rData;
+  } else {
+    // San Diego: full detailed CPFV data
+    data = CPFV[species] || CPFV.general;
+    catchRate = data.catch_per_trip[month];
+    avg = data.five_yr_avg[month];
+    idx = data.index[month];
+    peakCatch = Math.max(...data.catch_per_trip);
+    pctOfPeak = Math.round((catchRate / peakCatch) * 100);
+  }
+
   const ratio = avg > 0 ? catchRate / avg : 1;
   let trend;
   if(ratio >= 1.3) trend = 'well_above';
@@ -1058,8 +1150,13 @@ function getReportsData(species, month) {
 function getReportsLabel(species, month) {
   const r = getReportsData(species, month);
   const speciesName = species === 'yellowtail' ? 'YT' : species === 'wsb' ? 'WSB' : species === 'halibut' ? 'Halibut' : 'All';
-  const catchStr = r.catchRate.toFixed(1);
   const statusLabels = { well_above: 'HOT', above: 'Above Avg', average: 'Average', below: 'Below Avg', well_below: 'Slow' };
+  const regional = getRegionalCPFV();
+  if (regional) {
+    // Regional: show index-based score instead of catch rate
+    return `${speciesName}: ${statusLabels[r.trend]} · Season: ${Math.round(r.landingSeason * 100)}%`;
+  }
+  const catchStr = r.catchRate.toFixed(1);
   const landingPct = Math.round(r.landingSeason * 100);
   return `${speciesName}: ${catchStr}/trip (${statusLabels[r.trend]}) · Season: ${landingPct}%`;
 }
@@ -1766,7 +1863,7 @@ function updateDisplay() {
   setVal('chlFishVal', chlLabel, D.chlSource||'SAT', 'sat');
 
   setVal('moonPhaseVal', `${D.moon.emoji} ${D.moon.name}`, 'CALC');
-  setVal('reportsVal', getReportsLabel(currentSpecies, new Date().getMonth()), 'CPFV 5yr');
+  setVal('reportsVal', getReportsLabel(currentSpecies, new Date().getMonth()), getRegionalCPFV() ? 'Regional CPFV' : 'CPFV 5yr');
   setVal('pressureVal', getPressureLabel(D.pressure), 'CALC');
 
   // Grunion run display — show only for halibut
@@ -3230,7 +3327,7 @@ function selectSpecies(species) {
   document.getElementById('speciesSelect').value=species;
   document.querySelectorAll('.species-card').forEach(c=>c.classList.toggle('active',c.dataset.species===species));
   D.reportsScore=getReportsScore(species,new Date().getMonth());
-  setVal('reportsVal',getReportsLabel(species,new Date().getMonth()),'CPFV 5yr');
+  setVal('reportsVal',getReportsLabel(species,new Date().getMonth()),getRegionalCPFV() ? 'Regional CPFV' : 'CPFV 5yr');
   // Show/hide grunion row for halibut
   const grunionRow = document.getElementById('grunionRow');
   if (species === 'halibut') {
