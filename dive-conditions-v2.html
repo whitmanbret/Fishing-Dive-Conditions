@@ -2173,7 +2173,7 @@ function buildForecast() {
     }
 
     // Surf/Swell slots
-    html += buildSurfPanel(slots);
+    html += buildSurfPanel(slots, idx);
 
     // Wind panel
     html += buildWindPanel(slots);
@@ -2645,17 +2645,30 @@ function getWindType(dir) {
   return '';
 }
 
-function buildSurfPanel(slots) {
-  // Use current swell as base for today, persist for forecast
-  const swellFt = D.swellFt || 0;
-  const swellPer = D.swellPeriod || 0;
-  const swellDirDeg = D.swellDirDeg || 0;
-  const maxSurf = Math.max(swellFt * 1.5, 6); // scale for bar height
+function buildSurfPanel(slots, dayIdx) {
+  // Current buoy swell reading — accurate for today only
+  const baseSwellFt = D.swellFt || 0;
+  const baseSwellPer = D.swellPeriod || 0;
+  const baseSwellDirDeg = D.swellDirDeg || 0;
   const swellDirLabels={south:'SSW',sw:'SW',west:'W',nw:'NW',north:'N'};
+
+  // For future days, swell decays toward seasonal average unless NWS hints at new swell
+  // San Diego avg swell: ~3ft winter, ~2ft summer — use 2.5ft baseline
+  const seasonalAvg = 2.5;
+  // Blend toward seasonal average: day0=100% buoy, day1=80%, day2=60%, etc.
+  const buoyWeight = Math.max(0.2, 1.0 - dayIdx * 0.2);
+  const daySwellFt = baseSwellFt * buoyWeight + seasonalAvg * (1 - buoyWeight);
+  // Period tends toward 10-12s average for SD
+  const daySwellPer = Math.round(baseSwellPer * buoyWeight + 11 * (1 - buoyWeight));
+  // Direction stays roughly the same (dominant swell direction persists)
+  const daySwellDirDeg = baseSwellDirDeg;
+
+  const maxSurf = Math.max(daySwellFt * 1.5, 6);
 
   let html = '<div class="forecast-panel">';
   html += '<div class="forecast-panel-label" style="display:flex;justify-content:space-between;align-items:center">Surf & Swell';
-  html += `<span style="font-size:12px;font-weight:600;color:var(--text-primary);text-transform:none;letter-spacing:0">${swellFt.toFixed(1)}ft · ${swellPer}s · ${swellDirLabels[D.swellDir] || ''} ${Math.round(swellDirDeg)}°</span>`;
+  const estLabel = dayIdx > 0 ? ' est' : '';
+  html += `<span style="font-size:12px;font-weight:600;color:var(--text-primary);text-transform:none;letter-spacing:0">${daySwellFt.toFixed(1)}ft · ${daySwellPer}s · ${swellDirLabels[D.swellDir] || ''} ${Math.round(daySwellDirDeg)}°${estLabel}</span>`;
   html += '</div>';
   html += '<div class="forecast-slots">';
 
@@ -2665,10 +2678,15 @@ function buildSurfPanel(slots) {
   html += '</div>';
 
   for (const slot of slots) {
-    // Estimate surf: swell height ± wind effect
-    let surfEst = swellFt;
-    if (slot.windSpeed > 15) surfEst *= 1.2;
-    else if (slot.windSpeed > 10) surfEst *= 1.1;
+    // Estimate surf: day-adjusted swell ± wind effect per slot
+    let surfEst = daySwellFt;
+    if (slot.windSpeed > 15) surfEst *= 1.3;
+    else if (slot.windSpeed > 10) surfEst *= 1.15;
+    else if (slot.windSpeed <= 4) surfEst *= 0.9; // glassy = slightly less chop
+    // Onshore wind builds local wind swell
+    const dir = (slot.windDir || '').toUpperCase();
+    if (['W','NW','WNW','WSW','SW'].includes(dir) && slot.windSpeed > 8) surfEst += 0.5;
+
     const surfLo = Math.max(1, Math.round(surfEst - 0.5));
     const surfHi = Math.round(surfEst + 0.5);
     const barPct = Math.min(95, (surfEst / maxSurf) * 100);
@@ -2680,10 +2698,14 @@ function buildSurfPanel(slots) {
     else if (surfEst <= 5) barColor = 'linear-gradient(to top, #f0a030, #e67e22)';
     else barColor = 'linear-gradient(to top, #e74c3c, #c0392b)';
 
+    // Per-slot swell estimate (slightly varies with wind)
+    const slotSwellFt = daySwellFt + (slot.windSpeed > 12 ? 0.3 : 0);
+    const slotSwellPer = daySwellPer + (slot.windSpeed > 12 ? -1 : 0); // wind chop shortens period
+
     html += '<div class="forecast-slot-row">';
     html += `<div><span class="slot-time">${slot.timeLabel}</span></div>`;
     html += `<div class="slot-surf-wrap"><div class="slot-surf-bar-container"><div class="slot-surf-bar" style="height:${barPct}%;background:${barColor}"></div></div><div class="slot-surf-val">${surfLo}-${surfHi}</div></div>`;
-    html += `<div><div class="slot-swell-info">${swellFt.toFixed(1)}ft</div><div class="slot-swell-info">${swellPer}s</div><div class="slot-swell-info"><span class="swell-arrow" style="transform:rotate(${swellDirDeg}deg)">↓</span> ${Math.round(swellDirDeg)}°</div></div>`;
+    html += `<div><div class="slot-swell-info">${slotSwellFt.toFixed(1)}ft</div><div class="slot-swell-info">${slotSwellPer}s</div><div class="slot-swell-info"><span class="swell-arrow" style="transform:rotate(${daySwellDirDeg}deg)">↓</span> ${Math.round(daySwellDirDeg)}°</div></div>`;
     html += `<div><div class="slot-swell-info">${slot.shortForecast}</div></div>`;
     html += '</div>';
   }
