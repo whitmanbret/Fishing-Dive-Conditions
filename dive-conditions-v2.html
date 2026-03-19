@@ -503,7 +503,7 @@
           <option value="pointloma">Point Loma Kelp</option>
           <option value="mission">Mission Bay / Jetties</option>
           <option value="imperial">Imperial Beach</option>
-          <option value="coronado">Coronado Islands</option>
+          <option value="coronado">Coronado Islands (MX)</option>
           <option value="torrey">Torrey Pines</option>
           <option value="encinitas">Encinitas / Swamis</option>
           <option value="oceanside">Oceanside</option>
@@ -666,7 +666,7 @@ const LOCATIONS = {
   pointloma: { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.67, lon: -117.26, depth: '20-100 ft', kelpDensity: 'high' },
   mission:   { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low' },
   imperial:  { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low', buoys: ['46225','46235'], lat: 32.58, lon: -117.14, depth: '10-40 ft', kelpDensity: 'none' },
-  coronado:  { name: 'Coronado Islands', bottom: 'rock', tideStation: '9410170', coast: 300, shelter: 'low', buoys: ['46225','46235'], lat: 32.42, lon: -117.25, depth: '30-150 ft', kelpDensity: 'moderate' },
+  coronado:  { name: 'Coronado Islands (MX)', bottom: 'rock', tideStation: '9410170', coast: 300, shelter: 'low', buoys: ['46225','46235'], lat: 32.42, lon: -117.25, depth: '30-150 ft', kelpDensity: 'moderate', offshore: true },
   torrey:    { name: 'Torrey Pines', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.90, lon: -117.27, depth: '15-60 ft', kelpDensity: 'low' },
   encinitas: { name: 'Encinitas / Swamis', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.03, lon: -117.30, depth: '15-50 ft', kelpDensity: 'moderate' },
   oceanside: { name: 'Oceanside', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225'], lat: 33.19, lon: -117.40, depth: '15-60 ft', kelpDensity: 'low' },
@@ -1579,12 +1579,41 @@ function updateDisplay() {
     if (locShelter === 'high') shelterMult += 0.10;
     else if (locShelter === 'moderate') shelterMult += 0.05;
 
+    // PRIORITY 0: Offshore islands — nearshore turbidity doesn't apply
+    // Coronado Islands sit in open ocean; vis driven by swell, current, and upwelling
+    // Ground truth: 40-50ft typical on good days (Mar 2026 report), 20-30ft average
+    if (loc.offshore) {
+      let lo, hi;
+      const we = D.waveEnergy || 0;
+      // Offshore baseline is much higher — no runoff, no surf zone turbidity
+      // NOTE: waveEnergy comes from nearshore CDIP buoy which overestimates open-ocean conditions
+      // because swell shoals and builds as it approaches shore. Offshore deep-water swell is ~40-60%
+      // of nearshore energy. Ground truth: waveEnergy ~120 (nearshore) = 40-50ft vis at Coronados (Mar 2026)
+      if (we <= 30) { lo = 50; hi = 70; }        // glassy = exceptional offshore clarity
+      else if (we <= 80) { lo = 40; hi = 60; }    // light swell — still excellent
+      else if (we <= 150) { lo = 30; hi = 50; }   // moderate nearshore = mild offshore, great vis
+      else if (we <= 300) { lo = 15; hi = 30; }   // significant swell — still decent offshore
+      else { lo = 8; hi = 20; }                    // major swell — even offshore gets stirred up
+      // Upwelling can bring cold, nutrient-rich (greenish) water up
+      if (D.upwelling === 'active_now' || D.upwelling === 'strong_recent') {
+        lo = Math.max(8, lo - 8); hi = Math.max(lo + 5, hi - 8);
+      }
+      // Chlorophyll bloom penalty (rare offshore but possible)
+      let suffix = '';
+      if (D.chlorophyll > 8) { lo = Math.max(5, lo - 10); hi = Math.max(lo + 5, hi - 10); suffix = ' (bloom)'; }
+      else if (D.chlorophyll > 3) { lo = Math.max(8, lo - 5); hi = Math.max(lo + 5, hi - 5); suffix = ' (green water)'; }
+      // Rain doesn't directly affect offshore, but heavy coastal runoff can spread
+      if (D.rainfall === 'heavy') { lo = Math.max(5, lo - 5); hi = Math.max(lo + 5, hi - 5); }
+      if (hi - lo > 20) hi = lo + 20; // wider range OK for offshore
+      vizEst = `${lo}–${hi} ft${suffix}`;
+      vizSource = 'Offshore Model';
+    }
     // PRIORITY 1: If we have real-time turbidity from SASS, use NTU-based estimate
     // Calibrated from Dec 2024 NTU data + Scripps Pier camera piling distances (4/11/14/30 ft)
     // NOTE: Scripps Pier is under-pier at 5m; open water dive sites are typically better.
     // Shelter multiplier is capped at 1.25 for turbidity — it's already a direct measurement.
     // EXCEPTION: La Jolla Shores (scrippsProximity) — SASS is the direct source, no shelter boost.
-    if (D.turbidity !== undefined) {
+    else if (D.turbidity !== undefined) {
       let lo, hi;
       const ntu = D.turbidity;
       if (loc.scrippsProximity) {
@@ -2329,10 +2358,19 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
   const loc = LOCATIONS[currentLocation];
   let baseLo, baseHi;
 
+  // Offshore islands: much higher baseline, driven by swell not turbidity
+  const isScripps = loc.scrippsProximity;
+  if (loc.offshore) {
+    const we = D.waveEnergy || 0;
+    if (we <= 30) { baseLo = 50; baseHi = 70; }
+    else if (we <= 80) { baseLo = 40; baseHi = 60; }
+    else if (we <= 150) { baseLo = 30; baseHi = 50; }
+    else if (we <= 300) { baseLo = 15; baseHi = 30; }
+    else { baseLo = 8; baseHi = 20; }
+  }
   // Use turbidity as base when available (even for future days — water clarity has inertia)
   // Calibrated 2026-03-17: 0.25 NTU at pier = 20ft at Pt Loma (dusk, cloudy)
-  const isScripps = loc.scrippsProximity;
-  if (D.turbidity !== undefined) {
+  else if (D.turbidity !== undefined) {
     const ntu = D.turbidity;
     if (isScripps && ntu < 0.2) { baseLo=22; baseHi=27; }
     else if(ntu < 0.3)  { baseLo=18; baseHi=23; }
