@@ -15,6 +15,14 @@
   <meta name="author" content="SpearFactor">
   <link rel="canonical" href="https://conditions.spearfactor.com/dive-conditions-v2.html">
 
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SpearFactor">
+  <link rel="apple-touch-icon" href="/og-image.jpg">
+  <meta name="theme-color" content="#0a1628">
+
   <!-- Open Graph (Facebook, iMessage, etc.) -->
   <meta property="og:title" content="San Diego Spearfishing Conditions — Live Forecast">
   <meta property="og:description" content="Real-time dive visibility & fish probability scores for 8 San Diego dive sites. Swell, tide, wind, grunion runs, and 5-day forecast.">
@@ -437,6 +445,17 @@
     .source-fail { color: var(--poor); }
     .source-na { color: var(--text-muted); }
 
+    /* Diver Viz Report Widget */
+    .viz-report { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    .viz-report-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 8px; }
+    .viz-report-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .viz-btn { padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text-secondary); font-size: 11px; cursor: pointer; transition: all 0.2s; }
+    .viz-btn:hover { border-color: var(--accent); color: var(--text-primary); }
+    .viz-btn.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .viz-btn.accurate { background: rgba(46,204,113,0.15); color: var(--excellent); border-color: var(--excellent); }
+    .viz-report-thanks { font-size: 11px; color: var(--excellent); display: none; margin-top: 6px; }
+    .viz-report-history { font-size: 10px; color: var(--text-muted); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 6px; }
+
     .breakdown-footer {
       text-align: center; padding: 14px; font-size: 12px;
       color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 16px;
@@ -576,6 +595,26 @@
     </div>
 
     <div class="insight-text" id="insightText">Loading conditions...</div>
+
+    <!-- ===== DIVER VIZ REPORT ===== -->
+    <div class="viz-report" id="vizReportWidget" style="display:none">
+      <div class="viz-report-title">Was the visibility accurate today?</div>
+      <div class="viz-report-row" id="vizAccuracyRow">
+        <button class="viz-btn" onclick="submitVizReport('accurate')">Yes, accurate</button>
+        <button class="viz-btn" onclick="showVizOptions()">No, it was different</button>
+      </div>
+      <div class="viz-report-row" id="vizOptionsRow" style="display:none">
+        <span style="font-size:10px;color:var(--text-muted);width:100%;margin-bottom:2px">What was the actual visibility?</span>
+        <button class="viz-btn" onclick="submitVizReport('0-5')">0–5 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('6-10')">6–10 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('11-15')">11–15 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('16-20')">16–20 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('21-25')">21–25 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('26+')">26+ ft</button>
+      </div>
+      <div class="viz-report-thanks" id="vizThanks"></div>
+      <div class="viz-report-history" id="vizHistory"></div>
+    </div>
 
     <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
     <section class="forecast-section" id="forecastSection">
@@ -1578,6 +1617,7 @@ async function fetchAllData() {
   updateDisplay();
   recalculate();
   buildForecast();
+  initVizReport();
 }
 
 // =========================================================================
@@ -2429,21 +2469,59 @@ function calcSlotForecastScores(slot, dayIdx) {
   if (dow === 0 || dow === 6) fishAdj -= 0.6;          // weekend penalty (real: ~47% lower rate)
   else if (dow >= 2 && dow <= 4) fishAdj += 0.3;       // Tue-Thu bonus (real: ~30% higher rate)
 
+  // WW3 swell forecast: adjust viz based on predicted swell size for this slot
+  let swellAdj = 0;
+  if (slot.date) {
+    const ww3 = getWW3Swell(slot.date);
+    if (ww3) {
+      // Swell impact on visibility — bigger swell stirs more sediment
+      if (ww3.ft <= 1.5) swellAdj = 0.5;       // tiny swell = great viz
+      else if (ww3.ft <= 2.5) swellAdj = 0;     // average
+      else if (ww3.ft <= 4) swellAdj = -0.6;    // moderate swell = reduced viz
+      else if (ww3.ft <= 6) swellAdj = -1.2;    // big swell = poor viz
+      else swellAdj = -2.0;                      // large swell = very poor viz
+      // Long period swell penetrates deeper but causes less surface turbulence
+      if (ww3.per >= 15) swellAdj += 0.3;
+      else if (ww3.per <= 8) swellAdj -= 0.3;
+    }
+  }
+
+  // Future tide state: adjust fish score based on predicted tide
+  let tideAdj = 0;
+  if (slot.date && D.multiDayTideHiLo) {
+    const slotTime = slot.date.getTime();
+    let prevTide = null, nextTide = null;
+    for (const t of D.multiDayTideHiLo) {
+      if (t.time.getTime() > slotTime) { nextTide = t; break; }
+      prevTide = t;
+    }
+    if (prevTide && nextTide) {
+      const tideState = prevTide.type === 'L' && nextTide.type === 'H' ? 'incoming' :
+                        prevTide.type === 'H' && nextTide.type === 'L' ? 'outgoing' : null;
+      if (tideState === 'incoming') tideAdj = 0.6;    // incoming = best for most species
+      else if (tideState === 'outgoing') tideAdj = -0.3;
+      // Near slack tide (within 30 min of hi/lo)
+      const nearPrev = Math.abs(slotTime - prevTide.time.getTime()) < 30 * 60000;
+      const nearNext = Math.abs(slotTime - nextTide.time.getTime()) < 30 * 60000;
+      if (nearPrev || nearNext) tideAdj = -0.2; // slack tide = less fish movement
+    }
+  }
+
   // Future-day uncertainty decay (confidence drops ~5% per day)
   const decay = 1 - (dayIdx * 0.05);
 
   const clamp = v => Math.max(1, Math.min(10, v));
-  const fish = clamp((baseFish + fishAdj + timeAdj) * decay);
-  const viz = clamp((baseViz + windAdj + precipAdj) * decay);
+  const fish = clamp((baseFish + fishAdj + timeAdj + tideAdj) * decay);
+  const viz = clamp((baseViz + windAdj + precipAdj + swellAdj) * decay);
   const spear = 0.6 * fish + 0.4 * viz;
 
   // Estimate visibility in feet for this specific slot
-  const vizFeet = estimateVizFeet(viz, w, precip, dayIdx);
+  const vizFeet = estimateVizFeet(viz, w, precip, dayIdx, slot.date);
 
   return { fish, viz, spear, vizFeet };
 }
 
-function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
+function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   // Start from the SAME base as the current-day estimate for consistency
   const loc = LOCATIONS[currentLocation];
   let baseLo, baseHi;
@@ -2512,11 +2590,17 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx) {
   else if (precipPct > 50) rainMult = 0.6;
   else if (precipPct > 30) rainMult = 0.8;
 
-  // Swell degradation — only apply if base came from turbidity (not already wave-energy-based)
+  // Swell degradation — use WW3 forecast for future days, current buoy for today
   let swellMult = 1;
-  if (D.turbidity !== undefined && D.waveEnergy !== undefined) {
-    if (D.waveEnergy > 100) swellMult = 0.7;
-    else if (D.waveEnergy > 50) swellMult = 0.85;
+  let futureWE = D.waveEnergy; // default to current
+  if (slotDate && dayIdx > 0) {
+    const ww3 = getWW3Swell(slotDate);
+    if (ww3) futureWE = ww3.ft * ww3.ft * ww3.per; // wave energy from forecast
+  }
+  if (D.turbidity !== undefined && futureWE !== undefined) {
+    if (futureWE > 100) swellMult = 0.7;
+    else if (futureWE > 50) swellMult = 0.85;
+    else if (futureWE < 15) swellMult = 1.1; // very low swell = better viz
   }
 
   // Future days drift slightly toward average (less certainty)
@@ -3010,6 +3094,96 @@ function onLocationChange() {
   fetchAllData();
 }
 
+// =========================================================================
+// DIVER VIZ REPORT — crowd-sourced visibility feedback
+// =========================================================================
+function getVizReports() {
+  try { return JSON.parse(localStorage.getItem('vizReports') || '[]'); } catch(e) { return []; }
+}
+function saveVizReport(report) {
+  const reports = getVizReports();
+  reports.push(report);
+  // Keep last 100 reports
+  if (reports.length > 100) reports.splice(0, reports.length - 100);
+  localStorage.setItem('vizReports', JSON.stringify(reports));
+}
+function showVizOptions() {
+  document.getElementById('vizOptionsRow').style.display = 'flex';
+  // Highlight "No" button
+  const btns = document.getElementById('vizAccuracyRow').querySelectorAll('.viz-btn');
+  btns[1].classList.add('selected');
+}
+function submitVizReport(value) {
+  const loc = LOCATIONS[currentLocation];
+  const vizEstimate = document.getElementById('vizEstimateVal') ? document.getElementById('vizEstimateVal').textContent : '';
+  const report = {
+    date: new Date().toISOString(),
+    location: currentLocation,
+    locationName: loc.name,
+    species: currentSpecies,
+    predicted: vizEstimate,
+    actual: value,
+    accurate: value === 'accurate',
+    waterTemp: D.waterTemp,
+    swellFt: D.swellFt,
+    windSpeed: D.windSpeed,
+    tideState: D.tideState
+  };
+  saveVizReport(report);
+  // Show thanks
+  const thanks = document.getElementById('vizThanks');
+  if (value === 'accurate') {
+    thanks.textContent = 'Thanks! Your report helps calibrate the model.';
+  } else {
+    thanks.textContent = `Thanks! Logged ${value} ft actual viz at ${loc.name}. This helps improve future predictions.`;
+  }
+  thanks.style.display = 'block';
+  // Hide buttons
+  document.getElementById('vizAccuracyRow').style.display = 'none';
+  document.getElementById('vizOptionsRow').style.display = 'none';
+  // Update history display
+  renderVizHistory();
+}
+function renderVizHistory() {
+  const el = document.getElementById('vizHistory');
+  const reports = getVizReports().filter(r => r.location === currentLocation);
+  if (reports.length === 0) { el.innerHTML = ''; return; }
+  const recent = reports.slice(-5).reverse();
+  const accurateCount = reports.filter(r => r.accurate).length;
+  const total = reports.length;
+  const pct = Math.round(accurateCount / total * 100);
+  let html = `<strong>${total} report${total>1?'s':''}</strong> at ${LOCATIONS[currentLocation].name} · ${pct}% accurate<br>`;
+  recent.forEach(r => {
+    const d = new Date(r.date);
+    const dateStr = d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    html += `<span style="margin-right:8px">${dateStr}: ${r.accurate ? 'Accurate' : r.actual + ' ft'}</span>`;
+  });
+  el.innerHTML = html;
+}
+function initVizReport() {
+  // Only show if data is loaded and we have a viz estimate
+  const widget = document.getElementById('vizReportWidget');
+  if (!widget) return;
+  // Check if already reported today for this location
+  const today = new Date().toDateString();
+  const reports = getVizReports();
+  const alreadyReported = reports.some(r => new Date(r.date).toDateString() === today && r.location === currentLocation);
+  if (alreadyReported) {
+    widget.style.display = 'block';
+    document.getElementById('vizAccuracyRow').style.display = 'none';
+    document.getElementById('vizOptionsRow').style.display = 'none';
+    document.getElementById('vizThanks').textContent = 'You already reported today.';
+    document.getElementById('vizThanks').style.display = 'block';
+    renderVizHistory();
+  } else {
+    widget.style.display = 'block';
+    document.getElementById('vizAccuracyRow').style.display = 'flex';
+    document.getElementById('vizOptionsRow').style.display = 'none';
+    document.getElementById('vizThanks').style.display = 'none';
+    renderVizHistory();
+  }
+}
+
 // INIT
 fetchAllData();
 
@@ -3037,6 +3211,11 @@ fetchAllData();
   // Also send on resize
   window.addEventListener('resize', sendHeight);
 })();
+
+// PWA Service Worker registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
