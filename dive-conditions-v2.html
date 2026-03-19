@@ -2706,6 +2706,7 @@ function buildSurfPanel(slots, dayIdx) {
   let html = '<div class="forecast-panel">';
   html += '<div class="forecast-panel-label" style="display:flex;justify-content:space-between;align-items:center">Surf & Swell';
   const estLabel = dayIdx > 0 ? ' est' : '';
+  // Show morning peak in header (matches what buoy/Surfline show as the day's headline)
   html += `<span style="font-size:12px;font-weight:600;color:var(--text-primary);text-transform:none;letter-spacing:0">${daySwellFt.toFixed(1)}ft · ${daySwellPer}s · ${swellDirLabels[D.swellDir] || ''} ${Math.round(daySwellDirDeg)}°${estLabel}</span>`;
   html += '</div>';
   html += '<div class="forecast-slots">';
@@ -2716,11 +2717,19 @@ function buildSurfPanel(slots, dayIdx) {
   html += '</div>';
 
   for (const slot of slots) {
-    // Estimate surf: day-adjusted swell ± wind effect per slot
-    let surfEst = daySwellFt;
+    // Intra-day swell decay: swells typically peak in the morning and decline through the day
+    // Pattern matches Surfline observations (e.g., 2.9ft→2.7ft→2.2ft over a day)
+    // Morning ~100%, Noon ~93%, Evening ~80% of day's base swell
+    let timeDecay = 1.0;
+    if (slot.timeLabel === 'Noon') timeDecay = 0.93;
+    else if (slot.timeLabel === '6pm') timeDecay = 0.80;
+    const slotBaseSwellFt = daySwellFt * timeDecay;
+
+    // Wind effects on surf height
+    let surfEst = slotBaseSwellFt;
     if (slot.windSpeed > 15) surfEst *= 1.3;
     else if (slot.windSpeed > 10) surfEst *= 1.15;
-    else if (slot.windSpeed <= 4) surfEst *= 0.9; // glassy = slightly less chop
+    else if (slot.windSpeed <= 4) surfEst *= 0.9;
     // Onshore wind builds local wind swell
     const dir = (slot.windDir || '').toUpperCase();
     if (['W','NW','WNW','WSW','SW'].includes(dir) && slot.windSpeed > 8) surfEst += 0.5;
@@ -2736,14 +2745,18 @@ function buildSurfPanel(slots, dayIdx) {
     else if (surfEst <= 5) barColor = 'linear-gradient(to top, #f0a030, #e67e22)';
     else barColor = 'linear-gradient(to top, #e74c3c, #c0392b)';
 
-    // Per-slot swell estimate (slightly varies with wind)
-    const slotSwellFt = daySwellFt + (slot.windSpeed > 12 ? 0.3 : 0);
-    const slotSwellPer = daySwellPer + (slot.windSpeed > 12 ? -1 : 0); // wind chop shortens period
+    // Per-slot swell with time decay + wind effects
+    const slotSwellFt = slotBaseSwellFt + (slot.windSpeed > 12 ? 0.3 : 0);
+    // Period slightly lengthens as shorter-period energy dissipates first
+    const slotSwellPer = daySwellPer + (slot.timeLabel === '6pm' ? 1 : 0) + (slot.windSpeed > 12 ? -1 : 0);
+    // Direction can shift slightly through the day (afternoon tends more westerly)
+    let slotDirDeg = daySwellDirDeg;
+    if (slot.timeLabel === '6pm') slotDirDeg = daySwellDirDeg - 3; // subtle westward shift
 
     html += '<div class="forecast-slot-row">';
     html += `<div><span class="slot-time">${slot.timeLabel}</span></div>`;
     html += `<div class="slot-surf-wrap"><div class="slot-surf-bar-container"><div class="slot-surf-bar" style="height:${barPct}%;background:${barColor}"></div></div><div class="slot-surf-val">${surfLo}-${surfHi}</div></div>`;
-    html += `<div><div class="slot-swell-info">${slotSwellFt.toFixed(1)}ft</div><div class="slot-swell-info">${slotSwellPer}s</div><div class="slot-swell-info"><span class="swell-arrow" style="transform:rotate(${daySwellDirDeg}deg)">↓</span> ${Math.round(daySwellDirDeg)}°</div></div>`;
+    html += `<div><div class="slot-swell-info">${slotSwellFt.toFixed(1)}ft</div><div class="slot-swell-info">${slotSwellPer}s</div><div class="slot-swell-info"><span class="swell-arrow" style="transform:rotate(${slotDirDeg}deg)">↓</span> ${Math.round(slotDirDeg)}°</div></div>`;
     html += `<div><div class="slot-swell-info">${slot.shortForecast}</div></div>`;
     html += '</div>';
   }
