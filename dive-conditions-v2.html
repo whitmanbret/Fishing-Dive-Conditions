@@ -1441,7 +1441,9 @@ async function fetchScrippsSASS() {
 // =========================================================================
 // MASTER FETCH
 // =========================================================================
+let _fetchGen = 0; // generation counter to discard stale fetch results on location switch
 async function fetchAllData() {
+  const thisGen = ++_fetchGen;
   const btn=document.getElementById('refreshBtn');
   const statusEl=document.getElementById('dataStatus');
   btn.disabled=true; btn.textContent='Loading...';
@@ -1463,6 +1465,9 @@ async function fetchAllData() {
     fetchSST(), fetchChlorophyll(), fetchMultiDayTides(),
     fetchScrippsSASS(),  // real-time turbidity + chlorophyll from Scripps Pier
   ]);
+
+  // If location changed while we were fetching, discard these stale results
+  if (thisGen !== _fetchGen) return;
 
   if(D.swellFt&&D.swellPeriod) D.waveEnergy=D.swellFt*D.swellFt*D.swellPeriod;
 
@@ -1938,6 +1943,10 @@ function setArc(id,pct,color) {
 
 function updateGauge(name,score,defaultColor) {
   const sEl=document.getElementById(name+'Score'), rEl=document.getElementById(name+'Rating');
+  // Reset any styles set by updateGaugeNotPermitted
+  sEl.style.fontSize = '';
+  rEl.style.fontSize = '';
+  rEl.style.color = '';
   if(score===null) { sEl.textContent='--'; sEl.style.color='var(--text-muted)'; rEl.textContent='No Data'; rEl.className='gauge-rating rating-none'; setArc(name+'Arc',0,'var(--bg-card)'); return; }
   sEl.textContent=score.toFixed(1);
   // For viz gauge, derive rating from feet estimate so label matches the feet display
@@ -1966,7 +1975,8 @@ function updateGaugeNotPermitted(name) {
 
 function updateInsightReserve(fish, viz) {
   const el = document.getElementById('insightText');
-  let msg = '🏛️ La Jolla Shores is within the San Diego-La Jolla Ecological Reserve — spearfishing and the take of all marine life are prohibited.';
+  const locName = LOCATIONS[currentLocation] ? LOCATIONS[currentLocation].name : 'This location';
+  let msg = `🏛️ ${locName} is within the San Diego-La Jolla Ecological Reserve — spearfishing and the take of all marine life are prohibited.`;
   if (viz !== null && fish !== null) {
     if (viz >= 7 && fish >= 7) msg += ' Excellent conditions — great visibility and high fish activity. Perfect day for snorkeling or scuba!';
     else if (viz >= 7) msg += ' Visibility is looking great for a dive today!';
@@ -2151,9 +2161,13 @@ function buildForecast() {
 
     // Best time recommendation banner
     if (bestWindow) {
+      const isReserveBanner = LOCATIONS[currentLocation] && LOCATIONS[currentLocation].marineReserve;
+      const bannerIcon = isReserveBanner ? '🤿' : '🎯';
+      const bannerLabel = isReserveBanner ? 'Best Dive Time' : 'Best Time';
+      const bannerColor = isReserveBanner ? 'var(--viz-color)' : 'var(--spear-color)';
       html += `<div style="background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.3);border-radius:8px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px">`;
-      html += `<span style="font-size:18px">🎯</span>`;
-      html += `<div><div style="font-size:12px;font-weight:700;color:var(--spear-color)">Best Time: ${bestWindow.range}</div>`;
+      html += `<span style="font-size:18px">${bannerIcon}</span>`;
+      html += `<div><div style="font-size:12px;font-weight:700;color:${bannerColor}">${bannerLabel}: ${bestWindow.range}</div>`;
       html += `<div style="font-size:10px;color:var(--text-secondary)">${bestWindow.reason}</div></div>`;
       html += `</div>`;
     }
@@ -2580,9 +2594,17 @@ function calcBestDiveWindow(periods, dayTideHiLo, dayIdx) {
     }
   }
 
+  if (hourScores.length < 2) {
+    if (hourScores.length === 1) {
+      const h = hourScores[0].hour;
+      const formatH = h2 => { if(h2===0||h2===24)return'12am'; if(h2===12)return'12pm'; return h2<12?`${h2}am`:`${h2-12}pm`; };
+      return { range: `${formatH(h)}–${formatH(h+1)}`, reason: 'only remaining window', score: hourScores[0].score };
+    }
+    return null;
+  }
   const startHour = hourScores[bestStart].hour;
   // Determine window end (2-3 hours), clamped to sunset
-  let endIdx = bestStart + 1;
+  let endIdx = Math.min(bestStart + 1, hourScores.length - 1);
   if (bestStart + 2 < hourScores.length && hourScores[bestStart + 2].score >= hourScores[bestStart + 1].score * 0.8) {
     endIdx = bestStart + 2;
   }
@@ -2821,6 +2843,9 @@ function onLocationChange() {
     spearFormula.textContent = 'S = 0.6 × Fish + 0.4 × Visibility';
     spearFormula.style.color = 'var(--text-muted)';
   }
+  // Clear stale insight text and forecast immediately on location switch
+  document.getElementById('insightText').textContent = 'Loading conditions for ' + loc.name + '...';
+  document.getElementById('forecastDays').innerHTML = '<div class="forecast-loading">Loading forecast data...</div>';
   fetchAllData();
 }
 
