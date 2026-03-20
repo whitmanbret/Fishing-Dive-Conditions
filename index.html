@@ -143,6 +143,11 @@
     }
     .container { max-width: 700px; margin: 0 auto; padding: 16px; }
 
+    .site-nav { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: rgba(10, 22, 40, 0.95); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
+    .site-nav a { color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 500; transition: color 0.2s; }
+    .site-nav a:hover { color: var(--accent); }
+    .site-nav .nav-brand { color: var(--accent); font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+    .site-nav .nav-links { display: flex; gap: 18px; align-items: center; }
     .header { text-align: center; padding: 10px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
     .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
     .header .subtitle { color: var(--text-secondary); font-size: 12px; margin-top: 1px; }
@@ -487,6 +492,10 @@
 
     @media (max-width: 480px) {
       .container { padding: 8px; }
+      .site-nav { padding: 8px 12px; }
+      .site-nav .nav-brand { font-size: 13px; }
+      .site-nav a { font-size: 11px; }
+      .site-nav .nav-links { gap: 12px; }
       .header { padding: 6px 0 5px; margin-bottom: 6px; }
       .header h1 { font-size: 16px; }
       .header .subtitle { font-size: 10px; }
@@ -528,6 +537,14 @@
   </style>
 </head>
 <body>
+  <nav class="site-nav">
+    <a href="https://www.spearfactor.com" class="nav-brand">SpearFactor</a>
+    <div class="nav-links">
+      <a href="https://www.spearfactor.com">Home</a>
+      <a href="https://www.spearfactor.com/blog">Blog</a>
+      <a href="https://www.spearfactor.com/podcast">Podcast</a>
+    </div>
+  </nav>
   <div class="container">
 
     <header class="header">
