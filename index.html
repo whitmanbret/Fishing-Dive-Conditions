@@ -6,14 +6,14 @@
   <script>
     // If loaded inside an iframe (e.g. Wix embed), break out to direct URL for proper mobile scrolling
     if (window !== window.top) {
-      try { window.top.location.href = 'https://conditions.spearfactor.com/dive-conditions-v2.html'; } catch(e) {}
+      try { window.top.location.href = 'https://conditions.spearfactor.com/'; } catch(e) {}
     }
   </script>
   <title>California Spearfishing Conditions — Live Dive & Fish Forecast | SpearFactor</title>
   <meta name="description" content="Live spearfishing conditions for all of California. Real-time dive visibility, fish probability scores, swell, tide, wind, and 5-day forecast for 30+ dive sites from San Diego to Humboldt.">
   <meta name="keywords" content="California spearfishing conditions, dive visibility forecast, spearfishing forecast, La Jolla diving, Point Loma kelp, Palos Verdes diving, Catalina Island diving, Santa Barbara spearfishing, Monterey diving, fish report California, yellowtail forecast, white sea bass conditions, halibut, lingcod, ocean conditions today">
   <meta name="author" content="SpearFactor">
-  <link rel="canonical" href="https://conditions.spearfactor.com/dive-conditions-v2.html">
+  <link rel="canonical" href="https://conditions.spearfactor.com/">
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
@@ -27,7 +27,7 @@
   <meta property="og:title" content="California Spearfishing Conditions — Live Forecast">
   <meta property="og:description" content="Real-time dive visibility & fish probability scores for 30+ California dive sites. Swell, tide, wind, and 5-day forecast from San Diego to Humboldt.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://conditions.spearfactor.com/dive-conditions-v2.html">
+  <meta property="og:url" content="https://conditions.spearfactor.com/">
   <meta property="og:site_name" content="SpearFactor">
   <meta property="og:image" content="https://conditions.spearfactor.com/og-image.jpg">
   <meta property="og:image:width" content="1200">
@@ -456,6 +456,29 @@
     .viz-report-thanks { font-size: 11px; color: var(--excellent); display: none; margin-top: 6px; }
     .viz-report-history { font-size: 10px; color: var(--text-muted); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 6px; }
 
+    /* Local Reports Section */
+    .local-reports { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+    .local-reports-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 10px; }
+    .report-link { display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin-bottom: 6px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); text-decoration: none; color: var(--text-primary); transition: all 0.2s; }
+    .report-link:hover { border-color: var(--accent); background: rgba(255,255,255,0.06); }
+    .report-link .report-icon { font-size: 16px; flex-shrink: 0; }
+    .report-link .report-info { flex: 1; min-width: 0; }
+    .report-link .report-name { font-size: 12px; font-weight: 600; }
+    .report-link .report-desc { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+    .report-link .report-arrow { color: var(--text-muted); font-size: 12px; }
+
+    /* Beach Webcams Section */
+    .webcams { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+    .webcams-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 10px; }
+    .webcam-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .webcam-link { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); text-decoration: none; color: var(--text-primary); transition: all 0.2s; }
+    .webcam-link:hover { border-color: var(--accent); background: rgba(255,255,255,0.06); }
+    .webcam-link .cam-icon { font-size: 14px; flex-shrink: 0; }
+    .webcam-link .cam-info { flex: 1; min-width: 0; }
+    .webcam-link .cam-name { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .webcam-link .cam-type { font-size: 9px; color: var(--text-muted); }
+    @media (max-width: 480px) { .webcam-grid { grid-template-columns: 1fr; } }
+
     .breakdown-footer {
       text-align: center; padding: 14px; font-size: 12px;
       color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 16px;
@@ -684,11 +707,23 @@
         <div class="source-item"><span>NWS — Wind, rainfall, forecast</span><span class="source-status" id="srcNws">--</span></div>
         <div class="source-item"><span>NCEI ERDDAP — SST (OISST)</span><span class="source-status" id="srcSst">--</span></div>
         <div class="source-item"><span>NCEI ERDDAP — Chlorophyll (Climo)</span><span class="source-status" id="srcChl">--</span></div>
-        <div class="source-item"><span>SCCOOS SASS — Scripps Pier Turbidity/Chl (Live)</span><span class="source-status" id="srcSass">--</span></div>
+        <div class="source-item"><span id="srcSassLabel">Shore Station — Pier Temp/Turbidity/Chl (Live)</span><span class="source-status" id="srcSass">--</span></div>
         <div class="source-item"><span>NOAA PFEL — Upwelling Index</span><span class="source-status" id="srcUpwell">--</span></div>
         <div class="source-item"><span>CDFW CPFV Logbooks — Seasonal baselines</span><span class="source-status source-ok">LOCAL</span></div>
         <div class="source-item"><span>Calculated — Moon, pressure, current, energy</span><span class="source-status source-ok">CALC</span></div>
       </div>
+    </section>
+
+    <!-- BEACH WEBCAMS -->
+    <section class="webcams" id="webcamSection">
+      <div class="webcams-title">📹 Live Beach Cams</div>
+      <div class="webcam-grid" id="webcamGrid"></div>
+    </section>
+
+    <!-- LOCAL FISHING REPORTS -->
+    <section class="local-reports" id="localReports">
+      <div class="local-reports-title">📋 Local Fishing Reports</div>
+      <div id="reportLinks"></div>
     </section>
 
     <div class="breakdown-footer">
@@ -699,7 +734,7 @@
       <a href="https://www.ncei.noaa.gov/erddap/" target="_blank">NCEI Satellite</a> ·
       <a href="https://pae-paha.pacioos.hawaii.edu/erddap/" target="_blank">WaveWatch III</a> (NOAA/PacIOOS swell forecast) ·
       <a href="https://hfradar.ioos.us/" target="_blank">HF Radar</a> (SIO/IOOS surface currents) ·
-      <a href="https://sccoos.org/autoss/" target="_blank">SCCOOS SASS</a> ·
+      <a href="https://sccoos.org/autoss/" target="_blank">SCCOOS</a> / <a href="https://www.cencoos.org/" target="_blank">CeNCOOS</a> Shore Stations ·
       <a href="https://coollab.ucsd.edu/pierviz/" target="_blank">Scripps Pier Cam</a> ·
       CDFW CPFV Logbooks (2021–2025)<br>
       <span id="stationFooter">Station: La Jolla (9410230) · Buoy: connecting...</span>
@@ -742,8 +777,8 @@ const LOCATIONS = {
   catalina:    { name: 'Catalina Island', bottom: 'kelp', tideStation: '9410660', coast: 90, shelter: 'moderate', buoys: ['46248','46222'], lat: 33.34, lon: -118.33, depth: '10-100 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/147,32' },
   // ── Central Coast (San Luis Obispo / Monterey) ──
   morro:       { name: 'Morro Bay / Montana de Oro', bottom: 'rock', tideStation: '9412110', coast: 250, shelter: 'moderate', buoys: ['46028'], lat: 35.37, lon: -120.87, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/72,120' },
-  monterey:    { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46042'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },
-  carmel:      { name: 'Carmel / Point Lobos', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46042'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },
+  monterey:    { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46236','46042'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },
+  carmel:      { name: 'Carmel / Point Lobos', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46236','46042'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },
   // ── Northern California ──
   halfmoon:    { name: 'Half Moon Bay', bottom: 'rock', tideStation: '9414290', coast: 270, shelter: 'low', buoys: ['46012'], lat: 37.50, lon: -122.47, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/80,93' },
   bodega:      { name: 'Bodega Bay / Sonoma', bottom: 'rock', tideStation: '9415020', coast: 270, shelter: 'moderate', buoys: ['46013'], lat: 38.33, lon: -123.06, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/68,134' },
@@ -1525,12 +1560,27 @@ async function fetchRainfall() {
   } catch(e) {}
 }
 
-// --- NOAA PFEL Upwelling Index (JSONP) ---
+// --- NOAA PFEL Upwelling Index (JSONP) — region-specific latitude ---
+// Upwelling varies dramatically along the coast. SD is weak, Pt Conception is extreme.
+const UPWELLING_DATASETS = {
+  sd: 'erdUI336hr',       // 33N — San Diego / SoCal
+  socal: 'erdUI336hr',    // 33N
+  sb: 'erdUI366hr',       // 36N — Pt Conception / Santa Barbara (strong upwelling zone)
+  islands: 'erdUI336hr',  // 33N — Channel Islands
+  central: 'erdUI366hr',  // 36N — Monterey / Central Coast
+  norcal: 'erdUI396hr',   // 39N — NorCal / Bodega / SF
+  humboldt: 'erdUI426hr', // 42N — Humboldt / Trinidad
+};
+
 async function fetchUpwelling() {
   try {
     const ago=new Date(Date.now()-30*86400000);
+    const region = REGION_MAP[currentLocation] || 'sd';
+    // Humboldt locations use 42N dataset
+    const upwellRegion = (currentLocation === 'trinidad' || currentLocation === 'fortbragg') ? 'humboldt' : region;
+    const dataset = UPWELLING_DATASETS[upwellRegion] || 'erdUI336hr';
     const cbName = '_upwell_' + Date.now();
-    const url = `https://oceanview.pfeg.noaa.gov/erddap/tabledap/erdUI336hr.json?time,upwelling_index&time%3E=${ago.toISOString()}&.jsonp=${cbName}`;
+    const url = `https://oceanview.pfeg.noaa.gov/erddap/tabledap/${dataset}.json?time,upwelling_index&time%3E=${ago.toISOString()}&.jsonp=${cbName}`;
     const data = await new Promise((resolve, reject) => {
       window[cbName] = d => { resolve(d); delete window[cbName]; };
       const s = document.createElement('script');
@@ -1607,41 +1657,206 @@ async function fetchChlorophyll() {
   }
 }
 
-// --- Scripps Pier Automated Shore Station (SASS) — real-time turbidity + chlorophyll ---
-// ECO sensor at 5m depth, ~4min resolution. Turbidity in NTU, chlorophyll in µg/L.
-// Installed Dec 2024. Falls back gracefully if sensor offline.
-async function fetchScrippsSASS() {
+// --- Shore Station Network — real-time pier data across California ---
+// SCCOOS (SoCal) + CeNCOOS (NorCal) automated shore stations via CalOOS ERDDAP.
+// Each station has different sensor packages — we extract whatever's available.
+const SHORE_STATIONS = {
+  // SCCOOS stations (SoCal) — variable names verified against CalOOS ERDDAP info endpoints
+  scripps:      { id: 'scripps-pier-automated-shore-sta-1', name: 'Scripps Pier',
+                  temp: 'sea_water_temperature_ctd', turb: 'sea_water_turbidity_eco',
+                  chl: 'mass_concentration_of_chlorophyll_in_sea_water_eco', sal: 'sea_water_practical_salinity_ctd' },
+  newport:      { id: 'newport-pier-automated-shore-sta', name: 'Newport Pier',
+                  temp: 'sea_water_temperature_ctd', turb: null,
+                  chl: 'mass_concentration_of_chlorophyll_in_sea_water_ctd', sal: 'sea_water_practical_salinity_ctd' },
+  santamonica:  { id: 'santa-monica-pier-automated-shor', name: 'Santa Monica Pier',
+                  temp: 'sea_water_temperature', turb: null,
+                  chl: 'mass_concentration_of_chlorophyll_in_sea_water', sal: 'sea_water_practical_salinity' },
+  // CeNCOOS stations (Central/NorCal) — all use standard variable names
+  calpoly:      { id: 'san-luis-bay-cal-poly-pier-shore', name: 'Cal Poly Pier (SLO)',
+                  temp: 'sea_water_temperature', turb: 'sea_water_turbidity',
+                  chl: 'mass_concentration_of_chlorophyll_in_sea_water', sal: 'sea_water_practical_salinity' },
+  morro:        { id: 'edu_calpoly_marine_morro', name: 'Morro Bay Pier',
+                  temp: 'sea_water_temperature', turb: 'sea_water_turbidity',
+                  chl: 'mass_concentration_of_chlorophyll_in_sea_water', sal: 'sea_water_practical_salinity' },
+  trinidad:     { id: 'edu_humboldt_tdp', name: 'Trinidad Pier',
+                  temp: 'sea_water_temperature', turb: 'sea_water_turbidity',
+                  chl: 'mass_concentration_of_chlorophyll_in_sea_water', sal: 'sea_water_practical_salinity' },
+  humboldt:     { id: 'edu_humboldt_humboldt', name: 'Humboldt Bay Pier',
+                  temp: 'sea_water_temperature', turb: 'sea_water_turbidity',
+                  chl: 'mass_concentration_of_chlorophyll_in_sea_water', sal: 'sea_water_practical_salinity' },
+};
+
+// Map each dive spot to nearest shore station
+const SHORE_STATION_MAP = {
+  // San Diego — Scripps Pier
+  coronado: 'scripps', imperial: 'scripps', pointloma: 'scripps', mission: 'scripps',
+  ljshores: 'scripps', lajolla: 'scripps', birdrock: 'scripps', delmar: 'scripps',
+  encinitas: 'scripps', carlsbad: 'scripps', oceanside: 'scripps',
+  // Orange County — Newport Pier
+  newport: 'newport', huntington: 'newport',
+  // LA — Santa Monica Pier
+  pv: 'santamonica', horseshoe: 'santamonica', malibu: 'santamonica', leocarrillo: 'santamonica',
+  // Ventura / Santa Barbara — Cal Poly (closest active)
+  ventura: 'calpoly', sb: 'calpoly', refugio: 'calpoly',
+  // Channel Islands — Santa Monica / Newport blend
+  catalina: 'newport', anacapa: 'santamonica', santacruz: 'santamonica',
+  // Central Coast — Cal Poly / Morro
+  morro: 'morro', monterey: 'calpoly', carmel: 'calpoly',
+  // NorCal
+  halfmoon: null, bodega: null, // no nearby active station
+  fortbragg: 'trinidad', trinidad: 'trinidad',
+};
+
+async function fetchShoreStation() {
+  const stationKey = SHORE_STATION_MAP[currentLocation];
+  if (!stationKey) { srcStatus.sass = 'n/a'; return; }
+  const station = SHORE_STATIONS[stationKey];
+  if (!station) { srcStatus.sass = 'n/a'; return; }
   try {
-    // Get last 24h of turbidity + chlorophyll from CalOOS ERDDAP
     const now = new Date();
     const yesterday = new Date(now - 24*60*60*1000);
     const fmt = d => d.toISOString().split('.')[0]+'Z';
-    const url = `https://erddap.caloos.org/erddap/tabledap/scripps-pier-automated-shore-sta-1.json?time,sea_water_turbidity_eco,mass_concentration_of_chlorophyll_in_sea_water_eco&time%3E=${fmt(yesterday)}&time%3C=${fmt(now)}`;
-    const r = await fetchWithTimeout(url);
-    if (!r.ok) throw new Error('SASS fetch failed');
-    const d = await r.json();
+    // Build variable list dynamically based on what's available at this station
+    const vars = ['time'];
+    if (station.temp) vars.push(station.temp);
+    if (station.turb) vars.push(station.turb);
+    if (station.chl) vars.push(station.chl);
+    if (station.sal) vars.push(station.sal);
+    // Use JSONP to bypass CORS (CalOOS ERDDAP doesn't send CORS headers)
+    const cbName = '_shore_' + Date.now();
+    const url = `https://erddap.caloos.org/erddap/tabledap/${station.id}.json?${vars.join(',')}&time%3E=${fmt(yesterday)}&time%3C=${fmt(now)}&.jsonp=${cbName}`;
+    const d = await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => { delete window[cbName]; reject('timeout'); }, 8000);
+      window[cbName] = data => { clearTimeout(timeout); delete window[cbName]; resolve(data); };
+      const s = document.createElement('script');
+      s.src = url;
+      s.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject('load error'); };
+      document.head.appendChild(s);
+      setTimeout(() => { try { document.head.removeChild(s); } catch(e){} }, 9000);
+    });
     if (d.table && d.table.rows && d.table.rows.length > 0) {
       const cols = d.table.columnNames;
-      const ti = cols.indexOf('sea_water_turbidity_eco');
-      const ci = cols.indexOf('mass_concentration_of_chlorophyll_in_sea_water_eco');
-      const turbVals = d.table.rows.map(r=>r[ti]).filter(v=>v!==null&&!isNaN(v));
-      const chlVals = d.table.rows.map(r=>r[ci]).filter(v=>v!==null&&!isNaN(v));
-      if (turbVals.length > 0) {
-        D.turbidity = parseFloat((turbVals.reduce((a,b)=>a+b,0)/turbVals.length).toFixed(2));
-        D.turbSource = 'SASS Live';
+      const extract = varName => {
+        if (!varName) return null;
+        const idx = cols.indexOf(varName);
+        if (idx < 0) return null;
+        const vals = d.table.rows.map(r=>r[idx]).filter(v=>v!==null&&!isNaN(v));
+        return vals.length > 0 ? parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2)) : null;
+      };
+      // Shore station water temp (very accurate nearshore reading)
+      // For shore dives (non-offshore), pier temp is more accurate than offshore buoy.
+      // Offshore buoys sit in deeper/warmer water — can read 2-3°F higher than actual dive conditions.
+      const shoreTemp = extract(station.temp);
+      if (shoreTemp !== null) {
+        D.shoreWaterTempC = shoreTemp;
+        D.shoreWaterTemp = parseFloat((shoreTemp * 9/5 + 32).toFixed(1));
+        D.shoreStation = station.name;
+        const loc = LOCATIONS[currentLocation];
+        // Shore dives: prefer pier temp. Offshore (islands, boats): prefer buoy temp.
+        if (!loc.offshore) {
+          D.waterTemp = D.shoreWaterTemp;
+          D.waterTempSource = station.name;
+        }
+      }
+      // Turbidity
+      const turb = extract(station.turb);
+      if (turb !== null) {
+        D.turbidity = turb;
+        D.turbSource = station.name;
         srcStatus.sass = 'ok';
       }
-      if (chlVals.length > 0) {
-        // Override satellite chlorophyll with live sensor data (much more accurate)
-        D.chlorophyll = parseFloat((chlVals.reduce((a,b)=>a+b,0)/chlVals.length).toFixed(2));
-        D.chlSource = 'SASS Live';
+      // Chlorophyll — override satellite with live sensor
+      const chl = extract(station.chl);
+      if (chl !== null) {
+        D.chlorophyll = chl;
+        D.chlSource = station.name;
         srcStatus.chl = 'ok';
       }
+      // Salinity
+      const sal = extract(station.sal);
+      if (sal !== null) {
+        D.salinity = sal;
+      }
+      if (srcStatus.sass !== 'ok' && (shoreTemp !== null || chl !== null)) srcStatus.sass = 'ok';
     }
   } catch(e) {
-    // SASS sensor may be offline — fail silently, satellite/climo chlorophyll still works
     srcStatus.sass = 'err';
   }
+}
+
+// =========================================================================
+// NDBC BUOY WIND & WATER TEMP (via CoastWatch ERDDAP — JSONP, CORS-safe)
+// Provides real ocean-measured wind and water temperature from nearest buoy
+// =========================================================================
+async function fetchNDBCBuoy() {
+  const loc = LOCATIONS[currentLocation];
+  const buoyIds = loc.buoys || [];
+  // Try each buoy in order until one returns data
+  for (const buoyId of buoyIds) {
+    try {
+      const cbName = '_ndbc_' + Date.now() + '_' + buoyId;
+      const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station%2Ctime%2Cwtmp%2Cwspd%2Cgst%2Cwd%2Catmp%2Cbar&station=%22${buoyId}%22&time%3E=now-2hours&orderBy(%22time%22)&.jsonp=${cbName}`;
+      const data = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => { reject('timeout'); }, 4000);
+        window[cbName] = d => { clearTimeout(timeout); delete window[cbName]; resolve(d); };
+        const s = document.createElement('script');
+        s.src = url;
+        s.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject('load error'); };
+        document.head.appendChild(s);
+        setTimeout(() => { try { document.head.removeChild(s); } catch(e){} }, 5000);
+      });
+      if (data.table && data.table.rows && data.table.rows.length > 0) {
+        const cols = data.table.columnNames;
+        const wi = cols.indexOf('wtmp');
+        const wsi = cols.indexOf('wspd');
+        const wdi = cols.indexOf('wd');
+        const gi = cols.indexOf('gst');
+        const ai = cols.indexOf('atmp');
+        const bi = cols.indexOf('bar');
+        // Get most recent non-null values (buoys may have gaps)
+        let wtmp = null, wspd = null, wdir = null, gust = null, atmp = null, bar = null;
+        for (let r = data.table.rows.length - 1; r >= 0; r--) {
+          const row = data.table.rows[r];
+          if (wtmp === null && row[wi] !== null) wtmp = row[wi];
+          if (wspd === null && row[wsi] !== null) wspd = row[wsi];
+          if (wdir === null && row[wdi] !== null) wdir = row[wdi];
+          if (gust === null && row[gi] !== null) gust = row[gi];
+          if (atmp === null && row[ai] !== null) atmp = row[ai];
+          if (bar === null && row[bi] !== null) bar = row[bi];
+          if (wtmp !== null && wspd !== null) break; // got the key values
+        }
+        // Buoy water temp overrides satellite SST (more accurate for local conditions)
+        if (wtmp !== null) {
+          const wtmpF = (wtmp * 9/5 + 32).toFixed(1);
+          D.buoyWaterTemp = parseFloat(wtmpF);
+          D.buoyWaterTempC = wtmp;
+          D.buoyStation = buoyId;
+          // Only override waterTemp if we don't already have a CDIP or shore station reading
+          // Shore station pier temp is more accurate than offshore buoy for shore dives
+          const loc = LOCATIONS[currentLocation];
+          const hasShoreTemp = D.shoreStation && !loc.offshore;
+          if (!D.waterTemp || (D.waterTempSource !== 'CDIP' && !hasShoreTemp)) {
+            D.waterTemp = parseFloat(wtmpF);
+            D.waterTempSource = 'NDBC Buoy';
+          }
+        }
+        // Buoy wind (m/s → mph) — more accurate than NWS land stations for ocean conditions
+        if (wspd !== null) {
+          D.buoyWindSpeed = Math.round(wspd * 2.237); // m/s to mph
+          D.buoyWindDir = wdir;
+          D.buoyGust = gust ? Math.round(gust * 2.237) : null;
+        }
+        if (atmp !== null) D.buoyAirTemp = (atmp * 9/5 + 32).toFixed(1);
+        if (bar !== null) D.buoyPressure = bar;
+        srcStatus.ndbc = 'ok';
+        return; // Success — stop trying other buoys
+      }
+    } catch(e) {
+      // This buoy failed, try next one
+      continue;
+    }
+  }
+  srcStatus.ndbc = 'err'; // All buoys failed
 }
 
 // =========================================================================
@@ -1749,8 +1964,11 @@ function detectRollover() {
     return t <= now; // past periods only
   }).slice(-36); // last 36 hours
 
-  // Also check NWS observations if available (current wind)
-  if (D.windSpeedMph >= 20) highWindHours++;
+  // Also check current wind observations (prefer NDBC buoy over NWS land station)
+  const currentWind = D.buoyWindSpeed || D.windSpeedMph || 0;
+  if (currentWind >= 20) highWindHours++;
+  // Buoy gusts give early warning of sustained high winds
+  if (D.buoyGust && D.buoyGust >= 30) highWindHours += 2;
 
   for (const p of recentPeriods) {
     const windMatch = (p.windSpeed || '').match(/(\d+)/);
@@ -1800,13 +2018,23 @@ async function fetchAllData() {
     fetchWind(), fetchWindForecast(), fetchHourlyForecast(),
     fetchBuoyData(), fetchRainfall(), fetchUpwelling(),
     fetchSST(), fetchChlorophyll(), fetchMultiDayTides(),
-    fetchScrippsSASS(),  // real-time turbidity + chlorophyll from Scripps Pier
+    fetchShoreStation(),  // real-time pier data — temp, turbidity, chlorophyll from nearest shore station
     fetchSwellForecast(),  // WW3 5-day swell forecast from NOAA/PacIOOS
     fetchHFRadarCurrent(),  // real-time surface current from SIO HF Radar
+    fetchNDBCBuoy(),        // real-time buoy wind & water temp from NDBC
   ]);
 
   // If location changed while we were fetching, discard these stale results
   if (thisGen !== _fetchGen) return;
+
+  // Resolve water temp priority AFTER all fetches complete:
+  // Shore dives: pier sensor > offshore buoy > CDIP > satellite
+  // Offshore dives (islands/boats): buoy > CDIP > pier > satellite
+  const loc_post = LOCATIONS[currentLocation];
+  if (D.shoreWaterTemp && !loc_post.offshore) {
+    D.waterTemp = D.shoreWaterTemp;
+    D.waterTempSource = D.shoreStation;
+  }
 
   if(D.swellFt&&D.swellPeriod) D.waveEnergy=D.swellFt*D.swellFt*D.swellPeriod;
 
@@ -1844,9 +2072,14 @@ function updateDisplay() {
   document.getElementById('moonBadge').textContent=`${D.moon.emoji} ${D.moon.name}`;
   document.getElementById('locationBadge').textContent=loc.name;
 
-  const tempSrc = D.buoyTemp ? 'BUOY' : 'NOAA';
-  setVal('waterTempVal', D.waterTemp ? `${D.waterTemp.toFixed(1)}°F` : 'Unavailable', tempSrc, D.buoyTemp?'buoy':'');
-  setVal('sstVal', D.sstF ? `${D.sstF}°F (satellite)` : 'Unavailable', 'NCEI', 'sat');
+  const tempSrc = D.waterTempSource || (D.buoyWaterTemp ? 'NDBC Buoy' : D.buoyTemp ? 'CDIP' : 'NOAA');
+  setVal('waterTempVal', D.waterTemp ? `${D.waterTemp.toFixed(1)}°F` : 'Unavailable', tempSrc, (D.buoyTemp||D.buoyWaterTemp||D.shoreStation)?'buoy':'');
+  // Show offshore buoy temp as reference when shore station is primary (helps divers understand temp gradient)
+  const sstOrBuoy = D.buoyWaterTemp && D.shoreStation && !loc.offshore
+    ? `${D.buoyWaterTemp.toFixed(1)}°F (offshore buoy)`
+    : D.sstF ? `${D.sstF}°F (satellite)` : 'Unavailable';
+  const sstOrBuoySrc = D.buoyWaterTemp && D.shoreStation && !loc.offshore ? 'NDBC Buoy' : 'NCEI';
+  setVal('sstVal', sstOrBuoy, sstOrBuoySrc, 'sat');
 
   const trendLabels={warming_fast:'Warming Fast (+'+((D.tempDiff||0).toFixed(1))+'°F/3d)',warming:'Warming (+'+((D.tempDiff||0).toFixed(1))+'°F/3d)',stable:'Stable',cooling:'Cooling ('+((D.tempDiff||0).toFixed(1))+'°F/3d)',cooling_fast:'Cooling Fast ('+((D.tempDiff||0).toFixed(1))+'°F/3d)'};
   setVal('tempTrendVal', D.tempTrend ? trendLabels[D.tempTrend] : 'Unavailable', 'NOAA');
@@ -1877,9 +2110,26 @@ function updateDisplay() {
     grunionRow.style.display = 'none';
   }
 
-  const windSrc = D.buoyWind ? 'BUOY' : 'NWS';
-  const windLabel = D.windSpeedMph!==undefined ? `${D.windSpeedMph} mph ${({none:'Calm',offshore:'Offshore',sideshore:'Side-shore',onshore:'Onshore'}[D.windDir]||'')}` : 'Unavailable';
-  setVal('windVal', windLabel, windSrc, D.buoyWind?'buoy':'');
+  // Prefer NDBC buoy wind (ocean-measured) over NWS land station
+  let windSrc = 'NWS';
+  let windSpd = D.windSpeedMph;
+  let windDirLabel = ({none:'Calm',offshore:'Offshore',sideshore:'Side-shore',onshore:'Onshore'}[D.windDir]||'');
+  if (D.buoyWindSpeed !== undefined) {
+    windSrc = 'NDBC Buoy';
+    windSpd = D.buoyWindSpeed;
+    // Convert buoy wind direction (degrees) to relative direction
+    if (D.buoyWindDir !== null) {
+      const coast = LOCATIONS[currentLocation].coast || 270;
+      const diff = ((D.buoyWindDir - coast) + 360) % 360;
+      if (diff > 135 && diff < 225) windDirLabel = 'Offshore';
+      else if (diff < 45 || diff > 315) windDirLabel = 'Onshore';
+      else windDirLabel = 'Side-shore';
+    }
+    const gustStr = D.buoyGust ? ` (gusts ${D.buoyGust})` : '';
+    windDirLabel += gustStr;
+  }
+  const windLabel = windSpd !== undefined ? `${windSpd} mph ${windDirLabel}` : 'Unavailable';
+  setVal('windVal', windLabel, windSrc, D.buoyWindSpeed?'buoy':'');
 
   const buoySrc = D.buoySource || 'BUOY';
   const swellLabel = D.swellFt ? `${D.swellFt} ft @ ${D.swellPeriod||'?'}s` : 'Unavailable';
@@ -2098,11 +2348,20 @@ function setVal(id, text, source, badgeClass) {
 }
 
 function updateSourceStatus() {
-  const map = {noaa:'srcNoaa',ndbc:'srcNdbc',nws:'srcNws',sst:'srcSst',chl:'srcChl',upwell:'srcUpwell'};
+  const map = {noaa:'srcNoaa',ndbc:'srcNdbc',nws:'srcNws',sst:'srcSst',chl:'srcChl',sass:'srcSass',upwell:'srcUpwell'};
   for(const [key,elId] of Object.entries(map)) {
     const el=document.getElementById(elId);
+    if(!el) continue;
     if(srcStatus[key]==='ok') { el.textContent='OK'; el.className='source-status source-ok'; }
+    else if(srcStatus[key]==='n/a') { el.textContent='N/A'; el.className='source-status source-na'; }
     else { el.textContent='FAIL'; el.className='source-status source-fail'; }
+  }
+  // Update shore station label to show which station is being used
+  const sassLabel = document.getElementById('srcSassLabel');
+  if (sassLabel) {
+    const stKey = SHORE_STATION_MAP[currentLocation];
+    const st = stKey ? SHORE_STATIONS[stKey] : null;
+    sassLabel.textContent = st ? `${st.name} — Pier Temp/Turbidity/Chl (Live)` : 'Shore Station — No nearby station';
   }
 }
 
@@ -2215,8 +2474,19 @@ function recalculate() {
 
   // --- Dive Visibility (weighted) ---
   const vizEntries = [];
-  if(D.windSpeedMph!==undefined&&D.windDir) {
-    const ws=getScorer('wind')(D.windSpeedMph, D.windDir);
+  // Use NDBC buoy wind (ocean-measured) when available, fall back to NWS
+  const effectiveWindSpd = D.buoyWindSpeed || D.windSpeedMph;
+  let effectiveWindDir = D.windDir;
+  if (D.buoyWindDir !== undefined && D.buoyWindDir !== null) {
+    const coast = loc.coast || 270;
+    const diff = ((D.buoyWindDir - coast) + 360) % 360;
+    if (diff > 135 && diff < 225) effectiveWindDir = 'offshore';
+    else if (diff < 45 || diff > 315) effectiveWindDir = 'onshore';
+    else effectiveWindDir = 'sideshore';
+    if (D.buoyWindSpeed < 3) effectiveWindDir = 'none';
+  }
+  if(effectiveWindSpd!==undefined&&effectiveWindDir) {
+    const ws=getScorer('wind')(effectiveWindSpd, effectiveWindDir);
     setScore('windScore',ws); vizEntries.push({score:ws, key:'wind'});
   } else { setScore('windScore',null); }
   scoreW('swellScore', D.swellFt, getScorer('swellSize'), 'swellSize', vizEntries);
@@ -3358,6 +3628,189 @@ const COUNTY_SPOTS = {
   humboldt:     ['trinidad'],
 };
 
+// =========================================================================
+// LOCAL FISHING REPORTS — region-specific links
+// =========================================================================
+// =========================================================================
+// BEACH WEBCAMS — nearest cams per dive spot (free cams preferred)
+// =========================================================================
+const WEBCAMS = {
+  coronado: [
+    { name: 'Hotel Del Coronado', url: 'https://hdontap.com/stream/964952/hotel-del-coronado-4k-roaming-live-cam/', type: 'Free 4K' },
+    { name: 'Coronado Beach', url: 'https://www.surfline.com/surf-report/coronado-beach/5842041f4e65fad6a77088ce', type: 'Surfline' },
+  ],
+  imperial: [
+    { name: 'Imperial Beach Pier', url: 'https://www.surfline.com/surf-report/imperial-beach-pier/5842041f4e65fad6a7708844', type: 'Surfline' },
+  ],
+  pointloma: [
+    { name: 'Ocean Beach', url: 'https://www.skylinewebcams.com/en/webcam/united-states/california/san-diego/ocean-beach.html', type: 'Free Live' },
+    { name: 'Sunset Cliffs', url: 'https://www.surfline.com/surf-report/sunset-cliffs/5842041f4e65fad6a7708840', type: 'Surfline' },
+  ],
+  mission: [
+    { name: 'Pacific Beach', url: 'https://www.pacificterrace.com/pacific-beach-webcam/', type: 'Free Live' },
+    { name: 'Pacific Beach Surf', url: 'https://www.surfline.com/surf-report/pacific-beach/5842041f4e65fad6a7708841', type: 'Surfline' },
+  ],
+  ljshores: [
+    { name: 'La Jolla Shores', url: 'https://hdontap.com/stream/532541/la-jolla-shores-live-surf-cam/', type: 'Free HD' },
+    { name: 'Scripps Pier Cam', url: 'https://scripps.ucsd.edu/piercam', type: 'Free Live' },
+  ],
+  lajolla: [
+    { name: 'La Jolla Shores', url: 'https://hdontap.com/stream/532541/la-jolla-shores-live-surf-cam/', type: 'Free HD' },
+    { name: 'Scripps Pier Cam', url: 'https://scripps.ucsd.edu/piercam', type: 'Free Live' },
+  ],
+  birdrock: [
+    { name: 'Windansea', url: 'https://www.surfline.com/surf-report/windansea/5842041f4e65fad6a770883c', type: 'Surfline' },
+    { name: 'Bird Rock', url: 'https://www.surfline.com/surf-report/birdrock/5842041f4e65fad6a770883a', type: 'Surfline' },
+  ],
+  delmar: [
+    { name: 'Del Mar Beach', url: 'https://hdontap.com/stream/199841/del-mar-beach-north-live-webcam/', type: 'Free HD' },
+    { name: 'Del Mar Surf', url: 'https://www.surfline.com/surf-report/del-mar/5842041f4e65fad6a77088af', type: 'Surfline' },
+  ],
+  encinitas: [
+    { name: "Swami's", url: 'https://www.surfline.com/surf-report/swami-s/5842041f4e65fad6a77088b4', type: 'Surfline' },
+    { name: 'Cardiff Reef', url: 'https://www.hansensurf.com/pages/live-surf-cams-cardiff-reef-san-diego', type: 'Free Live' },
+  ],
+  carlsbad: [
+    { name: 'Carlsbad Beach', url: 'https://hdontap.com/stream/155380/carlsbad-beach-surf-live-webcam/', type: 'Free HD' },
+    { name: 'Carlsbad Cam', url: 'https://visitcarlsbad.com/carlsbad-live-beach-cam/', type: 'Free Live' },
+  ],
+  oceanside: [
+    { name: 'Oceanside Pier', url: 'https://www.surfline.com/surf-report/oceanside-pier/5842041f4e65fad6a7708835', type: 'Surfline' },
+    { name: 'Oceanside Harbor', url: 'https://www.surfline.com/surf-report/oceanside-harbor/5842041f4e65fad6a7708832', type: 'Surfline' },
+  ],
+  newport: [
+    { name: 'The Wedge', url: 'https://www.surfline.com/surf-report/the-wedge/5842041f4e65fad6a770882b', type: 'Surfline' },
+    { name: 'Newport Point', url: 'https://www.surfline.com/surf-report/newport-point/5842041f4e65fad6a77088f2', type: 'Surfline' },
+  ],
+  huntington: [
+    { name: 'HB Pier', url: 'https://hbcams.com/', type: 'Free Live' },
+    { name: 'HB Pier South', url: 'https://www.surfline.com/surf-report/huntington-beach-pier-southside/5842041f4e65fad6a77088ed', type: 'Surfline' },
+  ],
+  pv: [
+    { name: 'Redondo Breakwater', url: 'https://www.surfline.com/surf-report/redondo-breakwater/5842041f4e65fad6a7708921', type: 'Surfline' },
+    { name: 'El Porto', url: 'https://www.surfline.com/surf-report/el-porto/5842041f4e65fad6a7708906', type: 'Surfline' },
+  ],
+  horseshoe: [
+    { name: 'Redondo Breakwater', url: 'https://www.surfline.com/surf-report/redondo-breakwater/5842041f4e65fad6a7708921', type: 'Surfline' },
+  ],
+  malibu: [
+    { name: 'Malibu First Point', url: 'https://www.surfline.com/surf-report/malibu-first-point/584204214e65fad6a7709b9f', type: 'Surfline' },
+    { name: 'Santa Monica', url: 'https://explore.org/livecams/santa-monica-beach/santa-monica-beach-cam', type: 'Free Live' },
+  ],
+  leocarrillo: [
+    { name: 'Leo Carrillo', url: 'https://www.surfline.com/surf-report/leo-carrillo/5842041f4e65fad6a770893f', type: 'Surfline' },
+    { name: 'Zuma Beach', url: 'https://www.surfline.com/surf-report/zuma-beach/5afb6566bb6fd9001a250fbb', type: 'Surfline' },
+  ],
+  ventura: [
+    { name: 'C Street', url: 'https://www.surfline.com/surf-report/c-st-/5842041f4e65fad6a7708828', type: 'Surfline' },
+    { name: 'Ventura Point', url: 'https://www.surfline.com/surf-report/ventura-point/584204204e65fad6a77096b1', type: 'Surfline' },
+  ],
+  sb: [
+    { name: 'Leadbetter Point', url: 'https://www.surfline.com/surf-report/leadbetter-point/5842041f4e65fad6a7708960', type: 'Surfline' },
+  ],
+  refugio: [
+    { name: 'El Capitan (nearest)', url: 'https://www.surfline.com/surf-report/el-capitan/5842041f4e65fad6a7708968', type: 'Surfline' },
+  ],
+  catalina: [
+    { name: 'Catalina Island', url: 'https://www.livebeaches.com/state/california/', type: 'LiveBeaches' },
+  ],
+  anacapa: [
+    { name: 'Anacapa Island Cove', url: 'https://explore.org/livecams/oceans/channel-islands-national-park-anacapa-island-cove', type: 'Free Live' },
+    { name: 'Ventura Coast', url: 'https://www.surfline.com/surf-report/c-st-/5842041f4e65fad6a7708828', type: 'Surfline' },
+  ],
+  santacruz: [
+    { name: 'Ventura Coast', url: 'https://www.surfline.com/surf-report/ventura-point/584204204e65fad6a77096b1', type: 'Surfline' },
+  ],
+  morro: [
+    { name: 'Morro Bay Harbor', url: 'https://www.805webcams.com/morro-bay-california-harbor/', type: 'Free Live' },
+    { name: 'Morro Bay Overlook', url: 'https://www.805webcams.com/morro-bay-california-overlook-live-webcam/', type: 'Free Live' },
+  ],
+  monterey: [
+    { name: 'Monterey Bay Aquarium', url: 'https://www.montereybayaquarium.org/animals/live-cams/monterey-bay-cam', type: 'Free Live' },
+    { name: 'Monterey Bay Surf', url: 'https://www.surfline.com/surf-report/monterey-bay/584204214e65fad6a7709d05', type: 'Surfline' },
+  ],
+  carmel: [
+    { name: 'Lovers Point', url: 'https://www.surfline.com/surf-report/lovers-point/5842041f4e65fad6a7708bbc', type: 'Surfline' },
+    { name: 'Monterey Bay', url: 'https://www.surfline.com/surf-report/monterey-bay/584204214e65fad6a7709d05', type: 'Surfline' },
+  ],
+  halfmoon: [
+    { name: "Sam's Chowder House", url: 'https://samschowderhouse.com/samcams/', type: 'Free Live' },
+    { name: 'Mavericks', url: 'https://www.surfline.com/surf-report/maverick-s/5842041f4e65fad6a7708801', type: 'Surfline' },
+  ],
+  bodega: [
+    { name: 'Bodega Marine Lab', url: 'https://marinescience.ucdavis.edu/bml/webcam', type: 'Free Live' },
+    { name: 'Bodega Bay', url: 'https://www.surfline.com/surf-reports-forecasts-cams/united-states/california/sonoma-county/bodega-bay/5329735', type: 'Surfline' },
+  ],
+  fortbragg: [
+    { name: 'Noyo Harbor Cam', url: 'https://www.noyocenter.org/live-web-cam', type: 'Free Live' },
+    { name: 'Caspar Beach', url: 'https://www.casparbeachrvpark.com/caspar-beach-cam', type: 'Free Live' },
+  ],
+  trinidad: [
+    { name: 'Trinidad Pier', url: 'https://trinidad-rancheria.org/trinidad-pier-webcam/', type: 'Free Live' },
+    { name: 'Trinidad State Beach', url: 'https://www.surfline.com/surf-report/trinidad-state-beach/640a3fab606c458564b0a46f', type: 'Surfline' },
+  ],
+};
+
+function updateWebcams() {
+  const cams = WEBCAMS[currentLocation] || [];
+  const container = document.getElementById('webcamGrid');
+  if (cams.length === 0) {
+    container.innerHTML = '<div style="font-size:11px;color:var(--text-muted);grid-column:1/-1;">No webcams available for this location</div>';
+    return;
+  }
+  container.innerHTML = cams.map(c => `
+    <a class="webcam-link" href="${c.url}" target="_blank" rel="noopener">
+      <span class="cam-icon">📷</span>
+      <span class="cam-info">
+        <div class="cam-name">${c.name}</div>
+        <div class="cam-type">${c.type}</div>
+      </span>
+    </a>
+  `).join('');
+}
+
+const REPORT_SOURCES = {
+  sd: [
+    { name: 'Just Get Wet — Dive Conditions', desc: 'Daily La Jolla viz & temp from Scripps underwater cam', url: 'https://justgetwet.com/blogs/dive-reports-and-conditions', icon: '🤿' },
+    { name: 'San Diego Fish Reports', desc: 'Daily CPFV dock totals & species counts', url: 'https://www.sandiegofishreports.com/dock_totals/boats.php', icon: '🎣' },
+    { name: 'SoCal Fish Reports', desc: 'Regional catch data — LA to San Diego', url: 'https://www.socalfishreports.com/dock_totals/boats.php', icon: '🎣' },
+    { name: 'Sportfishing Fleet — San Diego', desc: 'Daily counts from local fleet landings', url: 'https://www.sportfishingreport.com/san-diego/', icon: '🚢' },
+  ],
+  socal: [
+    { name: 'SoCal Fish Reports', desc: 'Daily CPFV dock totals — LA / Orange County', url: 'https://www.socalfishreports.com/dock_totals/boats.php', icon: '🎣' },
+    { name: 'Sportfishing Fleet — LA', desc: 'Daily counts from LA/LB fleet landings', url: 'https://www.sportfishingreport.com/los-angeles/', icon: '🚢' },
+  ],
+  sb: [
+    { name: 'SoCal Fish Reports', desc: 'Regional catch data — includes SB landings', url: 'https://www.socalfishreports.com/dock_totals/boats.php', icon: '🎣' },
+  ],
+  islands: [
+    { name: 'SoCal Fish Reports', desc: 'Regional catch data — island trips', url: 'https://www.socalfishreports.com/dock_totals/boats.php', icon: '🎣' },
+    { name: 'Sportfishing Fleet — Ventura', desc: 'Island boat counts from Ventura/Oxnard', url: 'https://www.sportfishingreport.com/ventura/', icon: '🚢' },
+  ],
+  central: [
+    { name: 'NorCal Fish Reports', desc: 'Monterey Bay & Central Coast catch data', url: 'https://www.norcalfishreports.com/dock_totals/boats.php', icon: '🎣' },
+  ],
+  norcal: [
+    { name: 'NorCal Fish Reports', desc: 'Daily CPFV dock totals — Half Moon to Humboldt', url: 'https://www.norcalfishreports.com/dock_totals/boats.php', icon: '🎣' },
+  ],
+};
+
+function updateReportLinks() {
+  const region = REGION_MAP[currentLocation] || 'sd';
+  const sources = REPORT_SOURCES[region] || REPORT_SOURCES.sd;
+  const container = document.getElementById('reportLinks');
+  container.innerHTML = sources.map(s => `
+    <a class="report-link" href="${s.url}" target="_blank" rel="noopener">
+      <span class="report-icon">${s.icon}</span>
+      <span class="report-info">
+        <div class="report-name">${s.name}</div>
+        <div class="report-desc">${s.desc}</div>
+      </span>
+      <span class="report-arrow">›</span>
+    </a>
+  `).join('');
+}
+
 function onCountyChange() {
   const county = document.getElementById('countySelect').value;
   const spots = COUNTY_SPOTS[county] || [];
@@ -3401,6 +3854,8 @@ function onLocationChange() {
   // Clear stale insight text and forecast immediately on location switch
   document.getElementById('insightText').textContent = 'Loading conditions for ' + loc.name + '...';
   document.getElementById('forecastDays').innerHTML = '<div class="forecast-loading">Loading forecast data...</div>';
+  updateReportLinks();
+  updateWebcams();
   fetchAllData();
 }
 
@@ -3509,7 +3964,7 @@ function shareConditions() {
   if (viz !== '--') text += ` · Viz: ${viz}`;
   if (swell) text += ` · Swell: ${swell}`;
   if (wind) text += ` · Wind: ${wind}`;
-  text += `\n\nhttps://conditions.spearfactor.com/dive-conditions-v2.html`;
+  text += `\n\nhttps://conditions.spearfactor.com/`;
 
   if (navigator.share) {
     navigator.share({ title: `${loc.name} — SpearFactor`, text: text }).catch(() => {});
@@ -3576,6 +4031,8 @@ function applyVizCalibration(vizEst) {
   sel.value = 'ljshores'; // default to La Jolla Shores
   currentLocation = 'ljshores';
 })();
+updateReportLinks();
+updateWebcams();
 fetchAllData();
 
 // =========================================================================

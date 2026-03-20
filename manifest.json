@@ -2,7 +2,7 @@
   "name": "SpearFactor Conditions",
   "short_name": "SpearFactor",
   "description": "Live spearfishing conditions for San Diego — visibility, fish scores, swell, tide & 5-day forecast",
-  "start_url": "/dive-conditions-v2.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0a1628",
   "theme_color": "#0a1628",

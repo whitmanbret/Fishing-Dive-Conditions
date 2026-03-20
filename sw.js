@@ -1,6 +1,7 @@
-const CACHE_NAME = 'spearfactor-v2';
+const CACHE_NAME = 'spearfactor-v3';
 const STATIC_ASSETS = [
-  '/dive-conditions-v2.html',
+  '/',
+  '/index.html',
   '/manifest.json',
   '/icon-192.jpg',
   '/icon-512.jpg',
