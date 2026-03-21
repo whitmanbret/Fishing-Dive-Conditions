@@ -23,6 +23,10 @@
   <link rel="apple-touch-icon" href="/icon-192.jpg">
   <meta name="theme-color" content="#0a1628">
 
+  <!-- Leaflet.js for interactive map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <!-- Open Graph (Facebook, iMessage, etc.) -->
   <meta property="og:title" content="California Spearfishing Conditions — Live Forecast">
   <meta property="og:description" content="Real-time dive visibility & fish probability scores for 30+ California dive sites. Swell, tide, wind, and 5-day forecast from San Diego to Humboldt.">
@@ -537,6 +541,46 @@
       .ftc-spear-rating { font-size: 7px; }
       .ftc-wind-info { font-size: 7px; }
     }
+
+    /* ===== INTERACTIVE MAP ===== */
+    .map-btn {
+      background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-primary);
+      border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; align-self: flex-end; margin-left: 6px;
+    }
+    .map-btn:hover { background: rgba(255,255,255,0.18); }
+    .map-btn.active { background: rgba(44,140,255,0.2); border-color: var(--accent); color: var(--accent); }
+    #mapContainer {
+      display: none; margin-bottom: 12px; border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border); height: 400px;
+    }
+    #mapContainer.visible { display: block; }
+    #diveMap { height: 100%; width: 100%; background: #0a1628; }
+    /* Leaflet popup dark theme */
+    .leaflet-popup-content-wrapper { background: var(--bg-secondary); color: var(--text-primary); border-radius: 10px; border: 1px solid var(--border); }
+    .leaflet-popup-tip { background: var(--bg-secondary); }
+    .leaflet-popup-content { margin: 10px 14px; font-family: inherit; font-size: 13px; }
+    .leaflet-popup-content .popup-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .leaflet-popup-content .popup-depth { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; }
+    .leaflet-popup-content .popup-btn {
+      display: inline-block; background: var(--accent); color: #fff; border: none; border-radius: 6px;
+      padding: 5px 14px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none;
+    }
+    .leaflet-popup-content .popup-btn:hover { opacity: 0.85; }
+    .leaflet-popup-close-button { color: var(--text-secondary) !important; }
+    /* Pulsing current-spot marker */
+    @keyframes mapPulse {
+      0% { box-shadow: 0 0 0 0 rgba(44,140,255,0.5); }
+      70% { box-shadow: 0 0 0 12px rgba(44,140,255,0); }
+      100% { box-shadow: 0 0 0 0 rgba(44,140,255,0); }
+    }
+    .map-marker-current {
+      animation: mapPulse 2s infinite;
+      border-radius: 50%;
+    }
+    @media (max-width: 600px) {
+      #mapContainer { height: 300px; }
+    }
   </style>
 </head>
 <body>
@@ -590,7 +634,11 @@
       </div>
       <button class="refresh-btn" id="refreshBtn" onclick="fetchAllData()">Refresh</button>
       <button class="refresh-btn" id="shareBtn" onclick="shareConditions()" style="margin-left:6px;background:rgba(46,204,113,0.15);border-color:var(--excellent)">Share</button>
+      <button class="map-btn" id="mapToggleBtn" onclick="toggleMap()">Map</button>
     </div>
+
+    <!-- Interactive Map -->
+    <div id="mapContainer"><div id="diveMap"></div></div>
 
     <div class="data-status" id="dataStatus">Fetching live oceanographic data...</div>
 
@@ -2586,6 +2634,8 @@ function recalculate() {
   }
 
   D.fishAvg=fishAvg; D.vizAvg=vizFinal; D.spearAvg=spearAvg;
+  // Update map markers to reflect new scores
+  if (mapVisible) updateMapMarkers();
 }
 
 function weightedAvg(entries, weights) {
@@ -3630,6 +3680,121 @@ function selectSpecies(species) {
   }
   recalculate();
   buildForecast();
+}
+
+// =========================================================================
+// INTERACTIVE MAP
+// =========================================================================
+let diveMap = null;
+let mapMarkers = {};
+let mapVisible = false;
+
+function toggleMap() {
+  const container = document.getElementById('mapContainer');
+  const btn = document.getElementById('mapToggleBtn');
+  mapVisible = !mapVisible;
+  if (mapVisible) {
+    container.classList.add('visible');
+    btn.classList.add('active');
+    btn.textContent = 'Hide Map';
+    if (!diveMap) {
+      initMap();
+    } else {
+      diveMap.invalidateSize();
+      updateMapMarkers();
+    }
+  } else {
+    container.classList.remove('visible');
+    btn.classList.remove('active');
+    btn.textContent = 'Map';
+  }
+}
+
+function initMap() {
+  diveMap = L.map('diveMap', {
+    center: [35.5, -120.5],
+    zoom: 6,
+    zoomControl: true,
+    attributionControl: false
+  });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 18,
+    subdomains: 'abcd'
+  }).addTo(diveMap);
+  // Fit California coast
+  diveMap.fitBounds([[32.2, -124.5], [41.0, -117.0]]);
+  // Add all spot markers
+  Object.keys(LOCATIONS).forEach(key => {
+    const loc = LOCATIONS[key];
+    const isCurrent = (key === currentLocation);
+    const marker = createSpotMarker(key, loc, isCurrent);
+    marker.addTo(diveMap);
+    mapMarkers[key] = marker;
+  });
+}
+
+function createSpotMarker(key, loc, isCurrent) {
+  let color = '#8899aa'; // neutral/white-ish for non-current spots
+  let radius = 6;
+  let className = '';
+  if (isCurrent) {
+    const fishScore = D.fishAvg;
+    if (fishScore !== null && fishScore !== undefined) {
+      if (fishScore >= 6) color = '#2ecc71';
+      else if (fishScore >= 4) color = '#f39c12';
+      else color = '#e74c3c';
+    } else {
+      color = '#2c8cff';
+    }
+    radius = 10;
+    className = 'map-marker-current';
+  }
+  const marker = L.circleMarker([loc.lat, loc.lon], {
+    radius: radius,
+    fillColor: color,
+    color: isCurrent ? '#fff' : 'transparent',
+    weight: isCurrent ? 2 : 0,
+    fillOpacity: isCurrent ? 1 : 0.7,
+    className: className
+  });
+  const depthInfo = loc.depth ? `<div class="popup-depth">${loc.depth} &middot; ${loc.bottom}</div>` : '';
+  const popupHTML = `
+    <div class="popup-name">${loc.name}</div>
+    ${depthInfo}
+    <button class="popup-btn" onclick="selectSpotFromMap('${key}')">View Conditions</button>
+  `;
+  marker.bindPopup(popupHTML, { closeButton: true, minWidth: 140 });
+  return marker;
+}
+
+function updateMapMarkers() {
+  if (!diveMap) return;
+  Object.keys(mapMarkers).forEach(key => {
+    diveMap.removeLayer(mapMarkers[key]);
+  });
+  mapMarkers = {};
+  Object.keys(LOCATIONS).forEach(key => {
+    const loc = LOCATIONS[key];
+    const isCurrent = (key === currentLocation);
+    const marker = createSpotMarker(key, loc, isCurrent);
+    marker.addTo(diveMap);
+    mapMarkers[key] = marker;
+  });
+}
+
+function selectSpotFromMap(key) {
+  // Find which county this spot belongs to
+  for (const [county, spots] of Object.entries(COUNTY_SPOTS)) {
+    if (spots.includes(key)) {
+      document.getElementById('countySelect').value = county;
+      onCountyChange();
+      document.getElementById('locationSelect').value = key;
+      onLocationChange();
+      break;
+    }
+  }
+  // Close popup
+  if (diveMap) diveMap.closePopup();
 }
 
 // County → Spots mapping (south to north within each county)
