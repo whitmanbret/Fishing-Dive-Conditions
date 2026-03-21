@@ -581,6 +581,134 @@
     @media (max-width: 600px) {
       #mapContainer { height: 300px; }
     }
+
+    /* ===== FAVORITES BAR ===== */
+    .fav-btn {
+      background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-secondary);
+      border-radius: 8px; padding: 6px 10px; font-size: 14px; cursor: pointer;
+      transition: all 0.2s; align-self: flex-end; line-height: 1;
+    }
+    .fav-btn:hover { background: rgba(255,255,255,0.18); }
+    .fav-btn.active { color: #f0c030; border-color: #f0c030; background: rgba(240,192,48,0.1); }
+    .alert-btn {
+      background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-secondary);
+      border-radius: 8px; padding: 6px 10px; font-size: 14px; cursor: pointer;
+      transition: all 0.2s; align-self: flex-end; line-height: 1;
+    }
+    .alert-btn:hover { background: rgba(255,255,255,0.18); }
+    .alert-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(44,140,255,0.1); }
+
+    .favorites-bar {
+      display: none; gap: 6px; margin-bottom: 10px; overflow-x: auto;
+      -webkit-overflow-scrolling: touch; padding: 2px 0;
+      scrollbar-width: none;
+    }
+    .favorites-bar::-webkit-scrollbar { display: none; }
+    .favorites-bar.visible { display: flex; }
+    .fav-pill {
+      display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+      background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 20px;
+      padding: 4px 10px 4px 12px; font-size: 11px; font-weight: 500;
+      color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .fav-pill:hover { border-color: var(--accent); color: var(--text-primary); }
+    .fav-pill.current { border-color: var(--accent); color: var(--accent); background: rgba(44,140,255,0.08); }
+    .fav-pill .fav-remove {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; border-radius: 50%; font-size: 10px;
+      color: var(--text-muted); cursor: pointer; transition: all 0.15s;
+      margin-left: 2px;
+    }
+    .fav-pill .fav-remove:hover { background: rgba(231,76,60,0.2); color: var(--poor); }
+
+    /* ===== ALERTS PANEL ===== */
+    .alerts-panel {
+      display: none; margin-bottom: 12px; background: var(--bg-secondary);
+      border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    .alerts-panel.visible { display: block; }
+    .alerts-panel-header {
+      padding: 10px 14px; font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);
+      border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;
+    }
+    .alerts-panel-body { padding: 12px 14px; }
+    .alert-toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .alert-toggle-label { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+    .alert-toggle {
+      position: relative; width: 42px; height: 22px; cursor: pointer;
+    }
+    .alert-toggle input { opacity: 0; width: 0; height: 0; }
+    .alert-toggle .slider {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 22px;
+      transition: all 0.3s;
+    }
+    .alert-toggle .slider::before {
+      content: ''; position: absolute; width: 16px; height: 16px; left: 2px; bottom: 2px;
+      background: var(--text-muted); border-radius: 50%; transition: all 0.3s;
+    }
+    .alert-toggle input:checked + .slider { background: rgba(44,140,255,0.3); border-color: var(--accent); }
+    .alert-toggle input:checked + .slider::before { transform: translateX(20px); background: var(--accent); }
+
+    .alert-threshold-row {
+      margin-bottom: 12px; padding: 10px 12px; background: var(--bg-card);
+      border-radius: 8px; border: 1px solid var(--border);
+    }
+    .alert-threshold-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; }
+    .alert-threshold-control { display: flex; align-items: center; gap: 8px; }
+    .alert-threshold-control input[type="range"] {
+      flex: 1; -webkit-appearance: none; appearance: none; height: 4px;
+      background: var(--border); border-radius: 2px; outline: none;
+    }
+    .alert-threshold-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+      background: var(--accent); cursor: pointer;
+    }
+    .alert-threshold-control input[type="range"]::-moz-range-thumb {
+      width: 16px; height: 16px; border-radius: 50%; border: none;
+      background: var(--accent); cursor: pointer;
+    }
+    .alert-threshold-val {
+      min-width: 36px; text-align: center; font-size: 13px; font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .alert-spots-section { margin-bottom: 10px; }
+    .alert-spots-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+    .alert-spot-check {
+      display: flex; align-items: center; gap: 6px; padding: 4px 0;
+      font-size: 11px; color: var(--text-primary); cursor: pointer;
+    }
+    .alert-spot-check input[type="checkbox"] {
+      accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer;
+    }
+    .alert-note {
+      font-size: 10px; color: var(--text-muted); font-style: italic;
+      padding: 8px 0 0; border-top: 1px solid var(--border); margin-top: 8px;
+    }
+
+    /* ===== TOAST NOTIFICATION ===== */
+    .toast-container {
+      position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+      z-index: 2000; display: flex; flex-direction: column; gap: 6px;
+      pointer-events: none; max-width: 400px; width: 90%;
+    }
+    .toast {
+      background: var(--bg-card); border: 1px solid var(--accent);
+      border-radius: 10px; padding: 10px 14px; color: var(--text-primary);
+      font-size: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      animation: toastIn 0.3s ease-out; pointer-events: auto;
+    }
+    .toast.fade-out { animation: toastOut 0.3s ease-in forwards; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
+    .toast-title { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+    .toast-body { color: var(--text-secondary); }
   </style>
 </head>
 <body>
@@ -635,7 +763,55 @@
       <button class="refresh-btn" id="refreshBtn" onclick="fetchAllData()">Refresh</button>
       <button class="refresh-btn" id="shareBtn" onclick="shareConditions()" style="margin-left:6px;background:rgba(46,204,113,0.15);border-color:var(--excellent)">Share</button>
       <button class="map-btn" id="mapToggleBtn" onclick="toggleMap()">Map</button>
+      <button class="fav-btn" id="favBtn" onclick="toggleFavorite()" title="Save to favorites">☆</button>
+      <button class="alert-btn" id="alertBtn" onclick="toggleAlertsPanel()" title="Condition alerts">🔔</button>
     </div>
+
+    <!-- Favorites Bar -->
+    <div class="favorites-bar" id="favoritesBar"></div>
+
+    <!-- Alerts Configuration Panel -->
+    <div class="alerts-panel" id="alertsPanel">
+      <div class="alerts-panel-header">
+        <span>Condition Alerts</span>
+      </div>
+      <div class="alerts-panel-body">
+        <div class="alert-toggle-row">
+          <span class="alert-toggle-label">Enable Alerts</span>
+          <label class="alert-toggle">
+            <input type="checkbox" id="alertsEnabled" onchange="onAlertToggle()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="alert-threshold-row">
+          <div class="alert-threshold-label">Alert when visibility is above:</div>
+          <div class="alert-threshold-control">
+            <input type="range" id="alertVizThreshold" min="5" max="40" step="1" value="15" oninput="onAlertSettingChange()">
+            <span class="alert-threshold-val" id="alertVizVal">15 ft</span>
+          </div>
+        </div>
+        <div class="alert-threshold-row">
+          <div class="alert-threshold-label">Alert when fish probability is above:</div>
+          <div class="alert-threshold-control">
+            <input type="range" id="alertFishThreshold" min="3" max="10" step="0.5" value="7" oninput="onAlertSettingChange()">
+            <span class="alert-threshold-val" id="alertFishVal">7.0</span>
+          </div>
+        </div>
+        <div class="alert-spots-section">
+          <div class="alert-spots-label">Monitor these spots:</div>
+          <div id="alertSpotsList">
+            <label class="alert-spot-check">
+              <input type="checkbox" id="alertCurrentSpot" checked onchange="onAlertSettingChange()">
+              <span>Current spot</span>
+            </label>
+          </div>
+        </div>
+        <div class="alert-note">Alerts only work while this page is open in a browser tab. Conditions are checked every 30 minutes.</div>
+      </div>
+    </div>
+
+    <!-- Toast container for in-page notifications -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <!-- Interactive Map -->
     <div id="mapContainer"><div id="diveMap"></div></div>
@@ -2636,6 +2812,8 @@ function recalculate() {
   D.fishAvg=fishAvg; D.vizAvg=vizFinal; D.spearAvg=spearAvg;
   // Update map markers to reflect new scores
   if (mapVisible) updateMapMarkers();
+  // Check alert conditions after scores are computed
+  if (typeof checkAlertConditions === 'function') checkAlertConditions();
 }
 
 function weightedAvg(entries, weights) {
@@ -4041,6 +4219,8 @@ function onLocationChange() {
   document.getElementById('forecastDays').innerHTML = '<div class="forecast-loading">Loading forecast data...</div>';
   updateReportLinks();
   updateWebcams();
+  updateFavoriteStar();
+  renderFavoritesBar();
   fetchAllData();
 }
 
@@ -4249,6 +4429,293 @@ fetchAllData();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
+
+// =========================================================================
+// FEATURE: SAVED FAVORITES
+// =========================================================================
+const MAX_FAVORITES = 5;
+
+function getFavorites() {
+  try { return JSON.parse(localStorage.getItem('favSpots') || '[]'); } catch(e) { return []; }
+}
+function saveFavorites(favs) {
+  localStorage.setItem('favSpots', JSON.stringify(favs));
+}
+
+function toggleFavorite() {
+  let favs = getFavorites();
+  const idx = favs.indexOf(currentLocation);
+  if (idx >= 0) {
+    favs.splice(idx, 1);
+  } else {
+    if (favs.length >= MAX_FAVORITES) {
+      showToast('Favorites Full', 'Remove a favorite before adding a new one (max ' + MAX_FAVORITES + ').');
+      return;
+    }
+    favs.push(currentLocation);
+  }
+  saveFavorites(favs);
+  updateFavoriteStar();
+  renderFavoritesBar();
+  updateAlertSpotsList();
+}
+
+function updateFavoriteStar() {
+  const btn = document.getElementById('favBtn');
+  const favs = getFavorites();
+  if (favs.includes(currentLocation)) {
+    btn.textContent = '★';
+    btn.classList.add('active');
+    btn.title = 'Remove from favorites';
+  } else {
+    btn.textContent = '☆';
+    btn.classList.remove('active');
+    btn.title = 'Save to favorites';
+  }
+}
+
+function renderFavoritesBar() {
+  const bar = document.getElementById('favoritesBar');
+  const favs = getFavorites();
+  if (favs.length === 0) {
+    bar.classList.remove('visible');
+    bar.innerHTML = '';
+    return;
+  }
+  bar.classList.add('visible');
+  bar.innerHTML = favs.map(key => {
+    const loc = LOCATIONS[key];
+    if (!loc) return '';
+    const isCurrent = key === currentLocation;
+    return `<div class="fav-pill${isCurrent ? ' current' : ''}" onclick="goToFavorite('${key}')">
+      ${loc.name}
+      <span class="fav-remove" onclick="event.stopPropagation(); removeFavorite('${key}')" title="Remove">&times;</span>
+    </div>`;
+  }).join('');
+}
+
+function removeFavorite(key) {
+  let favs = getFavorites();
+  favs = favs.filter(f => f !== key);
+  saveFavorites(favs);
+  updateFavoriteStar();
+  renderFavoritesBar();
+  updateAlertSpotsList();
+}
+
+function goToFavorite(key) {
+  // Find which county this spot belongs to
+  for (const [county, spots] of Object.entries(COUNTY_SPOTS)) {
+    if (spots.includes(key)) {
+      document.getElementById('countySelect').value = county;
+      onCountyChange();
+      document.getElementById('locationSelect').value = key;
+      onLocationChange();
+      break;
+    }
+  }
+}
+
+// =========================================================================
+// FEATURE: PUSH NOTIFICATION ALERTS
+// =========================================================================
+let alertCheckInterval = null;
+
+function getAlertSettings() {
+  try {
+    return JSON.parse(localStorage.getItem('alertSettings') || '{}');
+  } catch(e) { return {}; }
+}
+function saveAlertSettings(settings) {
+  localStorage.setItem('alertSettings', JSON.stringify(settings));
+}
+
+function toggleAlertsPanel() {
+  const panel = document.getElementById('alertsPanel');
+  const btn = document.getElementById('alertBtn');
+  const isVisible = panel.classList.toggle('visible');
+  btn.classList.toggle('active', isVisible);
+}
+
+function onAlertToggle() {
+  const enabled = document.getElementById('alertsEnabled').checked;
+  if (enabled) {
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(perm => {
+        if (perm !== 'granted') {
+          showToast('Permission Needed', 'Browser notifications were blocked. You can still see in-page alerts.');
+        }
+      });
+    }
+    startAlertChecker();
+  } else {
+    stopAlertChecker();
+  }
+  saveCurrentAlertSettings();
+}
+
+function onAlertSettingChange() {
+  // Update displayed values
+  const vizVal = document.getElementById('alertVizThreshold').value;
+  document.getElementById('alertVizVal').textContent = vizVal + ' ft';
+  const fishVal = document.getElementById('alertFishThreshold').value;
+  document.getElementById('alertFishVal').textContent = parseFloat(fishVal).toFixed(1);
+  saveCurrentAlertSettings();
+}
+
+function saveCurrentAlertSettings() {
+  const settings = {
+    enabled: document.getElementById('alertsEnabled').checked,
+    vizThreshold: parseFloat(document.getElementById('alertVizThreshold').value),
+    fishThreshold: parseFloat(document.getElementById('alertFishThreshold').value),
+    monitorCurrentSpot: document.getElementById('alertCurrentSpot').checked,
+    monitorFavSpots: [],
+  };
+  // Gather checked favorite spots
+  document.querySelectorAll('.alert-fav-check').forEach(cb => {
+    if (cb.checked) settings.monitorFavSpots.push(cb.dataset.spot);
+  });
+  saveAlertSettings(settings);
+
+  if (settings.enabled) startAlertChecker();
+  else stopAlertChecker();
+}
+
+function loadAlertSettings() {
+  const s = getAlertSettings();
+  if (s.enabled) document.getElementById('alertsEnabled').checked = true;
+  if (s.vizThreshold !== undefined) {
+    document.getElementById('alertVizThreshold').value = s.vizThreshold;
+    document.getElementById('alertVizVal').textContent = s.vizThreshold + ' ft';
+  }
+  if (s.fishThreshold !== undefined) {
+    document.getElementById('alertFishThreshold').value = s.fishThreshold;
+    document.getElementById('alertFishVal').textContent = parseFloat(s.fishThreshold).toFixed(1);
+  }
+  if (s.monitorCurrentSpot !== undefined) {
+    document.getElementById('alertCurrentSpot').checked = s.monitorCurrentSpot;
+  }
+  updateAlertSpotsList();
+  if (s.enabled) startAlertChecker();
+}
+
+function updateAlertSpotsList() {
+  const container = document.getElementById('alertSpotsList');
+  const s = getAlertSettings();
+  // Keep the "Current spot" checkbox
+  let html = `<label class="alert-spot-check">
+    <input type="checkbox" id="alertCurrentSpot" ${s.monitorCurrentSpot !== false ? 'checked' : ''} onchange="onAlertSettingChange()">
+    <span>Current spot</span>
+  </label>`;
+  // Add checkboxes for each favorited spot
+  const favs = getFavorites();
+  favs.forEach(key => {
+    const loc = LOCATIONS[key];
+    if (!loc) return;
+    const checked = s.monitorFavSpots && s.monitorFavSpots.includes(key) ? 'checked' : '';
+    html += `<label class="alert-spot-check">
+      <input type="checkbox" class="alert-fav-check" data-spot="${key}" ${checked} onchange="onAlertSettingChange()">
+      <span>${loc.name}</span>
+    </label>`;
+  });
+  container.innerHTML = html;
+}
+
+function startAlertChecker() {
+  if (alertCheckInterval) return; // already running
+  // Check immediately, then every 30 minutes
+  checkAlertConditions();
+  alertCheckInterval = setInterval(checkAlertConditions, 30 * 60 * 1000);
+}
+
+function stopAlertChecker() {
+  if (alertCheckInterval) {
+    clearInterval(alertCheckInterval);
+    alertCheckInterval = null;
+  }
+}
+
+function checkAlertConditions() {
+  const s = getAlertSettings();
+  if (!s.enabled) return;
+
+  // For the current spot, check the already-computed scores
+  if (s.monitorCurrentSpot !== false) {
+    checkSpotAlert(currentLocation);
+  }
+  // For favorite spots, we can only check if they happen to be the current spot
+  // (since scores are only computed for the active spot)
+  if (s.monitorFavSpots && s.monitorFavSpots.length > 0) {
+    s.monitorFavSpots.forEach(key => {
+      if (key === currentLocation) checkSpotAlert(key);
+    });
+  }
+}
+
+function checkSpotAlert(spotKey) {
+  if (spotKey !== currentLocation) return; // can only check computed scores
+  const s = getAlertSettings();
+  const loc = LOCATIONS[spotKey];
+  if (!loc || !D.vizAvg || !D.fishAvg) return;
+
+  // Convert vizAvg score (0-10) to approximate feet for comparison
+  // Use the displayed viz feet value if available
+  let vizFeet = 0;
+  const vizHero = document.getElementById('vizFeetHero');
+  if (vizHero) {
+    const match = vizHero.textContent.match(/(\d+)/);
+    if (match) vizFeet = parseInt(match[0]);
+  }
+
+  const vizMet = vizFeet >= s.vizThreshold;
+  const fishMet = D.fishAvg >= s.fishThreshold;
+
+  if (vizMet || fishMet) {
+    // Debounce: don't alert for the same spot within 30 min
+    const lastKey = 'lastAlert_' + spotKey;
+    const lastAlert = parseInt(localStorage.getItem(lastKey) || '0');
+    if (Date.now() - lastAlert < 29 * 60 * 1000) return;
+    localStorage.setItem(lastKey, Date.now().toString());
+
+    let msg = loc.name + ': ';
+    const parts = [];
+    if (vizMet) parts.push('Viz ~' + vizFeet + ' ft');
+    if (fishMet) parts.push('Fish ' + D.fishAvg.toFixed(1) + '/10');
+    msg += parts.join(' · ');
+
+    // Browser notification
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification('Conditions Alert', {
+          body: msg,
+          icon: '/icon-192.jpg',
+          tag: 'condition-alert-' + spotKey,
+        });
+      } catch(e) {}
+    }
+
+    // In-page toast
+    showToast('Conditions Alert', msg);
+  }
+}
+
+function showToast(title, body) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `<div class="toast-title">${title}</div><div class="toast-body">${body}</div>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('fade-out');
+    setTimeout(() => toast.remove(), 300);
+  }, 5000);
+}
+
+// Initialize favorites and alerts on load
+updateFavoriteStar();
+renderFavoritesBar();
+loadAlertSettings();
 </script>
 </body>
 </html>
