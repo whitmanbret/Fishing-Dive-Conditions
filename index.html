@@ -2460,62 +2460,50 @@ function updateDisplay() {
       vizEst = `${lo}–${hi} ft${suffix}`;
       vizSource = 'Offshore Model';
     }
-    // PRIORITY 1: If we have real-time turbidity from SASS, use NTU-based estimate
+    // PRIORITY 1: If we have real-time turbidity from shore station, use NTU-based estimate
     // Calibrated from Dec 2024 NTU data + Scripps Pier camera piling distances (4/11/14/30 ft)
-    // NOTE: Scripps Pier is under-pier at 5m; open water dive sites are typically better.
-    // Shelter multiplier is capped at 1.25 for turbidity — it's already a direct measurement.
-    // EXCEPTION: La Jolla Shores (scrippsProximity) — SASS is the direct source, no shelter boost.
+    // NOTE: Pier sensor is under-pier at 5m; it measures particle scattering (NTU) but NOT
+    // biological factors like phytoplankton that make water green and reduce viz.
+    // Ground truth: 2026-03-17 Pt Loma 0.25 NTU = 14-18 ft; 2026-03-22 LJ Shores 0.27 NTU + green water = 8-10 ft
     else if (D.turbidity !== undefined) {
       let lo, hi;
       const ntu = D.turbidity;
-      if (loc.scrippsProximity) {
-        // La Jolla Shores: SASS sensor is RIGHT HERE — use NTU directly, no adjustments
-        // These are the most accurate estimates in the entire app
-        if(ntu < 0.2)      { lo=22; hi=27; }  // exceptional clarity
-        else if(ntu < 0.3)  { lo=18; hi=23; }  // very clear — can see 30ft piling
-        else if(ntu < 0.5)  { lo=14; hi=19; }  // can see 14ft piling clearly
-        else if(ntu < 0.8)  { lo=10; hi=15; }  // 14ft piling faint
-        else if(ntu < 1.2)  { lo=7;  hi=12; }  // 11ft piling visible
-        else if(ntu < 2.0)  { lo=5;  hi=9;  }  // 4ft piling clear, 11ft faint
-        else if(ntu < 3.5)  { lo=3;  hi=6;  }  // only 4ft piling visible
-        else if(ntu < 5.0)  { lo=2;  hi=4;  }
-        else                 { lo=1;  hi=3;  }
-        vizSource = 'Scripps Pier (direct)';
-      } else {
-        // Other locations: pier reads cleaner than open water; conservative estimates
-        // Calibrated 2026-03-17: 0.25 NTU at pier = 20ft at Pt Loma (dusk, cloudy)
-        if(ntu < 0.3)      { lo=18; hi=23; }  // very clear at pier → good at dive site
-        else if(ntu < 0.5)  { lo=14; hi=19; }  // can see 14ft piling clearly
-        else if(ntu < 0.8)  { lo=10; hi=15; }  // 14ft piling faint
-        else if(ntu < 1.2)  { lo=7;  hi=12; }  // 11ft piling visible
-        else if(ntu < 2.0)  { lo=5;  hi=9;  }  // 4ft piling clear, 11ft faint
-        else if(ntu < 3.5)  { lo=3;  hi=6;  }  // only 4ft piling visible
-        else if(ntu < 5.0)  { lo=2;  hi=4;  }
-        else                 { lo=1;  hi=3;  }
-      }
-      // Mild shelter adjustment — turbidity is direct measurement, so only small boost for kelp
-      // Skip for scrippsProximity — the sensor IS the location
-      const turbShelter = loc.scrippsProximity ? 1.0 : Math.min(1.15, shelterMult);
+      // Conservative NTU→viz mapping — pier reads cleaner than what divers experience
+      if(ntu < 0.2)      { lo=15; hi=20; }  // very low turbidity
+      else if(ntu < 0.3)  { lo=12; hi=17; }  // clear at pier
+      else if(ntu < 0.5)  { lo=10; hi=15; }  // good conditions
+      else if(ntu < 0.8)  { lo=7;  hi=12; }  // moderate
+      else if(ntu < 1.2)  { lo=5;  hi=10; }  // elevated
+      else if(ntu < 2.0)  { lo=4;  hi=8;  }  // murky
+      else if(ntu < 3.5)  { lo=3;  hi=6;  }  // poor
+      else if(ntu < 5.0)  { lo=2;  hi=4;  }
+      else                 { lo=1;  hi=3;  }
+      // Mild shelter adjustment — turbidity is direct measurement, so only small boost
+      const turbShelter = Math.min(1.15, shelterMult);
       lo = Math.max(1, Math.round(lo * turbShelter));
       hi = Math.max(lo+1, Math.round(hi * turbShelter));
-      // If swell is also high, blend downward (pier is sheltered, open water will be worse)
-      // Reduced impact for scrippsProximity — Shores is also somewhat sheltered by the canyon
-      const swellDamp = loc.scrippsProximity ? 0.85 : 0.7;
-      const swellDampMod = loc.scrippsProximity ? 0.92 : 0.85;
+      // If swell is also high, blend downward (pier is sheltered, open water gets more surge)
       if (D.waveEnergy !== undefined && D.waveEnergy > 100) {
-        lo = Math.max(1, Math.round(lo * swellDamp));
-        hi = Math.max(lo+1, Math.round(hi * swellDamp));
+        lo = Math.max(1, Math.round(lo * 0.7));
+        hi = Math.max(lo+1, Math.round(hi * 0.7));
       } else if (D.waveEnergy !== undefined && D.waveEnergy > 50) {
-        lo = Math.max(1, Math.round(lo * swellDampMod));
-        hi = Math.max(lo+1, Math.round(hi * swellDampMod));
+        lo = Math.max(1, Math.round(lo * 0.85));
+        hi = Math.max(lo+1, Math.round(hi * 0.85));
+      }
+      // Chlorophyll reduction — phytoplankton makes water green, reduces viz independent of NTU
+      // NTU only measures particle scattering; chlorophyll absorbs light and cuts underwater visibility
+      // Ground truth: 2026-03-22 LJ Shores, 0.27 NTU + 0.65 chl = 8-10 ft (green water)
+      let suffix = '';
+      if (D.chlorophyll !== undefined && D.chlorophyll > 0) {
+        if (D.chlorophyll > 8)       { lo = Math.max(1, Math.round(lo * 0.35)); hi = Math.max(lo+1, Math.round(hi * 0.35)); suffix = ' (bloom)'; }
+        else if (D.chlorophyll > 3)  { lo = Math.max(1, Math.round(lo * 0.5));  hi = Math.max(lo+1, Math.round(hi * 0.5));  suffix = ' (green water)'; }
+        else if (D.chlorophyll > 1)  { lo = Math.max(1, Math.round(lo * 0.65)); hi = Math.max(lo+1, Math.round(hi * 0.65)); suffix = ' (green tinge)'; }
+        else if (D.chlorophyll > 0.4){ lo = Math.max(1, Math.round(lo * 0.8));  hi = Math.max(lo+1, Math.round(hi * 0.8)); }
       }
       // Cap range spread to 5ft max
       if (hi - lo > 5) hi = lo + 5;
-      let suffix = '';
-      if (D.chlorophyll > 8) suffix = ' (bloom)';
-      else if (D.chlorophyll > 3) suffix = ' (green water)';
       vizEst = `${lo}–${hi} ft${suffix}`;
-      vizSource = 'SASS';
+      vizSource = D.turbSource || 'Shore Station';
     }
     // PRIORITY 2: Rain overrides swell-based estimate
     else if(D.rainfall==='heavy') {
