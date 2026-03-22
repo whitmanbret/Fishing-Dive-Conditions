@@ -1980,12 +1980,27 @@ async function fetchShoreStation() {
     });
     if (d.table && d.table.rows && d.table.rows.length > 0) {
       const cols = d.table.columnNames;
+      // Use median of the most recent 2 hours to avoid overnight spikes
+      // (e.g. 20 readings at 100+ NTU from tidal surge drag a 24hr mean to 5+ NTU
+      //  even when current conditions are 0.3 NTU = 14-19 ft viz)
+      const timeIdx = cols.indexOf('time');
+      const cutoff = new Date(now - 2*60*60*1000).toISOString();
+      const recentRows = timeIdx >= 0
+        ? d.table.rows.filter(r => r[timeIdx] >= cutoff)
+        : d.table.rows;
       const extract = varName => {
         if (!varName) return null;
         const idx = cols.indexOf(varName);
         if (idx < 0) return null;
-        const vals = d.table.rows.map(r=>r[idx]).filter(v=>v!==null&&!isNaN(v));
-        return vals.length > 0 ? parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2)) : null;
+        // Use recent rows if available, fallback to all rows
+        const source = recentRows.length > 0 ? recentRows : d.table.rows;
+        const vals = source.map(r=>r[idx]).filter(v=>v!==null&&!isNaN(v));
+        if (vals.length === 0) return null;
+        // Median is resistant to spike outliers (sensor noise, tidal surge)
+        vals.sort((a,b) => a - b);
+        const mid = Math.floor(vals.length / 2);
+        const median = vals.length % 2 ? vals[mid] : (vals[mid-1] + vals[mid]) / 2;
+        return parseFloat(median.toFixed(2));
       };
       // Shore station water temp (very accurate nearshore reading)
       // For shore dives (non-offshore), pier temp is more accurate than offshore buoy.
