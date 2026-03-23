@@ -749,6 +749,15 @@
     .toast-title { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
     .toast-body { color: var(--text-secondary); }
 
+    /* ===== DATA QUALITY WARNING ===== */
+    .data-warning {
+      display: none; background: rgba(243,156,18,0.12); border: 1px solid rgba(243,156,18,0.3);
+      border-radius: 8px; padding: 8px 12px; margin: 6px 0 10px; font-size: 11px;
+      color: #f0c040; line-height: 1.4;
+    }
+    .data-warning.show { display: block; }
+    .data-warning strong { color: #f5d060; }
+
     /* ===== INSTALL APP BANNER ===== */
     .install-banner {
       display: none; position: fixed; bottom: 0; left: 0; right: 0;
@@ -908,6 +917,7 @@
     <div id="mapContainer"><div id="diveMap"></div></div>
 
     <div class="data-status" id="dataStatus">Fetching live oceanographic data...</div>
+    <div class="data-warning" id="dataWarning"></div>
 
     <div class="info-bar">
       <span id="dateDisplay"></span>
@@ -2021,54 +2031,63 @@ const SHORE_STATIONS = {
                   chl: 'mass_concentration_of_chlorophyll_in_sea_water', sal: 'sea_water_practical_salinity' },
 };
 
-// Map each dive spot to nearest shore station
+// Map each dive spot to shore stations in priority order (nearest first, fallbacks after)
 const SHORE_STATION_MAP = {
-  // San Diego — Scripps Pier
-  coronado: 'scripps', imperial: 'scripps', pointloma: 'scripps', mission: 'scripps',
-  ljshores: 'scripps', lajolla: 'scripps', birdrock: 'scripps', delmar: 'scripps',
-  encinitas: 'scripps', carlsbad: 'scripps', oceanside: 'scripps',
-  // Orange County — Newport Pier
-  newport: 'newport', huntington: 'newport',
-  // LA — Santa Monica Pier
-  pv: 'santamonica', horseshoe: 'santamonica', malibu: 'santamonica', leocarrillo: 'santamonica',
-  // Ventura / Santa Barbara — Cal Poly (closest active)
-  ventura: 'calpoly', sb: 'calpoly', refugio: 'calpoly',
-  // Channel Islands — Santa Monica / Newport blend
-  catalina: 'newport', anacapa: 'santamonica', santacruz: 'santamonica',
+  // San Diego — Scripps Pier, fallback Newport
+  coronado: ['scripps','newport'], imperial: ['scripps','newport'], pointloma: ['scripps','newport'], mission: ['scripps','newport'],
+  ljshores: ['scripps','newport'], lajolla: ['scripps','newport'], birdrock: ['scripps','newport'], delmar: ['scripps','newport'],
+  encinitas: ['scripps','newport'], carlsbad: ['scripps','newport'], oceanside: ['scripps','newport'],
+  // Orange County — Newport Pier, fallback Scripps
+  newport: ['newport','scripps'], huntington: ['newport','scripps'],
+  // LA — Santa Monica Pier, fallback Newport
+  pv: ['santamonica','newport'], horseshoe: ['santamonica','newport'], malibu: ['santamonica','newport'], leocarrillo: ['santamonica','newport'],
+  // Ventura / Santa Barbara — Cal Poly, fallback Morro, Santa Monica
+  ventura: ['calpoly','morro','santamonica'], sb: ['calpoly','morro'], refugio: ['calpoly','morro'],
+  // Channel Islands — Newport / Santa Monica
+  catalina: ['newport','scripps'], anacapa: ['santamonica','newport'], santacruz: ['santamonica','calpoly'],
   // Central Coast — Cal Poly / Morro
-  morro: 'morro', monterey: 'calpoly', carmel: 'calpoly',
-  // NorCal
-  halfmoon: null, bodega: null, // no nearby active station
-  fortbragg: 'trinidad', trinidad: 'trinidad',
+  morro: ['morro','calpoly'], monterey: ['calpoly','morro'], carmel: ['calpoly','morro'],
+  // NorCal — Trinidad, Humboldt
+  halfmoon: ['calpoly'], bodega: ['trinidad','humboldt'],
+  fortbragg: ['trinidad','humboldt'], trinidad: ['trinidad','humboldt'],
 };
 
 async function fetchShoreStation() {
-  const stationKey = SHORE_STATION_MAP[currentLocation];
-  if (!stationKey) { srcStatus.sass = 'n/a'; return; }
-  const station = SHORE_STATIONS[stationKey];
-  if (!station) { srcStatus.sass = 'n/a'; return; }
-  try {
-    const now = new Date();
-    const yesterday = new Date(now - 24*60*60*1000);
-    const fmt = d => d.toISOString().split('.')[0]+'Z';
-    // Build variable list dynamically based on what's available at this station
-    const vars = ['time'];
-    if (station.temp) vars.push(station.temp);
-    if (station.turb) vars.push(station.turb);
-    if (station.chl) vars.push(station.chl);
-    if (station.sal) vars.push(station.sal);
-    // Use JSONP to bypass CORS (CalOOS ERDDAP doesn't send CORS headers)
-    const cbName = '_shore_' + Date.now();
-    const url = `https://erddap.caloos.org/erddap/tabledap/${station.id}.json?${vars.join(',')}&time%3E=${fmt(yesterday)}&time%3C=${fmt(now)}&.jsonp=${cbName}`;
-    const d = await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => { delete window[cbName]; reject('timeout'); }, 8000);
-      window[cbName] = data => { clearTimeout(timeout); delete window[cbName]; resolve(data); };
-      const s = document.createElement('script');
-      s.src = url;
-      s.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject('load error'); };
-      document.head.appendChild(s);
-      setTimeout(() => { try { document.head.removeChild(s); } catch(e){} }, 9000);
-    });
+  const stationKeys = SHORE_STATION_MAP[currentLocation];
+  if (!stationKeys || stationKeys.length === 0) { srcStatus.sass = 'n/a'; return; }
+
+  // Try each station in priority order until one succeeds
+  for (const stationKey of stationKeys) {
+    const station = SHORE_STATIONS[stationKey];
+    if (!station) continue;
+    try {
+      const d = await fetchSingleShoreStation(station);
+      if (d) return; // Success — stop trying fallbacks
+    } catch(e) { continue; } // Try next station in chain
+  }
+  srcStatus.sass = 'err';
+}
+
+async function fetchSingleShoreStation(station) {
+  const now = new Date();
+  const yesterday = new Date(now - 24*60*60*1000);
+  const fmt = d => d.toISOString().split('.')[0]+'Z';
+  const vars = ['time'];
+  if (station.temp) vars.push(station.temp);
+  if (station.turb) vars.push(station.turb);
+  if (station.chl) vars.push(station.chl);
+  if (station.sal) vars.push(station.sal);
+  const cbName = '_shore_' + Date.now() + '_' + station.id.slice(0,8);
+  const url = `https://erddap.caloos.org/erddap/tabledap/${station.id}.json?${vars.join(',')}&time%3E=${fmt(yesterday)}&time%3C=${fmt(now)}&.jsonp=${cbName}`;
+  const d = await new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => { delete window[cbName]; reject('timeout'); }, 8000);
+    window[cbName] = data => { clearTimeout(timeout); delete window[cbName]; resolve(data); };
+    const s = document.createElement('script');
+    s.src = url;
+    s.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject('load error'); };
+    document.head.appendChild(s);
+    setTimeout(() => { try { document.head.removeChild(s); } catch(e){} }, 9000);
+  });
     if (d.table && d.table.rows && d.table.rows.length > 0) {
       const cols = d.table.columnNames;
       // Use median of the most recent 2 hours to avoid overnight spikes
@@ -2128,10 +2147,9 @@ async function fetchShoreStation() {
         D.salinity = sal;
       }
       if (srcStatus.sass !== 'ok' && (shoreTemp !== null || chl !== null)) srcStatus.sass = 'ok';
+      return true; // Signal success to fallback chain
     }
-  } catch(e) {
-    srcStatus.sass = 'err';
-  }
+  return false; // No usable data from this station
 }
 
 // =========================================================================
@@ -2398,6 +2416,9 @@ async function fetchAllData() {
   if(liveSources>=4) { statusEl.textContent=`${liveSources}/${totalSources} data sources connected · Updated ${timeStr}`; statusEl.className='data-status success'; }
   else if(liveSources>0) { statusEl.textContent=`${liveSources}/${totalSources} sources connected · Some unavailable · ${timeStr}`; statusEl.className='data-status'; }
   else { statusEl.textContent=`Live APIs unavailable — using calculated data only · ${timeStr}`; statusEl.className='data-status error'; }
+
+  // Show warning banner if critical sensors are down
+  updateDataWarning();
 
   btn.disabled=false; btn.textContent='Refresh';
   updateSourceStatus();
@@ -2685,6 +2706,32 @@ function setVal(id, text, source, badgeClass) {
   el.innerHTML=text + (source ? ` <span class="${cls}">${source}</span>` : '');
 }
 
+function updateDataWarning() {
+  const el = document.getElementById('dataWarning');
+  if (!el) return;
+  const warnings = [];
+  // Critical: turbidity sensor down = viz estimate is wave-energy based (less accurate)
+  if (srcStatus.sass === 'err') {
+    const stKeys = SHORE_STATION_MAP[currentLocation];
+    const stName = stKeys && stKeys[0] ? (SHORE_STATIONS[stKeys[0]]||{}).name : 'Shore station';
+    warnings.push(`${stName} sensor offline — visibility estimate is based on wave energy model (less accurate)`);
+  }
+  // CDIP buoy down = no swell data
+  if (srcStatus.noaa === 'err' && srcStatus.ndbc === 'err') {
+    warnings.push('Buoy data unavailable — swell and water temp may be inaccurate');
+  }
+  // Wind data missing
+  if (srcStatus.nws === 'err') {
+    warnings.push('Wind forecast unavailable — wind adjustments not applied');
+  }
+  if (warnings.length > 0) {
+    el.innerHTML = '<strong>Data Quality Notice:</strong> ' + warnings.join('. ') + '.';
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+  }
+}
+
 function updateSourceStatus() {
   const map = {noaa:'srcNoaa',ndbc:'srcNdbc',nws:'srcNws',sst:'srcSst',chl:'srcChl',sass:'srcSass',upwell:'srcUpwell'};
   for(const [key,elId] of Object.entries(map)) {
@@ -2697,9 +2744,14 @@ function updateSourceStatus() {
   // Update shore station label to show which station is being used
   const sassLabel = document.getElementById('srcSassLabel');
   if (sassLabel) {
-    const stKey = SHORE_STATION_MAP[currentLocation];
-    const st = stKey ? SHORE_STATIONS[stKey] : null;
-    sassLabel.textContent = st ? `${st.name} — Pier Temp/Turbidity/Chl (Live)` : 'Shore Station — No nearby station';
+    // D.turbSource holds the name of whichever station succeeded
+    if (D.turbSource) {
+      sassLabel.textContent = `${D.turbSource} — Pier Temp/Turbidity/Chl (Live)`;
+    } else {
+      const stKeys = SHORE_STATION_MAP[currentLocation];
+      const st = stKeys && stKeys[0] ? SHORE_STATIONS[stKeys[0]] : null;
+      sassLabel.textContent = st ? `${st.name} — Pier Sensor (Offline)` : 'Shore Station — No nearby station';
+    }
   }
 }
 
@@ -3495,9 +3547,13 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   baseLo = Math.max(1, Math.round(baseLo * windMult * rainMult * swellMult * dayDecay));
   baseHi = Math.max(baseLo + 1, Math.round(baseHi * windMult * rainMult * swellMult * dayDecay));
 
-  // Chlorophyll adjustment — HABs scale: bloom >8, green water >3
-  if (D.chlorophyll > 8) { baseLo = Math.max(1, baseLo - 5); baseHi = Math.max(baseLo + 1, baseHi - 4); }
-  else if (D.chlorophyll > 3) { baseLo = Math.max(1, baseLo - 2); baseHi = Math.max(baseLo + 1, baseHi - 2); }
+  // Chlorophyll adjustment with decay — blooms persist but weaken over days
+  // Day 0 = full penalty, Day 1 = 70%, Day 2 = 45%, Day 3 = 25%, Day 4+ = 10%
+  const chlDecay = [1.0, 0.7, 0.45, 0.25, 0.10][Math.min(dayIdx, 4)];
+  const chlEff = (D.chlorophyll || 0) * chlDecay; // effective chlorophyll for this forecast day
+  if (chlEff > 8) { baseLo = Math.max(1, baseLo - 5); baseHi = Math.max(baseLo + 1, baseHi - 4); }
+  else if (chlEff > 3) { baseLo = Math.max(1, baseLo - 2); baseHi = Math.max(baseLo + 1, baseHi - 2); }
+  else if (chlEff > 1) { baseLo = Math.max(1, baseLo - 1); baseHi = Math.max(baseLo + 1, baseHi - 1); }
 
   // Cap range spread to 5ft max, and realistic max of 30ft
   if (baseHi - baseLo > 5) baseHi = baseLo + 5;
