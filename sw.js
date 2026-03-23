@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spearfactor-v3';
+const CACHE_NAME = 'spearfactor-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -8,7 +8,7 @@ const STATIC_ASSETS = [
   '/og-image.jpg'
 ];
 
-// Install: cache static assets
+// Install: cache static assets, immediately activate
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME)
@@ -17,7 +17,7 @@ self.addEventListener('install', e => {
   );
 });
 
-// Activate: clean old caches
+// Activate: clean ALL old caches, take control immediately
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -26,20 +26,17 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch: network-first for API calls, cache-first for static assets
+// Fetch: network-first for everything, cache as fallback only
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // API calls: always try network first, never cache
-  if (url.hostname !== location.hostname) {
-    return; // let browser handle external requests normally
-  }
+  // External requests (APIs, ERDDAP, CDIP, etc.): don't intercept at all
+  if (url.hostname !== location.hostname) return;
 
-  // Static assets: network first, fall back to cache
+  // Same-origin: always try network first
   e.respondWith(
     fetch(e.request)
       .then(response => {
-        // Update cache with fresh version
         const clone = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
         return response;
