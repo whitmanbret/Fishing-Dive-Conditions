@@ -284,6 +284,29 @@
       font-style: italic; line-height: 1.4;
     }
 
+    /* ===== CONDITIONS BRIEF ===== */
+    .conditions-brief {
+      background: var(--bg-secondary); border-radius: 10px;
+      border: 1px solid var(--border); margin-bottom: 12px;
+      padding: 12px 14px; line-height: 1.5;
+    }
+    .brief-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+    }
+    .brief-title {
+      font-weight: 600; font-size: 13px; color: var(--text-primary);
+    }
+    .brief-time {
+      font-size: 10px; color: var(--text-muted);
+    }
+    .brief-am, .brief-pm {
+      font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;
+    }
+    .brief-am:before { content: '🌅 '; }
+    .brief-pm:before { content: '🌇 '; }
+    .brief-pm { margin-bottom: 0; }
+
     /* ===== 5-DAY FORECAST (Surfline-style) ===== */
     .forecast-section {
       background: var(--bg-secondary); border-radius: 10px;
@@ -973,6 +996,16 @@
     </div>
 
     <div class="insight-text" id="insightText">Loading conditions...</div>
+
+    <!-- ===== CONDITIONS BRIEF (Surfline-style narrative) ===== -->
+    <div class="conditions-brief" id="conditionsBrief" style="display:none">
+      <div class="brief-header">
+        <span class="brief-title">Today's Conditions</span>
+        <span class="brief-time" id="briefTime"></span>
+      </div>
+      <div class="brief-am" id="briefAM"></div>
+      <div class="brief-pm" id="briefPM"></div>
+    </div>
 
     <!-- ===== DIVER VIZ REPORT ===== -->
     <div class="viz-report" id="vizReportWidget" style="display:none">
@@ -2962,6 +2995,7 @@ function recalculate() {
   } else {
     updateInsight(fishAvg,vizFinal);
   }
+  updateConditionsBrief();
 
   D.fishAvg=fishAvg; D.vizAvg=vizFinal; D.spearAvg=spearAvg;
   // Update map markers to reflect new scores
@@ -3126,6 +3160,170 @@ function updateInsight(fish,viz) {
   }
 
   el.textContent = msg;
+}
+
+// =========================================================================
+// CONDITIONS BRIEF — Surfline-style narrative for morning & afternoon
+// =========================================================================
+function updateConditionsBrief() {
+  const el = document.getElementById('conditionsBrief');
+  if (!D.hourlyForecast || D.hourlyForecast.length === 0) return;
+
+  const now = new Date();
+  const loc = LOCATIONS[currentLocation];
+  const today = D.hourlyForecast.filter(p => {
+    const pd = new Date(p.startTime);
+    return pd.getDate() === now.getDate() && pd.getMonth() === now.getMonth();
+  });
+  if (today.length === 0) return;
+
+  // Split into AM (before noon) and PM (noon+)
+  const amPeriods = today.filter(p => new Date(p.startTime).getHours() < 12);
+  const pmPeriods = today.filter(p => new Date(p.startTime).getHours() >= 12);
+
+  function avgWind(periods) {
+    if (!periods.length) return 0;
+    return periods.reduce((s,p) => s + (p.windSpeed || 0), 0) / periods.length;
+  }
+  function maxWind(periods) {
+    return Math.max(...periods.map(p => p.windSpeed || 0));
+  }
+  function avgPrecip(periods) {
+    if (!periods.length) return 0;
+    return periods.reduce((s,p) => s + (p.precipPct || 0), 0) / periods.length;
+  }
+  function primaryWindDir(periods) {
+    const dirs = periods.map(p => p.windDirection).filter(Boolean);
+    if (!dirs.length) return '';
+    // Most common direction
+    const counts = {};
+    dirs.forEach(d => { counts[d] = (counts[d]||0) + 1; });
+    return Object.entries(counts).sort((a,b) => b[1]-a[1])[0][0];
+  }
+
+  // Current data points
+  const vizText = document.getElementById('vizFeetHero')?.textContent || '--';
+  const waterTemp = D.waterTemp ? Math.round(D.waterTemp) + '°F' : null;
+  const swellHt = D.swellHt ? D.swellHt.toFixed(1) : null;
+  const swellPer = D.swellPer ? Math.round(D.swellPer) : null;
+  const swellDir = D.swellDir || null;
+
+  // Tide info for today
+  const todayTides = (D.multiDayTideHiLo || []).filter(t =>
+    t.time.getDate() === now.getDate() && t.time.getMonth() === now.getMonth()
+  );
+
+  // Build swell description
+  let swellDesc = '';
+  if (swellHt && swellPer) {
+    const swellSize = parseFloat(swellHt);
+    const swellAdj = swellSize <= 2 ? 'small' : swellSize <= 4 ? 'moderate' : swellSize <= 6 ? 'building' : 'large';
+    swellDesc = `${swellAdj} ${swellHt}ft @ ${swellPer}s`;
+    if (swellDir) swellDesc += ` from the ${swellDir}`;
+  }
+
+  // Water clarity description
+  let clarityDesc = '';
+  if (D.chlorophyll > 3) clarityDesc = 'Green water from a phytoplankton bloom is limiting visibility';
+  else if (D.chlorophyll > 1.5) clarityDesc = 'Slightly green water with elevated chlorophyll';
+  else if (D.turbidity > 1.5) clarityDesc = 'Stirred-up water from recent swell is reducing clarity';
+  else if (D.turbidity !== undefined && D.turbidity < 0.3) clarityDesc = 'Water clarity is good with low turbidity';
+  else clarityDesc = 'Water clarity is moderate';
+
+  // Wind description helper
+  function windDesc(avg, max, dir) {
+    let desc = '';
+    if (avg < 5) desc = 'calm winds';
+    else if (avg < 8) desc = 'light ' + (dir ? dir + ' ' : '') + 'winds';
+    else if (avg < 12) desc = 'moderate ' + (dir ? dir + ' ' : '') + 'winds around ' + Math.round(avg) + ' mph';
+    else if (avg < 18) desc = 'fresh ' + (dir ? dir + ' ' : '') + 'winds ' + Math.round(avg) + '-' + Math.round(max) + ' mph';
+    else desc = 'strong winds ' + Math.round(avg) + '-' + Math.round(max) + ' mph — expect choppy surface';
+    return desc;
+  }
+
+  // Tide narrative for a time window
+  function tideNarrative(startHr, endHr) {
+    const windowTides = todayTides.filter(t => {
+      const h = t.time.getHours();
+      return h >= startHr && h <= endHr;
+    });
+    if (windowTides.length === 0) {
+      // Find surrounding tides
+      const before = todayTides.filter(t => t.time.getHours() < startHr).pop();
+      const after = todayTides.find(t => t.time.getHours() > endHr);
+      if (before && after) {
+        if (before.type === 'L' && after.type === 'H') return 'incoming tide';
+        if (before.type === 'H' && after.type === 'L') return 'outgoing tide';
+      }
+      return '';
+    }
+    const t = windowTides[0];
+    const timeStr = t.time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    return (t.type === 'H' ? 'high tide' : 'low tide') + ' at ' + timeStr + ' (' + t.height.toFixed(1) + 'ft)';
+  }
+
+  // --- Build AM narrative ---
+  const amWind = avgWind(amPeriods);
+  const amMaxWind = maxWind(amPeriods);
+  const amDir = primaryWindDir(amPeriods);
+  const amPrecip = avgPrecip(amPeriods);
+  const amTide = tideNarrative(5, 11);
+
+  let am = 'Morning: ';
+  // Visibility and water
+  am += clarityDesc + ' with visibility around ' + vizText + '. ';
+  // Swell
+  if (swellDesc) am += 'Expect ' + swellDesc + '. ';
+  // Wind
+  am += 'Early ' + windDesc(amWind, amMaxWind, amDir);
+  // Tide
+  if (amTide) am += ' with ' + amTide;
+  am += '. ';
+  // Temp
+  if (waterTemp) am += 'Water temp ' + waterTemp + '. ';
+  // Rain
+  if (amPrecip > 40) am += 'Rain likely — expect runoff and reduced visibility.';
+  else if (amPrecip > 20) am += 'Slight chance of showers.';
+
+  // --- Build PM narrative ---
+  const pmWind = avgWind(pmPeriods);
+  const pmMaxWind = maxWind(pmPeriods);
+  const pmDir = primaryWindDir(pmPeriods);
+  const pmPrecip = avgPrecip(pmPeriods);
+  const pmTide = tideNarrative(12, 18);
+
+  let pm = 'Afternoon: ';
+  // Wind change
+  if (pmWind > amWind + 3) pm += 'Winds pick up to ' + windDesc(pmWind, pmMaxWind, pmDir) + '. ';
+  else if (pmWind < amWind - 3) pm += 'Winds ease to ' + windDesc(pmWind, pmMaxWind, pmDir) + '. ';
+  else pm += windDesc(pmWind, pmMaxWind, pmDir).charAt(0).toUpperCase() + windDesc(pmWind, pmMaxWind, pmDir).slice(1) + '. ';
+  // Tide
+  if (pmTide) pm += pmTide.charAt(0).toUpperCase() + pmTide.slice(1) + '. ';
+  // Swell trend from WW3
+  if (D.swellForecast && D.swellForecast.length > 1) {
+    const todayWW3 = D.swellForecast.filter(s => {
+      const d = new Date(s.time);
+      return d.getDate() === now.getDate();
+    });
+    if (todayWW3.length >= 2) {
+      const first = todayWW3[0].ht;
+      const last = todayWW3[todayWW3.length - 1].ht;
+      if (last > first + 0.5) pm += 'Swell building through the afternoon. ';
+      else if (last < first - 0.5) pm += 'Swell easing through the afternoon. ';
+    }
+  }
+  // Rain
+  if (pmPrecip > 40) pm += 'Rain expected — conditions will likely deteriorate.';
+  else if (pmPrecip > 20) pm += 'Showers possible later.';
+  // Overall afternoon viz tendency
+  if (pmWind > 12) pm += 'Surface chop will reduce visibility — morning is the better window.';
+  else if (pmWind < 5 && amWind < 5) pm += 'Glassy conditions should hold through the afternoon.';
+
+  // Render
+  document.getElementById('briefAM').textContent = am.trim();
+  document.getElementById('briefPM').textContent = pm.trim();
+  document.getElementById('briefTime').textContent = 'Updated ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  el.style.display = 'block';
 }
 
 // =========================================================================
