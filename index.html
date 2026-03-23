@@ -3274,7 +3274,8 @@ function updateConditionsBrief() {
     }
     const t = windowTides[0];
     const timeStr = t.time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    return (t.type === 'H' ? 'high tide' : 'low tide') + ' at ' + timeStr + ' (' + t.height.toFixed(1) + 'ft)';
+    const ht = t.value !== undefined ? t.value : t.height;
+    return (t.type === 'H' ? 'high tide' : 'low tide') + ' at ' + timeStr + (ht !== undefined ? ' (' + parseFloat(ht).toFixed(1) + 'ft)' : '');
   }
 
   // --- Build AM narrative ---
