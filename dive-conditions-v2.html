@@ -11,7 +11,7 @@
   </script>
   <title>California Spearfishing Conditions — Live Dive & Fish Forecast | SpearFactor</title>
   <meta name="description" content="Live spearfishing conditions for all of California. Real-time dive visibility, fish probability scores, swell, tide, wind, and 5-day forecast for 30+ dive sites from San Diego to Humboldt.">
-  <meta name="keywords" content="California spearfishing conditions, dive visibility forecast, spearfishing forecast, La Jolla diving, Point Loma kelp, Palos Verdes diving, Catalina Island diving, Santa Barbara spearfishing, Monterey diving, fish report California, yellowtail forecast, white sea bass conditions, halibut, lingcod, ocean conditions today">
+  <meta name="keywords" content="dive visibility forecast, California spearfishing conditions, underwater visibility prediction, water clarity forecast, ocean conditions today, La Jolla dive conditions, Point Loma spearfishing, Catalina Island diving, Channel Islands dive conditions, Palos Verdes diving, Santa Barbara diving, Monterey diving, San Diego dive visibility, water temperature California coast, yellowtail forecast, white sea bass conditions, halibut spearfishing, lingcod California, swell forecast diving, tide chart diving, dive conditions app, spearfishing forecast tool">
   <meta name="author" content="SpearFactor">
   <link rel="canonical" href="https://conditions.spearfactor.com/">
 
@@ -48,9 +48,10 @@
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "SpearFactor Conditions",
-    "description": "Live spearfishing conditions forecast for San Diego. Real-time dive visibility, fish probability, swell, tide, wind, and species-specific scoring for 8 dive sites.",
-    "url": "https://www.spearfactor.com/conditions",
+    "name": "SpearFactor Dive & Fish Conditions",
+    "alternateName": "SpearFactor Conditions",
+    "description": "Free real-time dive visibility forecast and fish probability tool for 30+ California dive sites. Uses live oceanographic sensor data from CDIP buoys, NDBC buoys, pier shore stations, NOAA tides, NWS weather, satellite imagery, and CPFV catch reports to predict underwater visibility and species-specific fish scores.",
+    "url": "https://conditions.spearfactor.com/",
     "applicationCategory": "SportsApplication",
     "operatingSystem": "Web",
     "offers": {
@@ -63,20 +64,26 @@
       "name": "SpearFactor",
       "url": "https://www.spearfactor.com"
     },
-    "about": {
-      "@type": "Thing",
-      "name": "Spearfishing",
-      "description": "Underwater hunting using breath-hold diving"
-    },
+    "about": [
+      { "@type": "Thing", "name": "Spearfishing", "description": "Underwater hunting using breath-hold diving" },
+      { "@type": "Thing", "name": "Dive Visibility Forecast", "description": "Predicting underwater water clarity using oceanographic data" },
+      { "@type": "Thing", "name": "Ocean Conditions", "description": "Real-time swell, tide, wind, water temperature, and current data" }
+    ],
     "spatialCoverage": {
       "@type": "Place",
-      "name": "San Diego, California",
+      "name": "California Coast",
+      "description": "30+ dive sites from Imperial Beach to Trinidad, including Channel Islands and Catalina",
       "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": 32.85,
-        "longitude": -117.27
+        "@type": "GeoShape",
+        "box": "32.42 -124.20 41.05 -117.13"
+      },
+      "containedInPlace": {
+        "@type": "AdministrativeArea",
+        "name": "California, United States"
       }
-    }
+    },
+    "featureList": "Real-time dive visibility forecast, Fish probability scoring, 5-day conditions forecast, Live buoy and pier sensor data, Species-specific scoring (yellowtail, white sea bass, halibut, lingcod), Tide and swell analysis, Beach webcam links, Local fishing report aggregation",
+    "screenshot": "https://conditions.spearfactor.com/og-image.jpg"
   }
   </script>
 
@@ -88,18 +95,50 @@
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "What are the spearfishing conditions in San Diego today?",
+        "name": "What is the dive visibility in California today?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "SpearFactor Conditions provides real-time dive visibility and fish probability scores for 8 San Diego dive sites including La Jolla, Point Loma, and Coronado Islands. Scores are calculated from live buoy data, tides, wind, swell, water temperature, and seasonal fish patterns."
+          "text": "SpearFactor Conditions provides real-time dive visibility forecasts for 30+ California dive sites from San Diego to Humboldt County. Visibility estimates are calculated from live CDIP buoy wave data, pier shore station turbidity and chlorophyll sensors, NOAA wind forecasts, and tidal conditions — updated on every page load."
         }
       },
       {
         "@type": "Question",
-        "name": "What is the best time to spearfish in San Diego?",
+        "name": "How do you predict underwater visibility for diving?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "The best spearfishing in San Diego is typically June through September when water temps reach 65-72°F. Yellowtail peak in July, White Sea Bass in May-June, and Halibut during grunion runs (March-September). Check SpearFactor Conditions for daily optimal dive windows based on tide, wind, and swell."
+          "text": "SpearFactor uses real-time oceanographic sensor data to forecast dive visibility. The model combines wave energy from CDIP buoys, turbidity readings from CalOOS pier sensors (measuring actual water clarity), chlorophyll concentrations (which indicate green water from phytoplankton), wind speed, rainfall, and tidal state. Each factor is weighted based on its measured impact on underwater visibility, calibrated against ground-truth diver reports."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the spearfishing conditions in San Diego today?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SpearFactor Conditions provides real-time dive visibility and fish probability scores for 11 San Diego County dive sites including La Jolla Shores, Point Loma, Bird Rock, Del Mar, and Coronado Islands. Scores are calculated from live Scripps Pier sensor data, CDIP buoys, NOAA tides, NWS wind forecasts, water temperature, and seasonal fish patterns from CPFV catch data."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the best dive visibility forecast app for California?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SpearFactor Conditions is a free dive visibility forecast tool covering 30+ California dive sites. Unlike crowdsourced report apps that require someone to dive first, SpearFactor uses live oceanographic sensors (CDIP buoys, pier turbidity meters, chlorophyll sensors, NDBC weather buoys) to predict visibility before you get in the water. It also provides species-specific fish probability scores and a 5-day forecast."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the water temperature for diving in California?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "California dive water temperatures range from 48°F in Northern California winter to 72°F in Southern California summer. SpearFactor Conditions shows real-time water temperature from pier shore stations and NDBC buoys for each dive site. For shore dives, pier sensor readings are more accurate than offshore buoy temps, which can read 2-3°F warmer than actual nearshore conditions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the best time to spearfish in California?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Peak spearfishing in Southern California is June through September when water temps reach 65-72°F and visibility is highest. Yellowtail arrive March-November (peak July-August), White Sea Bass peak May-June, and Halibut are best March-April. Northern California lingcod season runs in summer. SpearFactor Conditions shows species-specific fish probability scores based on current water temperature, tide, and historical catch data."
         }
       },
       {
@@ -107,7 +146,7 @@
         "name": "What is the dive visibility in La Jolla today?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "La Jolla dive visibility varies from 5 to 40+ feet depending on swell, wind, rainfall, and chlorophyll levels. SpearFactor Conditions calculates real-time visibility estimates using live CDIP buoy data, NOAA wind forecasts, and wave energy measurements."
+          "text": "SpearFactor shows real-time La Jolla dive visibility using the Scripps Pier turbidity and chlorophyll sensors — the closest oceanographic instruments to the dive sites. Visibility at La Jolla Shores typically ranges from 5 to 30+ feet depending on swell, wind, rainfall, and plankton levels. The Scripps sensor provides a direct measurement of water clarity, not just a model estimate."
         }
       }
     ]
@@ -709,6 +748,54 @@
     @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
     .toast-title { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
     .toast-body { color: var(--text-secondary); }
+
+    /* ===== DATA QUALITY WARNING ===== */
+    .data-warning {
+      display: none; background: rgba(243,156,18,0.12); border: 1px solid rgba(243,156,18,0.3);
+      border-radius: 8px; padding: 8px 12px; margin: 6px 0 10px; font-size: 11px;
+      color: #f0c040; line-height: 1.4;
+    }
+    .data-warning.show { display: block; }
+    .data-warning strong { color: #f5d060; }
+
+    /* ===== INSTALL APP BANNER ===== */
+    .install-banner {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(135deg, #1a2d4d 0%, #0a1628 100%);
+      border-top: 1px solid var(--accent);
+      padding: 14px 16px; z-index: 3000;
+      animation: slideUp 0.4s ease-out;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+    }
+    .install-banner.show { display: block; }
+    .install-banner-inner {
+      max-width: 600px; margin: 0 auto;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .install-banner-icon {
+      width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .install-banner-text { flex: 1; }
+    .install-banner-title {
+      font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;
+    }
+    .install-banner-desc {
+      font-size: 11px; color: var(--text-secondary); line-height: 1.3;
+    }
+    .install-banner-btn {
+      background: var(--accent); color: #fff; border: none; border-radius: 8px;
+      padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .install-banner-btn:hover { background: #1a7ae6; }
+    .install-banner-close {
+      background: none; border: none; color: var(--text-muted); font-size: 20px;
+      cursor: pointer; padding: 4px 8px; flex-shrink: 0; line-height: 1;
+    }
+    .install-banner-close:hover { color: var(--text-primary); }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   </style>
 </head>
 <body>
@@ -810,6 +897,19 @@
       </div>
     </div>
 
+    <!-- Install App Banner -->
+    <div class="install-banner" id="installBanner">
+      <div class="install-banner-inner">
+        <div class="install-banner-icon">🎣</div>
+        <div class="install-banner-text">
+          <div class="install-banner-title">Install SpearFactor Conditions</div>
+          <div class="install-banner-desc">Add to your home screen for instant access — works offline too</div>
+        </div>
+        <button class="install-banner-btn" id="installBtn">Install</button>
+        <button class="install-banner-close" id="installDismiss">&times;</button>
+      </div>
+    </div>
+
     <!-- Toast container for in-page notifications -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -817,6 +917,7 @@
     <div id="mapContainer"><div id="diveMap"></div></div>
 
     <div class="data-status" id="dataStatus">Fetching live oceanographic data...</div>
+    <div class="data-warning" id="dataWarning"></div>
 
     <div class="info-bar">
       <span id="dateDisplay"></span>
@@ -1383,7 +1484,7 @@ function getGrunionStatus(date) {
 // 45-year SD commercial landing data (1980-2025) — normalized monthly seasonality
 // Peak month = 1.0, other months proportional to avg lbs landed. Recent 15yr weighted.
 const LANDING_SEASONALITY = {
-  yellowtail: [0.13, 0.06, 0.09, 0.19, 0.22, 0.63, 1.00, 0.50, 0.27, 0.13, 0.06, 0.07],
+  yellowtail: [0.13, 0.06, 0.30, 0.35, 0.40, 0.63, 1.00, 0.50, 0.27, 0.13, 0.06, 0.07],
   wsb:        [0.01, 0.02, 0.01, 0.00, 0.00, 0.75, 1.00, 0.13, 0.03, 0.02, 0.00, 0.03],
   halibut:    [0.60, 0.58, 0.75, 0.80, 0.95, 1.00, 0.75, 0.71, 0.25, 0.13, 0.13, 0.13],
   general:    [0.20, 0.15, 0.30, 0.45, 0.65, 0.85, 1.00, 0.90, 0.70, 0.50, 0.25, 0.20],
@@ -1543,8 +1644,12 @@ async function fetchTideState() {
         else if(prev.type==='H'&&next.type==='L') D.tideState='outgoing';
         const hoursBetween=(next.time-prev.time)/3600000;
         const heightDiff=Math.abs(next.value-prev.value);
-        D.currentStrength=Math.min(2.0, heightDiff/hoursBetween*0.8);
-        D.currentDir=D.tideState==='incoming'?'north':'south';
+        // Only set tide-based current if HF Radar hasn't already provided measured data
+        if (!D.currentSource) {
+          D.currentStrength=Math.min(2.0, heightDiff/hoursBetween*0.8);
+          D.currentDir=D.tideState==='incoming'?'north':'south';
+          D.currentSource = 'tide';
+        }
       }
       srcStatus.noaa='ok';
     }
@@ -1714,7 +1819,7 @@ async function fetchBuoyData() {
   for (const buoyId of buoys) {
     try {
       const ago = new Date(Date.now() - 12*3600000);
-      const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station,time,wd,wspd,wvht,dpd,apd,mwd,wtmp,atmp&station=%22${buoyId}%22&time>=${ago.toISOString()}&orderByMax(%22time%22)`;
+      const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station%2Ctime%2Cwd%2Cwspd%2Cwvht%2Cdpd%2Capd%2Cmwd%2Cwtmp%2Catmp&station=%22${buoyId}%22&time%3E=${encodeURIComponent(ago.toISOString())}&orderByMax(%22time%22)`;
       const r = await fetchWithTimeout(url);
       if (r.ok) {
         const d = await r.json();
@@ -1826,12 +1931,13 @@ async function fetchUpwelling() {
     const cbName = '_upwell_' + Date.now();
     const url = `https://oceanview.pfeg.noaa.gov/erddap/tabledap/${dataset}.json?time,upwelling_index&time%3E=${ago.toISOString()}&.jsonp=${cbName}`;
     const data = await new Promise((resolve, reject) => {
-      window[cbName] = d => { resolve(d); delete window[cbName]; };
+      const timeout = setTimeout(() => { delete window[cbName]; reject(new Error('JSONP timeout')); }, 10000);
+      window[cbName] = d => { clearTimeout(timeout); delete window[cbName]; resolve(d); };
       const s = document.createElement('script');
       s.src = url;
-      s.onerror = () => { delete window[cbName]; reject(new Error('JSONP failed')); };
+      s.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject(new Error('JSONP failed')); };
       document.head.appendChild(s);
-      setTimeout(() => { delete window[cbName]; reject(new Error('JSONP timeout')); }, 10000);
+      setTimeout(() => { try { document.head.removeChild(s); } catch(e){} }, 11000);
     });
     if(data.table&&data.table.rows&&data.table.rows.length>0) {
       const rows=data.table.rows; D.upwellingIndex=rows[rows.length-1][1];
@@ -1930,62 +2036,86 @@ const SHORE_STATIONS = {
                   chl: 'mass_concentration_of_chlorophyll_in_sea_water', sal: 'sea_water_practical_salinity' },
 };
 
-// Map each dive spot to nearest shore station
+// Map each dive spot to shore stations in priority order (nearest first, fallbacks after)
 const SHORE_STATION_MAP = {
-  // San Diego — Scripps Pier
-  coronado: 'scripps', imperial: 'scripps', pointloma: 'scripps', mission: 'scripps',
-  ljshores: 'scripps', lajolla: 'scripps', birdrock: 'scripps', delmar: 'scripps',
-  encinitas: 'scripps', carlsbad: 'scripps', oceanside: 'scripps',
-  // Orange County — Newport Pier
-  newport: 'newport', huntington: 'newport',
-  // LA — Santa Monica Pier
-  pv: 'santamonica', horseshoe: 'santamonica', malibu: 'santamonica', leocarrillo: 'santamonica',
-  // Ventura / Santa Barbara — Cal Poly (closest active)
-  ventura: 'calpoly', sb: 'calpoly', refugio: 'calpoly',
-  // Channel Islands — Santa Monica / Newport blend
-  catalina: 'newport', anacapa: 'santamonica', santacruz: 'santamonica',
+  // San Diego — Scripps Pier, fallback Newport
+  coronado: ['scripps','newport'], imperial: ['scripps','newport'], pointloma: ['scripps','newport'], mission: ['scripps','newport'],
+  ljshores: ['scripps','newport'], lajolla: ['scripps','newport'], birdrock: ['scripps','newport'], delmar: ['scripps','newport'],
+  encinitas: ['scripps','newport'], carlsbad: ['scripps','newport'], oceanside: ['scripps','newport'],
+  // Orange County — Newport Pier, fallback Scripps
+  newport: ['newport','scripps'], huntington: ['newport','scripps'],
+  // LA — Santa Monica Pier, fallback Newport
+  pv: ['santamonica','newport'], horseshoe: ['santamonica','newport'], malibu: ['santamonica','newport'], leocarrillo: ['santamonica','newport'],
+  // Ventura / Santa Barbara — Cal Poly, fallback Morro, Santa Monica
+  ventura: ['calpoly','morro','santamonica'], sb: ['calpoly','morro'], refugio: ['calpoly','morro'],
+  // Channel Islands — Newport / Santa Monica
+  catalina: ['newport','scripps'], anacapa: ['santamonica','newport'], santacruz: ['santamonica','calpoly'],
   // Central Coast — Cal Poly / Morro
-  morro: 'morro', monterey: 'calpoly', carmel: 'calpoly',
-  // NorCal
-  halfmoon: null, bodega: null, // no nearby active station
-  fortbragg: 'trinidad', trinidad: 'trinidad',
+  morro: ['morro','calpoly'], monterey: ['calpoly','morro'], carmel: ['calpoly','morro'],
+  // NorCal — Trinidad, Humboldt
+  halfmoon: ['calpoly'], bodega: ['trinidad','humboldt'],
+  fortbragg: ['trinidad','humboldt'], trinidad: ['trinidad','humboldt'],
 };
 
 async function fetchShoreStation() {
-  const stationKey = SHORE_STATION_MAP[currentLocation];
-  if (!stationKey) { srcStatus.sass = 'n/a'; return; }
-  const station = SHORE_STATIONS[stationKey];
-  if (!station) { srcStatus.sass = 'n/a'; return; }
-  try {
-    const now = new Date();
-    const yesterday = new Date(now - 24*60*60*1000);
-    const fmt = d => d.toISOString().split('.')[0]+'Z';
-    // Build variable list dynamically based on what's available at this station
-    const vars = ['time'];
-    if (station.temp) vars.push(station.temp);
-    if (station.turb) vars.push(station.turb);
-    if (station.chl) vars.push(station.chl);
-    if (station.sal) vars.push(station.sal);
-    // Use JSONP to bypass CORS (CalOOS ERDDAP doesn't send CORS headers)
-    const cbName = '_shore_' + Date.now();
-    const url = `https://erddap.caloos.org/erddap/tabledap/${station.id}.json?${vars.join(',')}&time%3E=${fmt(yesterday)}&time%3C=${fmt(now)}&.jsonp=${cbName}`;
-    const d = await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => { delete window[cbName]; reject('timeout'); }, 8000);
-      window[cbName] = data => { clearTimeout(timeout); delete window[cbName]; resolve(data); };
-      const s = document.createElement('script');
-      s.src = url;
-      s.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject('load error'); };
-      document.head.appendChild(s);
-      setTimeout(() => { try { document.head.removeChild(s); } catch(e){} }, 9000);
-    });
+  const stationKeys = SHORE_STATION_MAP[currentLocation];
+  if (!stationKeys || stationKeys.length === 0) { srcStatus.sass = 'n/a'; return; }
+
+  // Try each station in priority order until one succeeds
+  for (const stationKey of stationKeys) {
+    const station = SHORE_STATIONS[stationKey];
+    if (!station) continue;
+    try {
+      const d = await fetchSingleShoreStation(station);
+      if (d) return; // Success — stop trying fallbacks
+    } catch(e) { continue; } // Try next station in chain
+  }
+  srcStatus.sass = 'err';
+}
+
+async function fetchSingleShoreStation(station) {
+  const now = new Date();
+  const yesterday = new Date(now - 24*60*60*1000);
+  const fmt = d => d.toISOString().split('.')[0]+'Z';
+  const vars = ['time'];
+  if (station.temp) vars.push(station.temp);
+  if (station.turb) vars.push(station.turb);
+  if (station.chl) vars.push(station.chl);
+  if (station.sal) vars.push(station.sal);
+  const cbName = '_shore_' + Date.now() + '_' + station.id.slice(0,8).replace(/[^a-zA-Z0-9]/g, '');
+  const url = `https://erddap.caloos.org/erddap/tabledap/${station.id}.json?${vars.join(',')}&time%3E=${fmt(yesterday)}&time%3C=${fmt(now)}&.jsonp=${cbName}`;
+  const d = await new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => { delete window[cbName]; reject('timeout'); }, 8000);
+    window[cbName] = data => { clearTimeout(timeout); delete window[cbName]; resolve(data); };
+    const s = document.createElement('script');
+    s.src = url;
+    s.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject('load error'); };
+    document.head.appendChild(s);
+    setTimeout(() => { try { document.head.removeChild(s); } catch(e){} }, 9000);
+  });
     if (d.table && d.table.rows && d.table.rows.length > 0) {
       const cols = d.table.columnNames;
+      // Use median of the most recent 2 hours to avoid overnight spikes
+      // (e.g. 20 readings at 100+ NTU from tidal surge drag a 24hr mean to 5+ NTU
+      //  even when current conditions are 0.3 NTU = 14-19 ft viz)
+      const timeIdx = cols.indexOf('time');
+      const cutoff = new Date(now - 2*60*60*1000).toISOString();
+      const recentRows = timeIdx >= 0
+        ? d.table.rows.filter(r => r[timeIdx] >= cutoff)
+        : d.table.rows;
       const extract = varName => {
         if (!varName) return null;
         const idx = cols.indexOf(varName);
         if (idx < 0) return null;
-        const vals = d.table.rows.map(r=>r[idx]).filter(v=>v!==null&&!isNaN(v));
-        return vals.length > 0 ? parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2)) : null;
+        // Use recent rows if available, fallback to all rows
+        const source = recentRows.length > 0 ? recentRows : d.table.rows;
+        const vals = source.map(r=>r[idx]).filter(v=>v!==null&&!isNaN(v));
+        if (vals.length === 0) return null;
+        // Median is resistant to spike outliers (sensor noise, tidal surge)
+        vals.sort((a,b) => a - b);
+        const mid = Math.floor(vals.length / 2);
+        const median = vals.length % 2 ? vals[mid] : (vals[mid-1] + vals[mid]) / 2;
+        return parseFloat(median.toFixed(2));
       };
       // Shore station water temp (very accurate nearshore reading)
       // For shore dives (non-offshore), pier temp is more accurate than offshore buoy.
@@ -2002,8 +2132,9 @@ async function fetchShoreStation() {
           D.waterTempSource = station.name;
         }
       }
-      // Turbidity
-      const turb = extract(station.turb);
+      // Turbidity — clamp negative sensor noise to 0
+      const turbRaw = extract(station.turb);
+      const turb = turbRaw !== null ? Math.max(0, turbRaw) : null;
       if (turb !== null) {
         D.turbidity = turb;
         D.turbSource = station.name;
@@ -2022,10 +2153,9 @@ async function fetchShoreStation() {
         D.salinity = sal;
       }
       if (srcStatus.sass !== 'ok' && (shoreTemp !== null || chl !== null)) srcStatus.sass = 'ok';
+      return true; // Signal success to fallback chain
     }
-  } catch(e) {
-    srcStatus.sass = 'err';
-  }
+  return false; // No usable data from this station
 }
 
 // =========================================================================
@@ -2038,10 +2168,10 @@ async function fetchNDBCBuoy() {
   // Try each buoy in order until one returns data
   for (const buoyId of buoyIds) {
     try {
-      const cbName = '_ndbc_' + Date.now() + '_' + buoyId;
+      const cbName = '_ndbc_' + Date.now() + '_' + buoyId.replace(/[^a-zA-Z0-9]/g, '');
       const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station%2Ctime%2Cwtmp%2Cwspd%2Cgst%2Cwd%2Catmp%2Cbar&station=%22${buoyId}%22&time%3E=now-2hours&orderBy(%22time%22)&.jsonp=${cbName}`;
       const data = await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => { reject('timeout'); }, 4000);
+        const timeout = setTimeout(() => { delete window[cbName]; reject('timeout'); }, 4000);
         window[cbName] = d => { clearTimeout(timeout); delete window[cbName]; resolve(d); };
         const s = document.createElement('script');
         s.src = url;
@@ -2139,6 +2269,7 @@ async function fetchHFRadarCurrent() {
     D.currentStrength = parseFloat(speedKts.toFixed(2));
     D.currentDir = dirLabel;
     D.currentDirDeg = Math.round(dirDeg);
+    D.currentSource = 'hfradar'; // HF Radar is authoritative — prevents tide estimate from overwriting
     D.currentSource = 'HF Radar';
     srcStatus.hfr = 'ok';
   } catch(e) {}
@@ -2293,6 +2424,9 @@ async function fetchAllData() {
   else if(liveSources>0) { statusEl.textContent=`${liveSources}/${totalSources} sources connected · Some unavailable · ${timeStr}`; statusEl.className='data-status'; }
   else { statusEl.textContent=`Live APIs unavailable — using calculated data only · ${timeStr}`; statusEl.className='data-status error'; }
 
+  // Show warning banner if critical sensors are down
+  updateDataWarning();
+
   btn.disabled=false; btn.textContent='Refresh';
   updateSourceStatus();
 
@@ -2445,62 +2579,50 @@ function updateDisplay() {
       vizEst = `${lo}–${hi} ft${suffix}`;
       vizSource = 'Offshore Model';
     }
-    // PRIORITY 1: If we have real-time turbidity from SASS, use NTU-based estimate
+    // PRIORITY 1: If we have real-time turbidity from shore station, use NTU-based estimate
     // Calibrated from Dec 2024 NTU data + Scripps Pier camera piling distances (4/11/14/30 ft)
-    // NOTE: Scripps Pier is under-pier at 5m; open water dive sites are typically better.
-    // Shelter multiplier is capped at 1.25 for turbidity — it's already a direct measurement.
-    // EXCEPTION: La Jolla Shores (scrippsProximity) — SASS is the direct source, no shelter boost.
+    // NOTE: Pier sensor is under-pier at 5m; it measures particle scattering (NTU) but NOT
+    // biological factors like phytoplankton that make water green and reduce viz.
+    // Ground truth: 2026-03-17 Pt Loma 0.25 NTU = 14-18 ft; 2026-03-22 LJ Shores 0.27 NTU + green water = 8-10 ft
     else if (D.turbidity !== undefined) {
       let lo, hi;
       const ntu = D.turbidity;
-      if (loc.scrippsProximity) {
-        // La Jolla Shores: SASS sensor is RIGHT HERE — use NTU directly, no adjustments
-        // These are the most accurate estimates in the entire app
-        if(ntu < 0.2)      { lo=22; hi=27; }  // exceptional clarity
-        else if(ntu < 0.3)  { lo=18; hi=23; }  // very clear — can see 30ft piling
-        else if(ntu < 0.5)  { lo=14; hi=19; }  // can see 14ft piling clearly
-        else if(ntu < 0.8)  { lo=10; hi=15; }  // 14ft piling faint
-        else if(ntu < 1.2)  { lo=7;  hi=12; }  // 11ft piling visible
-        else if(ntu < 2.0)  { lo=5;  hi=9;  }  // 4ft piling clear, 11ft faint
-        else if(ntu < 3.5)  { lo=3;  hi=6;  }  // only 4ft piling visible
-        else if(ntu < 5.0)  { lo=2;  hi=4;  }
-        else                 { lo=1;  hi=3;  }
-        vizSource = 'Scripps Pier (direct)';
-      } else {
-        // Other locations: pier reads cleaner than open water; conservative estimates
-        // Calibrated 2026-03-17: 0.25 NTU at pier = 20ft at Pt Loma (dusk, cloudy)
-        if(ntu < 0.3)      { lo=18; hi=23; }  // very clear at pier → good at dive site
-        else if(ntu < 0.5)  { lo=14; hi=19; }  // can see 14ft piling clearly
-        else if(ntu < 0.8)  { lo=10; hi=15; }  // 14ft piling faint
-        else if(ntu < 1.2)  { lo=7;  hi=12; }  // 11ft piling visible
-        else if(ntu < 2.0)  { lo=5;  hi=9;  }  // 4ft piling clear, 11ft faint
-        else if(ntu < 3.5)  { lo=3;  hi=6;  }  // only 4ft piling visible
-        else if(ntu < 5.0)  { lo=2;  hi=4;  }
-        else                 { lo=1;  hi=3;  }
-      }
-      // Mild shelter adjustment — turbidity is direct measurement, so only small boost for kelp
-      // Skip for scrippsProximity — the sensor IS the location
-      const turbShelter = loc.scrippsProximity ? 1.0 : Math.min(1.15, shelterMult);
+      // Conservative NTU→viz mapping — pier reads cleaner than what divers experience
+      if(ntu < 0.2)      { lo=15; hi=20; }  // very low turbidity
+      else if(ntu < 0.3)  { lo=12; hi=17; }  // clear at pier
+      else if(ntu < 0.5)  { lo=10; hi=15; }  // good conditions
+      else if(ntu < 0.8)  { lo=7;  hi=12; }  // moderate
+      else if(ntu < 1.2)  { lo=5;  hi=10; }  // elevated
+      else if(ntu < 2.0)  { lo=4;  hi=8;  }  // murky
+      else if(ntu < 3.5)  { lo=3;  hi=6;  }  // poor
+      else if(ntu < 5.0)  { lo=2;  hi=4;  }
+      else                 { lo=1;  hi=3;  }
+      // Mild shelter adjustment — turbidity is direct measurement, so only small boost
+      const turbShelter = Math.min(1.15, shelterMult);
       lo = Math.max(1, Math.round(lo * turbShelter));
       hi = Math.max(lo+1, Math.round(hi * turbShelter));
-      // If swell is also high, blend downward (pier is sheltered, open water will be worse)
-      // Reduced impact for scrippsProximity — Shores is also somewhat sheltered by the canyon
-      const swellDamp = loc.scrippsProximity ? 0.85 : 0.7;
-      const swellDampMod = loc.scrippsProximity ? 0.92 : 0.85;
+      // If swell is also high, blend downward (pier is sheltered, open water gets more surge)
       if (D.waveEnergy !== undefined && D.waveEnergy > 100) {
-        lo = Math.max(1, Math.round(lo * swellDamp));
-        hi = Math.max(lo+1, Math.round(hi * swellDamp));
+        lo = Math.max(1, Math.round(lo * 0.7));
+        hi = Math.max(lo+1, Math.round(hi * 0.7));
       } else if (D.waveEnergy !== undefined && D.waveEnergy > 50) {
-        lo = Math.max(1, Math.round(lo * swellDampMod));
-        hi = Math.max(lo+1, Math.round(hi * swellDampMod));
+        lo = Math.max(1, Math.round(lo * 0.85));
+        hi = Math.max(lo+1, Math.round(hi * 0.85));
+      }
+      // Chlorophyll reduction — phytoplankton makes water green, reduces viz independent of NTU
+      // NTU only measures particle scattering; chlorophyll absorbs light and cuts underwater visibility
+      // Ground truth: 2026-03-22 LJ Shores, 0.27 NTU + 0.65 chl = 8-10 ft (green water)
+      let suffix = '';
+      if (D.chlorophyll !== undefined && D.chlorophyll > 0) {
+        if (D.chlorophyll > 8)       { lo = Math.max(1, Math.round(lo * 0.35)); hi = Math.max(lo+1, Math.round(hi * 0.35)); suffix = ' (bloom)'; }
+        else if (D.chlorophyll > 3)  { lo = Math.max(1, Math.round(lo * 0.5));  hi = Math.max(lo+1, Math.round(hi * 0.5));  suffix = ' (green water)'; }
+        else if (D.chlorophyll > 1)  { lo = Math.max(1, Math.round(lo * 0.65)); hi = Math.max(lo+1, Math.round(hi * 0.65)); suffix = ' (green tinge)'; }
+        else if (D.chlorophyll > 0.4){ lo = Math.max(1, Math.round(lo * 0.8));  hi = Math.max(lo+1, Math.round(hi * 0.8)); }
       }
       // Cap range spread to 5ft max
       if (hi - lo > 5) hi = lo + 5;
-      let suffix = '';
-      if (D.chlorophyll > 8) suffix = ' (bloom)';
-      else if (D.chlorophyll > 3) suffix = ' (green water)';
       vizEst = `${lo}–${hi} ft${suffix}`;
-      vizSource = 'SASS';
+      vizSource = D.turbSource || 'Shore Station';
     }
     // PRIORITY 2: Rain overrides swell-based estimate
     else if(D.rainfall==='heavy') {
@@ -2591,6 +2713,32 @@ function setVal(id, text, source, badgeClass) {
   el.innerHTML=text + (source ? ` <span class="${cls}">${source}</span>` : '');
 }
 
+function updateDataWarning() {
+  const el = document.getElementById('dataWarning');
+  if (!el) return;
+  const warnings = [];
+  // Critical: turbidity sensor down = viz estimate is wave-energy based (less accurate)
+  if (srcStatus.sass === 'err') {
+    const stKeys = SHORE_STATION_MAP[currentLocation];
+    const stName = stKeys && stKeys[0] ? (SHORE_STATIONS[stKeys[0]]||{}).name : 'Shore station';
+    warnings.push(`${stName} sensor offline — visibility estimate is based on wave energy model (less accurate)`);
+  }
+  // CDIP buoy down = no swell data
+  if (srcStatus.noaa === 'err' && srcStatus.ndbc === 'err') {
+    warnings.push('Buoy data unavailable — swell and water temp may be inaccurate');
+  }
+  // Wind data missing
+  if (srcStatus.nws === 'err') {
+    warnings.push('Wind forecast unavailable — wind adjustments not applied');
+  }
+  if (warnings.length > 0) {
+    el.innerHTML = '<strong>Data Quality Notice:</strong> ' + warnings.join('. ') + '.';
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+  }
+}
+
 function updateSourceStatus() {
   const map = {noaa:'srcNoaa',ndbc:'srcNdbc',nws:'srcNws',sst:'srcSst',chl:'srcChl',sass:'srcSass',upwell:'srcUpwell'};
   for(const [key,elId] of Object.entries(map)) {
@@ -2603,9 +2751,14 @@ function updateSourceStatus() {
   // Update shore station label to show which station is being used
   const sassLabel = document.getElementById('srcSassLabel');
   if (sassLabel) {
-    const stKey = SHORE_STATION_MAP[currentLocation];
-    const st = stKey ? SHORE_STATIONS[stKey] : null;
-    sassLabel.textContent = st ? `${st.name} — Pier Temp/Turbidity/Chl (Live)` : 'Shore Station — No nearby station';
+    // D.turbSource holds the name of whichever station succeeded
+    if (D.turbSource) {
+      sassLabel.textContent = `${D.turbSource} — Pier Temp/Turbidity/Chl (Live)`;
+    } else {
+      const stKeys = SHORE_STATION_MAP[currentLocation];
+      const st = stKeys && stKeys[0] ? SHORE_STATIONS[stKeys[0]] : null;
+      sassLabel.textContent = st ? `${st.name} — Pier Sensor (Offline)` : 'Shore Station — No nearby station';
+    }
   }
 }
 
@@ -3401,9 +3554,13 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   baseLo = Math.max(1, Math.round(baseLo * windMult * rainMult * swellMult * dayDecay));
   baseHi = Math.max(baseLo + 1, Math.round(baseHi * windMult * rainMult * swellMult * dayDecay));
 
-  // Chlorophyll adjustment — HABs scale: bloom >8, green water >3
-  if (D.chlorophyll > 8) { baseLo = Math.max(1, baseLo - 5); baseHi = Math.max(baseLo + 1, baseHi - 4); }
-  else if (D.chlorophyll > 3) { baseLo = Math.max(1, baseLo - 2); baseHi = Math.max(baseLo + 1, baseHi - 2); }
+  // Chlorophyll adjustment with decay — blooms persist but weaken over days
+  // Day 0 = full penalty, Day 1 = 70%, Day 2 = 45%, Day 3 = 25%, Day 4+ = 10%
+  const chlDecay = [1.0, 0.7, 0.45, 0.25, 0.10][Math.min(dayIdx, 4)];
+  const chlEff = (D.chlorophyll || 0) * chlDecay; // effective chlorophyll for this forecast day
+  if (chlEff > 8) { baseLo = Math.max(1, baseLo - 5); baseHi = Math.max(baseLo + 1, baseHi - 4); }
+  else if (chlEff > 3) { baseLo = Math.max(1, baseLo - 2); baseHi = Math.max(baseLo + 1, baseHi - 2); }
+  else if (chlEff > 1) { baseLo = Math.max(1, baseLo - 1); baseHi = Math.max(baseLo + 1, baseHi - 1); }
 
   // Cap range spread to 5ft max, and realistic max of 30ft
   if (baseHi - baseLo > 5) baseHi = baseLo + 5;
@@ -4014,10 +4171,12 @@ const WEBCAMS = {
     { name: 'Pacific Beach Surf', url: 'https://www.surfline.com/surf-report/pacific-beach/5842041f4e65fad6a7708841', type: 'Surfline' },
   ],
   ljshores: [
+    { name: 'Scripps Underwater Viz', url: 'https://coollab.ucsd.edu/pierviz/', type: 'Free — Underwater' },
     { name: 'La Jolla Shores', url: 'https://hdontap.com/stream/532541/la-jolla-shores-live-surf-cam/', type: 'Free HD' },
     { name: 'Scripps Pier Cam', url: 'https://scripps.ucsd.edu/piercam', type: 'Free Live' },
   ],
   lajolla: [
+    { name: 'Scripps Underwater Viz', url: 'https://coollab.ucsd.edu/pierviz/', type: 'Free — Underwater' },
     { name: 'La Jolla Shores', url: 'https://hdontap.com/stream/532541/la-jolla-shores-live-surf-cam/', type: 'Free HD' },
     { name: 'Scripps Pier Cam', url: 'https://scripps.ucsd.edu/piercam', type: 'Free Live' },
   ],
@@ -4027,6 +4186,7 @@ const WEBCAMS = {
   ],
   delmar: [
     { name: 'Del Mar Beach', url: 'https://hdontap.com/stream/199841/del-mar-beach-north-live-webcam/', type: 'Free HD' },
+    { name: 'Del Mar City Cams', url: 'https://www.delmar.ca.us/767/Web-Cameras', type: 'Free Live' },
     { name: 'Del Mar Surf', url: 'https://www.surfline.com/surf-report/del-mar/5842041f4e65fad6a77088af', type: 'Surfline' },
   ],
   encinitas: [
@@ -4042,18 +4202,23 @@ const WEBCAMS = {
     { name: 'Oceanside Harbor', url: 'https://www.surfline.com/surf-report/oceanside-harbor/5842041f4e65fad6a7708832', type: 'Surfline' },
   ],
   newport: [
+    { name: 'Aliso Beach, Laguna', url: 'https://www.theranchlb.com/beach-cam', type: 'Free Live' },
     { name: 'The Wedge', url: 'https://www.surfline.com/surf-report/the-wedge/5842041f4e65fad6a770882b', type: 'Surfline' },
     { name: 'Newport Point', url: 'https://www.surfline.com/surf-report/newport-point/5842041f4e65fad6a77088f2', type: 'Surfline' },
   ],
   huntington: [
     { name: 'HB Pier', url: 'https://hbcams.com/', type: 'Free Live' },
+    { name: 'HB Pier (Coastal Commission)', url: 'https://www.surfline.com/surf-report/hb-pier-northside-southern-california_4223/', type: 'Surfline' },
     { name: 'HB Pier South', url: 'https://www.surfline.com/surf-report/huntington-beach-pier-southside/5842041f4e65fad6a77088ed', type: 'Surfline' },
   ],
   pv: [
+    { name: 'Venice Beach', url: 'https://www.westland.net/beachcam/', type: 'Free Live' },
+    { name: 'Santa Monica Pier', url: 'https://pacpark.com/santa-monica-pier-live-cams/pier/', type: 'Free Live' },
     { name: 'Redondo Breakwater', url: 'https://www.surfline.com/surf-report/redondo-breakwater/5842041f4e65fad6a7708921', type: 'Surfline' },
     { name: 'El Porto', url: 'https://www.surfline.com/surf-report/el-porto/5842041f4e65fad6a7708906', type: 'Surfline' },
   ],
   horseshoe: [
+    { name: 'Venice Beach', url: 'https://www.westland.net/beachcam/', type: 'Free Live' },
     { name: 'Redondo Breakwater', url: 'https://www.surfline.com/surf-report/redondo-breakwater/5842041f4e65fad6a7708921', type: 'Surfline' },
   ],
   malibu: [
@@ -4069,6 +4234,7 @@ const WEBCAMS = {
     { name: 'Ventura Point', url: 'https://www.surfline.com/surf-report/ventura-point/584204204e65fad6a77096b1', type: 'Surfline' },
   ],
   sb: [
+    { name: 'Santa Barbara Harbor & Beaches', url: 'https://www.santabarbara.com/community/live-web-cams/', type: 'Free Live' },
     { name: 'Leadbetter Point', url: 'https://www.surfline.com/surf-report/leadbetter-point/5842041f4e65fad6a7708960', type: 'Surfline' },
   ],
   refugio: [
@@ -4078,21 +4244,28 @@ const WEBCAMS = {
     { name: 'Catalina Island', url: 'https://www.livebeaches.com/state/california/', type: 'LiveBeaches' },
   ],
   anacapa: [
+    { name: 'Anacapa Landing Cove (NPS)', url: 'https://www.nps.gov/chis/photosmultimedia/anacapa-landing-cove-webcam.htm', type: 'Free Live' },
+    { name: 'Channel Islands Kelp Forest', url: 'https://www.nps.gov/chis/photosmultimedia/ocean-webcam.htm', type: 'Free — Underwater' },
     { name: 'Anacapa Island Cove', url: 'https://explore.org/livecams/oceans/channel-islands-national-park-anacapa-island-cove', type: 'Free Live' },
     { name: 'Ventura Coast', url: 'https://www.surfline.com/surf-report/c-st-/5842041f4e65fad6a7708828', type: 'Surfline' },
   ],
   santacruz: [
+    { name: 'Anacapa Landing Cove (NPS)', url: 'https://www.nps.gov/chis/photosmultimedia/anacapa-landing-cove-webcam.htm', type: 'Free Live' },
+    { name: 'Channel Islands Kelp Forest', url: 'https://www.nps.gov/chis/photosmultimedia/ocean-webcam.htm', type: 'Free — Underwater' },
     { name: 'Ventura Coast', url: 'https://www.surfline.com/surf-report/ventura-point/584204204e65fad6a77096b1', type: 'Surfline' },
   ],
   morro: [
     { name: 'Morro Bay Harbor', url: 'https://www.805webcams.com/morro-bay-california-harbor/', type: 'Free Live' },
     { name: 'Morro Bay Overlook', url: 'https://www.805webcams.com/morro-bay-california-overlook-live-webcam/', type: 'Free Live' },
+    { name: 'Cayucos Beach & Pier', url: 'https://805webcams.com/cayucos-beach-pier-california-webcam/', type: 'Free Live' },
+    { name: 'Pismo Beach', url: 'https://www.experiencepismobeach.com/plan/web-cam/', type: 'Free Live' },
   ],
   monterey: [
     { name: 'Monterey Bay Aquarium', url: 'https://www.montereybayaquarium.org/animals/live-cams/monterey-bay-cam', type: 'Free Live' },
     { name: 'Monterey Bay Surf', url: 'https://www.surfline.com/surf-report/monterey-bay/584204214e65fad6a7709d05', type: 'Surfline' },
   ],
   carmel: [
+    { name: 'Point Lobos Whalers Cove', url: 'https://www.parks.ca.gov/?page_id=31194', type: 'Free Live' },
     { name: 'Lovers Point', url: 'https://www.surfline.com/surf-report/lovers-point/5842041f4e65fad6a7708bbc', type: 'Surfline' },
     { name: 'Monterey Bay', url: 'https://www.surfline.com/surf-report/monterey-bay/584204214e65fad6a7709d05', type: 'Surfline' },
   ],
@@ -4102,14 +4275,16 @@ const WEBCAMS = {
   ],
   bodega: [
     { name: 'Bodega Marine Lab', url: 'https://marinescience.ucdavis.edu/bml/webcam', type: 'Free Live' },
+    { name: 'Point Reyes Beach', url: 'https://www.nps.gov/media/webcam/view.htm?id=535B0AAA-9BF1-5B06-C93C9A9D48C36D00', type: 'Free Live' },
     { name: 'Bodega Bay', url: 'https://www.surfline.com/surf-reports-forecasts-cams/united-states/california/sonoma-county/bodega-bay/5329735', type: 'Surfline' },
   ],
   fortbragg: [
-    { name: 'Noyo Harbor Cam', url: 'https://www.noyocenter.org/live-web-cam', type: 'Free Live' },
     { name: 'Caspar Beach', url: 'https://www.casparbeachrvpark.com/caspar-beach-cam', type: 'Free Live' },
+    { name: 'Noyo Harbor Cam', url: 'https://www.noyocenter.org/live-web-cam', type: 'Free Live' },
   ],
   trinidad: [
     { name: 'Trinidad Pier', url: 'https://trinidad-rancheria.org/trinidad-pier-webcam/', type: 'Free Live' },
+    { name: 'Crescent City Harbor', url: 'https://www.ccharbor.com/sunset-cam', type: 'Free Live' },
     { name: 'Trinidad State Beach', url: 'https://www.surfline.com/surf-report/trinidad-state-beach/640a3fab606c458564b0a46f', type: 'Surfline' },
   ],
 };
@@ -4426,8 +4601,70 @@ fetchAllData();
 })();
 
 // PWA Service Worker registration
+// ===== PWA INSTALL PROMPT =====
+let deferredPrompt = null;
+const installBanner = document.getElementById('installBanner');
+const installBtn = document.getElementById('installBtn');
+const installDismiss = document.getElementById('installDismiss');
+
+// Catch the browser's install prompt and show our custom banner instead
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Don't show if user dismissed within the last 7 days
+  const dismissed = localStorage.getItem('installDismissed');
+  if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) return;
+  // Don't show if already installed
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  installBanner.classList.add('show');
+});
+
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const result = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBanner.classList.remove('show');
+});
+
+installDismiss.addEventListener('click', () => {
+  installBanner.classList.remove('show');
+  localStorage.setItem('installDismissed', Date.now().toString());
+});
+
+// iOS Safari doesn't fire beforeinstallprompt — show instructions instead
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+if (isIOS && !isStandalone) {
+  const dismissed = localStorage.getItem('installDismissed');
+  if (!dismissed || Date.now() - parseInt(dismissed) >= 7 * 24 * 60 * 60 * 1000) {
+    const desc = document.querySelector('.install-banner-desc');
+    desc.textContent = 'Tap the Share button ↑ then "Add to Home Screen" for the app experience';
+    installBtn.style.display = 'none';
+    setTimeout(() => { installBanner.classList.add('show'); }, 3000);
+  }
+}
+
+// Force-clear stale service workers from old deployments (GitHub Pages, old versions)
+// Then register the current one. This ensures users never get stuck on cached code.
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    let cleared = false;
+    for (const reg of registrations) {
+      // Unregister any SW that isn't from current origin or is outdated
+      if (reg.active && reg.active.scriptURL && !reg.active.scriptURL.includes('sw.js')) {
+        reg.unregister();
+        cleared = true;
+      }
+    }
+    // Register current SW (will replace old versions via skipWaiting)
+    navigator.serviceWorker.register('/sw.js?v=4').then(reg => {
+      // Force update check on every page load
+      reg.update();
+    }).catch(() => {});
+    // If we cleared old workers, reload once to get fresh content
+    if (cleared) location.reload();
+  });
 }
 
 // =========================================================================
