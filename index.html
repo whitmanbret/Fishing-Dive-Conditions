@@ -3181,21 +3181,36 @@ function updateConditionsBrief() {
   const amPeriods = today.filter(p => new Date(p.startTime).getHours() < 12);
   const pmPeriods = today.filter(p => new Date(p.startTime).getHours() >= 12);
 
+  // NWS windSpeed is a string like "5 mph" or "10 to 15 mph" — parse to number
+  function parseWind(ws) {
+    if (typeof ws === 'number') return ws;
+    if (!ws) return 0;
+    const nums = ws.match(/\d+/g);
+    if (!nums) return 0;
+    return nums.length > 1 ? (parseInt(nums[0]) + parseInt(nums[1])) / 2 : parseInt(nums[0]);
+  }
+  // NWS precipPct is {unitCode, value} object
+  function parsePrecip(pp) {
+    if (typeof pp === 'number') return pp;
+    if (pp && typeof pp === 'object' && pp.value !== undefined) return pp.value || 0;
+    return 0;
+  }
+
   function avgWind(periods) {
     if (!periods.length) return 0;
-    return periods.reduce((s,p) => s + (p.windSpeed || 0), 0) / periods.length;
+    return periods.reduce((s,p) => s + parseWind(p.windSpeed), 0) / periods.length;
   }
   function maxWind(periods) {
-    return Math.max(...periods.map(p => p.windSpeed || 0));
+    if (!periods.length) return 0;
+    return Math.max(...periods.map(p => parseWind(p.windSpeed)));
   }
   function avgPrecip(periods) {
     if (!periods.length) return 0;
-    return periods.reduce((s,p) => s + (p.precipPct || 0), 0) / periods.length;
+    return periods.reduce((s,p) => s + parsePrecip(p.probabilityOfPrecipitation), 0) / periods.length;
   }
   function primaryWindDir(periods) {
-    const dirs = periods.map(p => p.windDirection).filter(Boolean);
+    const dirs = periods.map(p => p.windDirection).filter(d => d && d.length > 0);
     if (!dirs.length) return '';
-    // Most common direction
     const counts = {};
     dirs.forEach(d => { counts[d] = (counts[d]||0) + 1; });
     return Object.entries(counts).sort((a,b) => b[1]-a[1])[0][0];
