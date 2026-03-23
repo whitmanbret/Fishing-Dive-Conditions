@@ -748,6 +748,45 @@
     @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
     .toast-title { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
     .toast-body { color: var(--text-secondary); }
+
+    /* ===== INSTALL APP BANNER ===== */
+    .install-banner {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(135deg, #1a2d4d 0%, #0a1628 100%);
+      border-top: 1px solid var(--accent);
+      padding: 14px 16px; z-index: 3000;
+      animation: slideUp 0.4s ease-out;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+    }
+    .install-banner.show { display: block; }
+    .install-banner-inner {
+      max-width: 600px; margin: 0 auto;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .install-banner-icon {
+      width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .install-banner-text { flex: 1; }
+    .install-banner-title {
+      font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px;
+    }
+    .install-banner-desc {
+      font-size: 11px; color: var(--text-secondary); line-height: 1.3;
+    }
+    .install-banner-btn {
+      background: var(--accent); color: #fff; border: none; border-radius: 8px;
+      padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .install-banner-btn:hover { background: #1a7ae6; }
+    .install-banner-close {
+      background: none; border: none; color: var(--text-muted); font-size: 20px;
+      cursor: pointer; padding: 4px 8px; flex-shrink: 0; line-height: 1;
+    }
+    .install-banner-close:hover { color: var(--text-primary); }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   </style>
 </head>
 <body>
@@ -846,6 +885,19 @@
           </div>
         </div>
         <div class="alert-note">Alerts only work while this page is open in a browser tab. Conditions are checked every 30 minutes.</div>
+      </div>
+    </div>
+
+    <!-- Install App Banner -->
+    <div class="install-banner" id="installBanner">
+      <div class="install-banner-inner">
+        <div class="install-banner-icon">🎣</div>
+        <div class="install-banner-text">
+          <div class="install-banner-title">Install SpearFactor Conditions</div>
+          <div class="install-banner-desc">Add to your home screen for instant access — works offline too</div>
+        </div>
+        <button class="install-banner-btn" id="installBtn">Install</button>
+        <button class="install-banner-close" id="installDismiss">&times;</button>
       </div>
     </div>
 
@@ -4468,6 +4520,50 @@ fetchAllData();
 })();
 
 // PWA Service Worker registration
+// ===== PWA INSTALL PROMPT =====
+let deferredPrompt = null;
+const installBanner = document.getElementById('installBanner');
+const installBtn = document.getElementById('installBtn');
+const installDismiss = document.getElementById('installDismiss');
+
+// Catch the browser's install prompt and show our custom banner instead
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Don't show if user dismissed within the last 7 days
+  const dismissed = localStorage.getItem('installDismissed');
+  if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) return;
+  // Don't show if already installed
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  installBanner.classList.add('show');
+});
+
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const result = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBanner.classList.remove('show');
+});
+
+installDismiss.addEventListener('click', () => {
+  installBanner.classList.remove('show');
+  localStorage.setItem('installDismissed', Date.now().toString());
+});
+
+// iOS Safari doesn't fire beforeinstallprompt — show instructions instead
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+if (isIOS && !isStandalone) {
+  const dismissed = localStorage.getItem('installDismissed');
+  if (!dismissed || Date.now() - parseInt(dismissed) >= 7 * 24 * 60 * 60 * 1000) {
+    const desc = document.querySelector('.install-banner-desc');
+    desc.textContent = 'Tap the Share button ↑ then "Add to Home Screen" for the app experience';
+    installBtn.style.display = 'none';
+    setTimeout(() => { installBanner.classList.add('show'); }, 3000);
+  }
+}
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
