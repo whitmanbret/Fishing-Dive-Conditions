@@ -4645,8 +4645,26 @@ if (isIOS && !isStandalone) {
   }
 }
 
+// Force-clear stale service workers from old deployments (GitHub Pages, old versions)
+// Then register the current one. This ensures users never get stuck on cached code.
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    let cleared = false;
+    for (const reg of registrations) {
+      // Unregister any SW that isn't from current origin or is outdated
+      if (reg.active && reg.active.scriptURL && !reg.active.scriptURL.includes('sw.js')) {
+        reg.unregister();
+        cleared = true;
+      }
+    }
+    // Register current SW (will replace old versions via skipWaiting)
+    navigator.serviceWorker.register('/sw.js?v=4').then(reg => {
+      // Force update check on every page load
+      reg.update();
+    }).catch(() => {});
+    // If we cleared old workers, reload once to get fresh content
+    if (cleared) location.reload();
+  });
 }
 
 // =========================================================================
