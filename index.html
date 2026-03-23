@@ -4620,11 +4620,24 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 installBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const result = await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  installBanner.classList.remove('show');
+  if (deferredPrompt) {
+    // Chrome/Edge/Android — use the native install prompt
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBanner.classList.remove('show');
+  } else {
+    // Safari/Firefox — show manual instructions
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isMac = /Macintosh/.test(navigator.userAgent);
+    if (isIOS) {
+      alert('To install:\n\n1. Tap the Share button (square with arrow) at the bottom of Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add"');
+    } else if (isMac) {
+      alert('To install:\n\n1. In Safari: File → Add to Dock\n2. In Chrome: Click the install icon (⊕) in the address bar\n3. Or bookmark this page for quick access');
+    } else {
+      alert('To install:\n\n1. Open your browser menu (⋮)\n2. Tap "Add to Home Screen" or "Install App"');
+    }
+  }
 });
 
 installDismiss.addEventListener('click', () => {
@@ -4632,15 +4645,16 @@ installDismiss.addEventListener('click', () => {
   localStorage.setItem('installDismissed', Date.now().toString());
 });
 
-// iOS Safari doesn't fire beforeinstallprompt — show instructions instead
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+// Show install banner for ALL browsers (not just Chrome)
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-if (isIOS && !isStandalone) {
+if (!isStandalone && !deferredPrompt) {
   const dismissed = localStorage.getItem('installDismissed');
   if (!dismissed || Date.now() - parseInt(dismissed) >= 7 * 24 * 60 * 60 * 1000) {
-    const desc = document.querySelector('.install-banner-desc');
-    desc.textContent = 'Tap the Share button ↑ then "Add to Home Screen" for the app experience';
-    installBtn.style.display = 'none';
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      const desc = document.querySelector('.install-banner-desc');
+      desc.textContent = 'Tap the Share button ↑ then "Add to Home Screen" for the app experience';
+    }
     setTimeout(() => { installBanner.classList.add('show'); }, 3000);
   }
 }
