@@ -2077,7 +2077,7 @@ async function fetchSingleShoreStation(station) {
   if (station.turb) vars.push(station.turb);
   if (station.chl) vars.push(station.chl);
   if (station.sal) vars.push(station.sal);
-  const cbName = '_shore_' + Date.now() + '_' + station.id.slice(0,8);
+  const cbName = '_shore_' + Date.now() + '_' + station.id.slice(0,8).replace(/[^a-zA-Z0-9]/g, '');
   const url = `https://erddap.caloos.org/erddap/tabledap/${station.id}.json?${vars.join(',')}&time%3E=${fmt(yesterday)}&time%3C=${fmt(now)}&.jsonp=${cbName}`;
   const d = await new Promise((resolve, reject) => {
     const timeout = setTimeout(() => { delete window[cbName]; reject('timeout'); }, 8000);
