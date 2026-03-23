@@ -11,7 +11,7 @@
   </script>
   <title>California Spearfishing Conditions — Live Dive & Fish Forecast | SpearFactor</title>
   <meta name="description" content="Live spearfishing conditions for all of California. Real-time dive visibility, fish probability scores, swell, tide, wind, and 5-day forecast for 30+ dive sites from San Diego to Humboldt.">
-  <meta name="keywords" content="California spearfishing conditions, dive visibility forecast, spearfishing forecast, La Jolla diving, Point Loma kelp, Palos Verdes diving, Catalina Island diving, Santa Barbara spearfishing, Monterey diving, fish report California, yellowtail forecast, white sea bass conditions, halibut, lingcod, ocean conditions today">
+  <meta name="keywords" content="dive visibility forecast, California spearfishing conditions, underwater visibility prediction, water clarity forecast, ocean conditions today, La Jolla dive conditions, Point Loma spearfishing, Catalina Island diving, Channel Islands dive conditions, Palos Verdes diving, Santa Barbara diving, Monterey diving, San Diego dive visibility, water temperature California coast, yellowtail forecast, white sea bass conditions, halibut spearfishing, lingcod California, swell forecast diving, tide chart diving, dive conditions app, spearfishing forecast tool">
   <meta name="author" content="SpearFactor">
   <link rel="canonical" href="https://conditions.spearfactor.com/">
 
@@ -48,9 +48,10 @@
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "SpearFactor Conditions",
-    "description": "Live spearfishing conditions forecast for San Diego. Real-time dive visibility, fish probability, swell, tide, wind, and species-specific scoring for 8 dive sites.",
-    "url": "https://www.spearfactor.com/conditions",
+    "name": "SpearFactor Dive & Fish Conditions",
+    "alternateName": "SpearFactor Conditions",
+    "description": "Free real-time dive visibility forecast and fish probability tool for 30+ California dive sites. Uses live oceanographic sensor data from CDIP buoys, NDBC buoys, pier shore stations, NOAA tides, NWS weather, satellite imagery, and CPFV catch reports to predict underwater visibility and species-specific fish scores.",
+    "url": "https://conditions.spearfactor.com/",
     "applicationCategory": "SportsApplication",
     "operatingSystem": "Web",
     "offers": {
@@ -63,20 +64,26 @@
       "name": "SpearFactor",
       "url": "https://www.spearfactor.com"
     },
-    "about": {
-      "@type": "Thing",
-      "name": "Spearfishing",
-      "description": "Underwater hunting using breath-hold diving"
-    },
+    "about": [
+      { "@type": "Thing", "name": "Spearfishing", "description": "Underwater hunting using breath-hold diving" },
+      { "@type": "Thing", "name": "Dive Visibility Forecast", "description": "Predicting underwater water clarity using oceanographic data" },
+      { "@type": "Thing", "name": "Ocean Conditions", "description": "Real-time swell, tide, wind, water temperature, and current data" }
+    ],
     "spatialCoverage": {
       "@type": "Place",
-      "name": "San Diego, California",
+      "name": "California Coast",
+      "description": "30+ dive sites from Imperial Beach to Trinidad, including Channel Islands and Catalina",
       "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": 32.85,
-        "longitude": -117.27
+        "@type": "GeoShape",
+        "box": "32.42 -124.20 41.05 -117.13"
+      },
+      "containedInPlace": {
+        "@type": "AdministrativeArea",
+        "name": "California, United States"
       }
-    }
+    },
+    "featureList": "Real-time dive visibility forecast, Fish probability scoring, 5-day conditions forecast, Live buoy and pier sensor data, Species-specific scoring (yellowtail, white sea bass, halibut, lingcod), Tide and swell analysis, Beach webcam links, Local fishing report aggregation",
+    "screenshot": "https://conditions.spearfactor.com/og-image.jpg"
   }
   </script>
 
@@ -88,18 +95,50 @@
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "What are the spearfishing conditions in San Diego today?",
+        "name": "What is the dive visibility in California today?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "SpearFactor Conditions provides real-time dive visibility and fish probability scores for 8 San Diego dive sites including La Jolla, Point Loma, and Coronado Islands. Scores are calculated from live buoy data, tides, wind, swell, water temperature, and seasonal fish patterns."
+          "text": "SpearFactor Conditions provides real-time dive visibility forecasts for 30+ California dive sites from San Diego to Humboldt County. Visibility estimates are calculated from live CDIP buoy wave data, pier shore station turbidity and chlorophyll sensors, NOAA wind forecasts, and tidal conditions — updated on every page load."
         }
       },
       {
         "@type": "Question",
-        "name": "What is the best time to spearfish in San Diego?",
+        "name": "How do you predict underwater visibility for diving?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "The best spearfishing in San Diego is typically June through September when water temps reach 65-72°F. Yellowtail peak in July, White Sea Bass in May-June, and Halibut during grunion runs (March-September). Check SpearFactor Conditions for daily optimal dive windows based on tide, wind, and swell."
+          "text": "SpearFactor uses real-time oceanographic sensor data to forecast dive visibility. The model combines wave energy from CDIP buoys, turbidity readings from CalOOS pier sensors (measuring actual water clarity), chlorophyll concentrations (which indicate green water from phytoplankton), wind speed, rainfall, and tidal state. Each factor is weighted based on its measured impact on underwater visibility, calibrated against ground-truth diver reports."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the spearfishing conditions in San Diego today?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SpearFactor Conditions provides real-time dive visibility and fish probability scores for 11 San Diego County dive sites including La Jolla Shores, Point Loma, Bird Rock, Del Mar, and Coronado Islands. Scores are calculated from live Scripps Pier sensor data, CDIP buoys, NOAA tides, NWS wind forecasts, water temperature, and seasonal fish patterns from CPFV catch data."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the best dive visibility forecast app for California?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SpearFactor Conditions is a free dive visibility forecast tool covering 30+ California dive sites. Unlike crowdsourced report apps that require someone to dive first, SpearFactor uses live oceanographic sensors (CDIP buoys, pier turbidity meters, chlorophyll sensors, NDBC weather buoys) to predict visibility before you get in the water. It also provides species-specific fish probability scores and a 5-day forecast."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the water temperature for diving in California?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "California dive water temperatures range from 48°F in Northern California winter to 72°F in Southern California summer. SpearFactor Conditions shows real-time water temperature from pier shore stations and NDBC buoys for each dive site. For shore dives, pier sensor readings are more accurate than offshore buoy temps, which can read 2-3°F warmer than actual nearshore conditions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the best time to spearfish in California?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Peak spearfishing in Southern California is June through September when water temps reach 65-72°F and visibility is highest. Yellowtail arrive March-November (peak July-August), White Sea Bass peak May-June, and Halibut are best March-April. Northern California lingcod season runs in summer. SpearFactor Conditions shows species-specific fish probability scores based on current water temperature, tide, and historical catch data."
         }
       },
       {
@@ -107,7 +146,7 @@
         "name": "What is the dive visibility in La Jolla today?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "La Jolla dive visibility varies from 5 to 40+ feet depending on swell, wind, rainfall, and chlorophyll levels. SpearFactor Conditions calculates real-time visibility estimates using live CDIP buoy data, NOAA wind forecasts, and wave energy measurements."
+          "text": "SpearFactor shows real-time La Jolla dive visibility using the Scripps Pier turbidity and chlorophyll sensors — the closest oceanographic instruments to the dive sites. Visibility at La Jolla Shores typically ranges from 5 to 30+ feet depending on swell, wind, rainfall, and plankton levels. The Scripps sensor provides a direct measurement of water clarity, not just a model estimate."
         }
       }
     ]
