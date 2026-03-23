@@ -3555,13 +3555,27 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   baseLo = Math.max(1, Math.round(baseLo * windMult * rainMult * swellMult * dayDecay));
   baseHi = Math.max(baseLo + 1, Math.round(baseHi * windMult * rainMult * swellMult * dayDecay));
 
-  // Chlorophyll adjustment with decay — blooms persist but weaken over days
-  // Day 0 = full penalty, Day 1 = 70%, Day 2 = 45%, Day 3 = 25%, Day 4+ = 10%
-  const chlDecay = [1.0, 0.7, 0.45, 0.25, 0.10][Math.min(dayIdx, 4)];
-  const chlEff = (D.chlorophyll || 0) * chlDecay; // effective chlorophyll for this forecast day
-  if (chlEff > 8) { baseLo = Math.max(1, baseLo - 5); baseHi = Math.max(baseLo + 1, baseHi - 4); }
-  else if (chlEff > 3) { baseLo = Math.max(1, baseLo - 2); baseHi = Math.max(baseLo + 1, baseHi - 2); }
-  else if (chlEff > 1) { baseLo = Math.max(1, baseLo - 1); baseHi = Math.max(baseLo + 1, baseHi - 1); }
+  // Chlorophyll adjustment — blooms persist 3-7 days in CA coastal waters
+  // Slow decay: Day 0 = full, Day 1 = 90%, Day 2 = 80%, Day 3 = 65%, Day 4 = 50%
+  const chlDecay = [1.0, 0.9, 0.8, 0.65, 0.50][Math.min(dayIdx, 4)];
+  const chlEff = (D.chlorophyll || 0) * chlDecay;
+  if (chlEff > 8) { baseLo = Math.max(1, Math.round(baseLo * 0.4)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.45)); }
+  else if (chlEff > 3) { baseLo = Math.max(1, Math.round(baseLo * 0.6)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.65)); }
+  else if (chlEff > 1.5) { baseLo = Math.max(1, Math.round(baseLo * 0.75)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.8)); }
+  else if (chlEff > 0.5) { baseLo = Math.max(1, Math.round(baseLo * 0.85)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.88)); }
+
+  // Turbidity also drifts toward regional average over future days (less certainty)
+  // Don't assume today's clean/dirty water persists unchanged for 5 days
+  if (dayIdx > 0 && D.turbidity !== undefined) {
+    const avgNTU = 0.5; // regional average turbidity for CA coast
+    const turbDrift = 1 + (dayIdx * 0.08) * (D.turbidity < avgNTU ? -1 : 0.5);
+    // If water is currently clean (low NTU), future days drift slightly worse
+    // If water is currently dirty (high NTU), future days drift slightly better
+    if (D.turbidity < avgNTU) {
+      baseLo = Math.max(1, Math.round(baseLo * Math.max(0.7, turbDrift)));
+      baseHi = Math.max(baseLo + 1, Math.round(baseHi * Math.max(0.7, turbDrift)));
+    }
+  }
 
   // Cap range spread to 5ft max, and realistic max of 30ft
   if (baseHi - baseLo > 5) baseHi = baseLo + 5;
