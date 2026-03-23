@@ -1644,8 +1644,12 @@ async function fetchTideState() {
         else if(prev.type==='H'&&next.type==='L') D.tideState='outgoing';
         const hoursBetween=(next.time-prev.time)/3600000;
         const heightDiff=Math.abs(next.value-prev.value);
-        D.currentStrength=Math.min(2.0, heightDiff/hoursBetween*0.8);
-        D.currentDir=D.tideState==='incoming'?'north':'south';
+        // Only set tide-based current if HF Radar hasn't already provided measured data
+        if (!D.currentSource) {
+          D.currentStrength=Math.min(2.0, heightDiff/hoursBetween*0.8);
+          D.currentDir=D.tideState==='incoming'?'north':'south';
+          D.currentSource = 'tide';
+        }
       }
       srcStatus.noaa='ok';
     }
@@ -1815,7 +1819,7 @@ async function fetchBuoyData() {
   for (const buoyId of buoys) {
     try {
       const ago = new Date(Date.now() - 12*3600000);
-      const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station,time,wd,wspd,wvht,dpd,apd,mwd,wtmp,atmp&station=%22${buoyId}%22&time>=${ago.toISOString()}&orderByMax(%22time%22)`;
+      const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station%2Ctime%2Cwd%2Cwspd%2Cwvht%2Cdpd%2Capd%2Cmwd%2Cwtmp%2Catmp&station=%22${buoyId}%22&time%3E=${encodeURIComponent(ago.toISOString())}&orderByMax(%22time%22)`;
       const r = await fetchWithTimeout(url);
       if (r.ok) {
         const d = await r.json();
@@ -1927,12 +1931,13 @@ async function fetchUpwelling() {
     const cbName = '_upwell_' + Date.now();
     const url = `https://oceanview.pfeg.noaa.gov/erddap/tabledap/${dataset}.json?time,upwelling_index&time%3E=${ago.toISOString()}&.jsonp=${cbName}`;
     const data = await new Promise((resolve, reject) => {
-      window[cbName] = d => { resolve(d); delete window[cbName]; };
+      const timeout = setTimeout(() => { delete window[cbName]; reject(new Error('JSONP timeout')); }, 10000);
+      window[cbName] = d => { clearTimeout(timeout); delete window[cbName]; resolve(d); };
       const s = document.createElement('script');
       s.src = url;
-      s.onerror = () => { delete window[cbName]; reject(new Error('JSONP failed')); };
+      s.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject(new Error('JSONP failed')); };
       document.head.appendChild(s);
-      setTimeout(() => { delete window[cbName]; reject(new Error('JSONP timeout')); }, 10000);
+      setTimeout(() => { try { document.head.removeChild(s); } catch(e){} }, 11000);
     });
     if(data.table&&data.table.rows&&data.table.rows.length>0) {
       const rows=data.table.rows; D.upwellingIndex=rows[rows.length-1][1];
@@ -2127,8 +2132,9 @@ async function fetchSingleShoreStation(station) {
           D.waterTempSource = station.name;
         }
       }
-      // Turbidity
-      const turb = extract(station.turb);
+      // Turbidity — clamp negative sensor noise to 0
+      const turbRaw = extract(station.turb);
+      const turb = turbRaw !== null ? Math.max(0, turbRaw) : null;
       if (turb !== null) {
         D.turbidity = turb;
         D.turbSource = station.name;
@@ -2162,10 +2168,10 @@ async function fetchNDBCBuoy() {
   // Try each buoy in order until one returns data
   for (const buoyId of buoyIds) {
     try {
-      const cbName = '_ndbc_' + Date.now() + '_' + buoyId;
+      const cbName = '_ndbc_' + Date.now() + '_' + buoyId.replace(/[^a-zA-Z0-9]/g, '');
       const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station%2Ctime%2Cwtmp%2Cwspd%2Cgst%2Cwd%2Catmp%2Cbar&station=%22${buoyId}%22&time%3E=now-2hours&orderBy(%22time%22)&.jsonp=${cbName}`;
       const data = await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => { reject('timeout'); }, 4000);
+        const timeout = setTimeout(() => { delete window[cbName]; reject('timeout'); }, 4000);
         window[cbName] = d => { clearTimeout(timeout); delete window[cbName]; resolve(d); };
         const s = document.createElement('script');
         s.src = url;
@@ -2263,6 +2269,7 @@ async function fetchHFRadarCurrent() {
     D.currentStrength = parseFloat(speedKts.toFixed(2));
     D.currentDir = dirLabel;
     D.currentDirDeg = Math.round(dirDeg);
+    D.currentSource = 'hfradar'; // HF Radar is authoritative — prevents tide estimate from overwriting
     D.currentSource = 'HF Radar';
     srcStatus.hfr = 'ok';
   } catch(e) {}
