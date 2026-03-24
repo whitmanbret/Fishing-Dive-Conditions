@@ -3285,11 +3285,23 @@ function updateConditionsBrief() {
   const amPrecip = avgPrecip(amPeriods);
   const amTide = tideNarrative(5, 11);
 
-  let am = 'Morning: ';
+  // Location-specific context
+  let locContext = '';
+  if (loc.offshore) locContext = 'For the boat ride out, expect ';
+  else if (loc.bottom === 'sand') locContext = 'Sandy bottom at ' + loc.name + ' — ';
+  else if (loc.kelpDensity === 'heavy') locContext = 'Thick kelp canopy at ' + loc.name + ' — ';
+  else if (loc.kelpDensity === 'moderate') locContext = 'Moderate kelp at ' + loc.name + ' — ';
+  else locContext = loc.name + ' — ';
+
+  let am = 'Morning: ' + locContext;
   // Visibility and water
-  am += clarityDesc + ' with visibility around ' + vizText + '. ';
+  am += clarityDesc.charAt(0).toLowerCase() + clarityDesc.slice(1) + ' with visibility around ' + vizText + '. ';
   // Swell
-  if (swellDesc) am += 'Expect ' + swellDesc + '. ';
+  if (swellDesc) {
+    if (loc.shelter === 'high') am += swellDesc.charAt(0).toUpperCase() + swellDesc.slice(1) + ' but this spot is well protected. ';
+    else if (loc.shelter === 'low' || loc.shelter === 'none') am += swellDesc.charAt(0).toUpperCase() + swellDesc.slice(1) + ' — this spot is exposed, expect surge. ';
+    else am += 'Expect ' + swellDesc + '. ';
+  }
   // Wind
   am += 'Early ' + windDesc(amWind, amMaxWind, amDir);
   // Tide
