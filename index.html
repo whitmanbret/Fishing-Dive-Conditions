@@ -631,6 +631,8 @@
     }
     .leaflet-popup-content .popup-btn:hover { opacity: 0.85; }
     .leaflet-popup-close-button { color: var(--text-secondary) !important; }
+    .map-tooltip { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 12px; font-family: inherit; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+    .map-tooltip::before { border-top-color: var(--border) !important; }
     /* Pulsing current-spot marker */
     @keyframes mapPulse {
       0% { box-shadow: 0 0 0 0 rgba(44,140,255,0.5); }
@@ -4347,6 +4349,10 @@ function createSpotMarker(key, loc, isCurrent) {
     <button class="popup-btn" onclick="selectSpotFromMap('${key}')">View Conditions</button>
   `;
   marker.bindPopup(popupHTML, { closeButton: true, minWidth: 140 });
+  // Hover tooltip with name + viz
+  const vizText = (isCurrent && document.getElementById('vizFeetHero')) ? document.getElementById('vizFeetHero').textContent : '';
+  const tooltipText = vizText && vizText !== '--' ? `${loc.name} — ${vizText}` : loc.name;
+  marker.bindTooltip(tooltipText, { direction: 'top', offset: [0, -8], className: 'map-tooltip' });
   return marker;
 }
 
