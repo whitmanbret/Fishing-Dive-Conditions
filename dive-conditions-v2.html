@@ -3703,7 +3703,23 @@ function calcSlotForecastScores(slot, dayIdx) {
 }
 
 function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
-  // Start from the SAME base as the current-day estimate for consistency
+  // For today (dayIdx 0): use the ACTUAL current viz estimate so forecast matches real-time
+  if (dayIdx === 0) {
+    const heroEl = document.getElementById('vizFeetHero');
+    if (heroEl && heroEl.textContent && heroEl.textContent !== '--') {
+      const parts = heroEl.textContent.match(/(\d+)\D+(\d+)/);
+      if (parts) {
+        let lo = parseInt(parts[1]);
+        let hi = parseInt(parts[2]);
+        // Slight wind adjustment within today's slots
+        if (avgWind > 12) { lo = Math.max(1, Math.round(lo * 0.8)); hi = Math.max(lo + 1, Math.round(hi * 0.85)); }
+        else if (avgWind > 8) { lo = Math.max(1, Math.round(lo * 0.9)); hi = Math.max(lo + 1, Math.round(hi * 0.92)); }
+        return `${lo}–${hi} ft`;
+      }
+    }
+  }
+
+  // Future days: calculate from sensor data with decay
   const loc = LOCATIONS[currentLocation];
   let baseLo, baseHi;
 
