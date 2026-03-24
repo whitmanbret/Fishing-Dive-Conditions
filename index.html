@@ -1138,6 +1138,9 @@ const LOCATIONS = {
   carlsbad:    { name: 'Carlsbad Reef', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.12, lon: -117.35, depth: '25-45 ft', kelpDensity: 'low', nwsGrid: 'SGX/54,20' },
   oceanside:   { name: 'Oceanside', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225'], lat: 33.19, lon: -117.40, depth: '15-60 ft', kelpDensity: 'low', nwsGrid: 'SGX/54,20' },
   // ── Orange County ──
+  danapoint:   { name: 'Dana Point / Salt Creek', bottom: 'mixed', tideStation: '9410580', coast: 230, shelter: 'low', buoys: ['46242','46225'], lat: 33.4756, lon: -117.7218, depth: '35-70 ft', kelpDensity: 'heavy', nwsGrid: 'SGX/42,51' },
+  laguna:      { name: 'Laguna Beach (Shaw\'s / Diver\'s Cove)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5450, lon: -117.7987, depth: '15-50 ft', kelpDensity: 'moderate', marineReserve: true, nwsGrid: 'LOX/167,20' },
+  crystalcove: { name: 'Crystal Cove', bottom: 'mixed', tideStation: '9410580', coast: 220, shelter: 'low', buoys: ['46242'], lat: 33.5571, lon: -117.8360, depth: '10-52 ft', kelpDensity: 'heavy', nwsGrid: 'LOX/166,21' },
   newport:     { name: 'Newport / Corona del Mar', bottom: 'rock', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.59, lon: -117.87, depth: '10-30 ft', kelpDensity: 'low', nwsGrid: 'SGX/35,58' },
   huntington:  { name: 'Huntington Cliffs', bottom: 'sand', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.65, lon: -117.98, depth: '8-20 ft', kelpDensity: 'none', nwsGrid: 'SGX/35,58' },
   // ── Los Angeles County ──
@@ -1181,7 +1184,7 @@ const REGION_MAP = {
   coronado: 'sd', imperial: 'sd', pointloma: 'sd', mission: 'sd', birdrock: 'sd',
   ljshores: 'sd', lajolla: 'sd', delmar: 'sd', encinitas: 'sd', carlsbad: 'sd', oceanside: 'sd',
   // LA / Orange County / Ventura
-  newport: 'socal', huntington: 'socal', pv: 'socal', horseshoe: 'socal',
+  danapoint: 'socal', laguna: 'socal', crystalcove: 'socal', newport: 'socal', huntington: 'socal', pv: 'socal', horseshoe: 'socal',
   malibu: 'socal', leocarrillo: 'socal', ventura: 'socal',
   // Santa Barbara
   sb: 'sb', refugio: 'sb',
@@ -1780,6 +1783,9 @@ const CDIP_STATIONS = {
   carlsbad:    { id: '262p1', name: 'Leucadia Nearshore' },
   oceanside:   { id: '262p1', name: 'Leucadia Nearshore' },
   // Orange County — uses San Pedro buoy
+  danapoint:   { id: '092p1', name: 'San Pedro' },
+  laguna:      { id: '092p1', name: 'San Pedro' },
+  crystalcove: { id: '092p1', name: 'San Pedro' },
   newport:     { id: '092p1', name: 'San Pedro' },
   huntington:  { id: '092p1', name: 'San Pedro' },
   // LA County
@@ -2077,6 +2083,7 @@ const SHORE_STATION_MAP = {
   ljshores: ['scripps','newport'], lajolla: ['scripps','newport'], birdrock: ['scripps','newport'], delmar: ['scripps','newport'],
   encinitas: ['scripps','newport'], carlsbad: ['scripps','newport'], oceanside: ['scripps','newport'],
   // Orange County — Newport Pier, fallback Scripps
+  danapoint: ['newport','scripps'], laguna: ['newport','scripps'], crystalcove: ['newport','scripps'],
   newport: ['newport','scripps'], huntington: ['newport','scripps'],
   // LA — Santa Monica Pier, fallback Newport
   pv: ['santamonica','newport'], horseshoe: ['santamonica','newport'], malibu: ['santamonica','newport'], leocarrillo: ['santamonica','newport'],
@@ -4376,7 +4383,7 @@ function selectSpotFromMap(key) {
 // County → Spots mapping (south to north within each county)
 const COUNTY_SPOTS = {
   sandiego:     ['coronado','imperial','pointloma','mission','birdrock','ljshores','lajolla','delmar','encinitas','carlsbad','oceanside'],
-  orange:       ['newport','huntington'],
+  orange:       ['danapoint','laguna','crystalcove','newport','huntington'],
   la:           ['pv','horseshoe','malibu','leocarrillo'],
   ventura:      ['ventura'],
   santabarbara: ['sb','refugio'],
@@ -4442,8 +4449,19 @@ const WEBCAMS = {
     { name: 'Oceanside Pier', url: 'https://www.surfline.com/surf-report/oceanside-pier/5842041f4e65fad6a7708835', type: 'Surfline' },
     { name: 'Oceanside Harbor', url: 'https://www.surfline.com/surf-report/oceanside-harbor/5842041f4e65fad6a7708832', type: 'Surfline' },
   ],
+  danapoint: [
+    { name: 'Salt Creek Beach', url: 'https://www.surfline.com/surf-report/salt-creek/5842041f4e65fad6a7708828', type: 'Surfline' },
+    { name: 'Dana Point Harbor', url: 'https://www.surfline.com/surf-report/doheny-state-beach/5842041f4e65fad6a7708827', type: 'Surfline' },
+  ],
+  laguna: [
+    { name: 'Laguna Beach', url: 'https://www.theranchlb.com/beach-cam', type: 'Free Live' },
+    { name: "Shaw's Cove / Crescent Bay", url: 'https://www.surfline.com/surf-report/brooks-street/5842041f4e65fad6a770882a', type: 'Surfline' },
+  ],
+  crystalcove: [
+    { name: 'Crystal Cove', url: 'https://www.surfline.com/surf-report/crystal-cove/5842041f4e65fad6a7708829', type: 'Surfline' },
+    { name: 'Laguna Beach', url: 'https://www.theranchlb.com/beach-cam', type: 'Free Live' },
+  ],
   newport: [
-    { name: 'Aliso Beach, Laguna', url: 'https://www.theranchlb.com/beach-cam', type: 'Free Live' },
     { name: 'The Wedge', url: 'https://www.surfline.com/surf-report/the-wedge/5842041f4e65fad6a770882b', type: 'Surfline' },
     { name: 'Newport Point', url: 'https://www.surfline.com/surf-report/newport-point/5842041f4e65fad6a77088f2', type: 'Surfline' },
   ],
