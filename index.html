@@ -244,6 +244,7 @@
     .species-card.active[data-species="wsb"] { border-color: #90b8e0; background: rgba(144,184,224,0.1); color: #90b8e0; }
     .species-card.active[data-species="halibut"] { border-color: #8b6d47; background: rgba(139,109,71,0.1); color: #d4a574; }
     .species-label { font-size: 12px; }
+    .species-label .short-name { display: none; }
     .species-name { font-size: 10px; color: var(--text-muted); font-weight: 400; margin-top: 1px; }
 
     /* Score Gauges */
@@ -590,6 +591,8 @@
       .viz-feet-hero { font-size: 18px; }
       .species-card { padding: 5px 2px; font-size: 11px; }
       .species-label { font-size: 11px; }
+      .species-label .full-name { display: none; }
+      .species-label .short-name { display: inline; }
       .species-name { font-size: 9px; }
       .insight-text { font-size: 11px; padding: 6px 8px; margin-bottom: 6px; }
       .forecast-title { padding: 6px 10px; font-size: 11px; }
@@ -960,7 +963,7 @@
         <div class="species-label">Yellowtail</div><div class="species-name">S. lalandi</div>
       </div>
       <div class="species-card" data-species="wsb" onclick="selectSpecies('wsb')">
-        <div class="species-label">White Sea Bass</div><div class="species-name">A. nobilis</div>
+        <div class="species-label"><span class="full-name">White Sea Bass</span><span class="short-name">WSB</span></div><div class="species-name">A. nobilis</div>
       </div>
       <div class="species-card" data-species="halibut" onclick="selectSpecies('halibut')">
         <div class="species-label">Halibut</div><div class="species-name">P. californicus</div>
@@ -4657,16 +4660,31 @@ function onLocationChange() {
   // Fish Probability always shows normally (snorkelers/scuba divers want to see fish activity)
   fishLabel.textContent = 'Fish Probability';
   fishLabel.style.color = 'var(--fish-color)';
+  const spearGauge = document.querySelector('.spear-gauge');
   if (loc.marineReserve) {
-    spearLabel.textContent = 'Spearfishing — Not Permitted';
+    spearLabel.textContent = '🏛️ Marine Reserve — Spearfishing Not Permitted';
     spearLabel.style.color = '#e74c3c';
-    spearFormula.textContent = '🏛️ Marine Reserve — Take of marine life prohibited';
+    spearFormula.textContent = 'Take of all marine life is prohibited at this location';
     spearFormula.style.color = '#e74c3c';
+    spearFormula.style.display = 'block';
+    // Collapse the gauge ring — just show the label
+    if (spearGauge) {
+      spearGauge.querySelector('.gauge-ring-wrap').style.display = 'none';
+      document.getElementById('spearRating').style.display = 'none';
+      spearGauge.style.padding = '12px 14px';
+      spearGauge.style.minHeight = 'auto';
+    }
   } else {
     spearLabel.textContent = 'Spearfishing Opportunity';
     spearLabel.style.color = 'var(--spear-color)';
     spearFormula.textContent = 'S = 0.6 × Fish + 0.4 × Visibility';
     spearFormula.style.color = 'var(--text-muted)';
+    if (spearGauge) {
+      spearGauge.querySelector('.gauge-ring-wrap').style.display = '';
+      document.getElementById('spearRating').style.display = '';
+      spearGauge.style.padding = '';
+      spearGauge.style.minHeight = '';
+    }
   }
   // Update region subtitle from county selector
   const countySel = document.getElementById('countySelect');
@@ -4928,17 +4946,27 @@ installDismiss.addEventListener('click', () => {
   localStorage.setItem('installDismissed', Date.now().toString());
 });
 
-// Show install banner for ALL browsers (not just Chrome)
+// Show install banner only on 3rd+ visit (not first-time users)
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 if (!isStandalone && !deferredPrompt) {
+  const visitCount = parseInt(localStorage.getItem('visitCount') || '0') + 1;
+  localStorage.setItem('visitCount', visitCount.toString());
   const dismissed = localStorage.getItem('installDismissed');
-  if (!dismissed || Date.now() - parseInt(dismissed) >= 7 * 24 * 60 * 60 * 1000) {
+  if (visitCount >= 3 && (!dismissed || Date.now() - parseInt(dismissed) >= 7 * 24 * 60 * 60 * 1000)) {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (isIOS) {
       const desc = document.querySelector('.install-banner-desc');
       desc.textContent = 'Tap the Share button ↑ then "Add to Home Screen" for the app experience';
     }
     setTimeout(() => { installBanner.classList.add('show'); }, 3000);
+    // Auto-dismiss when user scrolls past 300px
+    let bannerAutoDismissed = false;
+    window.addEventListener('scroll', () => {
+      if (!bannerAutoDismissed && window.scrollY > 300) {
+        bannerAutoDismissed = true;
+        installBanner.classList.remove('show');
+      }
+    }, { passive: true });
   }
 }
 
