@@ -4342,15 +4342,15 @@ function createSpotMarker(key, loc, isCurrent) {
     fillOpacity: isCurrent ? 1 : 0.7,
     className: className
   });
-  const depthInfo = loc.depth ? `<div class="popup-depth">${loc.depth} &middot; ${loc.bottom}</div>` : '';
+  const vizText = (isCurrent && document.getElementById('vizFeetHero')) ? document.getElementById('vizFeetHero').textContent : '';
+  const vizInfo = vizText && vizText !== '--' ? `<div class="popup-depth">Visibility: ${vizText}</div>` : '';
   const popupHTML = `
     <div class="popup-name">${loc.name}</div>
-    ${depthInfo}
+    ${vizInfo}
     <button class="popup-btn" onclick="selectSpotFromMap('${key}')">View Conditions</button>
   `;
   marker.bindPopup(popupHTML, { closeButton: true, minWidth: 140 });
   // Hover tooltip with name + viz
-  const vizText = (isCurrent && document.getElementById('vizFeetHero')) ? document.getElementById('vizFeetHero').textContent : '';
   const tooltipText = vizText && vizText !== '--' ? `${loc.name} — ${vizText}` : loc.name;
   marker.bindTooltip(tooltipText, { direction: 'top', offset: [0, -8], className: 'map-tooltip' });
   return marker;
