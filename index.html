@@ -197,12 +197,13 @@
     .header { text-align: center; padding: 10px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
     .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
     .header .subtitle { color: var(--text-secondary); font-size: 12px; margin-top: 1px; }
+    .header-date { color: var(--text-secondary); font-size: 11px; margin-top: 3px; }
 
-    /* Controls Row */
+    /* Controls */
     .controls {
-      display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; align-items: center;
+      display: flex; gap: 6px; margin-bottom: 4px; flex-wrap: nowrap; align-items: flex-end;
     }
-    .control-group { flex: 1; min-width: 120px; }
+    .control-group { flex: 1; min-width: 0; }
     .control-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 2px; }
     .control-group select {
       width: 100%; background: var(--bg-input); border: 1px solid var(--border);
@@ -210,13 +211,37 @@
       font-size: 12px; font-family: inherit; appearance: auto; cursor: pointer;
     }
     .control-group select:focus { outline: none; border-color: var(--accent); }
+    .spot-row { display: flex; align-items: center; gap: 4px; }
+    .spot-row select { flex: 1; min-width: 0; }
+    .fav-btn {
+      background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-secondary);
+      border-radius: 8px; padding: 5px 8px; font-size: 14px; cursor: pointer;
+      transition: all 0.2s; line-height: 1; flex-shrink: 0;
+    }
+    .fav-btn:hover { background: rgba(255,255,255,0.18); }
+    .fav-btn.active { color: #f0c030; border-color: #f0c030; background: rgba(240,192,48,0.1); }
     .refresh-btn {
       background: var(--accent); border: none; color: #fff; border-radius: 8px;
       padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
-      transition: opacity 0.2s; align-self: flex-end;
+      transition: opacity 0.2s;
     }
     .refresh-btn:hover { opacity: 0.85; }
     .refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .action-bar {
+      display: flex; justify-content: center; gap: 10px; margin-bottom: 10px;
+    }
+    .action-bar-btn {
+      background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--text-primary);
+      border-radius: 20px; padding: 8px 20px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px;
+    }
+    .action-bar-btn:hover { background: rgba(255,255,255,0.15); }
+    .refresh-action { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .refresh-action:hover { opacity: 0.85; }
+    .refresh-action:disabled { opacity: 0.4; cursor: not-allowed; }
+    .share-action { background: rgba(46,204,113,0.12); border-color: var(--excellent); color: var(--excellent); }
+    .share-action:hover { background: rgba(46,204,113,0.22); }
+    .alerts-action.active { color: var(--accent); border-color: var(--accent); background: rgba(44,140,255,0.1); }
     .data-status { font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 8px; }
     .data-status.error { color: var(--poor); }
     .data-status.success { color: var(--excellent); }
@@ -572,11 +597,16 @@
       .header .subtitle { font-size: 10px; }
       .info-bar { gap: 6px; margin-bottom: 6px; font-size: 10px; }
       .info-badge { padding: 1px 8px; font-size: 10px; }
-      .controls { gap: 4px; margin-bottom: 6px; }
-      .control-group { min-width: 100px; }
+      .controls {
+        flex-direction: column; gap: 6px; margin-bottom: 6px; align-items: stretch;
+      }
+      .control-group { min-width: unset; width: 100%; }
+      .control-group select { padding: 8px 10px; font-size: 13px; }
       .control-label { font-size: 8px; }
-      .control-group select { padding: 5px 6px; font-size: 11px; }
-      .refresh-btn { padding: 5px 10px; font-size: 11px; }
+      .spot-row { gap: 6px; }
+      .fav-btn { padding: 7px 10px; font-size: 16px; }
+      .action-bar { gap: 8px; }
+      .action-bar-btn { padding: 8px 16px; font-size: 12px; }
       .scores-grid { gap: 6px; margin-bottom: 8px; }
       .score-gauge { padding: 8px 6px; border-radius: 10px; }
       .gauge-label { font-size: 9px; letter-spacing: 1px; margin-bottom: 2px; }
@@ -609,18 +639,13 @@
     }
 
     /* ===== INTERACTIVE MAP ===== */
-    .map-btn {
-      background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-primary);
-      border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s; align-self: flex-end; margin-left: 6px;
-    }
-    .map-btn:hover { background: rgba(255,255,255,0.18); }
-    .map-btn.active { background: rgba(44,140,255,0.2); border-color: var(--accent); color: var(--accent); }
     #mapContainer {
-      display: none; margin-bottom: 12px; border-radius: 12px; overflow: hidden;
-      border: 1px solid var(--border); height: 400px;
+      display: block; margin: 0 auto 12px; border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border); height: 180px; width: 90%;
     }
-    #mapContainer.visible { display: block; }
+    @media (min-width: 481px) {
+      #mapContainer { height: 260px; }
+    }
     #diveMap { height: 100%; width: 100%; background: #0a1628; }
     /* Leaflet popup dark theme */
     .leaflet-popup-content-wrapper { background: var(--bg-secondary); color: var(--text-primary); border-radius: 10px; border: 1px solid var(--border); }
@@ -646,25 +671,8 @@
       animation: mapPulse 2s infinite;
       border-radius: 50%;
     }
-    @media (max-width: 600px) {
-      #mapContainer { height: 300px; }
-    }
 
-    /* ===== FAVORITES BAR ===== */
-    .fav-btn {
-      background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-secondary);
-      border-radius: 8px; padding: 6px 10px; font-size: 14px; cursor: pointer;
-      transition: all 0.2s; align-self: flex-end; line-height: 1;
-    }
-    .fav-btn:hover { background: rgba(255,255,255,0.18); }
-    .fav-btn.active { color: #f0c030; border-color: #f0c030; background: rgba(240,192,48,0.1); }
-    .alert-btn {
-      background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-secondary);
-      border-radius: 8px; padding: 6px 10px; font-size: 14px; cursor: pointer;
-      transition: all 0.2s; align-self: flex-end; line-height: 1;
-    }
-    .alert-btn:hover { background: rgba(255,255,255,0.18); }
-    .alert-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(44,140,255,0.1); }
+    /* ===== FAVORITES ===== */
 
     .favorites-bar {
       display: none; gap: 6px; margin-bottom: 10px; overflow-x: auto;
@@ -841,7 +849,11 @@
     <header class="header">
       <h1>Fish & Dive Conditions</h1>
       <p class="subtitle" id="subtitleRegion">California — Live Oceanographic Model</p>
+      <p class="header-date" id="headerDate"></p>
     </header>
+
+    <!-- MAP (always visible, primary navigation) -->
+    <div id="mapContainer" class="visible"><div id="diveMap"></div></div>
 
     <!-- CONTROLS -->
     <div class="controls">
@@ -862,10 +874,13 @@
           <option value="humboldt">Humboldt County</option>
         </select>
       </div>
-      <div class="control-group">
+      <div class="control-group spot-group">
         <div class="control-label">Dive Spot</div>
-        <select id="locationSelect" onchange="onLocationChange()">
-        </select>
+        <div class="spot-row">
+          <select id="locationSelect" onchange="onLocationChange()">
+          </select>
+          <button class="fav-btn" id="favBtn" onclick="toggleFavorite()" title="Favorite Spot">☆</button>
+        </div>
       </div>
       <div class="control-group">
         <div class="control-label">Species</div>
@@ -876,11 +891,13 @@
           <option value="halibut">Halibut (P. californicus)</option>
         </select>
       </div>
-      <button class="refresh-btn" id="refreshBtn" onclick="fetchAllData()">Refresh</button>
-      <button class="refresh-btn" id="shareBtn" onclick="shareConditions()" style="margin-left:6px;background:rgba(46,204,113,0.15);border-color:var(--excellent)">Share</button>
-      <button class="map-btn" id="mapToggleBtn" onclick="toggleMap()">Map</button>
-      <button class="fav-btn" id="favBtn" onclick="toggleFavorite()" title="Save to favorites">☆</button>
-      <button class="alert-btn" id="alertBtn" onclick="toggleAlertsPanel()" title="Condition alerts">🔔</button>
+    </div>
+
+    <!-- Centered Action Buttons -->
+    <div class="action-bar">
+      <button class="action-bar-btn refresh-action" id="refreshBtn" onclick="fetchAllData()">Refresh</button>
+      <button class="action-bar-btn share-action" id="shareBtn" onclick="shareConditions()">Share</button>
+      <button class="action-bar-btn alerts-action" id="alertBtn" onclick="toggleAlertsPanel()">Alerts</button>
     </div>
 
     <!-- Favorites Bar -->
@@ -942,17 +959,11 @@
     <!-- Toast container for in-page notifications -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Interactive Map -->
-    <div id="mapContainer"><div id="diveMap"></div></div>
-
-    <div class="data-status" id="dataStatus">Fetching live oceanographic data...</div>
-    <div class="data-warning" id="dataWarning"></div>
-
     <div class="info-bar">
-      <span id="dateDisplay"></span>
       <span class="info-badge" id="moonBadge">--</span>
       <span class="info-badge" id="locationBadge">La Jolla</span>
     </div>
+    <span id="dateDisplay" style="display:none"></span>
 
     <!-- SPECIES CARDS (visual only) -->
     <div class="species-selector">
@@ -973,7 +984,7 @@
     <!-- THREE SCORE GAUGES -->
     <div class="scores-grid">
       <div class="score-gauge">
-        <div class="gauge-label" id="fishGaugeLabel" style="color:var(--fish-color)">Fish Probability</div>
+        <div class="gauge-label" id="fishGaugeLabel" style="color:var(--fish-color)">Fish Forecast</div>
         <div class="gauge-ring-wrap">
           <svg viewBox="0 0 120 70"><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="fishArc" style="stroke:var(--fish-color)"/></svg>
           <div class="gauge-ring-score" id="fishScore" style="color:var(--text-muted)">--</div>
@@ -999,6 +1010,9 @@
         <div class="gauge-formula" id="spearFormula" style="display:none">S = 0.6 × Fish + 0.4 × Visibility</div>
       </div>
     </div>
+
+    <div class="data-status" id="dataStatus">Fetching live oceanographic data...</div>
+    <div class="data-warning" id="dataWarning"></div>
 
     <div class="insight-text" id="insightText">Loading conditions...</div>
 
@@ -1111,7 +1125,7 @@
     </section>
 
     <div class="breakdown-footer">
-      Fish Probability · Dive Visibility · Spearfishing Opportunity<br>
+      Fish Forecast · Dive Visibility · Spearfishing Opportunity<br>
       Data: <a href="https://tidesandcurrents.noaa.gov" target="_blank">NOAA CO-OPS</a> ·
       <a href="https://cdip.ucsd.edu" target="_blank">CDIP/UCSD</a> (raw buoy — includes all wave energy, may differ from Surfline/iWindSurf which filter swell bands) ·
       <a href="https://weather.gov" target="_blank">NWS</a> ·
@@ -2492,7 +2506,9 @@ async function fetchAllData() {
 function updateDisplay() {
   const now=new Date();
   const loc=LOCATIONS[currentLocation];
-  document.getElementById('dateDisplay').textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const dateStr = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('dateDisplay').textContent=dateStr;
+  document.getElementById('headerDate').textContent=dateStr;
   document.getElementById('moonBadge').textContent=`${D.moon.emoji} ${D.moon.name}`;
   document.getElementById('locationBadge').textContent=loc.name;
 
@@ -2818,7 +2834,7 @@ function toggleSources() {
 // =========================================================================
 // SCORE CALCULATOR — WEIGHTED by real-world impact
 // =========================================================================
-// Fish Probability weights — based on actual impact on fish activity
+// Fish Forecast weights — based on actual impact on fish activity
 // Species-specific fish factor weights — each species responds differently
 const FISH_WEIGHTS_BY_SPECIES = {
   general: {
@@ -2895,7 +2911,7 @@ function recalculate() {
   // Set species-specific weights
   FISH_WEIGHTS = FISH_WEIGHTS_BY_SPECIES[currentSpecies] || FISH_WEIGHTS_BY_SPECIES.general;
 
-  // --- Fish Probability (weighted) ---
+  // --- Fish Forecast (weighted) ---
   const fishEntries = [];
   scoreW('waterTempScore', D.waterTemp, getScorer('waterTemp'), 'waterTemp', fishEntries);
   scoreW('sstScore', D.sstF, getScorer('sst'), 'sst', fishEntries);
@@ -2990,7 +3006,7 @@ function recalculate() {
   else if(fishAvg!==null) spearAvg=fishAvg;
   else if(vizFinal!==null) spearAvg=vizFinal;
 
-  // Marine reserve locations: keep Fish Probability (snorkelers/scuba want it),
+  // Marine reserve locations: keep Fish Forecast (snorkelers/scuba want it),
   // but show "Not Permitted" for Spearfishing only
   updateGauge('fish',fishAvg,'var(--fish-color)');
   updateGauge('viz',vizFinal,'var(--viz-color)');
@@ -4294,30 +4310,17 @@ let mapMarkers = {};
 let mapVisible = false;
 
 function toggleMap() {
+  // Map is always visible — just scroll to it if called
   const container = document.getElementById('mapContainer');
-  const btn = document.getElementById('mapToggleBtn');
-  mapVisible = !mapVisible;
-  if (mapVisible) {
-    container.classList.add('visible');
-    btn.classList.add('active');
-    btn.textContent = 'Hide Map';
-    if (!diveMap) {
-      initMap();
-    } else {
-      diveMap.invalidateSize();
-      updateMapMarkers();
-    }
-  } else {
-    container.classList.remove('visible');
-    btn.classList.remove('active');
-    btn.textContent = 'Map';
-  }
+  container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (diveMap) diveMap.invalidateSize();
 }
 
 function initMap() {
+  const curLoc = LOCATIONS[currentLocation];
   diveMap = L.map('diveMap', {
-    center: [35.5, -120.5],
-    zoom: 6,
+    center: [curLoc.lat, curLoc.lon],
+    zoom: 10,
     zoomControl: true,
     attributionControl: false
   });
@@ -4325,8 +4328,8 @@ function initMap() {
     maxZoom: 18,
     subdomains: 'abcd'
   }).addTo(diveMap);
-  // Fit California coast
-  diveMap.fitBounds([[32.2, -124.5], [41.0, -117.0]]);
+  // Zoom to current spot's region (nearby spots visible)
+  diveMap.setView([curLoc.lat, curLoc.lon], 10);
   // Add all spot markers
   Object.keys(LOCATIONS).forEach(key => {
     const loc = LOCATIONS[key];
@@ -4388,6 +4391,9 @@ function updateMapMarkers() {
     marker.addTo(diveMap);
     mapMarkers[key] = marker;
   });
+  // Pan map to current spot
+  const curLoc = LOCATIONS[currentLocation];
+  if (curLoc) diveMap.flyTo([curLoc.lat, curLoc.lon], 10, { duration: 0.8 });
 }
 
 function selectSpotFromMap(key) {
@@ -4657,8 +4663,8 @@ function onLocationChange() {
   const fishLabel = document.getElementById('fishGaugeLabel');
   const spearLabel = document.getElementById('spearGaugeLabel');
   const spearFormula = document.getElementById('spearFormula');
-  // Fish Probability always shows normally (snorkelers/scuba divers want to see fish activity)
-  fishLabel.textContent = 'Fish Probability';
+  // Fish Forecast always shows normally (snorkelers/scuba divers want to see fish activity)
+  fishLabel.textContent = 'Fish Forecast';
   fishLabel.style.color = 'var(--fish-color)';
   const spearGauge = document.querySelector('.spear-gauge');
   if (loc.marineReserve) {
@@ -4875,6 +4881,40 @@ function applyVizCalibration(vizEst) {
 updateReportLinks();
 updateWebcams();
 fetchAllData();
+
+// Initialize map immediately (always visible)
+mapVisible = true;
+initMap();
+
+// Geolocation: auto-select nearest dive spot
+(function() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    const userLat = pos.coords.latitude;
+    const userLon = pos.coords.longitude;
+    let nearest = null;
+    let minDist = Infinity;
+    for (const key in LOCATIONS) {
+      const loc = LOCATIONS[key];
+      const dLat = loc.lat - userLat;
+      const dLon = loc.lon - userLon;
+      const dist = dLat * dLat + dLon * dLon;
+      if (dist < minDist) { minDist = dist; nearest = key; }
+    }
+    if (nearest && nearest !== currentLocation) {
+      // Find which county this spot belongs to
+      for (const county in COUNTY_SPOTS) {
+        if (COUNTY_SPOTS[county].includes(nearest)) {
+          document.getElementById('countySelect').value = county;
+          onCountyChange();
+          break;
+        }
+      }
+      document.getElementById('locationSelect').value = nearest;
+      onLocationChange();
+    }
+  }, function() { /* permission denied or error — use default */ }, { timeout: 5000, maximumAge: 300000 });
+})();
 
 // =========================================================================
 // IFRAME SCROLL FIX — Wix embeds this page in an iframe with fixed height.
