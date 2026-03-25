@@ -1215,6 +1215,25 @@ const REGION_MAP = {
   halfmoon: 'norcal', bodega: 'norcal', fortbragg: 'norcal', trinidad: 'norcal',
 };
 
+// Species availability by region — controls which species cards show and score caps
+// 'full' = normal scoring, 'rare' = score capped at 3/10, 'absent' = hidden + score 1/10
+const SPECIES_RANGE = {
+  sd:      { yellowtail: 'full', wsb: 'full', halibut: 'full' },
+  socal:   { yellowtail: 'full', wsb: 'full', halibut: 'full' },
+  sb:      { yellowtail: 'full', wsb: 'full', halibut: 'full' },
+  islands: { yellowtail: 'full', wsb: 'full', halibut: 'full' },
+  central: { yellowtail: 'rare', wsb: 'rare', halibut: 'full' },
+  norcal:  { yellowtail: 'absent', wsb: 'absent', halibut: 'full' },
+};
+
+function getSpeciesAvailability(species, location) {
+  if (species === 'general') return 'full';
+  const region = REGION_MAP[location] || 'sd';
+  const regionRange = SPECIES_RANGE[region];
+  if (!regionRange) return 'full';
+  return regionRange[species] || 'full';
+}
+
 // SoCal (LA/OC/Ventura) CPFV data — Mar 2026 scrape, 8567 anglers
 const CPFV_SOCAL = {
   yellowtail: { index: [1,1,1,2,5,7,9,10,8,6,3,1], peak_month: 7 },  // rare in winter, summer peak
@@ -2965,8 +2984,15 @@ function recalculate() {
   else setScore('estVizScore',null);
 
   // Compute weighted averages (re-normalize weights for available factors)
-  const fishAvg = weightedAvg(fishEntries, FISH_WEIGHTS);
+  let fishAvg = weightedAvg(fishEntries, FISH_WEIGHTS);
   const vizAvg = weightedAvg(vizEntries, VIZ_WEIGHTS);
+
+  // Geographic range cap — species that don't exist in a region get capped
+  const availability = getSpeciesAvailability(currentSpecies, currentLocation);
+  if (fishAvg !== null) {
+    if (availability === 'absent') fishAvg = Math.min(fishAvg, 1);       // hard cap at 1/10
+    else if (availability === 'rare') fishAvg = Math.min(fishAvg, 3);    // cap at 3/10
+  }
 
   // Apply location shelter bonus for viz (kelp beds dampen surge)
   const loc = LOCATIONS[currentLocation];
@@ -3124,6 +3150,14 @@ function updateInsightReserve(fish, viz) {
 function updateInsight(fish,viz) {
   const el=document.getElementById('insightText');
   if(fish===null&&viz===null) { el.textContent=SCORE[currentSpecies].tip; return; }
+
+  // Geographic range notice
+  const avail = getSpeciesAvailability(currentSpecies, currentLocation);
+  if (avail === 'rare') {
+    const speciesNames = { yellowtail: 'Yellowtail', wsb: 'White Sea Bass', halibut: 'Halibut' };
+    el.textContent = `⚠️ ${speciesNames[currentSpecies] || currentSpecies} are very rarely encountered in this region. Score is capped due to limited geographic range. Occasional warm-water events may bring strays, but don't count on it.`;
+    return;
+  }
 
   let msg = '';
   if(fish!==null&&viz!==null) {
@@ -3711,8 +3745,14 @@ function calcSlotForecastScores(slot, dayIdx) {
   const decay = 1 - (dayIdx * 0.05);
 
   const clamp = v => Math.max(1, Math.min(10, v));
-  const fish = clamp((baseFish + fishAdj + timeAdj + tideAdj) * decay);
+  let fish = clamp((baseFish + fishAdj + timeAdj + tideAdj) * decay);
   const viz = clamp((baseViz + windAdj + precipAdj + swellAdj) * decay);
+
+  // Geographic range cap for forecast too
+  const fAvail = getSpeciesAvailability(currentSpecies, currentLocation);
+  if (fAvail === 'absent') fish = Math.min(fish, 1);
+  else if (fAvail === 'rare') fish = Math.min(fish, 3);
+
   const spear = 0.6 * fish + 0.4 * viz;
 
   // Estimate visibility in feet for this specific slot
@@ -4282,6 +4322,27 @@ function toggleForecastDay(idx) {
 // =========================================================================
 // UI HANDLERS
 // =========================================================================
+// Update species card visibility based on current location's region
+function updateSpeciesCards() {
+  const speciesList = ['yellowtail', 'wsb', 'halibut'];
+  let activeHidden = false;
+  speciesList.forEach(sp => {
+    const card = document.querySelector(`.species-card[data-species="${sp}"]`);
+    const option = document.querySelector(`#speciesSelect option[value="${sp}"]`);
+    const avail = getSpeciesAvailability(sp, currentLocation);
+    if (avail === 'absent') {
+      if (card) card.style.display = 'none';
+      if (option) option.style.display = 'none';
+      if (currentSpecies === sp) activeHidden = true;
+    } else {
+      if (card) card.style.display = '';
+      if (option) option.style.display = '';
+    }
+  });
+  // If current species was hidden, fall back to General
+  if (activeHidden) selectSpecies('general');
+}
+
 function selectSpecies(species) {
   currentSpecies=species;
   document.getElementById('speciesSelect').value=species;
@@ -4692,6 +4753,9 @@ function onLocationChange() {
       spearGauge.style.minHeight = '';
     }
   }
+  // Hide/show species cards based on geographic range
+  updateSpeciesCards();
+
   // Update region subtitle from county selector
   const countySel = document.getElementById('countySelect');
   const regionLabel = countySel.options[countySel.selectedIndex].textContent;
