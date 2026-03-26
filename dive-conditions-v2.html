@@ -334,6 +334,65 @@
     .brief-pm:before { content: '🌇 '; }
     .brief-pm { margin-bottom: 0; }
 
+    /* ===== BOAT FISH REPORTS ===== */
+    .boat-reports {
+      background: var(--bg-secondary); border-radius: 10px;
+      border: 1px solid var(--border); margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .boat-reports-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; cursor: pointer; transition: background 0.15s;
+    }
+    .boat-reports-header:hover { background: rgba(255,255,255,0.03); }
+    .boat-reports-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--accent);
+    }
+    .boat-reports-date {
+      font-size: 10px; color: var(--text-muted);
+    }
+    .boat-reports-toggle {
+      font-size: 10px; color: var(--text-muted); transition: transform 0.2s;
+    }
+    .boat-reports.expanded .boat-reports-toggle { transform: rotate(180deg); }
+    .boat-reports-body {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+    }
+    .boat-reports.expanded .boat-reports-body {
+      max-height: 800px;
+    }
+    .boat-reports-content {
+      padding: 0 14px 12px;
+    }
+    .boat-reports-summary {
+      font-size: 12px; color: var(--text-secondary); padding: 0 14px 8px;
+      border-bottom: 1px solid var(--border); margin-bottom: 0;
+    }
+    .boat-reports-highlight {
+      display: inline-block; background: rgba(46,204,113,0.12); color: var(--excellent);
+      border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: 600;
+      margin: 2px 4px 2px 0;
+    }
+    .boat-reports-species {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px;
+      padding: 8px 0; font-size: 12px;
+    }
+    .boat-species-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 3px 0; border-bottom: 1px solid rgba(30,53,88,0.4);
+    }
+    .boat-species-name { color: var(--text-secondary); }
+    .boat-species-count { font-weight: 700; color: var(--text-primary); }
+    .boat-species-rate { font-size: 10px; color: var(--text-muted); margin-left: 4px; }
+    .boat-trips-summary {
+      font-size: 11px; color: var(--text-muted); padding-top: 6px;
+      border-top: 1px solid var(--border); margin-top: 4px;
+    }
+    .boat-reports-unavailable {
+      font-size: 12px; color: var(--text-muted); padding: 8px 14px; text-align: center;
+    }
+
     /* ===== 5-DAY FORECAST (Surfline-style) ===== */
     .forecast-section {
       background: var(--bg-secondary); border-radius: 10px;
@@ -1032,6 +1091,21 @@
       <div class="brief-pm" id="briefPM"></div>
     </div>
 
+    <!-- ===== LATEST BOAT FISH REPORTS ===== -->
+    <div class="boat-reports" id="boatReportsSection" style="display:none">
+      <div class="boat-reports-header" onclick="toggleBoatReports()">
+        <div>
+          <span class="boat-reports-title">🐟 Latest Boat Reports</span>
+          <span class="boat-reports-date" id="boatReportsDate"></span>
+        </div>
+        <span class="boat-reports-toggle">▼</span>
+      </div>
+      <div class="boat-reports-summary" id="boatReportsSummary"></div>
+      <div class="boat-reports-body">
+        <div class="boat-reports-content" id="boatReportsContent"></div>
+      </div>
+    </div>
+
     <!-- ===== DIVER VIZ REPORT ===== -->
     <div class="viz-report" id="vizReportWidget" style="display:none">
       <div class="viz-report-title">Was the visibility accurate today?</div>
@@ -1713,6 +1787,310 @@ function fetchWithTimeout(url, opts, ms=4000) {
   const signal = controller.signal;
   const mergedOpts = opts ? {...opts, signal} : {signal};
   return fetch(url, mergedOpts).finally(() => clearTimeout(timer));
+}
+
+// =========================================================================
+// BOAT FISH COUNT SCRAPER — daily CPFV dock totals
+// =========================================================================
+let boatReportsData = null; // cached parsed data
+
+// Species name normalization map — handles variations
+const SPECIES_NORMALIZE = {
+  'yellowtail': 'yellowtail', 'yellow tail': 'yellowtail', 'yellowtail amberjack': 'yellowtail',
+  'bluefin': 'bluefin tuna', 'bluefin tuna': 'bluefin tuna',
+  'yellowfin': 'yellowfin tuna', 'yellowfin tuna': 'yellowfin tuna',
+  'white seabass': 'white seabass', 'white sea bass': 'white seabass', 'wsb': 'white seabass',
+  'halibut': 'halibut', 'california halibut': 'halibut',
+  'calico bass': 'calico bass', 'calico': 'calico bass', 'kelp bass': 'calico bass',
+  'sand bass': 'sand bass', 'barred sand bass': 'sand bass',
+  'bass': 'bass',
+  'bonito': 'bonito', 'pacific bonito': 'bonito',
+  'barracuda': 'barracuda', 'pacific barracuda': 'barracuda',
+  'sheephead': 'sheephead', 'california sheephead': 'sheephead',
+  'sculpin': 'sculpin', 'scorpionfish': 'sculpin',
+  'whitefish': 'whitefish', 'ocean whitefish': 'whitefish',
+  'rockfish': 'rockfish', 'rock fish': 'rockfish', 'vermilion': 'rockfish', 'vermilion rockfish': 'rockfish',
+  'lingcod': 'lingcod', 'ling cod': 'lingcod', 'ling': 'lingcod',
+  'dorado': 'dorado', 'mahi mahi': 'dorado', 'mahi': 'dorado', 'dolphinfish': 'dorado',
+  'wahoo': 'wahoo',
+  'tuna': 'tuna',
+  'skipjack': 'skipjack', 'skipjack tuna': 'skipjack',
+};
+
+// Map boat report species to tool's species keys
+const SPECIES_TO_TOOL = {
+  'yellowtail': 'yellowtail',
+  'bluefin tuna': 'bluefin',
+  'white seabass': 'wsb',
+  'halibut': 'halibut',
+  'calico bass': 'general',
+  'sand bass': 'general',
+  'bonito': 'general',
+  'barracuda': 'general',
+};
+
+// Key species to highlight
+const KEY_SPECIES = ['yellowtail', 'bluefin tuna', 'white seabass', 'halibut', 'yellowfin tuna', 'dorado', 'wahoo'];
+
+function categorizeTrip(tripType) {
+  const t = (tripType || '').toLowerCase();
+  if (t.includes('coronado')) return 'coronado';
+  if (t.includes('1.5') || t.includes('1½') || t.includes('2 day') || t.includes('2-day') || t.includes('multi') || t.includes('3 day') || t.includes('overnight')) return 'offshore';
+  if (t.includes('full day') || t.includes('3/4')) return 'full-day';
+  return 'half-day';
+}
+
+function normalizeSpeciesName(raw) {
+  const lower = raw.trim().toLowerCase();
+  // Check direct match first
+  if (SPECIES_NORMALIZE[lower]) return SPECIES_NORMALIZE[lower];
+  // Partial matching
+  for (const [key, val] of Object.entries(SPECIES_NORMALIZE)) {
+    if (lower.includes(key) || key.includes(lower)) return val;
+  }
+  return lower; // return as-is if no match
+}
+
+function parseDockTotals(rawText) {
+  if (!rawText || rawText.trim().length === 0) return [];
+  // Parse "12 Sand Bass, 2 Halibut, 4 Sculpin, 1 Calico Bass, 8 Halibut Released"
+  const items = rawText.split(',').map(s => s.trim()).filter(Boolean);
+  const results = [];
+  for (const item of items) {
+    const released = /released/i.test(item);
+    const match = item.match(/^(\d+)\s+(.+?)(\s+released)?$/i);
+    if (match) {
+      const count = parseInt(match[1], 10);
+      const speciesRaw = match[2].replace(/\s+released$/i, '').trim();
+      const species = normalizeSpeciesName(speciesRaw);
+      results.push({ species, speciesRaw, count, released });
+    }
+  }
+  return results;
+}
+
+function parseBoatReportsHTML(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const rows = doc.querySelectorAll('table.table tbody tr');
+  const boats = [];
+
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length < 3) return;
+
+    // Boat name
+    const boatLink = cells[0].querySelector('b');
+    const boatName = boatLink ? boatLink.textContent.trim() : 'Unknown';
+
+    // Landing name
+    const links = cells[0].querySelectorAll('a');
+    const landingName = links.length >= 2 ? links[1].textContent.trim() : '';
+
+    // Trip details — anglers and trip type
+    const tripText = cells[1].textContent.trim();
+    const anglerMatch = tripText.match(/(\d+)\s*Anglers?/i);
+    const anglers = anglerMatch ? parseInt(anglerMatch[1], 10) : 0;
+
+    // Trip type from the link text
+    const tripLink = cells[1].querySelector('a');
+    const tripType = tripLink ? tripLink.textContent.trim() : '';
+
+    // Dock totals
+    const dockText = cells[2] ? cells[2].textContent.trim() : '';
+    const catches = parseDockTotals(dockText);
+
+    if (catches.length > 0 || anglers > 0) {
+      boats.push({ boatName, landingName, anglers, tripType, tripCategory: categorizeTrip(tripType), catches });
+    }
+  });
+  return boats;
+}
+
+function aggregateBoatData(allBoats) {
+  const speciesMap = {}; // species → { kept, released }
+  let totalAnglers = 0;
+  const tripCounts = { 'half-day': 0, 'full-day': 0, 'coronado': 0, 'offshore': 0 };
+
+  for (const boat of allBoats) {
+    totalAnglers += boat.anglers;
+    tripCounts[boat.tripCategory] = (tripCounts[boat.tripCategory] || 0) + 1;
+
+    for (const c of boat.catches) {
+      if (!speciesMap[c.species]) speciesMap[c.species] = { kept: 0, released: 0 };
+      if (c.released) {
+        speciesMap[c.species].released += c.count;
+      } else {
+        speciesMap[c.species].kept += c.count;
+      }
+    }
+  }
+
+  // Sort species by total kept descending
+  const speciesList = Object.entries(speciesMap)
+    .map(([name, data]) => ({
+      name, kept: data.kept, released: data.released,
+      total: data.kept + data.released,
+      perAngler: totalAnglers > 0 ? data.kept / totalAnglers : 0
+    }))
+    .sort((a, b) => b.kept - a.kept);
+
+  return { speciesList, totalAnglers, totalBoats: allBoats.length, tripCounts };
+}
+
+async function fetchBoatReports() {
+  // Check sessionStorage cache first
+  const cacheKey = 'boatReportsCache';
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) {
+    try {
+      boatReportsData = JSON.parse(cached);
+      renderBoatReports();
+      applyBoatReportBoost();
+      return;
+    } catch(e) { sessionStorage.removeItem(cacheKey); }
+  }
+
+  // Yesterday's date in YYYY-MM-DD (Pacific time approximation)
+  const now = new Date();
+  const yesterday = new Date(now.getTime() - 24 * 3600000);
+  const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+  // Also formatted as MM-DD-YYYY for the URL parameter
+  const yUrlStr = `${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}-${yesterday.getFullYear()}`;
+
+  const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+  const sdUrl = `https://www.sandiegofishreports.com/dock_totals/boats.php?date=${yUrlStr}`;
+  const laUrl = `https://www.socalfishreports.com/dock_totals/boats.php?date=${yUrlStr}`;
+
+  let allBoats = [];
+  const sources = [
+    { url: sdUrl, label: 'San Diego' },
+    { url: laUrl, label: 'LA/OC/Ventura' }
+  ];
+
+  for (const src of sources) {
+    try {
+      const resp = await fetchWithTimeout(CORS_PROXY + encodeURIComponent(src.url), null, 8000);
+      if (!resp.ok) continue;
+      const html = await resp.text();
+      const boats = parseBoatReportsHTML(html);
+      boats.forEach(b => { b.source = src.label; });
+      allBoats = allBoats.concat(boats);
+    } catch(e) {
+      console.warn(`Boat reports fetch failed for ${src.label}:`, e.message);
+    }
+  }
+
+  if (allBoats.length === 0) {
+    // Show unavailable message
+    const section = document.getElementById('boatReportsSection');
+    if (section) {
+      section.style.display = '';
+      document.getElementById('boatReportsSummary').innerHTML =
+        '<span class="boat-reports-unavailable">Fish reports unavailable — check back later</span>';
+      document.getElementById('boatReportsDate').textContent = yStr;
+    }
+    return;
+  }
+
+  const agg = aggregateBoatData(allBoats);
+  boatReportsData = { date: yStr, ...agg, boats: allBoats };
+
+  // Cache in sessionStorage
+  try { sessionStorage.setItem(cacheKey, JSON.stringify(boatReportsData)); } catch(e) {}
+
+  renderBoatReports();
+  applyBoatReportBoost();
+}
+
+function renderBoatReports() {
+  if (!boatReportsData) return;
+  const data = boatReportsData;
+  const section = document.getElementById('boatReportsSection');
+  section.style.display = '';
+
+  // Date
+  document.getElementById('boatReportsDate').textContent = ` — ${data.date}`;
+
+  // Summary line with highlights
+  const keySpeciesCaught = data.speciesList.filter(s => KEY_SPECIES.includes(s.name) && s.kept > 0);
+  let summaryHTML = '';
+  if (keySpeciesCaught.length > 0) {
+    summaryHTML += keySpeciesCaught.map(s => {
+      const displayName = s.name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      return `<span class="boat-reports-highlight">${displayName}: ${s.kept} kept</span>`;
+    }).join('');
+  }
+  summaryHTML += `<div style="margin-top:4px;font-size:11px;color:var(--text-muted)">${data.totalBoats} boats · ${data.totalAnglers} anglers</div>`;
+  document.getElementById('boatReportsSummary').innerHTML = summaryHTML;
+
+  // Detailed content (collapsible)
+  let contentHTML = '<div class="boat-reports-species">';
+  const topSpecies = data.speciesList.slice(0, 16);
+  for (const s of topSpecies) {
+    if (s.kept === 0 && s.released === 0) continue;
+    const displayName = s.name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const rateStr = s.perAngler >= 0.01 ? ` (${s.perAngler.toFixed(2)}/angler)` : '';
+    const relStr = s.released > 0 ? ` <span style="color:var(--excellent);font-size:10px">+${s.released} rel</span>` : '';
+    contentHTML += `<div class="boat-species-row">
+      <span class="boat-species-name">${displayName}</span>
+      <span><span class="boat-species-count">${s.kept}</span>${relStr}<span class="boat-species-rate">${rateStr}</span></span>
+    </div>`;
+  }
+  contentHTML += '</div>';
+
+  // Trip type distribution
+  const tc = data.tripCounts;
+  const tripParts = [];
+  if (tc['half-day'] > 0) tripParts.push(`${tc['half-day']} half-day`);
+  if (tc['full-day'] > 0) tripParts.push(`${tc['full-day']} full-day`);
+  if (tc['coronado'] > 0) tripParts.push(`${tc['coronado']} Coronado Islands`);
+  if (tc['offshore'] > 0) tripParts.push(`${tc['offshore']} offshore/multi-day`);
+  if (tripParts.length > 0) {
+    contentHTML += `<div class="boat-trips-summary">Trip types: ${tripParts.join(', ')}</div>`;
+  }
+
+  document.getElementById('boatReportsContent').innerHTML = contentHTML;
+}
+
+function toggleBoatReports() {
+  const section = document.getElementById('boatReportsSection');
+  section.classList.toggle('expanded');
+}
+
+function applyBoatReportBoost() {
+  if (!boatReportsData || !boatReportsData.speciesList) return;
+
+  // Store the boost values so recalculate can use them
+  window._boatReportBoosts = {};
+  for (const s of boatReportsData.speciesList) {
+    const toolSpecies = SPECIES_TO_TOOL[s.name];
+    if (!toolSpecies || s.kept === 0) continue;
+
+    // Calculate boost: scale based on catch volume
+    // More fish caught = stronger signal that species is present
+    let boost = 0;
+    if (s.perAngler >= 0.5) boost = 1.5;      // hot bite
+    else if (s.perAngler >= 0.2) boost = 1.0;  // good bite
+    else if (s.perAngler >= 0.05) boost = 0.5;  // present
+    else if (s.kept >= 1) boost = 0.3;           // at least caught
+
+    if (boost > 0) {
+      window._boatReportBoosts[toolSpecies] = Math.max(window._boatReportBoosts[toolSpecies] || 0, boost);
+    }
+  }
+
+  // Apply boost to current species if applicable
+  if (window._boatReportBoosts[currentSpecies] && D.reportsScore !== undefined) {
+    D.reportsScore = Math.min(10, D.reportsScore + window._boatReportBoosts[currentSpecies]);
+  }
+  // Also boost 'general' if any key species were caught
+  if (currentSpecies === 'general') {
+    const anyKeyBoost = Object.values(window._boatReportBoosts).reduce((max, v) => Math.max(max, v), 0);
+    if (anyKeyBoost > 0 && D.reportsScore !== undefined) {
+      D.reportsScore = Math.min(10, D.reportsScore + anyKeyBoost * 0.5);
+    }
+  }
 }
 
 // =========================================================================
@@ -2636,6 +3014,7 @@ async function fetchAllData() {
     fetchSwellForecast(),  // WW3 5-day swell forecast from NOAA/PacIOOS
     fetchHFRadarCurrent(),  // real-time surface current from SIO HF Radar
     fetchNDBCBuoy(),        // real-time buoy wind & water temp from NDBC
+    fetchBoatReports(),     // daily CPFV dock totals from fish reports sites
   ]);
 
   // If location changed while we were fetching, discard these stale results
@@ -2677,6 +3056,9 @@ async function fetchAllData() {
   const loc = LOCATIONS[currentLocation];
   const buoyLabel = D.buoyId ? `Buoy: ${D.buoyName||D.buoyId} (${D.buoySource||'NDBC'})` : `Buoy: connecting...`;
   document.getElementById('stationFooter').textContent = `Station: ${loc.name} (${loc.tideStation}) · ${buoyLabel}`;
+
+  // Re-apply boat report boost after all fetches complete (boost may have been set during fetchBoatReports)
+  applyBoatReportBoost();
 
   updateDisplay();
   recalculate();
@@ -4513,6 +4895,15 @@ function selectSpecies(species) {
   document.getElementById('speciesSelect').value=species;
   document.querySelectorAll('.species-card').forEach(c=>c.classList.toggle('active',c.dataset.species===species));
   D.reportsScore=getReportsScore(species,new Date().getMonth());
+  // Apply boat report boost if yesterday's catches included this species
+  if (window._boatReportBoosts) {
+    if (window._boatReportBoosts[species]) {
+      D.reportsScore = Math.min(10, D.reportsScore + window._boatReportBoosts[species]);
+    } else if (species === 'general') {
+      const anyKeyBoost = Object.values(window._boatReportBoosts).reduce((max, v) => Math.max(max, v), 0);
+      if (anyKeyBoost > 0) D.reportsScore = Math.min(10, D.reportsScore + anyKeyBoost * 0.5);
+    }
+  }
   setVal('reportsVal',getReportsLabel(species,new Date().getMonth()),getRegionalCPFV() ? 'Regional CPFV' : 'CPFV 5yr');
   // Show/hide grunion row for halibut
   const grunionRow = document.getElementById('grunionRow');
