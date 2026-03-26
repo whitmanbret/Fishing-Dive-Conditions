@@ -1183,11 +1183,11 @@ const LOCATIONS = {
   santacruz:   { name: 'Santa Cruz Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46054'], lat: 34.00, lon: -119.73, depth: '10-80 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/105,70' },
   catalina:    { name: 'Catalina Island', bottom: 'kelp', tideStation: '9410660', coast: 90, shelter: 'moderate', buoys: ['46248','46222'], lat: 33.34, lon: -118.33, depth: '10-100 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/147,32' },
   // ── Offshore / Bluewater ──
-  ninemile:    { name: '9 Mile Bank', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46225','46258'], lat: 32.58, lon: -117.47, depth: '60-300 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
-  tannerbank:  { name: 'Tanner / Cortez Bank', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46047','46225'], lat: 32.45, lon: -119.13, depth: '30-500 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
+  ninemile:    { name: '9 Mile Bank', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46225'], lat: 32.58, lon: -117.47, depth: '60-300 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
+  tannerbank:  { name: 'Tanner / Cortez Bank', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46047'], lat: 32.45, lon: -119.13, depth: '30-500 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
   sanclemente: { name: 'San Clemente Island', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'moderate', buoys: ['46086','46225'], lat: 32.90, lon: -118.49, depth: '20-200 ft', kelpDensity: 'moderate', offshore: true, bluewater: true, nwsGrid: 'LOX/147,32' },
-  fortythree:  { name: '43 Fathom Spot', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46225','46258'], lat: 32.67, lon: -117.43, depth: '80-260 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
-  hiddenbank:  { name: 'Hidden Bank / 302 Spot', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.55, lon: -117.53, depth: '100-400 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
+  fortythree:  { name: '43 Fathom Spot', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46225'], lat: 32.67, lon: -117.43, depth: '80-260 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
+  hiddenbank:  { name: 'Hidden Bank / 302 Spot', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46225'], lat: 32.55, lon: -117.53, depth: '100-400 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
   // ── Central Coast (San Luis Obispo / Monterey) ──
   morro:       { name: 'Morro Bay / Montana de Oro', bottom: 'rock', tideStation: '9412110', coast: 250, shelter: 'moderate', buoys: ['46028'], lat: 35.37, lon: -120.87, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/72,120' },
   monterey:    { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46236','46042'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },
@@ -2384,6 +2384,95 @@ async function fetchNDBCBuoy() {
 }
 
 // =========================================================================
+// NDBC BUOY SST — direct fetch from NDBC realtime2 text files
+// For bluewater/offshore spots, this is more accurate than shore stations.
+// Called AFTER main fetch round so it can override shore station temps.
+// =========================================================================
+async function fetchBuoySST() {
+  const loc = LOCATIONS[currentLocation];
+  if (!loc.bluewater) return; // Only for bluewater spots
+  const buoyIds = loc.buoys || [];
+  if (buoyIds.length === 0) return;
+  const buoyId = buoyIds[0]; // Use the primary (nearest) buoy
+
+  // Helper: apply SST override for bluewater spot
+  function applySST(wtmpC, sourceLabel) {
+    const wtmpF = parseFloat((wtmpC * 9/5 + 32).toFixed(1));
+    D.waterTemp = wtmpF;
+    D.waterTempSource = sourceLabel;
+    D.buoyWaterTemp = wtmpF;
+    D.buoyWaterTempC = wtmpC;
+    D.buoyStation = buoyId;
+    srcStatus.ndbc = 'ok';
+  }
+
+  // Strategy 1: Direct NDBC realtime2 text file (most authoritative)
+  try {
+    const url = `https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`;
+    const r = await fetchWithTimeout(url, null, 6000);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const text = await r.text();
+    const lines = text.split('\n').filter(l => l.trim().length > 0);
+    if (lines.length < 3) throw new Error('Not enough data lines');
+    // Line 0: column headers (#YY MM DD hh mm WDIR WSPD GST WVHT DPD APD MWD PRES ATMP WTMP DEWP VIS PTDY TIDE)
+    // Line 1: unit headers (#yr mo dy hr mn ...)
+    // Line 2+: data rows (most recent first)
+    const headers = lines[0].replace(/^#/, '').trim().split(/\s+/);
+    const wtmpIdx = headers.indexOf('WTMP');
+    if (wtmpIdx === -1) throw new Error('WTMP column not found');
+    // Search data rows for first non-missing WTMP value
+    let wtmpC = null;
+    for (let i = 2; i < lines.length && i < 12; i++) {
+      const cols = lines[i].trim().split(/\s+/);
+      const val = cols[wtmpIdx];
+      if (val && val !== 'MM' && !isNaN(parseFloat(val))) {
+        wtmpC = parseFloat(val);
+        break;
+      }
+    }
+    if (wtmpC === null) throw new Error('No valid WTMP reading');
+    applySST(wtmpC, 'NDBC Buoy ' + buoyId);
+    return; // Success
+  } catch(e) {
+    // Direct NDBC fetch failed (likely CORS) — try ERDDAP fallback
+  }
+
+  // Strategy 2: CoastWatch ERDDAP (JSONP, CORS-safe) — same buoy data, different source
+  try {
+    const cbName = '_buoysst_' + Date.now() + '_' + buoyId.replace(/[^a-zA-Z0-9]/g, '');
+    const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station%2Ctime%2Cwtmp&station=%22${buoyId}%22&time%3E=now-2hours&orderBy(%22time%22)&.jsonp=${cbName}`;
+    const data = await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => { delete window[cbName]; reject('timeout'); }, 5000);
+      window[cbName] = d => { clearTimeout(timeout); delete window[cbName]; resolve(d); };
+      const s = document.createElement('script');
+      s.src = url;
+      s.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject('load error'); };
+      document.head.appendChild(s);
+      setTimeout(() => { try { document.head.removeChild(s); } catch(e){} }, 6000);
+    });
+    if (data.table && data.table.rows && data.table.rows.length > 0) {
+      const cols = data.table.columnNames;
+      const wi = cols.indexOf('wtmp');
+      // Get most recent non-null WTMP
+      for (let r = data.table.rows.length - 1; r >= 0; r--) {
+        if (data.table.rows[r][wi] !== null) {
+          applySST(data.table.rows[r][wi], 'NDBC Buoy ' + buoyId);
+          return;
+        }
+      }
+    }
+  } catch(e) {
+    // ERDDAP fallback also failed — the earlier fetchNDBCBuoy() may still have data
+  }
+
+  // Strategy 3: If fetchNDBCBuoy() already got buoy temp, force it as the primary source
+  if (D.buoyWaterTemp && D.buoyStation) {
+    D.waterTemp = D.buoyWaterTemp;
+    D.waterTempSource = 'NDBC Buoy ' + D.buoyStation;
+  }
+}
+
+// =========================================================================
 // HF RADAR SURFACE CURRENTS (UCSD/SIO via IOOS ERDDAP)
 // =========================================================================
 async function fetchHFRadarCurrent() {
@@ -2552,9 +2641,14 @@ async function fetchAllData() {
   // If location changed while we were fetching, discard these stale results
   if (thisGen !== _fetchGen) return;
 
+  // For bluewater spots, fetch SST directly from NDBC realtime2 (overrides shore/ERDDAP data)
+  await fetchBuoySST();
+  if (thisGen !== _fetchGen) return;
+
   // Resolve water temp priority AFTER all fetches complete:
   // Shore dives: pier sensor > offshore buoy > CDIP > satellite
   // Offshore dives (islands/boats): buoy > CDIP > pier > satellite
+  // Bluewater spots: NDBC buoy SST (already set by fetchBuoySST above)
   const loc_post = LOCATIONS[currentLocation];
   if (D.shoreWaterTemp && !loc_post.offshore) {
     D.waterTemp = D.shoreWaterTemp;
