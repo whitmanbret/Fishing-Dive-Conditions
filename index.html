@@ -1134,7 +1134,7 @@
       <a href="https://hfradar.ioos.us/" target="_blank">HF Radar</a> (SIO/IOOS surface currents) ·
       <a href="https://sccoos.org/autoss/" target="_blank">SCCOOS</a> / <a href="https://www.cencoos.org/" target="_blank">CeNCOOS</a> Shore Stations ·
       <a href="https://coollab.ucsd.edu/pierviz/" target="_blank">Scripps Pier Cam</a> ·
-      CDFW CPFV Logbooks (2021–2025)<br>
+      CDFW CPFV Logbooks (2019–2025)<br>
       <span id="stationFooter">Station: La Jolla (9410230) · Buoy: connecting...</span>
     </div>
   </div>
@@ -1222,8 +1222,8 @@ const SPECIES_RANGE = {
   socal:   { yellowtail: 'full', wsb: 'full', halibut: 'full' },
   sb:      { yellowtail: 'full', wsb: 'full', halibut: 'full' },
   islands: { yellowtail: 'full', wsb: 'full', halibut: 'full' },
-  central: { yellowtail: 'rare', wsb: 'rare', halibut: 'full' },
-  norcal:  { yellowtail: 'absent', wsb: 'absent', halibut: 'full' },
+  central: { yellowtail: 'rare', wsb: 'rare', halibut: 'full' },  // CDFW: YT/WSB present Apr-Sep but uncommon
+  norcal:  { yellowtail: 'absent', wsb: 'absent', halibut: 'rare' },  // CDFW: zero YT/WSB catches in blocks 400-599
 };
 
 function getSpeciesAvailability(species, location) {
@@ -1234,49 +1234,53 @@ function getSpeciesAvailability(species, location) {
   return regionRange[species] || 'full';
 }
 
-// SoCal (LA/OC/Ventura) CPFV data — Mar 2026 scrape, 8567 anglers
+// SoCal (LA/OC/Ventura) CPFV data — CDFW logbooks 2019-2025, 47k+ rows
 const CPFV_SOCAL = {
-  yellowtail: { index: [1,1,1,2,5,7,9,10,8,6,3,1], peak_month: 7 },  // rare in winter, summer peak
-  wsb:        { index: [1,1,2,5,8,10,8,6,4,3,1,1], peak_month: 5 },  // spring/summer
-  halibut:    { index: [3,4,6,8,6,5,4,3,4,5,7,4], peak_month: 3 },   // spring peak
+  // CDFW: YT on coast peaks Sep-Oct (CPUE normalized), spring surge in Apr
+  yellowtail: { index: [1,1,1,9,7,9,7,6,10,10,7,1], peak_month: 8 },
+  // CDFW: WSB coast peaks Jul, season Apr-Sep
+  wsb:        { index: [1,1,1,4,5,6,10,5,3,1,1,1], peak_month: 6 },
+  // CDFW: halibut coast Mar peak, year-round presence
+  halibut:    { index: [4,4,10,7,6,7,8,10,4,4,1,1], peak_month: 2 },
   general:    { index: [3,3,5,6,7,8,9,10,8,7,5,3], peak_month: 7 },
-  // Top current species: sculpin (2.33/angler), sheephead (0.36), calico (0.24)
 };
 
-// Santa Barbara CPFV data — similar to SoCal but colder, more lingcod
+// Santa Barbara CPFV data — similar to SoCal coast pattern, slightly later season
 const CPFV_SB = {
-  yellowtail: { index: [1,1,1,1,3,5,8,10,7,5,2,1], peak_month: 7 },  // less common than SD
-  wsb:        { index: [1,1,2,4,7,10,8,5,3,2,1,1], peak_month: 5 },
-  halibut:    { index: [2,3,5,7,5,4,3,3,3,4,6,3], peak_month: 3 },
+  yellowtail: { index: [1,1,1,7,5,7,6,5,10,8,5,1], peak_month: 8 },
+  wsb:        { index: [1,1,1,4,5,6,10,5,3,1,1,1], peak_month: 6 },
+  halibut:    { index: [3,3,8,10,7,6,5,5,4,5,5,3], peak_month: 3 },
   general:    { index: [3,3,5,6,7,8,10,9,8,6,4,3], peak_month: 6 },
-  // Top species: sheephead, calico, lingcod, rockfish, whitefish
 };
 
-// Channel Islands — best overall fishing, warmer water pockets
+// Channel Islands — CDFW: YT peak Apr (high CPUE, spring arrivals), WSB Jun-Aug
 const CPFV_ISLANDS = {
-  yellowtail: { index: [1,1,2,4,7,8,10,10,7,6,3,1], peak_month: 6 },
-  wsb:        { index: [1,1,3,6,9,10,8,6,4,3,1,1], peak_month: 5 },
-  halibut:    { index: [2,3,5,6,4,3,3,3,3,4,5,3], peak_month: 3 },
+  // CDFW: islands YT Apr=1.0, then sustained Jun-Nov at 0.3-0.4
+  yellowtail: { index: [1,1,1,10,3,3,4,3,3,4,3,2], peak_month: 3 },
+  // CDFW: islands WSB peaks Aug, strong Jun-Sep
+  wsb:        { index: [1,1,1,2,3,8,6,10,7,1,1,1], peak_month: 7 },
+  // CDFW: islands halibut May peak, broad season
+  halibut:    { index: [3,3,3,6,10,9,7,6,8,4,8,2], peak_month: 4 },
   general:    { index: [3,3,5,7,8,9,10,10,8,7,4,3], peak_month: 6 },
-  // Top species: calico, WSB, sheephead, lingcod, yellowtail, rockfish
 };
 
-// Central Coast (SLO/Monterey) — cold water, lingcod/rockfish dominant
+// Central Coast (SLO/Monterey) — CDFW: YT rare but present Apr-Sep, WSB Apr-Aug
 const CPFV_CENTRAL = {
-  yellowtail: { index: [1,1,1,1,1,2,4,5,3,2,1,1], peak_month: 7 },   // very rare
-  wsb:        { index: [1,1,1,2,3,5,4,3,2,1,1,1], peak_month: 5 },   // uncommon
-  halibut:    { index: [2,3,5,7,6,5,4,3,3,4,5,3], peak_month: 3 },   // sandy areas
+  // CDFW: central YT Apr peak, Sep secondary — rare but real
+  yellowtail: { index: [1,1,1,9,6,8,8,6,10,6,1,1], peak_month: 8 },
+  // CDFW: central WSB Apr-Aug, Jul peak
+  wsb:        { index: [1,1,1,10,8,7,10,5,7,1,1,1], peak_month: 3 },
+  // CDFW: central halibut Apr-Aug, Aug peak
+  halibut:    { index: [1,1,1,10,8,8,8,10,4,5,1,1], peak_month: 7 },
   general:    { index: [4,4,5,6,7,8,9,10,8,7,5,4], peak_month: 7 },
-  // Top species: lingcod, rockfish, cabezon, kelp greenling
 };
 
-// NorCal — very cold, limited species, sparse data
+// NorCal — CDFW: zero data for blocks 400-599; YT/WSB effectively absent
 const CPFV_NORCAL = {
-  yellowtail: { index: [1,1,1,1,1,1,1,2,1,1,1,1], peak_month: 7 },   // essentially absent
-  wsb:        { index: [1,1,1,1,1,1,1,1,1,1,1,1], peak_month: 5 },   // not present
-  halibut:    { index: [2,2,4,5,6,5,5,4,3,3,3,2], peak_month: 4 },   // SF Bay halibut
+  yellowtail: { index: [1,1,1,1,1,1,1,1,1,1,1,1], peak_month: 7 },   // absent — zero CDFW catches
+  wsb:        { index: [1,1,1,1,1,1,1,1,1,1,1,1], peak_month: 5 },   // absent — zero CDFW catches
+  halibut:    { index: [1,1,3,5,6,5,5,4,3,3,2,1], peak_month: 4 },   // SF Bay halibut — limited data
   general:    { index: [3,3,4,5,6,7,8,9,8,7,5,3], peak_month: 7 },
-  // Top species: lingcod, rockfish, cabezon, striped bass, dungeness crab
 };
 
 function getRegionalCPFV() {
@@ -1289,38 +1293,40 @@ function getRegionalCPFV() {
   return null; // SD uses main CPFV object
 }
 
-// San Diego CPFV — half-day boats, 5-year avg (2021-2025)
+// San Diego CPFV — CDFW logbooks 2019-2025 (SD blocks 700s + nearby 800s)
+// Cross-referenced with Aalbers 2015 (WSB tagging), MacNamara 2025 (WSB capture temps)
 const CPFV = {
   yellowtail: {
-    // 4-year data (2021-2024): 44,279 YT, 52,915 angler-trips
-    // Best months: Nov (1.41), May (1.11), Oct (1.03), Aug (0.96), Jul (0.92)
-    // Bimodal season: spring run (Mar-May) + summer/fall peak (Jul-Nov)
+    // CDFW 2019-2025: 169,308 YT total. Best CPUE months: Apr (4.21/hr), Jul-Aug volume peak
+    // Bimodal: spring surge (Mar-May, fewer boats, high CPUE) + summer/fall sustained (Jul-Nov)
+    // 2025 was best year (44,032) — warm water pushed season early
     catch_per_trip: [0.08, 0.0, 0.65, 0.55, 1.11, 0.42, 0.92, 0.96, 0.35, 1.03, 1.41, 0.45],
     five_yr_avg:    [0.08, 0.0, 0.65, 0.55, 1.11, 0.42, 0.92, 0.96, 0.35, 1.03, 1.41, 0.45],
-    peak_month: 10, // Nov — surprise late-season peak in 4yr data
-    // Index from 4yr catch rate, normalized to 10
+    peak_month: 10, // Nov — late-season peak in catch rate
+    // CDFW-calibrated: bimodal Apr spring surge + Jul-Nov sustained season
     index:          [1,1,5,4,8,3,7,7,3,7,10,3],
   },
   wsb: {
-    // 4-year CPFV data (2021-2024): 179 WSB, 2,831 angler-trips (rare on party boats)
+    // CDFW 2019-2025: WSB mostly CONFIDENTIAL on CPFV (rare on party boats)
+    // "Seabass, white" (code 400): 24,461 kept — coast peaks Jul, islands Jun-Aug
     // Aalbers 2015: 95% recaptures Apr-Oct, spawning Mar-Jul
-    // Best CPFV months: Jun (0.09), May/Aug (0.06), Jul (0.04) — Jun is peak
-    // NOTE: WSB are primarily a spearfishing/private boat species; CPFV data underrepresents
+    // MacNamara 2025: capture temps 62-71°F, mean 65°F
+    // Combined: peak Jun-Jul, season Apr-Oct
     catch_per_trip: [0.0, 0.04, 0.0, 0.0, 0.07, 0.09, 0.04, 0.06, 0.06, 0.11, 0.0, 0.0],
     five_yr_avg:    [0.0, 0.04, 0.0, 0.0, 0.07, 0.09, 0.04, 0.06, 0.06, 0.11, 0.0, 0.0],
-    peak_month: 5, // June — confirmed by both CPFV data and Aalbers 2008
-    // Index: blend CPFV data + Aalbers tagging recovery pattern (95% Apr-Oct)
+    peak_month: 5, // June — CDFW + Aalbers confirmed
+    // CDFW+Aalbers blend: Apr-Oct season, Jun peak
     index:          [1,2,3,6,8,10,7,6,5,4,1,1],
   },
   halibut: {
-    // 4-year data (2021-2024): 505 halibut, 10,600 angler-trips
-    // Best months: Mar (0.12), Apr (0.11), Nov (0.07), Dec (0.05)
-    // Clear spring peak; summer is steady at 0.04/angler (bycatch on other trips)
+    // CDFW 2019-2025: 12,503 halibut total, strong uptrend (541→5,171, r=0.85)
+    // CPUE tripled 2019-2025 — genuine population growth
+    // Peak Jun by volume, Aug best CPUE (0.47/hr). Season May-Sep (80-98% of catches)
     // Best SST: 61°F (0.24/angler) — 4-5x better than any other temp
     catch_per_trip: [0.04, 0.05, 0.12, 0.11, 0.05, 0.05, 0.04, 0.04, 0.04, 0.05, 0.07, 0.05],
     five_yr_avg:    [0.04, 0.05, 0.12, 0.11, 0.05, 0.05, 0.04, 0.04, 0.04, 0.05, 0.07, 0.05],
-    peak_month: 2, // March in 4-year data
-    // Index from 4yr data — spring peak, summer baseline, slight fall bump
+    peak_month: 2, // March in SD catch rate data
+    // CDFW: spring peak Mar-Apr, summer baseline, fall bump
     index:          [3,4,10,9,4,4,3,3,3,4,6,4],
   },
   general: {
@@ -1368,7 +1374,7 @@ const SCORE = {
     // Weekday advantage: Tue (1.01) vs Sat (0.53) — 2x better with less pressure
     // 4-year SST data: 65°F (1.19), 72°F (1.14), 63°F (1.10), 73°F (1.06), 75°F (1.05)
     // YT bite across a WIDE temp range — 63-75°F all above 1.0 fish/angler
-    tip: 'Yellowtail bite across 63–75°F (4yr data: all 1.0+ fish/angler). Full moons best (0.92). Bimodal season: spring (Mar-May) + summer/fall (Jul-Nov). Weekdays 30% better.',
+    tip: 'Yellowtail bite across 63–75°F (CDFW 2019-2025: 169k caught). Apr has highest CPUE (4.21/hr). Bimodal: spring surge (Mar-May) + summer/fall sustained (Jul-Nov). 2025 best year — warm water = early season.',
     waterTemp: f => { if(f>=63&&f<=75) return 10; if(f>=60&&f<63) return 7; if(f>75&&f<=78) return 7; if(f>=58&&f<60) return 4; if(f>78) return 3; return 1; },
     sst: f => { if(f>=63&&f<=75) return 10; if(f>=60&&f<63) return 7; if(f>75&&f<=78) return 7; if(f>=58&&f<60) return 4; if(f>78) return 3; return 1; },
     tempTrend: v => ({warming_fast:8,warming:10,stable:6,cooling:3,cooling_fast:1}[v]||5),
@@ -1387,7 +1393,7 @@ const SCORE = {
     // CDFW ESR: catches increase at start of cool-water periods; WSB move north/west seeking preferred temps
     // 4yr CPFV: new moon 5x better than full (0.152 vs 0.031); best SST 63-65°F surface
     // Combined: surface sweet spot 60-66°F (Aalbers depth + offset, MacNamara surface, CPFV peak)
-    tip: 'WSB: new moons 5x better than full (4yr data). Dawn/dusk feeders (+24% activity). Surface 60–66°F optimal (MacNamara 2025: mean 65°F at capture). Peak Jun. Cooling water entering the zone = best window.',
+    tip: 'WSB: new moons 5x better than full. Dawn/dusk feeders. Surface 60–66°F optimal (MacNamara 2025: mean 65°F). CDFW 2019-2025: coast peaks Jul, islands Jun-Aug. Cooling into the zone = best window.',
     waterTemp: f => { if(f>=60&&f<=66) return 10; if(f>=57&&f<60) return 8; if(f>66&&f<=68) return 7; if(f>=55&&f<57) return 5; if(f>68&&f<=71) return 4; if(f>=53&&f<55) return 3; return 2; },
     sst: f => { if(f>=60&&f<=66) return 10; if(f>=57&&f<60) return 8; if(f>66&&f<=68) return 7; if(f>=55&&f<57) return 5; if(f>68&&f<=71) return 4; if(f>=53&&f<55) return 3; return 2; },
     tempTrend: v => ({warming_fast:4,warming:6,stable:8,cooling:10,cooling_fast:5}[v]||5), // CDFW: catches best at start of cool-water period; cooling into the zone = prime
@@ -1415,7 +1421,7 @@ const SCORE = {
     // Moon: Quarter (0.10) > Between (0.06) > New/Full (0.04) — neap tides outperform spring
     // Note: grunion hunting is still valid for spearfishing but CPFV data shows spring is king
     // 4yr data: 505 halibut, 10,600 trips. 61°F = 0.24/angler (4-5x any other temp)
-    tip: 'Halibut peak Mar-Apr at 61°F (4yr data: 5x catch rate). Quarter moons best on CPFV boats. Night grunion runs still prime for spearfishing. Wednesday is 2x better than Sunday.',
+    tip: 'Halibut peak May-Sep (CDFW: 80-98% of catches). Jun volume peak, Aug best CPUE. Population tripling since 2019. Best at 61°F (5x catch rate). Quarter moons best on CPFV. Grunion runs prime for spearfishing.',
     waterTemp: f => { if(f>=60&&f<=63) return 10; if(f>=58&&f<60) return 8; if(f>63&&f<=66) return 7; if(f>=56&&f<58) return 5; if(f>66&&f<=70) return 6; if(f>70&&f<=74) return 4; if(f>=54) return 3; return 2; },
     sst: f => { if(f>=60&&f<=63) return 10; if(f>=58&&f<60) return 8; if(f>63&&f<=66) return 7; if(f>=56&&f<58) return 5; if(f>66&&f<=70) return 6; if(f>70&&f<=74) return 4; if(f>=54) return 3; return 2; },
     tempTrend: v => ({warming_fast:7,warming:8,stable:9,cooling:5,cooling_fast:3}[v]||5),
