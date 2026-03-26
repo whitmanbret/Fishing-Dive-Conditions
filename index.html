@@ -3499,6 +3499,7 @@ function recalculate() {
 
   // --- Dive Visibility (weighted) ---
   const vizEntries = [];
+  const loc = LOCATIONS[currentLocation];
   // Use NDBC buoy wind (ocean-measured) when available, fall back to NWS
   const effectiveWindSpd = D.buoyWindSpeed || D.windSpeedMph;
   let effectiveWindDir = D.windDir;
@@ -3542,7 +3543,7 @@ function recalculate() {
   }
 
   // Apply location shelter bonus for viz (kelp beds dampen surge)
-  const loc = LOCATIONS[currentLocation];
+  // loc already declared above
   let vizFinal = vizAvg;
   if (vizFinal !== null) {
     // Kelp density bonus: high kelp = natural wave break (reduced from 1.2 to 0.6)
@@ -4946,7 +4947,8 @@ function initMap() {
     subdomains: 'abcd'
   }).addTo(diveMap);
   // Zoom to current spot's region (nearby spots visible)
-  diveMap.setView([curLoc.lat, curLoc.lon], 10);
+  const initZoom = curLoc.bluewater ? 8 : 10;
+  diveMap.setView([curLoc.lat, curLoc.lon], initZoom);
   // Add all spot markers
   Object.keys(LOCATIONS).forEach(key => {
     const loc = LOCATIONS[key];
@@ -4961,6 +4963,11 @@ function createSpotMarker(key, loc, isCurrent) {
   let color = '#8899aa'; // neutral/white-ish for non-current spots
   let radius = 6;
   let className = '';
+  const isBluewater = loc.bluewater;
+  if (isBluewater && !isCurrent) {
+    color = '#5dade2'; // blue tint for offshore spots
+    radius = 8;
+  }
   if (isCurrent) {
     const fishScore = D.fishAvg;
     if (fishScore !== null && fishScore !== undefined) {
@@ -4968,7 +4975,7 @@ function createSpotMarker(key, loc, isCurrent) {
       else if (fishScore >= 4) color = '#f39c12';
       else color = '#e74c3c';
     } else {
-      color = '#2c8cff';
+      color = isBluewater ? '#5dade2' : '#2c8cff';
     }
     radius = 10;
     className = 'map-marker-current';
@@ -5010,7 +5017,8 @@ function updateMapMarkers() {
   });
   // Pan map to current spot
   const curLoc = LOCATIONS[currentLocation];
-  if (curLoc) diveMap.flyTo([curLoc.lat, curLoc.lon], 10, { duration: 0.8 });
+  const mapZoom = (curLoc && curLoc.bluewater) ? 8 : 10;
+  if (curLoc) diveMap.flyTo([curLoc.lat, curLoc.lon], mapZoom, { duration: 0.8 });
 }
 
 function selectSpotFromMap(key) {
