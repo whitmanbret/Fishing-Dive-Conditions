@@ -873,6 +873,7 @@
           <option value="sonoma">Sonoma County</option>
           <option value="mendocino">Mendocino County</option>
           <option value="humboldt">Humboldt County</option>
+          <option value="offshore">Offshore / Bluewater</option>
         </select>
       </div>
       <div class="control-group spot-group">
@@ -1181,6 +1182,12 @@ const LOCATIONS = {
   anacapa:     { name: 'Anacapa Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46217'], lat: 34.01, lon: -119.36, depth: '10-60 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/119,62' },
   santacruz:   { name: 'Santa Cruz Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46054'], lat: 34.00, lon: -119.73, depth: '10-80 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/105,70' },
   catalina:    { name: 'Catalina Island', bottom: 'kelp', tideStation: '9410660', coast: 90, shelter: 'moderate', buoys: ['46248','46222'], lat: 33.34, lon: -118.33, depth: '10-100 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/147,32' },
+  // ── Offshore / Bluewater ──
+  ninemile:    { name: '9 Mile Bank', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46225','46258'], lat: 32.58, lon: -117.47, depth: '60-300 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
+  tannerbank:  { name: 'Tanner / Cortez Bank', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46047','46225'], lat: 32.45, lon: -119.13, depth: '30-500 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
+  sanclemente: { name: 'San Clemente Island', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'moderate', buoys: ['46086','46225'], lat: 32.90, lon: -118.49, depth: '20-200 ft', kelpDensity: 'moderate', offshore: true, bluewater: true, nwsGrid: 'LOX/147,32' },
+  fortythree:  { name: '43 Fathom Spot', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46225','46258'], lat: 32.67, lon: -117.43, depth: '80-260 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
+  hiddenbank:  { name: 'Hidden Bank / 302 Spot', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.55, lon: -117.53, depth: '100-400 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
   // ── Central Coast (San Luis Obispo / Monterey) ──
   morro:       { name: 'Morro Bay / Montana de Oro', bottom: 'rock', tideStation: '9412110', coast: 250, shelter: 'moderate', buoys: ['46028'], lat: 35.37, lon: -120.87, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/72,120' },
   monterey:    { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46236','46042'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },
@@ -1214,6 +1221,8 @@ const REGION_MAP = {
   sb: 'sb', refugio: 'sb',
   // Channel Islands
   anacapa: 'islands', santacruz: 'islands', catalina: 'socal',
+  // Offshore / Bluewater
+  ninemile: 'offshore', tannerbank: 'offshore', sanclemente: 'offshore', fortythree: 'offshore', hiddenbank: 'offshore',
   // Central Coast
   morro: 'central', monterey: 'central', carmel: 'central',
   // NorCal
@@ -1227,6 +1236,7 @@ const SPECIES_RANGE = {
   socal:   { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'full' },
   sb:      { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'rare' },
   islands: { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'full' },  // CDFW: 93% of bluefin from island blocks
+  offshore: { yellowtail: 'full', wsb: 'absent', halibut: 'absent', bluefin: 'full' },  // Bluewater — bluefin + yellowtail only
   central: { yellowtail: 'rare', wsb: 'rare', halibut: 'full', bluefin: 'rare' },  // CDFW: minimal bluefin
   norcal:  { yellowtail: 'absent', wsb: 'absent', halibut: 'rare', bluefin: 'absent' },  // CDFW: zero catches
 };
@@ -1302,6 +1312,7 @@ function getRegionalCPFV() {
   if (region === 'islands') return CPFV_ISLANDS;
   if (region === 'central') return CPFV_CENTRAL;
   if (region === 'norcal') return CPFV_NORCAL;
+  if (region === 'offshore') return CPFV_ISLANDS; // Offshore uses island block data (93% of bluefin)
   return null; // SD uses main CPFV object
 }
 
@@ -2191,6 +2202,9 @@ const SHORE_STATION_MAP = {
   // NorCal — Trinidad, Humboldt
   halfmoon: ['calpoly'], bodega: ['trinidad','humboldt'],
   fortbragg: ['trinidad','humboldt'], trinidad: ['trinidad','humboldt'],
+  // Offshore — Scripps as closest shore reference
+  ninemile: ['scripps','newport'], fortythree: ['scripps','newport'], hiddenbank: ['scripps','newport'],
+  sanclemente: ['newport','scripps'], tannerbank: ['scripps','newport'],
 };
 
 async function fetchShoreStation() {
@@ -4543,6 +4557,7 @@ const COUNTY_SPOTS = {
   sonoma:       ['bodega'],
   mendocino:    ['fortbragg'],
   humboldt:     ['trinidad'],
+  offshore:     ['ninemile','fortythree','hiddenbank','sanclemente','tannerbank'],
 };
 
 // =========================================================================
