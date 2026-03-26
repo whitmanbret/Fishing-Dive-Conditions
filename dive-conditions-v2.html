@@ -268,6 +268,7 @@
     .species-card.active[data-species="yellowtail"] { border-color: var(--fish-color); background: rgba(240,160,48,0.1); color: var(--fish-color); }
     .species-card.active[data-species="wsb"] { border-color: #90b8e0; background: rgba(144,184,224,0.1); color: #90b8e0; }
     .species-card.active[data-species="halibut"] { border-color: #8b6d47; background: rgba(139,109,71,0.1); color: #d4a574; }
+    .species-card.active[data-species="bluefin"] { border-color: #1a5276; background: rgba(26,82,118,0.15); color: #5dade2; }
     .species-label { font-size: 12px; }
     .species-label .short-name { display: none; }
     .species-name { font-size: 10px; color: var(--text-muted); font-weight: 400; margin-top: 1px; }
@@ -889,6 +890,7 @@
           <option value="yellowtail">Yellowtail (S. lalandi)</option>
           <option value="wsb">White Sea Bass (A. nobilis)</option>
           <option value="halibut">Halibut (P. californicus)</option>
+          <option value="bluefin">Bluefin Tuna (T. orientalis)</option>
         </select>
       </div>
     </div>
@@ -978,6 +980,9 @@
       </div>
       <div class="species-card" data-species="halibut" onclick="selectSpecies('halibut')">
         <div class="species-label">Halibut</div><div class="species-name">P. californicus</div>
+      </div>
+      <div class="species-card" data-species="bluefin" onclick="selectSpecies('bluefin')">
+        <div class="species-label">Bluefin</div><div class="species-name">T. orientalis</div>
       </div>
     </div>
 
@@ -1218,12 +1223,12 @@ const REGION_MAP = {
 // Species availability by region — controls which species cards show and score caps
 // 'full' = normal scoring, 'rare' = score capped at 3/10, 'absent' = hidden + score 1/10
 const SPECIES_RANGE = {
-  sd:      { yellowtail: 'full', wsb: 'full', halibut: 'full' },
-  socal:   { yellowtail: 'full', wsb: 'full', halibut: 'full' },
-  sb:      { yellowtail: 'full', wsb: 'full', halibut: 'full' },
-  islands: { yellowtail: 'full', wsb: 'full', halibut: 'full' },
-  central: { yellowtail: 'rare', wsb: 'rare', halibut: 'full' },  // CDFW: YT/WSB present Apr-Sep but uncommon
-  norcal:  { yellowtail: 'absent', wsb: 'absent', halibut: 'rare' },  // CDFW: zero YT/WSB catches in blocks 400-599
+  sd:      { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'full' },
+  socal:   { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'full' },
+  sb:      { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'rare' },
+  islands: { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'full' },  // CDFW: 93% of bluefin from island blocks
+  central: { yellowtail: 'rare', wsb: 'rare', halibut: 'full', bluefin: 'rare' },  // CDFW: minimal bluefin
+  norcal:  { yellowtail: 'absent', wsb: 'absent', halibut: 'rare', bluefin: 'absent' },  // CDFW: zero catches
 };
 
 function getSpeciesAvailability(species, location) {
@@ -1242,6 +1247,8 @@ const CPFV_SOCAL = {
   wsb:        { index: [1,1,1,4,5,6,10,5,3,1,1,1], peak_month: 6 },
   // CDFW: halibut coast Mar peak, year-round presence
   halibut:    { index: [4,4,10,7,6,7,8,10,4,4,1,1], peak_month: 2 },
+  // CDFW: bluefin on coast Jul-Sep, peak Aug
+  bluefin:    { index: [1,1,1,1,1,1,5,10,6,1,1,1], peak_month: 7 },
   general:    { index: [3,3,5,6,7,8,9,10,8,7,5,3], peak_month: 7 },
 };
 
@@ -1250,6 +1257,7 @@ const CPFV_SB = {
   yellowtail: { index: [1,1,1,7,5,7,6,5,10,8,5,1], peak_month: 8 },
   wsb:        { index: [1,1,1,4,5,6,10,5,3,1,1,1], peak_month: 6 },
   halibut:    { index: [3,3,8,10,7,6,5,5,4,5,5,3], peak_month: 3 },
+  bluefin:    { index: [1,1,1,1,1,1,3,5,10,1,1,1], peak_month: 8 },  // rare in SB
   general:    { index: [3,3,5,6,7,8,10,9,8,6,4,3], peak_month: 6 },
 };
 
@@ -1261,6 +1269,8 @@ const CPFV_ISLANDS = {
   wsb:        { index: [1,1,1,2,3,8,6,10,7,1,1,1], peak_month: 7 },
   // CDFW: islands halibut May peak, broad season
   halibut:    { index: [3,3,3,6,10,9,7,6,8,4,8,2], peak_month: 4 },
+  // CDFW: 93% of all bluefin from island blocks. Season May-Dec, expanding yearly
+  bluefin:    { index: [1,1,1,1,5,4,4,5,5,4,5,10], peak_month: 11 },
   general:    { index: [3,3,5,7,8,9,10,10,8,7,4,3], peak_month: 6 },
 };
 
@@ -1272,6 +1282,7 @@ const CPFV_CENTRAL = {
   wsb:        { index: [1,1,1,10,8,7,10,5,7,1,1,1], peak_month: 3 },
   // CDFW: central halibut Apr-Aug, Aug peak
   halibut:    { index: [1,1,1,10,8,8,8,10,4,5,1,1], peak_month: 7 },
+  bluefin:    { index: [1,1,1,1,1,1,1,1,10,1,1,1], peak_month: 8 },  // CDFW: 1 data point (Sep), effectively noise
   general:    { index: [4,4,5,6,7,8,9,10,8,7,5,4], peak_month: 7 },
 };
 
@@ -1280,6 +1291,7 @@ const CPFV_NORCAL = {
   yellowtail: { index: [1,1,1,1,1,1,1,1,1,1,1,1], peak_month: 7 },   // absent — zero CDFW catches
   wsb:        { index: [1,1,1,1,1,1,1,1,1,1,1,1], peak_month: 5 },   // absent — zero CDFW catches
   halibut:    { index: [1,1,3,5,6,5,5,4,3,3,2,1], peak_month: 4 },   // SF Bay halibut — limited data
+  bluefin:    { index: [1,1,1,1,1,1,1,1,1,1,1,1], peak_month: 8 },   // absent
   general:    { index: [3,3,4,5,6,7,8,9,8,7,5,3], peak_month: 7 },
 };
 
@@ -1328,6 +1340,17 @@ const CPFV = {
     peak_month: 2, // March in SD catch rate data
     // CDFW: spring peak Mar-Apr, summer baseline, fall bump
     index:          [3,4,10,9,4,4,3,3,3,4,6,4],
+  },
+  bluefin: {
+    // CDFW 2019-2025: 185,319 bluefin total. Fishery exploded from 2,191 (2019) to 52,405 (2023)
+    // Season expanding: was Jul-Nov, now Apr-Dec. 93% from offshore/island blocks
+    // Optimal temp: 62-64°F (CPUE 1.93). Warmer = worse (r=-0.29, significant)
+    // Full moon = better for locating (monthly data: new moon days = lower CPUE, p=0.014)
+    catch_per_trip: [0.0, 0.0, 0.0, 0.0, 0.15, 0.12, 0.54, 1.0, 0.59, 0.44, 0.46, 0.5],
+    five_yr_avg:    [0.0, 0.0, 0.0, 0.0, 0.15, 0.12, 0.54, 1.0, 0.59, 0.44, 0.46, 0.5],
+    peak_month: 7, // Aug peak by volume
+    // CDFW-calibrated: season Jun-Nov at SD, peaking Jul-Aug
+    index:          [1,1,1,1,2,2,6,10,6,5,5,5],
   },
   general: {
     catch_per_trip: [4.2, 5.1, 8.3, 12.7, 18.4, 24.6, 28.1, 25.3, 19.8, 14.2, 7.6, 4.8],
@@ -1445,6 +1468,34 @@ const SCORE = {
     waveEnergy: null, rainfall: null, chlViz: null,
     // SAND is #1 for halibut — they bury in sand to ambush
     bottom: v => ({sand:10,mud:6,silt:4,rock:3,kelp:4}[v]||5),
+  },
+  bluefin: {
+    // CDFW 2019-2025: 185,319 caught, fishery 25x growth since 2019
+    // Optimal SST: 62-64°F (CPUE 1.93). Warmer = significantly worse (r=-0.29)
+    // Season: Jun-Nov (expanding to Apr-Dec in warm years)
+    // Moon: full moon months = higher CPUE (p=0.014) — surface visibility helps locate schools
+    // 93% caught offshore/islands — pelagic open-water species
+    tip: 'Bluefin: CDFW 2019-2025 (185k caught). Cooler water = better (62-64°F optimal, r=-0.29). Full moons help locate schools. Season Jun-Nov, expanding earlier in warm years. 93% caught offshore.',
+    waterTemp: f => { if(f>=60&&f<=65) return 10; if(f>=58&&f<60) return 8; if(f>65&&f<=68) return 7; if(f>=56&&f<58) return 6; if(f>68&&f<=72) return 5; if(f>72) return 3; return 2; },
+    sst: f => { if(f>=60&&f<=65) return 10; if(f>=58&&f<60) return 8; if(f>65&&f<=68) return 7; if(f>=56&&f<58) return 6; if(f>68&&f<=72) return 5; if(f>72) return 3; return 2; },
+    tempTrend: v => ({warming_fast:3,warming:5,stable:7,cooling:10,cooling_fast:8}[v]||5), // cooler = better
+    tideState: v => ({incoming:8,high:7,outgoing:6,low:5}[v]||5), // less tide-dependent (offshore)
+    current: k => { if(k>=0.3&&k<=1.0) return 10; if(k>=0.1&&k<0.3) return 7; if(k>1.0&&k<=1.5) return 7; if(k<0.1) return 4; return 3; }, // current concentrates bait
+    upwelling: v => ({strong_recent:10,moderate_recent:8,active_now:6,weak:3}[v]||5), // upwelling = cooler + bait
+    chlFish: c => { if(c>=3) return 10; if(c>=1.5) return 8; if(c>=0.8) return 6; if(c>=0.3) return 4; return 2; }, // bait concentration
+    moonPhase: v => ({new:4,full:10,quarter:7,between:6}[v]||5), // CDFW: full moon months significantly better (p=0.014)
+    reports: null, pressure: null,
+    wind: (spd,dir) => {
+      // Bluefin: offshore, less wind-sensitive than inshore species but calm still helps
+      let ds = ({none:8,offshore:9,sideshore:6,onshore:4}[dir]||5);
+      let ss; if(spd<=8) ss=9; else if(spd<=12) ss=7; else if(spd<=16) ss=5; else if(spd<=20) ss=3; else ss=1;
+      return (ds+ss)/2;
+    },
+    swellSize: ft => { if(ft<=3) return 9; if(ft<=5) return 7; if(ft<=7) return 5; if(ft<=10) return 3; return 1; }, // more tolerant of swell (offshore)
+    swellDir: v => ({south:7,sw:6,west:5,nw:5,north:7}[v]||5), // less directional sensitivity offshore
+    swellPeriod: s => { if(s>=14) return 9; if(s>=10) return 7; if(s>=7) return 5; return 3; },
+    waveEnergy: null, rainfall: null, chlViz: null,
+    bottom: v => ({rock:7,kelp:6,sand:5,mud:4,silt:3}[v]||5), // less bottom-dependent (pelagic)
   },
 };
 
@@ -1610,7 +1661,7 @@ function getReportsData(species, month) {
 
 function getReportsLabel(species, month) {
   const r = getReportsData(species, month);
-  const speciesName = species === 'yellowtail' ? 'YT' : species === 'wsb' ? 'WSB' : species === 'halibut' ? 'Halibut' : 'All';
+  const speciesName = species === 'yellowtail' ? 'YT' : species === 'wsb' ? 'WSB' : species === 'halibut' ? 'Halibut' : species === 'bluefin' ? 'BFT' : 'All';
   const statusLabels = { well_above: 'HOT', above: 'Above Avg', average: 'Average', below: 'Below Avg', well_below: 'Slow' };
   const regional = getRegionalCPFV();
   if (regional) {
@@ -3160,7 +3211,7 @@ function updateInsight(fish,viz) {
   // Geographic range notice
   const avail = getSpeciesAvailability(currentSpecies, currentLocation);
   if (avail === 'rare') {
-    const speciesNames = { yellowtail: 'Yellowtail', wsb: 'White Sea Bass', halibut: 'Halibut' };
+    const speciesNames = { yellowtail: 'Yellowtail', wsb: 'White Sea Bass', halibut: 'Halibut', bluefin: 'Bluefin Tuna' };
     el.textContent = `⚠️ ${speciesNames[currentSpecies] || currentSpecies} are very rarely encountered in this region. Score is capped due to limited geographic range. Occasional warm-water events may bring strays, but don't count on it.`;
     return;
   }
@@ -4330,7 +4381,7 @@ function toggleForecastDay(idx) {
 // =========================================================================
 // Update species card visibility based on current location's region
 function updateSpeciesCards() {
-  const speciesList = ['yellowtail', 'wsb', 'halibut'];
+  const speciesList = ['yellowtail', 'wsb', 'halibut', 'bluefin'];
   let activeHidden = false;
   speciesList.forEach(sp => {
     const card = document.querySelector(`.species-card[data-species="${sp}"]`);
