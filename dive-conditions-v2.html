@@ -2876,13 +2876,26 @@ async function fetchSatelliteOffshore() {
   if (sstRow) sstRow.style.display = '';
   if (chlRow) chlRow.style.display = '';
 
-  // CORS proxy — ERDDAP doesn't support CORS, use allorigins
-  const proxy = url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+  // CORS proxy chain — ERDDAP doesn't support CORS
+  // Try multiple proxies for resilience (allorigins often times out on large ERDDAP responses)
+  const proxyChain = [
+    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  ];
+  async function proxyFetch(url, timeout = 15000) {
+    for (const proxy of proxyChain) {
+      try {
+        const r = await fetchWithTimeout(proxy(url), null, timeout);
+        if (r.ok) return r;
+      } catch(e) { /* try next proxy */ }
+    }
+    throw new Error('All proxies failed');
+  }
 
   // Fetch SST grid + chlorophyll in parallel
   await Promise.allSettled([
-    fetchSatelliteSST(loc, proxy),
-    fetchSatelliteChlorophyll(loc, proxy),
+    fetchSatelliteSST(loc, proxyFetch),
+    fetchSatelliteChlorophyll(loc, proxyFetch),
   ]);
 
   // Calculate sea state go/no-go from buoy data already fetched
@@ -2905,10 +2918,10 @@ async function fetchSatelliteSST(loc, proxy) {
     // Build a single ERDDAP query covering the bounding box
     const latMin = (lat - spread).toFixed(2), latMax = (lat + spread).toFixed(2);
     const lonMin = (lon - spread).toFixed(2), lonMax = (lon + spread).toFixed(2);
-    const url = `https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json?analysed_sst%5B(last)%5D%5B(${latMin}):(${latMax})%5D%5B(${lonMin}):(${lonMax})%5D`;
+    // MUR SST is 0.01° resolution — 0.3° box = 900 pts, too slow for proxy. Use stride of 15 (~5 pts/axis)
+    const url = `https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json?analysed_sst%5B(last)%5D%5B(${latMin}):15:(${latMax})%5D%5B(${lonMin}):15:(${lonMax})%5D`;
 
-    const r = await fetchWithTimeout(proxy(url), null, 12000);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const r = await proxy(url);
     const d = await r.json();
 
     if (!d.table || !d.table.rows || d.table.rows.length === 0) throw new Error('No SST data');
@@ -2998,8 +3011,7 @@ async function fetchSatelliteChlorophyll(loc, proxy) {
       const lonMin = (loc.lon - 0.03).toFixed(2), lonMax = (loc.lon + 0.03).toFixed(2);
       const url = `https://coastwatch.pfeg.noaa.gov/erddap/griddap/${dataset}.json?chla%5B(last)%5D%5B(0.0)%5D%5B(${latMin}):(${latMax})%5D%5B(${lonMin}):(${lonMax})%5D`;
 
-      const r = await fetchWithTimeout(proxy(url), null, 12000);
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const r = await proxy(url);
       const d = await r.json();
 
       if (!d.table || !d.table.rows || d.table.rows.length === 0) throw new Error('No chl data');
