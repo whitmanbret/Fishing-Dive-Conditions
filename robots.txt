@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://conditions.spearfactor.com/sitemap.xml

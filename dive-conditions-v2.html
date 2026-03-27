@@ -1137,6 +1137,16 @@
       </div>
     </section>
 
+    <!-- OFFSHORE SATELLITE DATA — only shows for bluewater spots -->
+    <section class="factors-section" id="offshoreDataSection" style="display:none">
+      <div class="category-header">🛰️ Offshore Satellite Intel</div>
+      <div class="factor-row"><div class="factor-label">Water Color</div><div class="factor-value" id="waterColorVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waterColorScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Chlorophyll-a</div><div class="factor-value" id="satChlVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="satChlScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Temp Break</div><div class="factor-value" id="tempBreakVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tempBreakScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">SST Range</div><div class="factor-value" id="sstRangeVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstRangeScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Sea State</div><div class="factor-value" id="seaStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="seaStateScore" style="display:none">-</div></div>
+    </section>
+
     <!-- KEY CONDITIONS — Fish Bite (scores hidden to protect algorithm) -->
     <section class="factors-section">
       <div class="category-header">Key Conditions</div>
@@ -1187,6 +1197,8 @@
         <div class="source-item"><span>NCEI ERDDAP — Chlorophyll (Climo)</span><span class="source-status" id="srcChl">--</span></div>
         <div class="source-item"><span id="srcSassLabel">Shore Station — Pier Temp/Turbidity/Chl (Live)</span><span class="source-status" id="srcSass">--</span></div>
         <div class="source-item"><span>NOAA PFEL — Upwelling Index</span><span class="source-status" id="srcUpwell">--</span></div>
+        <div class="source-item" id="srcSatSstRow" style="display:none"><span>MUR SST Satellite — Temp Break Detection</span><span class="source-status" id="srcSatSst">--</span></div>
+        <div class="source-item" id="srcSatChlRow" style="display:none"><span>VIIRS Satellite — Chlorophyll / Water Color</span><span class="source-status" id="srcSatChl">--</span></div>
         <div class="source-item"><span>CDFW CPFV Logbooks — Seasonal baselines</span><span class="source-status source-ok">LOCAL</span></div>
         <div class="source-item"><span>Calculated — Moon, pressure, current, energy</span><span class="source-status source-ok">CALC</span></div>
       </div>
@@ -2851,6 +2863,222 @@ async function fetchBuoySST() {
 }
 
 // =========================================================================
+// SATELLITE SST BREAK DETECTION & CHLOROPHYLL (MUR SST + VIIRS Chl-a)
+// For offshore/bluewater spots — detects temperature fronts and water color
+// =========================================================================
+async function fetchSatelliteOffshore() {
+  const loc = LOCATIONS[currentLocation];
+  if (!loc.bluewater) return; // Only for bluewater spots
+
+  // Show satellite data source rows
+  const sstRow = document.getElementById('srcSatSstRow');
+  const chlRow = document.getElementById('srcSatChlRow');
+  if (sstRow) sstRow.style.display = '';
+  if (chlRow) chlRow.style.display = '';
+
+  // CORS proxy — ERDDAP doesn't support CORS, use allorigins
+  const proxy = url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+
+  // Fetch SST grid + chlorophyll in parallel
+  await Promise.allSettled([
+    fetchSatelliteSST(loc, proxy),
+    fetchSatelliteChlorophyll(loc, proxy),
+  ]);
+
+  // Calculate sea state go/no-go from buoy data already fetched
+  calcSeaState();
+}
+
+// --- MUR SST: 5-point cross pattern for temperature break detection ---
+async function fetchSatelliteSST(loc, proxy) {
+  try {
+    const lat = loc.lat, lon = loc.lon;
+    const spread = 0.15; // ~16km in each direction
+    // 5-point cross: center, north, south, east, west
+    const points = [
+      { lat: lat, lon: lon, label: 'center' },
+      { lat: lat + spread, lon: lon, label: 'north' },
+      { lat: lat - spread, lon: lon, label: 'south' },
+      { lat: lat, lon: lon + spread, label: 'east' },
+      { lat: lat, lon: lon - spread, label: 'west' },
+    ];
+    // Build a single ERDDAP query covering the bounding box
+    const latMin = (lat - spread).toFixed(2), latMax = (lat + spread).toFixed(2);
+    const lonMin = (lon - spread).toFixed(2), lonMax = (lon + spread).toFixed(2);
+    const url = `https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.json?analysed_sst%5B(last)%5D%5B(${latMin}):(${latMax})%5D%5B(${lonMin}):(${lonMax})%5D`;
+
+    const r = await fetchWithTimeout(proxy(url), null, 12000);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+
+    if (!d.table || !d.table.rows || d.table.rows.length === 0) throw new Error('No SST data');
+
+    const cols = d.table.columnNames;
+    const latIdx = cols.indexOf('latitude');
+    const lonIdx = cols.indexOf('longitude');
+    const sstIdx = cols.indexOf('analysed_sst');
+
+    // Extract all valid SST values
+    const sstPoints = d.table.rows
+      .filter(row => row[sstIdx] !== null && !isNaN(row[sstIdx]))
+      .map(row => ({
+        lat: row[latIdx],
+        lon: row[lonIdx],
+        sstC: row[sstIdx],
+        sstF: parseFloat((row[sstIdx] * 1.8 + 32).toFixed(1))
+      }));
+
+    if (sstPoints.length < 3) throw new Error('Not enough SST points');
+
+    // Calculate temperature statistics
+    const temps = sstPoints.map(p => p.sstF);
+    const minTemp = Math.min(...temps);
+    const maxTemp = Math.max(...temps);
+    const avgTemp = temps.reduce((a,b) => a+b, 0) / temps.length;
+    const tempRange = parseFloat((maxTemp - minTemp).toFixed(1));
+
+    // Find center point temp (closest to actual location)
+    let centerTemp = avgTemp;
+    let minDist = Infinity;
+    sstPoints.forEach(p => {
+      const dist = Math.abs(p.lat - loc.lat) + Math.abs(p.lon - loc.lon);
+      if (dist < minDist) { minDist = dist; centerTemp = p.sstF; }
+    });
+
+    // Classify temperature break strength
+    let breakStrength, breakLabel;
+    if (tempRange >= 4) {
+      breakStrength = 'strong';
+      breakLabel = `Strong — ${tempRange}°F across ~20mi`;
+    } else if (tempRange >= 2) {
+      breakStrength = 'moderate';
+      breakLabel = `Moderate — ${tempRange}°F across ~20mi`;
+    } else if (tempRange >= 1) {
+      breakStrength = 'weak';
+      breakLabel = `Weak — ${tempRange}°F across ~20mi`;
+    } else {
+      breakStrength = 'none';
+      breakLabel = `None — uniform ${centerTemp.toFixed(0)}°F`;
+    }
+
+    // Find direction of warmest water
+    const northTemps = sstPoints.filter(p => p.lat > loc.lat).map(p => p.sstF);
+    const southTemps = sstPoints.filter(p => p.lat < loc.lat).map(p => p.sstF);
+    const northAvg = northTemps.length ? northTemps.reduce((a,b)=>a+b,0)/northTemps.length : centerTemp;
+    const southAvg = southTemps.length ? southTemps.reduce((a,b)=>a+b,0)/southTemps.length : centerTemp;
+
+    if (tempRange >= 2) {
+      const warmDir = northAvg > southAvg ? 'south' : 'north';
+      breakLabel += ` (warmer to ${warmDir === 'south' ? 'north' : 'south'})`;
+    }
+
+    // Store results
+    D.satSST = { min: minTemp, max: maxTemp, avg: avgTemp, center: centerTemp, range: tempRange, points: sstPoints.length };
+    D.tempBreak = breakStrength;
+    D.tempBreakLabel = breakLabel;
+    D.satSSTRange = `${minTemp.toFixed(1)}–${maxTemp.toFixed(1)}°F (${sstPoints.length} pts)`;
+    srcStatus.satSst = 'ok';
+  } catch(e) {
+    D.tempBreak = null;
+    D.tempBreakLabel = 'Unavailable';
+    D.satSSTRange = 'Unavailable';
+    srcStatus.satSst = 'err';
+  }
+}
+
+// --- VIIRS Chlorophyll-a: classify water color (blue/green/edge) ---
+async function fetchSatelliteChlorophyll(loc, proxy) {
+  // Try 1-day composite first, fall back to 3-day if cloudy
+  const datasets = ['erdVHNchla1day', 'erdVHNchla3day'];
+  for (const dataset of datasets) {
+    try {
+      const lat = loc.lat.toFixed(2), lon = loc.lon.toFixed(2);
+      // Sample a small 0.05° box around the point for cloud-gap resilience
+      const latMin = (loc.lat - 0.03).toFixed(2), latMax = (loc.lat + 0.03).toFixed(2);
+      const lonMin = (loc.lon - 0.03).toFixed(2), lonMax = (loc.lon + 0.03).toFixed(2);
+      const url = `https://coastwatch.pfeg.noaa.gov/erddap/griddap/${dataset}.json?chla%5B(last)%5D%5B(0.0)%5D%5B(${latMin}):(${latMax})%5D%5B(${lonMin}):(${lonMax})%5D`;
+
+      const r = await fetchWithTimeout(proxy(url), null, 12000);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+
+      if (!d.table || !d.table.rows || d.table.rows.length === 0) throw new Error('No chl data');
+
+      const chlIdx = d.table.columnNames.indexOf('chla');
+      const vals = d.table.rows.map(row => row[chlIdx]).filter(v => v !== null && !isNaN(v) && v > 0);
+
+      if (vals.length === 0) { if (dataset === 'erdVHNchla1day') continue; throw new Error('All NaN'); }
+
+      const avgChl = vals.reduce((a,b) => a+b, 0) / vals.length;
+
+      // Classify water color based on FishDope spotter plane correlations:
+      // Bluefin found ONLY in clean blue water. Green water = no gamefish.
+      let waterColor, waterColorLabel, waterColorEmoji;
+      if (avgChl < 0.15) {
+        waterColor = 'blue';
+        waterColorLabel = 'Blue Water — clean, offshore';
+        waterColorEmoji = '🔵';
+      } else if (avgChl < 0.3) {
+        waterColor = 'blue_light';
+        waterColorLabel = 'Blue Water — slight productivity';
+        waterColorEmoji = '🔵';
+      } else if (avgChl < 0.8) {
+        waterColor = 'edge';
+        waterColorLabel = 'Blue-Green Edge — transitional';
+        waterColorEmoji = '🟢';
+      } else if (avgChl < 2.0) {
+        waterColor = 'green';
+        waterColorLabel = 'Green Water — high productivity';
+        waterColorEmoji = '🟩';
+      } else {
+        waterColor = 'bloom';
+        waterColorLabel = 'Bloom — very green, possible plankton event';
+        waterColorEmoji = '🟫';
+      }
+
+      D.satChlorophyll = avgChl;
+      D.satChlSource = dataset === 'erdVHNchla1day' ? 'VIIRS 1-day' : 'VIIRS 3-day';
+      D.waterColor = waterColor;
+      D.waterColorLabel = `${waterColorEmoji} ${waterColorLabel}`;
+      D.satChlDisplay = `${avgChl.toFixed(2)} mg/m³ (${D.satChlSource})`;
+      srcStatus.satChl = 'ok';
+      return; // Success
+    } catch(e) {
+      if (dataset === 'erdVHNchla3day') {
+        D.waterColor = null;
+        D.waterColorLabel = 'Unavailable (cloud cover)';
+        D.satChlDisplay = 'Unavailable';
+        srcStatus.satChl = 'err';
+      }
+    }
+  }
+}
+
+// --- Sea State go/no-go for offshore trips ---
+function calcSeaState() {
+  const swell = D.swellFt || 0;
+  const wind = D.windSpeedMph || 0;
+  let seaState, seaStateLabel;
+
+  if (swell > 8 || wind > 25) {
+    seaState = 'danger';
+    seaStateLabel = `⛔ Dangerous — ${swell}ft swell, ${wind}mph wind`;
+  } else if (swell > 6 || wind > 20) {
+    seaState = 'rough';
+    seaStateLabel = `⚠️ Rough — ${swell}ft swell, ${wind}mph wind`;
+  } else if (swell > 4 || wind > 15) {
+    seaState = 'moderate';
+    seaStateLabel = `🟡 Moderate — ${swell}ft swell, ${wind}mph wind`;
+  } else {
+    seaState = 'good';
+    seaStateLabel = `✅ Good — ${swell}ft swell, ${wind}mph wind`;
+  }
+
+  D.seaState = seaState;
+  D.seaStateLabel = seaStateLabel;
+}
+
+// =========================================================================
 // HF RADAR SURFACE CURRENTS (UCSD/SIO via IOOS ERDDAP)
 // =========================================================================
 async function fetchHFRadarCurrent() {
@@ -3024,6 +3252,10 @@ async function fetchAllData() {
   await fetchBuoySST();
   if (thisGen !== _fetchGen) return;
 
+  // For bluewater spots, fetch satellite SST grid (temp breaks) + chlorophyll (water color)
+  await fetchSatelliteOffshore();
+  if (thisGen !== _fetchGen) return;
+
   // Resolve water temp priority AFTER all fetches complete:
   // Shore dives: pier sensor > offshore buoy > CDIP > satellite
   // Offshore dives (islands/boats): buoy > CDIP > pier > satellite
@@ -3149,6 +3381,19 @@ function updateDisplay() {
 
   const chlVizLabel = D.chlorophyll!==undefined ? `${D.chlorophyll} mg/m³ (${chlClarity(D.chlorophyll)})` : 'Unavailable';
   setVal('chlVizVal', chlVizLabel, D.chlSource||'SAT', 'sat');
+
+  // Offshore Satellite Intel — only show for bluewater spots
+  const offshoreSection = document.getElementById('offshoreDataSection');
+  if (loc.bluewater) {
+    offshoreSection.style.display = '';
+    setVal('waterColorVal', D.waterColorLabel || 'Loading...', D.satChlSource || 'SAT');
+    setVal('satChlVal', D.satChlDisplay || 'Loading...', D.satChlSource || 'SAT', 'sat');
+    setVal('tempBreakVal', D.tempBreakLabel || 'Loading...', 'MUR SST');
+    setVal('sstRangeVal', D.satSSTRange || 'Loading...', 'MUR SST', 'sat');
+    setVal('seaStateVal', D.seaStateLabel || 'Calculating...', 'NDBC');
+  } else {
+    offshoreSection.style.display = 'none';
+  }
 
   // Turbidity from Scripps Pier SASS (real-time when available)
   if (D.turbidity !== undefined) {
@@ -3456,6 +3701,21 @@ const FISH_WEIGHTS_BY_SPECIES = {
     pressure:   0.02,  // minor
     sst:        0.01,  // confirmation only
   },
+  bluefin: {
+    waterTemp:  0.18,  // #2 — optimal 60-65°F, cooler = better (r=-0.29)
+    waterColor: 0.18,  // #1 — FishDope confirmed: blue water ONLY, green = zero fish
+    tempBreak:  0.14,  // #3 — temperature fronts concentrate bait + bluefin
+    reports:    0.12,  // #4 — seasonal CPFV data
+    moonPhase:  0.10,  // #5 — full moon significantly better (p=0.014)
+    seaState:   0.08,  // #6 — can you safely make the run?
+    upwelling:  0.06,  // #7 — drives productivity at edges
+    current:    0.05,  // #8 — current moves bait
+    tempTrend:  0.04,  // #9 — cooling = better
+    tideState:  0.02,  // minor offshore
+    chlFish:    0.02,  // minor — use waterColor instead
+    sst:        0.01,  // confirmation
+    pressure:   0.00,
+  },
 };
 // Active weights reference (set during recalculate)
 let FISH_WEIGHTS = FISH_WEIGHTS_BY_SPECIES.general;
@@ -3495,6 +3755,37 @@ function recalculate() {
   D.grunion = grunion;
   if (currentSpecies === 'halibut') {
     fishEntries.push({score: grunion.score, key: 'grunion'});
+  }
+
+  // Satellite water color + temp break — boosts/penalizes bluefin & yellowtail at offshore spots
+  if (LOCATIONS[currentLocation].bluewater) {
+    // Water color scoring (from VIIRS chlorophyll)
+    // FishDope spotter plane confirmed: bluefin ONLY in blue water, avoid green
+    if (D.waterColor) {
+      let wcScore;
+      if (currentSpecies === 'bluefin') {
+        wcScore = ({blue: 10, blue_light: 9, edge: 5, green: 2, bloom: 1})[D.waterColor] || 5;
+      } else {
+        // Yellowtail less sensitive to water color
+        wcScore = ({blue: 7, blue_light: 8, edge: 8, green: 6, bloom: 4})[D.waterColor] || 6;
+      }
+      fishEntries.push({score: wcScore, key: 'waterColor'});
+    }
+    // Temp break scoring — strong breaks concentrate bait and fish
+    if (D.tempBreak) {
+      let tbScore;
+      if (currentSpecies === 'bluefin') {
+        tbScore = ({strong: 10, moderate: 8, weak: 5, none: 4})[D.tempBreak] || 5;
+      } else {
+        tbScore = ({strong: 8, moderate: 7, weak: 5, none: 5})[D.tempBreak] || 5;
+      }
+      fishEntries.push({score: tbScore, key: 'tempBreak'});
+    }
+    // Sea state — can you even get out there?
+    if (D.seaState) {
+      const ssScore = ({good: 9, moderate: 6, rough: 3, danger: 1})[D.seaState] || 5;
+      fishEntries.push({score: ssScore, key: 'seaState'});
+    }
   }
 
   // --- Dive Visibility (weighted) ---
