@@ -191,6 +191,8 @@
     .site-nav .nav-home { display: inline-flex; align-items: center; gap: 6px; color: #fff; background: var(--accent); text-decoration: none; font-size: 15px; font-weight: 700; padding: 8px 18px; border-radius: 6px; letter-spacing: 0.5px; transition: background 0.2s; }
     .site-nav .nav-home:hover { background: #3a9efd; }
     .site-nav .nav-home svg { width: 18px; height: 18px; fill: #fff; }
+    .site-nav .nav-coffee { display: inline-flex; align-items: center; color: #ffdd00; background: rgba(255,221,0,0.12); text-decoration: none; font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255,221,0,0.3); transition: background 0.2s; }
+    .site-nav .nav-coffee:hover { background: rgba(255,221,0,0.22); }
     .site-nav .nav-links { display: flex; gap: 18px; align-items: center; }
     .site-nav .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 500; transition: color 0.2s; }
     .site-nav .nav-links a:hover { color: var(--accent); }
@@ -650,6 +652,7 @@
       .site-nav { padding: 8px 12px; }
       .site-nav .nav-home { font-size: 13px; padding: 6px 14px; }
       .site-nav .nav-home svg { width: 15px; height: 15px; }
+      .site-nav .nav-coffee { font-size: 11px; padding: 5px 10px; }
       .site-nav .nav-links a { font-size: 11px; }
       .site-nav .nav-links { gap: 12px; }
       .header { padding: 6px 0 5px; margin-bottom: 6px; }
@@ -855,6 +858,18 @@
     .data-warning.show { display: block; }
     .data-warning strong { color: #f5d060; }
 
+    /* ===== BEACH WATER QUALITY ADVISORY ===== */
+    .beach-advisory-banner {
+      display: none; background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.4);
+      border-radius: 8px; padding: 10px 12px; margin: 8px 0 10px; font-size: 12px;
+      color: #ff6b6b; line-height: 1.5;
+    }
+    .beach-advisory-banner.show { display: block; }
+    .beach-advisory-banner.closure { background: rgba(231,76,60,0.22); border-color: rgba(231,76,60,0.6); }
+    .beach-advisory-banner strong { color: #ff8a8a; }
+    .beach-advisory-banner .advisory-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+    .beach-advisory-banner .advisory-source { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
     /* ===== INSTALL APP BANNER ===== */
     .install-banner {
       display: none; position: fixed; bottom: 0; left: 0; right: 0;
@@ -897,7 +912,10 @@
 </head>
 <body>
   <nav class="site-nav">
-    <a href="https://www.spearfactor.com" class="nav-home"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> SpearFactor</a>
+    <div style="display:flex;align-items:center;gap:8px">
+      <a href="https://www.spearfactor.com" class="nav-home"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> SpearFactor</a>
+      <a class="nav-coffee" href="https://buymeacoffee.com/spearfactor" target="_blank" rel="noopener">☕ Tip</a>
+    </div>
     <div class="nav-links">
       <a href="https://www.spearfactor.com/spearfishing-how-tos">Blog</a>
       <a href="https://www.spearfactor.com/online-spearfishing-course">Courses</a>
@@ -1078,6 +1096,7 @@
 
     <div class="data-status" id="dataStatus">Fetching live oceanographic data...</div>
     <div class="data-warning" id="dataWarning"></div>
+    <div class="beach-advisory-banner" id="beachAdvisoryBanner"></div>
 
     <div class="insight-text" id="insightText">Loading conditions...</div>
 
@@ -1145,6 +1164,11 @@
       <div class="factor-row"><div class="factor-label">Temp Break</div><div class="factor-value" id="tempBreakVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tempBreakScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">SST Range</div><div class="factor-value" id="sstRangeVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstRangeScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Sea State</div><div class="factor-value" id="seaStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="seaStateScore" style="display:none">-</div></div>
+      <!-- Offshore Fleet Summary (populated from boat reports) -->
+      <div id="offshoreFleetSummary" style="display:none;padding:10px 12px 8px;border-top:1px solid var(--border-subtle,rgba(255,255,255,0.06));margin-top:4px">
+        <div style="font-size:11px;font-weight:600;color:var(--text-primary);margin-bottom:6px">🚢 Offshore Fleet Report <span id="offshoreFleetDate" style="font-weight:400;color:var(--text-muted);font-size:10px"></span></div>
+        <div id="offshoreFleetContent" style="font-size:11px;color:var(--text-secondary);line-height:1.5"></div>
+      </div>
     </section>
 
     <!-- KEY CONDITIONS — Fish Bite (scores hidden to protect algorithm) -->
@@ -1199,6 +1223,7 @@
         <div class="source-item"><span>NOAA PFEL — Upwelling Index</span><span class="source-status" id="srcUpwell">--</span></div>
         <div class="source-item" id="srcSatSstRow" style="display:none"><span>MUR SST Satellite — Temp Break Detection</span><span class="source-status" id="srcSatSst">--</span></div>
         <div class="source-item" id="srcSatChlRow" style="display:none"><span>VIIRS Satellite — Chlorophyll / Water Color</span><span class="source-status" id="srcSatChl">--</span></div>
+        <div class="source-item" id="srcBeachWQRow"><span>SD County DEH — Beach Water Quality</span><span class="source-status" id="srcBeachWQ">--</span></div>
         <div class="source-item"><span>CDFW CPFV Logbooks — Seasonal baselines</span><span class="source-status source-ok">LOCAL</span></div>
         <div class="source-item"><span>Calculated — Moon, pressure, current, energy</span><span class="source-status source-ok">CALC</span></div>
       </div>
@@ -1958,6 +1983,7 @@ async function fetchBoatReports() {
     try {
       boatReportsData = JSON.parse(cached);
       renderBoatReports();
+      renderOffshoreFleetSummary();
       applyBoatReportBoost();
       return;
     } catch(e) { sessionStorage.removeItem(cacheKey); }
@@ -2012,6 +2038,7 @@ async function fetchBoatReports() {
   try { sessionStorage.setItem(cacheKey, JSON.stringify(boatReportsData)); } catch(e) {}
 
   renderBoatReports();
+  renderOffshoreFleetSummary();
   applyBoatReportBoost();
 }
 
@@ -2063,6 +2090,90 @@ function renderBoatReports() {
   }
 
   document.getElementById('boatReportsContent').innerHTML = contentHTML;
+}
+
+function renderOffshoreFleetSummary() {
+  const panel = document.getElementById('offshoreFleetSummary');
+  if (!panel) return;
+  const loc = LOCATIONS[currentLocation];
+  if (!loc || !loc.bluewater || !boatReportsData || !boatReportsData.boats) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  // Filter to offshore/multi-day trips only
+  const offshoreBoats = boatReportsData.boats.filter(b => b.tripCategory === 'offshore');
+  if (offshoreBoats.length === 0) {
+    panel.style.display = '';
+    document.getElementById('offshoreFleetDate').textContent = `— ${boatReportsData.date}`;
+    document.getElementById('offshoreFleetContent').innerHTML =
+      '<span style="color:var(--text-muted)">No offshore trips reported yesterday</span>';
+    return;
+  }
+
+  // Aggregate offshore catches
+  const speciesMap = {};
+  let totalAnglers = 0;
+  for (const boat of offshoreBoats) {
+    totalAnglers += boat.anglers;
+    for (const c of boat.catches) {
+      if (!speciesMap[c.species]) speciesMap[c.species] = { kept: 0, released: 0 };
+      if (c.released) speciesMap[c.species].released += c.count;
+      else speciesMap[c.species].kept += c.count;
+    }
+  }
+  const speciesList = Object.entries(speciesMap)
+    .map(([name, d]) => ({ name, kept: d.kept, released: d.released, total: d.kept + d.released, perAngler: totalAnglers > 0 ? d.kept / totalAnglers : 0 }))
+    .sort((a, b) => b.kept - a.kept);
+
+  // Build HTML
+  let html = '';
+
+  // Fleet size line
+  html += `<div style="margin-bottom:6px;color:var(--text-muted)">${offshoreBoats.length} offshore boat${offshoreBoats.length > 1 ? 's' : ''} · ${totalAnglers} anglers</div>`;
+
+  // Key offshore species — highlight bluefin, yellowfin, yellowtail, dorado, wahoo
+  const offshoreKeySpecies = ['bluefin tuna', 'yellowfin tuna', 'yellowtail', 'dorado', 'wahoo', 'skipjack'];
+  const keyHits = speciesList.filter(s => offshoreKeySpecies.includes(s.name) && s.kept > 0);
+  const otherHits = speciesList.filter(s => !offshoreKeySpecies.includes(s.name) && s.kept > 0);
+
+  if (keyHits.length > 0) {
+    for (const s of keyHits) {
+      const displayName = s.name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      const rateStr = s.perAngler >= 0.01 ? ` (${s.perAngler.toFixed(2)}/angler)` : '';
+      const relStr = s.released > 0 ? ` +${s.released} rel` : '';
+      // Color code: hot bite green, decent yellow, low muted
+      const color = s.perAngler >= 0.5 ? 'var(--excellent,#2ecc71)' : s.perAngler >= 0.1 ? 'var(--good,#f39c12)' : 'var(--text-secondary)';
+      html += `<div style="display:flex;justify-content:space-between;padding:2px 0">
+        <span style="color:${color};font-weight:600">${displayName}</span>
+        <span style="color:${color}">${s.kept} kept${relStr}${rateStr}</span>
+      </div>`;
+    }
+  }
+
+  // Other species (less prominent)
+  if (otherHits.length > 0) {
+    const otherNames = otherHits.slice(0, 5).map(s => {
+      const dn = s.name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      return `${dn} (${s.kept})`;
+    }).join(', ');
+    html += `<div style="margin-top:4px;font-size:10px;color:var(--text-muted)">Also: ${otherNames}</div>`;
+  }
+
+  if (speciesList.length === 0 || speciesList.every(s => s.kept === 0)) {
+    html += '<div style="color:var(--text-muted)">No catches reported from offshore trips</div>';
+  }
+
+  // Boat names for context
+  const boatNames = offshoreBoats.map(b => b.boatName).slice(0, 5);
+  if (boatNames.length > 0) {
+    const moreStr = offshoreBoats.length > 5 ? ` +${offshoreBoats.length - 5} more` : '';
+    html += `<div style="margin-top:5px;font-size:10px;color:var(--text-muted)">Fleet: ${boatNames.join(', ')}${moreStr}</div>`;
+  }
+
+  panel.style.display = '';
+  document.getElementById('offshoreFleetDate').textContent = `— ${boatReportsData.date}`;
+  document.getElementById('offshoreFleetContent').innerHTML = html;
 }
 
 function toggleBoatReports() {
@@ -3091,6 +3202,111 @@ function calcSeaState() {
 }
 
 // =========================================================================
+// BEACH WATER QUALITY ADVISORY (SD County DEH via sdbeachinfo.com)
+// =========================================================================
+async function fetchBeachAdvisory() {
+  try {
+    const loc = LOCATIONS[currentLocation];
+    // Skip offshore/bluewater/island spots — no beach monitoring there
+    if (loc.bluewater || loc.offshore) { D.beachAdvisory = null; return; }
+    // Only SD County stations available (lat ~32.5–33.4)
+    if (loc.lat < 32.4 || loc.lat > 33.45) { D.beachAdvisory = null; return; }
+
+    const resp = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://www.sdbeachinfo.com/Home/GetTargetByID'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: ''
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const stations = await resp.json();
+
+    // Find stations within ~2km (~0.018°) of our spot
+    const RADIUS = 0.018;
+    const nearby = stations.filter(s => {
+      if (!s.Latitude || !s.Longitude) return false;
+      const dLat = Math.abs(s.Latitude - loc.lat);
+      const dLon = Math.abs(s.Longitude - loc.lon);
+      return dLat < RADIUS && dLon < RADIUS;
+    });
+
+    // If no exact match, expand to ~5km (~0.045°)
+    if (nearby.length === 0) {
+      const WIDE = 0.045;
+      const wider = stations.filter(s => {
+        if (!s.Latitude || !s.Longitude) return false;
+        const dLat = Math.abs(s.Latitude - loc.lat);
+        const dLon = Math.abs(s.Longitude - loc.lon);
+        return dLat < WIDE && dLon < WIDE;
+      });
+      nearby.push(...wider);
+    }
+
+    // Check for advisories or closures
+    const alerts = nearby.filter(s => s.Advisory || s.Closure);
+    if (alerts.length === 0) {
+      D.beachAdvisory = null;
+      return;
+    }
+
+    // Determine worst severity: closure > advisory
+    const isClosure = alerts.some(s => {
+      const color = (s.RBGColor || '').trim().toLowerCase();
+      return color === 'red.png';
+    });
+
+    // Parse the advisory HTML for clean text
+    const firstAlert = alerts[0];
+    const rawHtml = firstAlert.Advisory || firstAlert.Closure || '';
+    const cleanText = rawHtml
+      .replace(/<[^>]+>/g, ' ')     // strip HTML tags
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&#39;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Extract "Status Since" date
+    const sinceMatch = cleanText.match(/Status Since[:\s]*([\w\s,]+\d{4})/i);
+    const since = sinceMatch ? sinceMatch[1].trim() : null;
+
+    D.beachAdvisory = {
+      type: isClosure ? 'closure' : 'advisory',
+      stationCount: alerts.length,
+      stationName: firstAlert.Name,
+      message: cleanText,
+      since: since,
+      allStations: alerts.map(s => s.Name)
+    };
+
+    srcStatus.beachWQ = 'ok';
+    updateAdvisoryBanner();
+  } catch (e) {
+    console.warn('Beach advisory fetch failed:', e);
+    D.beachAdvisory = null;
+    updateAdvisoryBanner();
+  }
+}
+
+function updateAdvisoryBanner() {
+  const banner = document.getElementById('beachAdvisoryBanner');
+  if (!banner) return;
+  if (D.beachAdvisory) {
+    const a = D.beachAdvisory;
+    const icon = a.type === 'closure' ? '🚫' : '⚠️';
+    const typeLabel = a.type === 'closure' ? 'BEACH CLOSURE' : 'WATER QUALITY ADVISORY';
+    const sinceStr = a.since ? ` · Since ${a.since}` : '';
+    banner.innerHTML = `<div class="advisory-title">${icon} ${typeLabel}</div>` +
+      `<div><strong>Bacteria levels exceed health standards.</strong> Avoid water contact in the affected area.${sinceStr}</div>` +
+      `<div class="advisory-source">Source: SD County Dept. of Environmental Health · sdbeachinfo.com</div>`;
+    banner.className = `beach-advisory-banner show${a.type === 'closure' ? ' closure' : ''}`;
+  } else {
+    banner.className = 'beach-advisory-banner';
+    banner.innerHTML = '';
+  }
+}
+
+// =========================================================================
 // HF RADAR SURFACE CURRENTS (UCSD/SIO via IOOS ERDDAP)
 // =========================================================================
 async function fetchHFRadarCurrent() {
@@ -3255,6 +3471,7 @@ async function fetchAllData() {
     fetchHFRadarCurrent(),  // real-time surface current from SIO HF Radar
     fetchNDBCBuoy(),        // real-time buoy wind & water temp from NDBC
     fetchBoatReports(),     // daily CPFV dock totals from fish reports sites
+    fetchBeachAdvisory(),   // SD County DEH water quality advisories
   ]);
 
   // If location changed while we were fetching, discard these stale results
@@ -3403,8 +3620,11 @@ function updateDisplay() {
     setVal('tempBreakVal', D.tempBreakLabel || 'Loading...', 'MUR SST');
     setVal('sstRangeVal', D.satSSTRange || 'Loading...', 'MUR SST', 'sat');
     setVal('seaStateVal', D.seaStateLabel || 'Calculating...', 'NDBC');
+    renderOffshoreFleetSummary();
   } else {
     offshoreSection.style.display = 'none';
+    const fleetPanel = document.getElementById('offshoreFleetSummary');
+    if (fleetPanel) fleetPanel.style.display = 'none';
   }
 
   // Turbidity from Scripps Pier SASS (real-time when available)
@@ -3625,7 +3845,7 @@ function updateDataWarning() {
 }
 
 function updateSourceStatus() {
-  const map = {noaa:'srcNoaa',ndbc:'srcNdbc',nws:'srcNws',sst:'srcSst',chl:'srcChl',sass:'srcSass',upwell:'srcUpwell'};
+  const map = {noaa:'srcNoaa',ndbc:'srcNdbc',nws:'srcNws',sst:'srcSst',chl:'srcChl',sass:'srcSass',upwell:'srcUpwell',beachWQ:'srcBeachWQ'};
   for(const [key,elId] of Object.entries(map)) {
     const el=document.getElementById(elId);
     if(!el) continue;
@@ -3673,29 +3893,30 @@ const FISH_WEIGHTS_BY_SPECIES = {
     sst:        0.02,  // #10 — satellite SST confirmation
   },
   yellowtail: {
-    waterTemp:  0.26,  // #1 — YT are extremely temp-sensitive (65-72°F zone)
-    tideState:  0.16,  // #3 — important but less than WSB; YT patrol regardless
-    reports:    0.14,  // #4 — seasonal presence from CPFV data
-    upwelling:  0.14,  // #2 — YT follow bait driven by upwelling productivity
-    tempTrend:  0.10,  // #5 — warming trend = YT push inshore from Coronados
-    chlFish:    0.06,  // #6 — bait concentration matters
-    current:    0.06,  // #7 — YT love moderate current (0.3-0.8 kts) for ambush
-    moonPhase:  0.03,  // #9 — minor for YT, they're visual daytime feeders
-    pressure:   0.03,  // #8 — dropping pressure can trigger bite
-    sst:        0.02,  // #10 — confirmation
+    waterTemp:  0.22,  // #1 — 64-70°F optimal (Batch 2: 67-70 offshore, 64-66 inshore)
+    current:    0.14,  // #2 — "no current = no yellowtail" (FishDope explicit, 60 reports)
+    reports:    0.14,  // #3 — seasonal presence from CPFV data
+    upwelling:  0.12,  // #4 — YT follow bait driven by upwelling productivity
+    tideState:  0.10,  // #5 — tidal current movement drives feeding windows
+    moonPhase:  0.08,  // #6 — full moon brings squid; squid = #1 predictor for YT (FishDope)
+    tempTrend:  0.08,  // #7 — warming trend = YT push inshore from Coronados
+    chlFish:    0.05,  // #8 — bait concentration matters
+    pressure:   0.03,  // #9 — dropping pressure can trigger bite
+    waterColor: 0.02,  // #10 — clean to clean-green acceptable (less strict than bluefin)
+    sst:        0.02,  // confirmation
   },
   wsb: {
     // Aalbers 2015 + MacNamara 2025 + CDFW ESR: WSB occupy 55-61°F at depth (60-66°F surface)
-    // Temp acts as binary gate — when in zone, tides + moon drive feeding
-    // CDFW: cooling SST entering the zone = best catches; tempTrend matters more than stable
-    waterTemp:  0.16,  // #3 — narrow thermal niche (60-66°F surface); binary trigger
+    // FishDope 78 reports: nearly EVERY WSB mention at squid bed. "Drop squid on dropper loop = many big seabass"
+    // Moon drives squid runs → squid drives WSB presence. Tides + moon = the primary triggers.
+    waterTemp:  0.14,  // #4 — narrow thermal niche (60-66°F surface); binary trigger
     tideState:  0.22,  // #1 — THE trigger; depth shifts correlate with tidal frequencies (3-4 cpd)
-    moonPhase:  0.18,  // #2 — spring tides = strongest kelp flow; lunar luminosity r=0.01-0.19 (not light, FLOW)
-    reports:    0.12,  // #4 — seasonal presence; 95% of catches Apr-Oct
+    moonPhase:  0.20,  // #2 — full moon brings squid; squid = WSB (FishDope confirmed across 78 reports)
+    reports:    0.12,  // #3 — seasonal presence; 95% of catches Apr-Oct
+    current:    0.08,  // #5 — light current (0.1-0.4 kts); hunt by sound/lateral line
+    tempTrend:  0.08,  // #6 — stable preferred; fish alter depth to maintain thermal niche
     upwelling:  0.06,  // #7 — less critical; WSB don't chase bait balls like YT
     chlFish:    0.04,  // #8 — minor; WSB hunt by sound not sight
-    tempTrend:  0.08,  // #5 — stable preferred; fish alter depth to maintain thermal niche
-    current:    0.08,  // #6 — light current (0.1-0.4 kts); hunt by sound/lateral line
     pressure:   0.04,  // #9 — WSB respond to pressure drops
     sst:        0.02,  // #10 — confirmation
   },
@@ -3714,19 +3935,19 @@ const FISH_WEIGHTS_BY_SPECIES = {
     sst:        0.01,  // confirmation only
   },
   bluefin: {
-    waterTemp:  0.18,  // #2 — optimal 60-65°F, cooler = better (r=-0.29)
-    waterColor: 0.18,  // #1 — FishDope confirmed: blue water ONLY, green = zero fish
-    tempBreak:  0.14,  // #3 — temperature fronts concentrate bait + bluefin
-    reports:    0.12,  // #4 — seasonal CPFV data
-    moonPhase:  0.10,  // #5 — full moon significantly better (p=0.014)
-    seaState:   0.08,  // #6 — can you safely make the run?
+    waterColor: 0.20,  // #1 — 141 FishDope reports: blue water ONLY, green = zero fish. Clean 68°F productive; dirty 68°F dead.
+    waterTemp:  0.18,  // #2 — 67-70°F clean=prime; must be paired with water color (Batch 3 critical finding)
+    tempBreak:  0.14,  // #3 — temp fronts concentrate bait+bluefin; fish on cooler side sometimes
+    reports:    0.12,  // #4 — seasonal CPFV data + boat report scraper
+    seaState:   0.08,  // #5 — can you safely make the run?
+    moonPhase:  0.06,  // #6 — full moon kills mid-day bite, shifts to after 4PM/night (Batch 3 summer finding)
     upwelling:  0.06,  // #7 — drives productivity at edges
-    current:    0.05,  // #8 — current moves bait
-    tempTrend:  0.04,  // #9 — cooling = better
-    tideState:  0.02,  // minor offshore
+    tideState:  0.05,  // #8 — slack tide = best surface activity (bluefin foamers)
+    current:    0.04,  // #9 — current moves bait
+    tempTrend:  0.03,  // #10 — cooling can help (r=-0.29)
     chlFish:    0.02,  // minor — use waterColor instead
     sst:        0.01,  // confirmation
-    pressure:   0.00,
+    pressure:   0.01,
   },
 };
 // Active weights reference (set during recalculate)
@@ -3907,6 +4128,9 @@ function recalculate() {
   if (mapVisible) updateMapMarkers();
   // Check alert conditions after scores are computed
   if (typeof checkAlertConditions === 'function') checkAlertConditions();
+
+  // Beach water quality advisory banner (self-updates via fetchBeachAdvisory)
+  updateAdvisoryBanner();
 }
 
 function weightedAvg(entries, weights) {
