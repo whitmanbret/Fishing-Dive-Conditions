@@ -969,6 +969,7 @@
           <option value="wsb">White Sea Bass (A. nobilis)</option>
           <option value="halibut">Halibut (P. californicus)</option>
           <option value="bluefin">Bluefin Tuna (T. orientalis)</option>
+          <option value="dorado">Dorado / Mahi-Mahi (C. hippurus)</option>
         </select>
       </div>
     </div>
@@ -1061,6 +1062,9 @@
       </div>
       <div class="species-card" data-species="bluefin" onclick="selectSpecies('bluefin')">
         <div class="species-label">Bluefin</div><div class="species-name">T. orientalis</div>
+      </div>
+      <div class="species-card" data-species="dorado" onclick="selectSpecies('dorado')">
+        <div class="species-label">Dorado</div><div class="species-name">C. hippurus</div>
       </div>
     </div>
 
@@ -1343,13 +1347,13 @@ const REGION_MAP = {
 // Species availability by region — controls which species cards show and score caps
 // 'full' = normal scoring, 'rare' = score capped at 3/10, 'absent' = hidden + score 1/10
 const SPECIES_RANGE = {
-  sd:      { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'absent' },
-  socal:   { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'absent' },
-  sb:      { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'absent' },
-  islands: { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'absent' },
-  offshore: { yellowtail: 'full', wsb: 'absent', halibut: 'absent', bluefin: 'full' },  // Bluewater — bluefin + yellowtail
-  central: { yellowtail: 'rare', wsb: 'rare', halibut: 'full', bluefin: 'absent' },
-  norcal:  { yellowtail: 'absent', wsb: 'absent', halibut: 'rare', bluefin: 'absent' },
+  sd:      { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'absent', dorado: 'absent' },
+  socal:   { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'absent', dorado: 'absent' },
+  sb:      { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'absent', dorado: 'absent' },
+  islands: { yellowtail: 'full', wsb: 'full', halibut: 'full', bluefin: 'absent', dorado: 'rare' },  // KP dorado around islands
+  offshore: { yellowtail: 'full', wsb: 'absent', halibut: 'absent', bluefin: 'full', dorado: 'full' },  // Bluewater — bluefin + yellowtail + dorado
+  central: { yellowtail: 'rare', wsb: 'rare', halibut: 'full', bluefin: 'absent', dorado: 'absent' },
+  norcal:  { yellowtail: 'absent', wsb: 'absent', halibut: 'rare', bluefin: 'absent', dorado: 'absent' },
 };
 
 function getSpeciesAvailability(species, location) {
@@ -1370,6 +1374,8 @@ const CPFV_SOCAL = {
   halibut:    { index: [4,4,10,7,6,7,8,10,4,4,1,1], peak_month: 2 },
   // CDFW: bluefin on coast Jul-Sep, peak Aug
   bluefin:    { index: [1,1,1,1,1,1,5,10,6,1,1,1], peak_month: 7 },
+  // FishDope: dorado Jul-Oct, peak Aug-Sep. KP dorado around islands + offshore.
+  dorado:     { index: [1,1,1,1,1,1,6,10,10,7,2,1], peak_month: 8 },
   general:    { index: [3,3,5,6,7,8,9,10,8,7,5,3], peak_month: 7 },
 };
 
@@ -1379,6 +1385,7 @@ const CPFV_SB = {
   wsb:        { index: [1,1,1,4,5,6,10,5,3,1,1,1], peak_month: 6 },
   halibut:    { index: [3,3,8,10,7,6,5,5,4,5,5,3], peak_month: 3 },
   bluefin:    { index: [1,1,1,1,1,1,3,5,10,1,1,1], peak_month: 8 },  // rare in SB
+  dorado:     { index: [1,1,1,1,1,1,5,8,10,6,2,1], peak_month: 8 },  // similar to SoCal
   general:    { index: [3,3,5,6,7,8,10,9,8,6,4,3], peak_month: 6 },
 };
 
@@ -1392,6 +1399,7 @@ const CPFV_ISLANDS = {
   halibut:    { index: [3,3,3,6,10,9,7,6,8,4,8,2], peak_month: 4 },
   // CDFW: 93% of all bluefin from island blocks. Season May-Dec, expanding yearly
   bluefin:    { index: [1,1,1,1,5,4,4,5,5,4,5,10], peak_month: 11 },
+  dorado:     { index: [1,1,1,1,1,1,7,10,10,8,2,1], peak_month: 8 },  // KP dorado strong at islands
   general:    { index: [3,3,5,7,8,9,10,10,8,7,4,3], peak_month: 6 },
 };
 
@@ -1404,6 +1412,7 @@ const CPFV_CENTRAL = {
   // CDFW: central halibut Apr-Aug, Aug peak
   halibut:    { index: [1,1,1,10,8,8,8,10,4,5,1,1], peak_month: 7 },
   bluefin:    { index: [1,1,1,1,1,1,1,1,10,1,1,1], peak_month: 8 },  // CDFW: 1 data point (Sep), effectively noise
+  dorado:     { index: [1,1,1,1,1,1,1,1,1,1,1,1], peak_month: 8 },  // absent central coast
   general:    { index: [4,4,5,6,7,8,9,10,8,7,5,4], peak_month: 7 },
 };
 
@@ -1413,6 +1422,7 @@ const CPFV_NORCAL = {
   wsb:        { index: [1,1,1,1,1,1,1,1,1,1,1,1], peak_month: 5 },   // absent — zero CDFW catches
   halibut:    { index: [1,1,3,5,6,5,5,4,3,3,2,1], peak_month: 4 },   // SF Bay halibut — limited data
   bluefin:    { index: [1,1,1,1,1,1,1,1,1,1,1,1], peak_month: 8 },   // absent
+  dorado:     { index: [1,1,1,1,1,1,1,1,1,1,1,1], peak_month: 8 },   // absent
   general:    { index: [3,3,4,5,6,7,8,9,8,7,5,3], peak_month: 7 },
 };
 
@@ -1473,6 +1483,16 @@ const CPFV = {
     peak_month: 7, // Aug peak by volume
     // CDFW-calibrated: season Jun-Nov at SD, peaking Jul-Aug
     index:          [1,1,1,1,2,2,6,10,6,5,5,5],
+  },
+  dorado: {
+    // FishDope 6,028 reports (2009-2026): 1,849 dorado mentions. Peak Aug. Season Jul-Oct.
+    // 70% kelp paddy associated. Avg temp 68.2°F. Declining trend since 2020.
+    // El Nino years nearly double mentions (163/yr vs 95/yr avg)
+    catch_per_trip: [0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.40, 0.80, 1.0, 0.65, 0.10, 0.02],
+    five_yr_avg:    [0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.40, 0.80, 1.0, 0.65, 0.10, 0.02],
+    peak_month: 8, // Sep peak in FishDope data
+    // FishDope-calibrated: season Jul-Oct, peak Aug-Sep
+    index:          [1,1,1,1,1,1,6,10,10,7,2,1],
   },
   general: {
     catch_per_trip: [4.2, 5.1, 8.3, 12.7, 18.4, 24.6, 28.1, 25.3, 19.8, 14.2, 7.6, 4.8],
@@ -1618,6 +1638,31 @@ const SCORE = {
     swellPeriod: s => { if(s>=14) return 9; if(s>=10) return 7; if(s>=7) return 5; return 3; },
     waveEnergy: null, rainfall: null, chlViz: null,
     bottom: v => ({rock:7,kelp:6,sand:5,mud:4,silt:3}[v]||5), // less bottom-dependent (pelagic)
+  },
+  dorado: {
+    // FishDope 6,028 reports: 1,849 dorado mentions. Avg temp 68.2°F. 70% kelp paddy.
+    // NOT water-color picky (30% blue, 33% green — follow paddies regardless)
+    // Season: Jul-Oct only. Temp threshold: 67°F+ for reliable presence.
+    tip: 'Dorado: FishDope 2009-2026 (1,849 reports). Peak Aug-Sep. 68-72°F optimal. 70% caught on kelp paddies. Not water-color picky. Season Jul-Oct, declining since 2020.',
+    waterTemp: f => { if(f>=68&&f<=72) return 10; if(f>72&&f<=76) return 9; if(f>=66&&f<68) return 7; if(f>76) return 6; if(f>=64&&f<66) return 4; if(f>=62&&f<64) return 2; return 1; }, // 68-72°F peak (38%), avg 68.2°F
+    sst: f => { if(f>=68&&f<=72) return 10; if(f>72&&f<=76) return 9; if(f>=66&&f<68) return 7; if(f>76) return 6; if(f>=64&&f<66) return 4; return 1; },
+    tempTrend: v => ({warming_fast:10,warming:9,stable:6,cooling:3,cooling_fast:1}[v]||5), // warming brings dorado inshore
+    tideState: v => ({incoming:7,high:6,outgoing:6,low:5}[v]||5), // less tide-dependent (offshore/KP)
+    current: k => { if(k>=0.3&&k<=1.0) return 8; if(k>=0.1&&k<0.3) return 6; if(k>1.0&&k<=1.5) return 6; if(k<0.1) return 4; return 3; }, // current moves kelp paddies
+    upwelling: v => ({strong_recent:3,moderate_recent:5,active_now:4,weak:7}[v]||5), // upwelling = cold = bad for dorado
+    chlFish: c => { if(c>=3) return 8; if(c>=1.5) return 7; if(c>=0.8) return 6; if(c>=0.3) return 5; return 4; }, // bait helps but not critical
+    moonPhase: v => ({new:6,full:5,quarter:6,between:6}[v]||5), // minimal moon effect for dorado
+    reports: null, pressure: null,
+    wind: (spd,dir) => {
+      let ds = ({none:8,offshore:8,sideshore:6,onshore:4}[dir]||5);
+      let ss; if(spd<=10) ss=9; else if(spd<=15) ss=7; else if(spd<=20) ss=4; else ss=2;
+      return (ds+ss)/2;
+    },
+    swellSize: ft => { if(ft<=4) return 9; if(ft<=6) return 7; if(ft<=8) return 5; if(ft<=10) return 3; return 1; },
+    swellDir: v => ({south:7,sw:6,west:5,nw:5,north:7}[v]||5),
+    swellPeriod: s => { if(s>=14) return 8; if(s>=10) return 7; if(s>=7) return 5; return 3; },
+    waveEnergy: null, rainfall: null, chlViz: null,
+    bottom: v => ({rock:6,kelp:8,sand:5,mud:4,silt:3}[v]||5), // kelp paddies are habitat
   },
 };
 
@@ -3949,6 +3994,21 @@ const FISH_WEIGHTS_BY_SPECIES = {
     sst:        0.01,  // confirmation
     pressure:   0.00,  // 6,028 reports: zero correlation found
   },
+  dorado: {
+    waterTemp:  0.28,  // #1 — 68°F+ hard gate. THE factor. n=1,549 readings, avg 68.2°F.
+    reports:    0.16,  // #2 — extreme seasonality (Jul-Oct only). Season index dominates.
+    seaState:   0.14,  // #3 — offshore kelp paddies require boat access
+    tempTrend:  0.12,  // #4 — warming brings dorado; cooling kills bite instantly
+    waterColor: 0.02,  // #5 — NOT picky (30% blue, 33% green in 1,849 reports). Neutral.
+    current:    0.08,  // #6 — current moves kelp paddies, concentrates bait
+    upwelling:  0.06,  // #7 — upwelling = cold = bad for dorado (opposite of bluefin)
+    moonPhase:  0.04,  // #8 — minimal effect in FishDope data
+    tempBreak:  0.04,  // #9 — warm side of breaks preferred
+    tideState:  0.02,  // #10 — minimal (offshore pelagic)
+    chlFish:    0.02,  // minor
+    sst:        0.01,  // confirmation
+    pressure:   0.01,
+  },
 };
 // Active weights reference (set during recalculate)
 let FISH_WEIGHTS = FISH_WEIGHTS_BY_SPECIES.general;
@@ -3998,6 +4058,9 @@ function recalculate() {
       let wcScore;
       if (currentSpecies === 'bluefin') {
         wcScore = ({blue: 10, blue_light: 9, edge: 5, green: 2, bloom: 1})[D.waterColor] || 5;
+      } else if (currentSpecies === 'dorado') {
+        // Dorado NOT water-color picky — 30% blue, 33% green in 1,849 FishDope reports. Follow kelp paddies regardless.
+        wcScore = ({blue: 7, blue_light: 7, edge: 7, green: 6, bloom: 5})[D.waterColor] || 6;
       } else {
         // Yellowtail less sensitive to water color
         wcScore = ({blue: 7, blue_light: 8, edge: 8, green: 6, bloom: 4})[D.waterColor] || 6;
@@ -4229,7 +4292,7 @@ function updateInsight(fish,viz) {
   // Geographic range notice
   const avail = getSpeciesAvailability(currentSpecies, currentLocation);
   if (avail === 'rare') {
-    const speciesNames = { yellowtail: 'Yellowtail', wsb: 'White Sea Bass', halibut: 'Halibut', bluefin: 'Bluefin Tuna' };
+    const speciesNames = { yellowtail: 'Yellowtail', wsb: 'White Sea Bass', halibut: 'Halibut', bluefin: 'Bluefin Tuna', dorado: 'Dorado' };
     el.textContent = `⚠️ ${speciesNames[currentSpecies] || currentSpecies} are very rarely encountered in this region. Score is capped due to limited geographic range. Occasional warm-water events may bring strays, but don't count on it.`;
     return;
   }
