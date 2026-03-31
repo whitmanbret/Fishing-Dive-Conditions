@@ -1598,8 +1598,8 @@ const SCORE = {
     // Moon: full moon months = higher CPUE (p=0.014) — surface visibility helps locate schools
     // 93% caught offshore/islands — pelagic open-water species
     tip: 'Bluefin: CDFW 2019-2025 (185k caught). Cooler water = better (62-64°F optimal, r=-0.29). Full moons help locate schools. Season Jun-Nov, expanding earlier in warm years. 93% caught offshore.',
-    waterTemp: f => { if(f>=60&&f<=65) return 10; if(f>=58&&f<60) return 8; if(f>65&&f<=68) return 7; if(f>=56&&f<58) return 6; if(f>68&&f<=72) return 5; if(f>72) return 3; return 2; },
-    sst: f => { if(f>=60&&f<=65) return 10; if(f>=58&&f<60) return 8; if(f>65&&f<=68) return 7; if(f>=56&&f<58) return 6; if(f>68&&f<=72) return 5; if(f>72) return 3; return 2; },
+    waterTemp: f => { if(f>=60&&f<=66) return 10; if(f>66&&f<=70) return 8; if(f>=58&&f<60) return 7; if(f>70&&f<=72) return 6; if(f>=56&&f<58) return 5; if(f>72) return 3; return 2; }, // 6,028 reports: peak 60-66°F (44%), secondary 66-72°F (32%)
+    sst: f => { if(f>=60&&f<=66) return 10; if(f>66&&f<=70) return 8; if(f>=58&&f<60) return 7; if(f>70&&f<=72) return 6; if(f>=56&&f<58) return 5; if(f>72) return 3; return 2; },
     tempTrend: v => ({warming_fast:3,warming:5,stable:7,cooling:10,cooling_fast:8}[v]||5), // cooler = better
     tideState: v => ({incoming:8,high:7,outgoing:6,low:5}[v]||5), // less tide-dependent (offshore)
     current: k => { if(k>=0.3&&k<=1.0) return 10; if(k>=0.1&&k<0.3) return 7; if(k>1.0&&k<=1.5) return 7; if(k<0.1) return 4; return 3; }, // current concentrates bait
@@ -3935,19 +3935,19 @@ const FISH_WEIGHTS_BY_SPECIES = {
     sst:        0.01,  // confirmation only
   },
   bluefin: {
-    waterColor: 0.20,  // #1 — 141 FishDope reports: blue water ONLY, green = zero fish. Clean 68°F productive; dirty 68°F dead.
-    waterTemp:  0.18,  // #2 — 67-70°F clean=prime; must be paired with water color (Batch 3 critical finding)
-    tempBreak:  0.14,  // #3 — temp fronts concentrate bait+bluefin; fish on cooler side sometimes
+    waterColor: 0.18,  // #1 — 6,028 FishDope reports (2009-2026): blue water mandatory daytime, less critical night
+    waterTemp:  0.16,  // #2 — broader tolerance: 60-72°F viable (n=3,447, avg 64.5°F). Peak 60-66°F.
+    tempBreak:  0.14,  // #3 — temp fronts concentrate bait+bluefin at edges
     reports:    0.12,  // #4 — seasonal CPFV data + boat report scraper
-    seaState:   0.08,  // #5 — can you safely make the run?
-    moonPhase:  0.06,  // #6 — full moon kills mid-day bite, shifts to after 4PM/night (Batch 3 summer finding)
+    seaState:   0.10,  // #5 — can't make the run = can't fish. More important than moon.
+    moonPhase:  0.08,  // #6 — mixed: strong summer effect, zero winter mention. Slack tide = foamers.
     upwelling:  0.06,  // #7 — drives productivity at edges
-    tideState:  0.05,  // #8 — slack tide = best surface activity (bluefin foamers)
-    current:    0.04,  // #9 — current moves bait
-    tempTrend:  0.03,  // #10 — cooling can help (r=-0.29)
+    tempTrend:  0.06,  // #8 — 3°F drop eliminated YFT in 2 days; cooling kills bite fast
+    current:    0.05,  // #9 — current concentrates bait
+    tideState:  0.02,  // #10 — slack = foamers, minor vs other factors
     chlFish:    0.02,  // minor — use waterColor instead
     sst:        0.01,  // confirmation
-    pressure:   0.01,
+    pressure:   0.00,  // 6,028 reports: zero correlation found
   },
 };
 // Active weights reference (set during recalculate)
