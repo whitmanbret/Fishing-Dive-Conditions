@@ -5462,7 +5462,7 @@ function toggleForecastDay(idx) {
 // =========================================================================
 // Update species card visibility based on current location's region
 function updateSpeciesCards() {
-  const speciesList = ['yellowtail', 'wsb', 'halibut', 'bluefin'];
+  const speciesList = ['yellowtail', 'wsb', 'halibut', 'bluefin', 'dorado'];
   let activeHidden = false;
   speciesList.forEach(sp => {
     const card = document.querySelector(`.species-card[data-species="${sp}"]`);
