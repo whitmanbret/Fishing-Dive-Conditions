@@ -1518,6 +1518,8 @@ const SCORE = {
     upwelling: v => ({strong_recent:10,moderate_recent:8,active_now:3,weak:4}[v]||5),
     chlFish: c => { if(c>=3) return 10; if(c>=1.5) return 8; if(c>=0.8) return 6; if(c>=0.3) return 4; return 3; },
     moonPhase: v => ({new:5,full:10,quarter:9,between:7}[v]||5), // 2024 data: full (0.85) > quarter (0.83) > between (0.76) > new (0.64)
+    // Squid proxy — FishDope: 94.2% of YT reports correlated with squid/bait presence
+    squidProxy: (squidScore) => squidScore,
     reports: null, pressure: null,
     wind: null, swellSize: null, swellDir: null, swellPeriod: null, waveEnergy: null, rainfall: null, chlViz: null,
     bottom: v => ({rock:8,kelp:10,sand:5,mud:3,silt:2}[v]||5), // FishDope: 90.2% kelp-associated
@@ -1528,7 +1530,7 @@ const SCORE = {
     // CDFW ESR: catches increase at start of cool-water periods; WSB move north/west seeking preferred temps
     // 4yr CPFV: new moon 5x better than full (0.152 vs 0.031); best SST 63-65°F surface
     // Combined: surface sweet spot 60-66°F (Aalbers depth + offset, MacNamara surface, CPFV peak)
-    tip: 'WSB: new moons 5x better than full. Dawn/dusk feeders. Surface 60–66°F optimal (MacNamara 2025: mean 65°F). CDFW 2019-2025: coast peaks Jul, islands Jun-Aug. Cooling into the zone = best window.',
+    tip: 'WSB: Squid is the #1 factor (97% of catches at squid beds, FishDope 16yr). New moons 5x better than full (squid spawns on dark nights). Dawn/dusk feeders. 60–66°F optimal. CDFW: coast peaks Jul, islands Jun-Aug.',
     waterTemp: f => { if(f>=60&&f<=66) return 10; if(f>=57&&f<60) return 8; if(f>66&&f<=68) return 7; if(f>=55&&f<57) return 5; if(f>68&&f<=71) return 4; if(f>=53&&f<55) return 3; return 2; },
     sst: f => { if(f>=60&&f<=66) return 10; if(f>=57&&f<60) return 8; if(f>66&&f<=68) return 7; if(f>=55&&f<57) return 5; if(f>68&&f<=71) return 4; if(f>=53&&f<55) return 3; return 2; },
     tempTrend: v => ({warming_fast:4,warming:6,stable:8,cooling:10,cooling_fast:5}[v]||5), // CDFW: catches best at start of cool-water period; cooling into the zone = prime
@@ -1537,6 +1539,9 @@ const SCORE = {
     upwelling: v => ({strong_recent:7,moderate_recent:6,active_now:4,weak:8}[v]||5),
     chlFish: c => { if(c>=1&&c<=3) return 10; if(c>=0.5&&c<1) return 7; if(c>3&&c<=5) return 6; if(c<0.5) return 4; return 3; },
     moonPhase: v => ({new:10,full:3,quarter:5,between:5}[v]||5), // 4yr CPFV: new=0.152 >> quarter=0.059 > between=0.055 > full=0.031; darkness + spring tide = peak
+    // Squid proxy — FishDope 16yr: 97% of WSB catches had squid present (4,238/4,378)
+    // Squid spawns on dark nights in 55-68°F water, Apr-Oct peak. Binary gate for WSB.
+    squidProxy: (squidScore) => squidScore, // pass-through — computed externally from moon+temp+season+reports
     reports: null, pressure: null,
     wind: (spd,dir) => {
       let ds = ({none:10,offshore:8,sideshore:5,onshore:2}[dir]||5);
@@ -1867,6 +1872,7 @@ const SPECIES_NORMALIZE = {
   'wahoo': 'wahoo',
   'tuna': 'tuna',
   'skipjack': 'skipjack', 'skipjack tuna': 'skipjack',
+  'squid': 'squid', 'market squid': 'squid', 'jumbo squid': 'squid', 'humboldt squid': 'squid',
 };
 
 // Map boat report species to tool's species keys
@@ -3982,32 +3988,34 @@ const FISH_WEIGHTS_BY_SPECIES = {
   yellowtail: {
     // FishDope 5,291 reports (2009-2026): kelp 90.2%, current 74.3%, calm 52.4%, dirty water 30.6%
     // Bimodal temps: 60-62°F inshore kelp + 70-75°F offshore. Core 60-75°F.
-    waterTemp:  0.20,  // #1 — broad 60-75°F range (FishDope catch-specific median 70°F)
+    waterTemp:  0.18,  // #1 — broad 60-75°F range (FishDope catch-specific median 70°F)
     current:    0.16,  // #2 — "no current = no yellowtail" (74.3% of reports, FishDope explicit)
     reports:    0.14,  // #3 — seasonal presence from CPFV data
     upwelling:  0.10,  // #4 — YT follow bait driven by upwelling productivity
     tideState:  0.10,  // #5 — tidal current movement drives feeding windows
     tempTrend:  0.08,  // #6 — warming trend = YT push inshore from Coronados
-    moonPhase:  0.08,  // #7 — full moon brings squid; squid = #1 predictor for YT (FishDope)
-    chlFish:    0.06,  // #8 — bait concentration matters (squid 94.2% correlated)
-    waterColor: 0.03,  // #9 — NOT picky (42.7% clean, 30.6% dirty — FishDope confirmed)
-    pressure:   0.03,  // #10 — dropping pressure can trigger bite
+    moonPhase:  0.06,  // #7 — reduced (partly captured by squidProxy)
+    squidProxy: 0.06,  // #8 — FishDope: 94.2% of YT with squid/bait present
+    chlFish:    0.04,  // #9 — bait concentration matters
+    waterColor: 0.03,  // #10 — NOT picky (42.7% clean, 30.6% dirty — FishDope confirmed)
+    pressure:   0.03,  // #11 — dropping pressure can trigger bite
     sst:        0.02,  // confirmation
   },
   wsb: {
     // Aalbers 2015 + MacNamara 2025 + CDFW ESR: WSB occupy 55-61°F at depth (60-66°F surface)
-    // FishDope 78 reports: nearly EVERY WSB mention at squid bed. "Drop squid on dropper loop = many big seabass"
-    // Moon drives squid runs → squid drives WSB presence. Tides + moon = the primary triggers.
+    // FishDope 16yr (4,378 reports): 97% of WSB at squid beds. Squid is the #1 binary gate.
+    // Moon drives squid runs → squid drives WSB presence. Tides + moon + squid = the triggers.
+    squidProxy: 0.18,  // #1 — THE factor. 97% correlation. Composite: moon+temp+season+reports
+    tideState:  0.18,  // #2 — depth shifts correlate with tidal frequencies (3-4 cpd)
+    moonPhase:  0.14,  // #3 — reduced from 0.20 (partly captured by squidProxy now)
     waterTemp:  0.14,  // #4 — narrow thermal niche (60-66°F surface); binary trigger
-    tideState:  0.22,  // #1 — THE trigger; depth shifts correlate with tidal frequencies (3-4 cpd)
-    moonPhase:  0.20,  // #2 — full moon brings squid; squid = WSB (FishDope confirmed across 78 reports)
-    reports:    0.12,  // #3 — seasonal presence; 95% of catches Apr-Oct
-    current:    0.08,  // #5 — light current (0.1-0.4 kts); hunt by sound/lateral line
-    tempTrend:  0.08,  // #6 — stable preferred; fish alter depth to maintain thermal niche
-    upwelling:  0.06,  // #7 — less critical; WSB don't chase bait balls like YT
-    chlFish:    0.04,  // #8 — minor; WSB hunt by sound not sight
-    pressure:   0.04,  // #9 — WSB respond to pressure drops
-    sst:        0.02,  // #10 — confirmation
+    reports:    0.10,  // #5 — seasonal presence; 95% of catches Apr-Oct
+    current:    0.08,  // #6 — light current (0.1-0.4 kts); hunt by sound/lateral line
+    tempTrend:  0.06,  // #7 — stable preferred; fish alter depth to maintain thermal niche
+    upwelling:  0.04,  // #8 — less critical; WSB don't chase bait balls like YT
+    chlFish:    0.04,  // #9 — minor; WSB hunt by sound not sight
+    pressure:   0.02,  // #10 — WSB respond to pressure drops
+    sst:        0.02,  // #11 — confirmation
   },
   halibut: {
     grunion:    0.28,  // #1 — THE factor: grunion runs = halibut feeding frenzy on sand
@@ -4092,6 +4100,52 @@ function recalculate() {
   D.grunion = grunion;
   if (currentSpecies === 'halibut') {
     fishEntries.push({score: grunion.score, key: 'grunion'});
+  }
+
+  // Squid likelihood proxy — FishDope 16yr: 97% WSB at squid beds, 94% YT with squid/bait
+  // Composite score from moon phase, water temp, season, region, and boat report squid detections
+  if (currentSpecies === 'wsb' || currentSpecies === 'yellowtail') {
+    const month = new Date().getMonth(); // 0-indexed
+    const region = REGION_MAP[currentLocation] || 'sd';
+
+    // 1. Moon factor (0-10): new moon = squid spawns on dark nights
+    const moonScores = {new: 10, between: 6, quarter: 5, full: 2};
+    const moonFactor = moonScores[D.moon?.category] || 5;
+
+    // 2. Temp factor (0-10): market squid prefer 55-68°F
+    let tempFactor = 5;
+    const t = D.waterTemp || D.sstF;
+    if (t) {
+      if (t >= 58 && t <= 66) tempFactor = 10;       // prime squid temp
+      else if (t >= 55 && t < 58) tempFactor = 8;
+      else if (t > 66 && t <= 70) tempFactor = 7;
+      else if (t >= 52 && t < 55) tempFactor = 5;
+      else if (t > 70 && t <= 74) tempFactor = 4;
+      else tempFactor = 2;                             // too cold or too warm
+    }
+
+    // 3. Season factor (0-10): squid peaks Apr-Oct, absent Nov-Feb
+    const squidSeason = [1,1,3,6,8,9,10,10,9,8,4,2]; // Jan=0
+    const seasonFactor = squidSeason[month];
+
+    // 4. Region factor: islands have squid beds, coast is secondary, offshore/norcal low
+    const regionSquid = {islands: 10, sd: 7, socal: 7, sb: 6, central: 4, offshore: 3, norcal: 1};
+    const regionFactor = regionSquid[region] || 5;
+
+    // 5. Boat report override: if squid detected in yesterday's catches, confirmed present
+    let reportBoost = 0;
+    if (boatReportsData && boatReportsData.boats) {
+      const hasSquid = boatReportsData.boats.some(b =>
+        b.catches.some(c => c.species === 'squid' && c.count > 0)
+      );
+      if (hasSquid) reportBoost = 2; // boost when confirmed
+    }
+
+    // Composite: weighted blend (moon 30%, temp 25%, season 25%, region 20%) + report boost
+    let squidScore = Math.min(10, (moonFactor * 0.30 + tempFactor * 0.25 + seasonFactor * 0.25 + regionFactor * 0.20) + reportBoost);
+    D.squidProxy = Math.round(squidScore * 10) / 10;
+
+    fishEntries.push({score: squidScore, key: 'squidProxy'});
   }
 
   // Satellite water color + temp break — boosts/penalizes bluefin & yellowtail at offshore spots
