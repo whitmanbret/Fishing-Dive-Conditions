@@ -3761,21 +3761,30 @@ function updateDisplay() {
     else if (D.turbidity !== undefined) {
       let lo, hi;
       const ntu = D.turbidity;
-      // Conservative NTU→viz mapping — pier reads cleaner than what divers experience
-      if(ntu < 0.2)      { lo=15; hi=20; }  // very low turbidity
-      else if(ntu < 0.3)  { lo=12; hi=17; }  // clear at pier
-      else if(ntu < 0.5)  { lo=10; hi=15; }  // good conditions
-      else if(ntu < 0.8)  { lo=7;  hi=12; }  // moderate
-      else if(ntu < 1.2)  { lo=5;  hi=10; }  // elevated
-      else if(ntu < 2.0)  { lo=4;  hi=8;  }  // murky
-      else if(ntu < 3.5)  { lo=3;  hi=6;  }  // poor
-      else if(ntu < 5.0)  { lo=2;  hi=4;  }
-      else                 { lo=1;  hi=3;  }
+      // NTU→viz mapping — recalibrated 2026-04-01 from 16 paired diver reports
+      // Key ground truths: NTU 0.21 + calm = 20-35ft (4/1 LJ), NTU 0.25 = 14-18ft (3/19 PL)
+      // NTU 0.27 + chl 0.65 = 8-10ft (3/22 LJ green water — chl penalty handles this)
+      if(ntu < 0.15)      { lo=22; hi=30; }  // crystal clear — rare
+      else if(ntu < 0.25)  { lo=17; hi=25; }  // very clean
+      else if(ntu < 0.35)  { lo=13; hi=19; }  // clean
+      else if(ntu < 0.5)   { lo=10; hi=15; }  // good conditions
+      else if(ntu < 0.8)   { lo=7;  hi=12; }  // moderate
+      else if(ntu < 1.2)   { lo=5;  hi=10; }  // elevated
+      else if(ntu < 2.0)   { lo=4;  hi=8;  }  // murky
+      else if(ntu < 3.5)   { lo=3;  hi=6;  }  // poor
+      else if(ntu < 5.0)   { lo=2;  hi=4;  }
+      else                  { lo=1;  hi=3;  }
       // Mild shelter adjustment — turbidity is direct measurement, so only small boost
       const turbShelter = Math.min(1.15, shelterMult);
       lo = Math.max(1, Math.round(lo * turbShelter));
       hi = Math.max(lo+1, Math.round(hi * turbShelter));
-      // If swell is also high, blend downward (pier is sheltered, open water gets more surge)
+      // Calm conditions bonus — very low wave energy = less stirring, viz improves
+      // Ground truth: 4/1 LJ glassy (WE 9) = 20-35ft; 3/23 LJ some swell (WE ~40) = 10-15ft
+      if (D.waveEnergy !== undefined && D.waveEnergy < 20) {
+        lo = Math.round(lo * 1.15);
+        hi = Math.round(hi * 1.15);
+      }
+      // If swell is high, blend downward (pier is sheltered, open water gets more surge)
       if (D.waveEnergy !== undefined && D.waveEnergy > 100) {
         lo = Math.max(1, Math.round(lo * 0.7));
         hi = Math.max(lo+1, Math.round(hi * 0.7));
@@ -3791,10 +3800,11 @@ function updateDisplay() {
         if (D.chlorophyll > 8)       { lo = Math.max(1, Math.round(lo * 0.35)); hi = Math.max(lo+1, Math.round(hi * 0.35)); suffix = ' (bloom)'; }
         else if (D.chlorophyll > 3)  { lo = Math.max(1, Math.round(lo * 0.5));  hi = Math.max(lo+1, Math.round(hi * 0.5));  suffix = ' (green water)'; }
         else if (D.chlorophyll > 1)  { lo = Math.max(1, Math.round(lo * 0.65)); hi = Math.max(lo+1, Math.round(hi * 0.65)); suffix = ' (green tinge)'; }
-        else if (D.chlorophyll > 0.4){ lo = Math.max(1, Math.round(lo * 0.8));  hi = Math.max(lo+1, Math.round(hi * 0.8)); }
+        else if (D.chlorophyll > 0.4){ lo = Math.max(1, Math.round(lo * 0.85)); hi = Math.max(lo+1, Math.round(hi * 0.85)); }
       }
-      // Cap range spread to 5ft max
-      if (hi - lo > 5) hi = lo + 5;
+      // Cap range spread — wider for clean water (low NTU has genuine variability)
+      const maxSpread = ntu < 0.25 ? 8 : 5;
+      if (hi - lo > maxSpread) hi = lo + maxSpread;
       vizEst = `${lo}–${hi} ft${suffix}`;
       vizSource = D.turbSource || 'Shore Station';
     }
@@ -5077,15 +5087,17 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   // Calibrated 2026-03-17: 0.25 NTU at pier = 20ft at Pt Loma (dusk, cloudy)
   else if (D.turbidity !== undefined) {
     const ntu = D.turbidity;
-    if (isScripps && ntu < 0.2) { baseLo=22; baseHi=27; }
-    else if(ntu < 0.3)  { baseLo=18; baseHi=23; }
-    else if(ntu < 0.5)  { baseLo=14; baseHi=19; }
-    else if(ntu < 0.8)  { baseLo=10; baseHi=15; }
-    else if(ntu < 1.2)  { baseLo=7;  baseHi=12; }
-    else if(ntu < 2.0)  { baseLo=5;  baseHi=9;  }
-    else if(ntu < 3.5)  { baseLo=3;  baseHi=6;  }
-    else if(ntu < 5.0)  { baseLo=2;  baseHi=4;  }
-    else                 { baseLo=1;  baseHi=3;  }
+    // Recalibrated 2026-04-01 from 16 paired diver reports (matches real-time mapping)
+    if(ntu < 0.15)      { baseLo=22; baseHi=30; }
+    else if(ntu < 0.25)  { baseLo=17; baseHi=25; }
+    else if(ntu < 0.35)  { baseLo=13; baseHi=19; }
+    else if(ntu < 0.5)   { baseLo=10; baseHi=15; }
+    else if(ntu < 0.8)   { baseLo=7;  baseHi=12; }
+    else if(ntu < 1.2)   { baseLo=5;  baseHi=10; }
+    else if(ntu < 2.0)   { baseLo=4;  baseHi=8;  }
+    else if(ntu < 3.5)   { baseLo=3;  baseHi=6;  }
+    else if(ntu < 5.0)   { baseLo=2;  baseHi=4;  }
+    else                  { baseLo=1;  baseHi=3;  }
   } else if (D.waveEnergy !== undefined) {
     // No turbidity available — fall back to wave energy
     const we = D.waveEnergy;
@@ -5153,7 +5165,7 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   if (chlEff > 8) { baseLo = Math.max(1, Math.round(baseLo * 0.4)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.45)); }
   else if (chlEff > 3) { baseLo = Math.max(1, Math.round(baseLo * 0.6)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.65)); }
   else if (chlEff > 1.5) { baseLo = Math.max(1, Math.round(baseLo * 0.75)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.8)); }
-  else if (chlEff > 0.5) { baseLo = Math.max(1, Math.round(baseLo * 0.85)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.88)); }
+  else if (chlEff > 0.5) { baseLo = Math.max(1, Math.round(baseLo * 0.88)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.90)); }
 
   // Turbidity also drifts toward regional average over future days (less certainty)
   // Don't assume today's clean/dirty water persists unchanged for 5 days
