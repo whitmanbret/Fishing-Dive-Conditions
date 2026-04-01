@@ -2736,6 +2736,10 @@ const SHORE_STATIONS = {
   humboldt:     { id: 'edu_humboldt_humboldt', name: 'Humboldt Bay Pier',
                   temp: 'sea_water_temperature', turb: 'sea_water_turbidity',
                   chl: 'mass_concentration_of_chlorophyll_in_sea_water', sal: 'sea_water_practical_salinity' },
+  // Monterey Bay — Aquarium seawater intake (temp only, no chl/turb but LOCAL to Monterey)
+  montereyaq:   { id: 'monterey-bay-aquarium-seawate', name: 'Monterey Bay Aquarium',
+                  temp: 'sea_water_temperature', turb: null,
+                  chl: null, sal: null },
 };
 
 // Map each dive spot to shore stations in priority order (nearest first, fallbacks after)
@@ -2754,7 +2758,7 @@ const SHORE_STATION_MAP = {
   // Channel Islands — Newport / Santa Monica
   catalina: ['newport','scripps'], anacapa: ['santamonica','newport'], santacruz: ['santamonica','calpoly'],
   // Central Coast — Cal Poly / Morro
-  morro: ['morro','calpoly'], monterey: ['calpoly','morro'], carmel: ['calpoly','morro'],
+  morro: ['morro','calpoly'], monterey: ['montereyaq','calpoly','morro'], carmel: ['montereyaq','calpoly','morro'],
   // NorCal — Trinidad, Humboldt
   halfmoon: ['calpoly'], bodega: ['trinidad','humboldt'],
   fortbragg: ['trinidad','humboldt'], trinidad: ['trinidad','humboldt'],
@@ -2768,18 +2772,22 @@ async function fetchShoreStation() {
   if (!stationKeys || stationKeys.length === 0) { srcStatus.sass = 'n/a'; return; }
 
   // Try each station in priority order until one succeeds
+  // isFallback=true for non-primary stations — they should NOT provide turbidity/chl
+  // (turbidity is hyper-local; using Morro Bay turbidity for Monterey = wildly wrong)
+  let isPrimary = true;
   for (const stationKey of stationKeys) {
     const station = SHORE_STATIONS[stationKey];
     if (!station) continue;
     try {
-      const d = await fetchSingleShoreStation(station);
+      const d = await fetchSingleShoreStation(station, !isPrimary);
       if (d) return; // Success — stop trying fallbacks
-    } catch(e) { continue; } // Try next station in chain
+    } catch(e) { /* Try next station in chain */ }
+    isPrimary = false;
   }
   srcStatus.sass = 'err';
 }
 
-async function fetchSingleShoreStation(station) {
+async function fetchSingleShoreStation(station, isFallback = false) {
   const now = new Date();
   const yesterday = new Date(now - 24*60*60*1000);
   const fmt = d => d.toISOString().split('.')[0]+'Z';
@@ -2826,32 +2834,40 @@ async function fetchSingleShoreStation(station) {
       // Shore station water temp (very accurate nearshore reading)
       // For shore dives (non-offshore), pier temp is more accurate than offshore buoy.
       // Offshore buoys sit in deeper/warmer water — can read 2-3°F higher than actual dive conditions.
+      // EXCEPTION: fallback stations (100+ miles away) should NOT override waterTemp —
+      // let NOAA CO-OPS or local buoy provide temp instead (much more accurate).
       const shoreTemp = extract(station.temp);
       if (shoreTemp !== null) {
         D.shoreWaterTempC = shoreTemp;
         D.shoreWaterTemp = parseFloat((shoreTemp * 9/5 + 32).toFixed(1));
         D.shoreStation = station.name;
         const loc = LOCATIONS[currentLocation];
-        // Shore dives: prefer pier temp. Offshore (islands, boats): prefer buoy temp.
-        if (!loc.offshore) {
+        // Only set primary waterTemp from the nearest (non-fallback) station
+        if (!loc.offshore && !isFallback) {
           D.waterTemp = D.shoreWaterTemp;
           D.waterTempSource = station.name;
         }
       }
       // Turbidity — clamp negative sensor noise to 0
-      const turbRaw = extract(station.turb);
-      const turb = turbRaw !== null ? Math.max(0, turbRaw) : null;
-      if (turb !== null) {
-        D.turbidity = turb;
-        D.turbSource = station.name;
-        srcStatus.sass = 'ok';
+      // SKIP for fallback stations — turbidity is hyper-local, using a sensor 100+ miles away is wrong
+      if (!isFallback) {
+        const turbRaw = extract(station.turb);
+        const turb = turbRaw !== null ? Math.max(0, turbRaw) : null;
+        if (turb !== null) {
+          D.turbidity = turb;
+          D.turbSource = station.name;
+          srcStatus.sass = 'ok';
+        }
       }
       // Chlorophyll — override satellite with live sensor
-      const chl = extract(station.chl);
-      if (chl !== null) {
-        D.chlorophyll = chl;
-        D.chlSource = station.name;
-        srcStatus.chl = 'ok';
+      // SKIP for fallback stations — chlorophyll is regionally variable
+      if (!isFallback) {
+        const chl = extract(station.chl);
+        if (chl !== null) {
+          D.chlorophyll = chl;
+          D.chlSource = station.name;
+          srcStatus.chl = 'ok';
+        }
       }
       // Salinity
       const sal = extract(station.sal);
@@ -2862,6 +2878,37 @@ async function fetchSingleShoreStation(station) {
       return true; // Signal success to fallback chain
     }
   return false; // No usable data from this station
+}
+
+// =========================================================================
+// NOAA CO-OPS WATER TEMP — fallback for shore stations without ERDDAP data
+// Uses the tide station's water_temperature product (very reliable, real-time)
+// =========================================================================
+async function fetchNOAAWaterTemp() {
+  const loc = LOCATIONS[currentLocation];
+  // Only fetch if we don't already have a local waterTemp AND this is a non-offshore spot
+  // D.waterTemp may be unset if primary shore station failed and fallback didn't set it
+  if (loc.offshore) return;
+  if (D.waterTemp && D.waterTempSource !== 'NDBC Buoy') return; // already have local shore temp
+  const stationId = loc.tideStation;
+  if (!stationId) return;
+  try {
+    const url = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station=${stationId}&product=water_temperature&datum=STND&units=metric&time_zone=gmt&application=spearfactor&format=json`;
+    const resp = await fetchWithTimeout(url, null, 6000);
+    if (!resp.ok) return;
+    const json = await resp.json();
+    if (json.data && json.data.length > 0) {
+      const tempC = parseFloat(json.data[0].v);
+      if (!isNaN(tempC) && tempC > 0 && tempC < 35) {
+        const tempF = parseFloat((tempC * 9/5 + 32).toFixed(1));
+        D.shoreWaterTempC = tempC;
+        D.shoreWaterTemp = tempF;
+        D.shoreStation = json.metadata?.name || 'NOAA CO-OPS';
+        D.waterTemp = tempF;
+        D.waterTempSource = D.shoreStation;
+      }
+    }
+  } catch(e) { /* silent fail — buoy will provide temp as last resort */ }
 }
 
 // =========================================================================
@@ -3530,6 +3577,11 @@ async function fetchAllData() {
   ]);
 
   // If location changed while we were fetching, discard these stale results
+  if (thisGen !== _fetchGen) return;
+
+  // NOAA CO-OPS water temp fallback — if shore station ERDDAP returned no data,
+  // fetch real-time temp from the NOAA tide station (e.g. Monterey 9413450)
+  await fetchNOAAWaterTemp();
   if (thisGen !== _fetchGen) return;
 
   // For bluewater spots, fetch SST directly from NDBC realtime2 (overrides shore/ERDDAP data)
