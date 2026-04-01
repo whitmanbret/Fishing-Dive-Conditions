@@ -2667,6 +2667,7 @@ async function fetchChlorophyll() {
   if (CHL_CLIMATOLOGY[month]) {
     D.chlorophyll = CHL_CLIMATOLOGY[month];
     D.chlSource = 'HABs 17yr';
+    D.chlIsClimatology = true;  // Flag so viz model can skip penalty for distant locations
     srcStatus.chl='ok';
   }
 }
@@ -2828,6 +2829,7 @@ async function fetchSingleShoreStation(station, isFallback = false) {
         if (chl !== null) {
           D.chlorophyll = chl;
           D.chlSource = station.name;
+          D.chlIsClimatology = false;  // Live sensor — trust it
           srcStatus.chl = 'ok';
         }
       }
@@ -3743,10 +3745,12 @@ function updateDisplay() {
       if (D.upwelling === 'active_now' || D.upwelling === 'strong_recent') {
         lo = Math.max(8, lo - 8); hi = Math.max(lo + 5, hi - 8);
       }
-      // Chlorophyll bloom penalty (rare offshore but possible)
+      // Chlorophyll bloom penalty (rare offshore but possible) — only with live data
       let suffix = '';
-      if (D.chlorophyll > 8) { lo = Math.max(5, lo - 10); hi = Math.max(lo + 5, hi - 10); suffix = ' (bloom)'; }
-      else if (D.chlorophyll > 3) { lo = Math.max(8, lo - 5); hi = Math.max(lo + 5, hi - 5); suffix = ' (green water)'; }
+      if (!D.chlIsClimatology) {
+        if (D.chlorophyll > 8) { lo = Math.max(5, lo - 10); hi = Math.max(lo + 5, hi - 10); suffix = ' (bloom)'; }
+        else if (D.chlorophyll > 3) { lo = Math.max(8, lo - 5); hi = Math.max(lo + 5, hi - 5); suffix = ' (green water)'; }
+      }
       // Rain doesn't directly affect offshore, but heavy coastal runoff can spread
       if (D.rainfall === 'heavy') { lo = Math.max(5, lo - 5); hi = Math.max(lo + 5, hi - 5); }
       if (hi - lo > 20) hi = lo + 20; // wider range OK for offshore
@@ -3795,8 +3799,11 @@ function updateDisplay() {
       // Chlorophyll reduction — phytoplankton makes water green, reduces viz independent of NTU
       // NTU only measures particle scattering; chlorophyll absorbs light and cuts underwater visibility
       // Ground truth: 2026-03-22 LJ Shores, 0.27 NTU + 0.65 chl = 8-10 ft (green water)
+      // Skip penalty when chl is climatology AND location is far from Scripps Pier
+      // (HABs 17yr avg is Scripps-specific; Monterey April avg 12.73 crushes viz but actual can be 50ft)
       let suffix = '';
-      if (D.chlorophyll !== undefined && D.chlorophyll > 0) {
+      const chlApplies = D.chlorophyll !== undefined && D.chlorophyll > 0 && (!D.chlIsClimatology || loc.scrippsProximity);
+      if (chlApplies) {
         if (D.chlorophyll > 8)       { lo = Math.max(1, Math.round(lo * 0.35)); hi = Math.max(lo+1, Math.round(hi * 0.35)); suffix = ' (bloom)'; }
         else if (D.chlorophyll > 3)  { lo = Math.max(1, Math.round(lo * 0.5));  hi = Math.max(lo+1, Math.round(hi * 0.5));  suffix = ' (green water)'; }
         else if (D.chlorophyll > 1)  { lo = Math.max(1, Math.round(lo * 0.65)); hi = Math.max(lo+1, Math.round(hi * 0.65)); suffix = ' (green tinge)'; }
@@ -3830,11 +3837,12 @@ function updateDisplay() {
       // Apply shelter multiplier
       lo = Math.max(1, Math.round(lo * shelterMult));
       hi = Math.max(lo+1, Math.round(hi * shelterMult));
-      // Chlorophyll penalty — HABs 17yr data: Apr-May avg 10-13 mg/m³ = bloom season
+      // Chlorophyll penalty — only apply with live sensor or Scripps-proximity climatology
       let suffix2 = '';
-      if(D.chlorophyll>8) { lo = Math.max(1, lo-4); hi = Math.max(lo+1, hi-4); suffix2 = ' (bloom)'; }
-      else if(D.chlorophyll>3) { lo = Math.max(1, lo-2); hi = Math.max(lo+1, hi-2); suffix2 = ' (green water)'; }
-      else if(D.chlorophyll>1) { lo = Math.max(1, lo-1); hi = Math.max(lo+1, hi-1); }
+      const chlApplies2 = !D.chlIsClimatology || loc.scrippsProximity;
+      if(chlApplies2 && D.chlorophyll>8) { lo = Math.max(1, lo-4); hi = Math.max(lo+1, hi-4); suffix2 = ' (bloom)'; }
+      else if(chlApplies2 && D.chlorophyll>3) { lo = Math.max(1, lo-2); hi = Math.max(lo+1, hi-2); suffix2 = ' (green water)'; }
+      else if(chlApplies2 && D.chlorophyll>1) { lo = Math.max(1, lo-1); hi = Math.max(lo+1, hi-1); }
       // Cap range spread to 5ft max
       if (hi - lo > 5) hi = lo + 5;
       vizEst = `${lo}–${hi} ft${suffix2}`;
@@ -4478,8 +4486,8 @@ function updateConditionsBrief() {
 
   // Water clarity description
   let clarityDesc = '';
-  if (D.chlorophyll > 3) clarityDesc = 'Green water from a phytoplankton bloom is limiting visibility';
-  else if (D.chlorophyll > 1.5) clarityDesc = 'Slightly green water with elevated chlorophyll';
+  if (!D.chlIsClimatology && D.chlorophyll > 3) clarityDesc = 'Green water from a phytoplankton bloom is limiting visibility';
+  else if (!D.chlIsClimatology && D.chlorophyll > 1.5) clarityDesc = 'Slightly green water with elevated chlorophyll';
   else if (D.turbidity > 1.5) clarityDesc = 'Stirred-up water from recent swell is reducing clarity';
   else if (D.turbidity !== undefined && D.turbidity < 0.3) clarityDesc = 'Water clarity is good with low turbidity';
   else clarityDesc = 'Water clarity is moderate';
@@ -4972,8 +4980,8 @@ function calcSlotForecastScores(slot, dayIdx) {
   // Upwelling lagged effect — benefits build 2-5 days out
   if (D.upwellingIndex > 150) fishAdj += 0.2 * Math.min(dayIdx, 3);
   else if (D.upwellingIndex > 100) fishAdj += 0.1 * Math.min(dayIdx, 3);
-  // Chlorophyll = bait concentration
-  if (D.chlorophyll > 2) fishAdj += 0.15;
+  // Chlorophyll = bait concentration (only trust live sensor data)
+  if (!D.chlIsClimatology && D.chlorophyll > 2) fishAdj += 0.15;
 
   // Halibut grunion run bonus — check for each forecast day
   if (currentSpecies === 'halibut') {
@@ -5159,13 +5167,17 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   baseHi = Math.max(baseLo + 1, Math.round(baseHi * windMult * rainMult * swellMult * dayDecay));
 
   // Chlorophyll adjustment — blooms persist 3-7 days in CA coastal waters
+  // Only apply when we have live sensor data or location is near Scripps (where climatology was measured)
   // Slow decay: Day 0 = full, Day 1 = 90%, Day 2 = 80%, Day 3 = 65%, Day 4 = 50%
-  const chlDecay = [1.0, 0.9, 0.8, 0.65, 0.50][Math.min(dayIdx, 4)];
-  const chlEff = (D.chlorophyll || 0) * chlDecay;
-  if (chlEff > 8) { baseLo = Math.max(1, Math.round(baseLo * 0.4)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.45)); }
-  else if (chlEff > 3) { baseLo = Math.max(1, Math.round(baseLo * 0.6)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.65)); }
-  else if (chlEff > 1.5) { baseLo = Math.max(1, Math.round(baseLo * 0.75)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.8)); }
-  else if (chlEff > 0.5) { baseLo = Math.max(1, Math.round(baseLo * 0.88)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.90)); }
+  const chlAppliesFcst = !D.chlIsClimatology || loc.scrippsProximity;
+  if (chlAppliesFcst) {
+    const chlDecay = [1.0, 0.9, 0.8, 0.65, 0.50][Math.min(dayIdx, 4)];
+    const chlEff = (D.chlorophyll || 0) * chlDecay;
+    if (chlEff > 8) { baseLo = Math.max(1, Math.round(baseLo * 0.4)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.45)); }
+    else if (chlEff > 3) { baseLo = Math.max(1, Math.round(baseLo * 0.6)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.65)); }
+    else if (chlEff > 1.5) { baseLo = Math.max(1, Math.round(baseLo * 0.75)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.8)); }
+    else if (chlEff > 0.5) { baseLo = Math.max(1, Math.round(baseLo * 0.88)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.90)); }
+  }
 
   // Turbidity also drifts toward regional average over future days (less certainty)
   // Don't assume today's clean/dirty water persists unchanged for 5 days
