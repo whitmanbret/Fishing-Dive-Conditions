@@ -1547,18 +1547,18 @@ const SCORE = {
     // Weekday advantage: Tue (1.01) vs Sat (0.53) — 2x better with less pressure
     // 4-year SST data: 65°F (1.19), 72°F (1.14), 63°F (1.10), 73°F (1.06), 75°F (1.05)
     // YT bite across a WIDE temp range — 63-75°F all above 1.0 fish/angler
-    tip: 'Yellowtail bite across 63–75°F (CDFW 2019-2025: 169k caught). Apr has highest CPUE (4.21/hr). Bimodal: spring surge (Mar-May) + summer/fall sustained (Jul-Nov). 2025 best year — warm water = early season.',
-    waterTemp: f => { if(f>=63&&f<=75) return 10; if(f>=60&&f<63) return 7; if(f>75&&f<=78) return 7; if(f>=58&&f<60) return 4; if(f>78) return 3; return 1; },
-    sst: f => { if(f>=63&&f<=75) return 10; if(f>=60&&f<63) return 7; if(f>75&&f<=78) return 7; if(f>=58&&f<60) return 4; if(f>78) return 3; return 1; },
+    tip: 'Yellowtail: FishDope 2009-2026 (5,291 reports). 60-75°F broad range (bimodal: 60-62°F inshore kelp + 70-75°F offshore). Kelp-associated (90%). Current critical (74%). Aug peak but year-round. Not water-color picky (31% caught in dirty water).',
+    waterTemp: f => { if(f>=63&&f<=75) return 10; if(f>=60&&f<63) return 8; if(f>75&&f<=78) return 7; if(f>=58&&f<60) return 5; if(f>78) return 3; return 1; },
+    sst: f => { if(f>=63&&f<=75) return 10; if(f>=60&&f<63) return 8; if(f>75&&f<=78) return 7; if(f>=58&&f<60) return 5; if(f>78) return 3; return 1; },
     tempTrend: v => ({warming_fast:8,warming:10,stable:6,cooling:3,cooling_fast:1}[v]||5),
     tideState: v => ({incoming:10,high:7,outgoing:5,low:3}[v]||5),
-    current: k => { if(k>=0.3&&k<=0.8) return 10; if(k>=0.1&&k<0.3) return 7; if(k>0.8&&k<=1.2) return 6; if(k<0.1) return 4; return 2; },
+    current: k => { if(k>=0.3&&k<=0.8) return 10; if(k>=0.1&&k<0.3) return 7; if(k>0.8&&k<=1.2) return 6; if(k<0.1) return 2; return 2; }, // FishDope: "no current = no yellowtail" (74.3% mention current)
     upwelling: v => ({strong_recent:10,moderate_recent:8,active_now:3,weak:4}[v]||5),
     chlFish: c => { if(c>=3) return 10; if(c>=1.5) return 8; if(c>=0.8) return 6; if(c>=0.3) return 4; return 3; },
     moonPhase: v => ({new:5,full:10,quarter:9,between:7}[v]||5), // 2024 data: full (0.85) > quarter (0.83) > between (0.76) > new (0.64)
     reports: null, pressure: null,
     wind: null, swellSize: null, swellDir: null, swellPeriod: null, waveEnergy: null, rainfall: null, chlViz: null,
-    bottom: v => ({rock:10,kelp:9,sand:5,mud:3,silt:2}[v]||5),
+    bottom: v => ({rock:8,kelp:10,sand:5,mud:3,silt:2}[v]||5), // FishDope: 90.2% kelp-associated
   },
   wsb: {
     // Aalbers & Sepulveda 2015: 173 DST-tagged WSB, core 13-16°C (55-61°F at depth)
@@ -3948,16 +3948,18 @@ const FISH_WEIGHTS_BY_SPECIES = {
     sst:        0.02,  // #10 — satellite SST confirmation
   },
   yellowtail: {
-    waterTemp:  0.22,  // #1 — 64-70°F optimal (Batch 2: 67-70 offshore, 64-66 inshore)
-    current:    0.14,  // #2 — "no current = no yellowtail" (FishDope explicit, 60 reports)
+    // FishDope 5,291 reports (2009-2026): kelp 90.2%, current 74.3%, calm 52.4%, dirty water 30.6%
+    // Bimodal temps: 60-62°F inshore kelp + 70-75°F offshore. Core 60-75°F.
+    waterTemp:  0.20,  // #1 — broad 60-75°F range (FishDope catch-specific median 70°F)
+    current:    0.16,  // #2 — "no current = no yellowtail" (74.3% of reports, FishDope explicit)
     reports:    0.14,  // #3 — seasonal presence from CPFV data
-    upwelling:  0.12,  // #4 — YT follow bait driven by upwelling productivity
+    upwelling:  0.10,  // #4 — YT follow bait driven by upwelling productivity
     tideState:  0.10,  // #5 — tidal current movement drives feeding windows
-    moonPhase:  0.08,  // #6 — full moon brings squid; squid = #1 predictor for YT (FishDope)
-    tempTrend:  0.08,  // #7 — warming trend = YT push inshore from Coronados
-    chlFish:    0.05,  // #8 — bait concentration matters
-    pressure:   0.03,  // #9 — dropping pressure can trigger bite
-    waterColor: 0.02,  // #10 — clean to clean-green acceptable (less strict than bluefin)
+    tempTrend:  0.08,  // #6 — warming trend = YT push inshore from Coronados
+    moonPhase:  0.08,  // #7 — full moon brings squid; squid = #1 predictor for YT (FishDope)
+    chlFish:    0.06,  // #8 — bait concentration matters (squid 94.2% correlated)
+    waterColor: 0.03,  // #9 — NOT picky (42.7% clean, 30.6% dirty — FishDope confirmed)
+    pressure:   0.03,  // #10 — dropping pressure can trigger bite
     sst:        0.02,  // confirmation
   },
   wsb: {
@@ -4071,8 +4073,11 @@ function recalculate() {
       } else if (currentSpecies === 'dorado') {
         // Dorado NOT water-color picky — 30% blue, 33% green in 1,849 FishDope reports. Follow kelp paddies regardless.
         wcScore = ({blue: 7, blue_light: 7, edge: 7, green: 6, bloom: 5})[D.waterColor] || 6;
+      } else if (currentSpecies === 'yellowtail') {
+        // FishDope: 42.7% clean, 30.6% dirty, 16.4% green — NOT picky. Edge/color change concentrates fish.
+        wcScore = ({blue: 7, blue_light: 8, edge: 9, green: 6, bloom: 5})[D.waterColor] || 6;
       } else {
-        // Yellowtail less sensitive to water color
+        // Default: moderate sensitivity
         wcScore = ({blue: 7, blue_light: 8, edge: 8, green: 6, bloom: 4})[D.waterColor] || 6;
       }
       fishEntries.push({score: wcScore, key: 'waterColor'});
