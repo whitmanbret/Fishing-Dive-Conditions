@@ -258,22 +258,7 @@
       border-radius: 20px; padding: 2px 10px; font-size: 11px;
     }
 
-    /* Species Selector */
-    .species-selector { display: flex; gap: 6px; margin-bottom: 10px; }
-    .species-card {
-      flex: 1; text-align: center; padding: 7px 4px; border-radius: 8px;
-      border: 2px solid var(--border); background: var(--bg-secondary);
-      cursor: pointer; transition: all 0.2s; font-size: 12px; font-weight: 600;
-    }
-    .species-card:hover { border-color: var(--text-muted); }
-    .species-card.active[data-species="general"] { border-color: var(--accent); background: rgba(44,140,255,0.1); color: var(--accent); }
-    .species-card.active[data-species="yellowtail"] { border-color: var(--fish-color); background: rgba(240,160,48,0.1); color: var(--fish-color); }
-    .species-card.active[data-species="wsb"] { border-color: #90b8e0; background: rgba(144,184,224,0.1); color: #90b8e0; }
-    .species-card.active[data-species="halibut"] { border-color: #8b6d47; background: rgba(139,109,71,0.1); color: #d4a574; }
-    .species-card.active[data-species="bluefin"] { border-color: #1a5276; background: rgba(26,82,118,0.15); color: #5dade2; }
-    .species-label { font-size: 12px; }
-    .species-label .short-name { display: none; }
-    .species-name { font-size: 10px; color: var(--text-muted); font-weight: 400; margin-top: 1px; }
+    /* Species Selector — dropdown only (cards removed) */
 
     /* Score Gauges */
     .scores-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
@@ -689,11 +674,7 @@
       .gauge-rating { font-size: 9px; padding: 2px 8px; margin-top: 2px; }
       .gauge-formula { font-size: 8px; }
       .viz-feet-hero { font-size: 18px; }
-      .species-card { padding: 5px 2px; font-size: 11px; }
-      .species-label { font-size: 11px; }
-      .species-label .full-name { display: none; }
-      .species-label .short-name { display: inline; }
-      .species-name { font-size: 9px; }
+      /* species cards removed — dropdown only */
       .insight-text { font-size: 11px; padding: 6px 8px; margin-bottom: 6px; }
       .forecast-title { padding: 6px 10px; font-size: 11px; }
       .forecast-day-header { padding: 4px 10px 2px; }
@@ -1053,27 +1034,7 @@
     </div>
     <span id="dateDisplay" style="display:none"></span>
 
-    <!-- SPECIES CARDS (visual only) -->
-    <div class="species-selector">
-      <div class="species-card active" data-species="general" onclick="selectSpecies('general')">
-        <div class="species-label">General</div><div class="species-name">All Species</div>
-      </div>
-      <div class="species-card" data-species="yellowtail" onclick="selectSpecies('yellowtail')">
-        <div class="species-label">Yellowtail</div><div class="species-name">S. lalandi</div>
-      </div>
-      <div class="species-card" data-species="wsb" onclick="selectSpecies('wsb')">
-        <div class="species-label"><span class="full-name">White Sea Bass</span><span class="short-name">WSB</span></div><div class="species-name">A. nobilis</div>
-      </div>
-      <div class="species-card" data-species="halibut" onclick="selectSpecies('halibut')">
-        <div class="species-label">Halibut</div><div class="species-name">P. californicus</div>
-      </div>
-      <div class="species-card" data-species="bluefin" onclick="selectSpecies('bluefin')">
-        <div class="species-label">Bluefin</div><div class="species-name">T. orientalis</div>
-      </div>
-      <div class="species-card" data-species="dorado" onclick="selectSpecies('dorado')">
-        <div class="species-label">Dorado</div><div class="species-name">C. hippurus</div>
-      </div>
-    </div>
+    <!-- Species cards removed — species selection via dropdown only -->
 
     <!-- THREE SCORE GAUGES -->
     <div class="scores-grid">
@@ -1345,7 +1306,8 @@ const REGION_MAP = {
   // Channel Islands
   anacapa: 'islands', santacruz: 'islands', catalina: 'socal',
   // Offshore / Bluewater
-  ninemile: 'offshore', tannerbank: 'offshore', sanclemente: 'offshore', fortythree: 'offshore', hiddenbank: 'offshore',
+  ninemile: 'offshore', tannerbank: 'offshore', fortythree: 'offshore', hiddenbank: 'offshore',
+  sanclemente: 'islands',
   // Central Coast
   morro: 'central', monterey: 'central', carmel: 'central',
   // NorCal
@@ -5646,15 +5608,12 @@ function updateSpeciesCards() {
   const speciesList = ['yellowtail', 'wsb', 'halibut', 'bluefin', 'dorado'];
   let activeHidden = false;
   speciesList.forEach(sp => {
-    const card = document.querySelector(`.species-card[data-species="${sp}"]`);
     const option = document.querySelector(`#speciesSelect option[value="${sp}"]`);
     const avail = getSpeciesAvailability(sp, currentLocation);
     if (avail === 'absent') {
-      if (card) card.style.display = 'none';
       if (option) option.style.display = 'none';
       if (currentSpecies === sp) activeHidden = true;
     } else {
-      if (card) card.style.display = '';
       if (option) option.style.display = '';
     }
   });
@@ -5665,7 +5624,6 @@ function updateSpeciesCards() {
 function selectSpecies(species) {
   currentSpecies=species;
   document.getElementById('speciesSelect').value=species;
-  document.querySelectorAll('.species-card').forEach(c=>c.classList.toggle('active',c.dataset.species===species));
   D.reportsScore=getReportsScore(species,new Date().getMonth());
   // Apply boat report boost if yesterday's catches included this species
   if (window._boatReportBoosts) {
@@ -5814,14 +5772,14 @@ const COUNTY_SPOTS = {
   la:           ['pv','horseshoe','malibu','leocarrillo'],
   ventura:      ['ventura'],
   santabarbara: ['sb','refugio'],
-  islands:      ['catalina','anacapa','santacruz'],
+  islands:      ['catalina','anacapa','santacruz','sanclemente'],
   slo:          ['morro'],
   monterey:     ['monterey','carmel'],
   sanmateo:     ['halfmoon'],
   sonoma:       ['bodega'],
   mendocino:    ['fortbragg'],
   humboldt:     ['trinidad'],
-  offshore:     ['ninemile','fortythree','hiddenbank','sanclemente','tannerbank'],
+  offshore:     ['ninemile','fortythree','hiddenbank','tannerbank'],
 };
 
 // =========================================================================
