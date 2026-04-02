@@ -285,6 +285,11 @@
     /* Viz feet prominent display */
     .viz-feet-hero { font-size: 22px; font-weight: 800; color: var(--viz-color); line-height: 1; margin: 2px 0; }
     .viz-score-small { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+    .viz-confidence { font-size: 9px; margin-top: 3px; letter-spacing: 0.3px; cursor: help; }
+    .viz-conf-high { color: var(--excellent); }
+    .viz-conf-moderate { color: var(--good); }
+    .viz-conf-low { color: #e67e22; }
+    .viz-conf-vlow { color: var(--poor); }
     .rating-excellent { background: rgba(46,204,113,0.15); color: var(--excellent); border: 1px solid var(--excellent); }
     .rating-good { background: rgba(52,152,219,0.15); color: var(--good); border: 1px solid var(--good); }
     .rating-fair { background: rgba(243,156,18,0.15); color: var(--fair); border: 1px solid var(--fair); }
@@ -1050,6 +1055,7 @@
         <div class="gauge-label" style="color:var(--viz-color)">Dive Visibility</div>
         <div class="viz-feet-hero" id="vizFeetHero">--</div>
         <div class="gauge-rating rating-none" id="vizRating">--</div>
+        <div class="viz-confidence" id="vizConfidence"></div>
         <div class="viz-score-small" id="vizScoreSmall" style="display:none"></div>
         <div id="vizFeetLabel" style="display:none">--</div>
         <!-- Hidden gauge for score calc -->
@@ -3879,6 +3885,66 @@ function updateDisplay() {
   if (vizHeroEl) vizHeroEl.textContent = vizEst !== '--' ? vizEst : '--';
   // Store for rating sync — the viz gauge rating should match the feet estimate
   D.vizFeetStr = vizEst;
+
+  // ── Viz Confidence Indicator ──
+  // Assess how much data backs the estimate, so divers know how much to trust it
+  const confEl = document.getElementById('vizConfidence');
+  if (confEl && vizEst !== '--') {
+    let confLevel, confClass, confTip;
+    const hasLiveNTU = D.turbidity !== undefined && D.turbSource;
+    const hasLiveChl = D.chlorophyll !== undefined && !D.chlIsClimatology;
+    const hasWaveE = D.waveEnergy !== undefined;
+    const hasBuoy = hasWaveE || D.swellHt !== undefined;  // WE comes from buoy
+    const isOffshore = loc.bluewater || loc.offshore;
+    const isCalm = hasWaveE && D.waveEnergy < 20;
+
+    if (isOffshore) {
+      // Offshore: satellite + buoy driven — moderate baseline
+      confLevel = (hasBuoy && hasLiveChl) ? 'High' : hasBuoy ? 'Moderate' : 'Low';
+      confClass = confLevel === 'High' ? 'viz-conf-high' : confLevel === 'Moderate' ? 'viz-conf-moderate' : 'viz-conf-low';
+      confTip = 'Offshore estimate from satellite SST + buoy swell data';
+    } else if (hasLiveNTU && hasLiveChl && isCalm) {
+      confLevel = 'High';
+      confClass = 'viz-conf-high';
+      confTip = `Live turbidity (${D.turbSource}) + live chlorophyll + calm conditions`;
+    } else if (hasLiveNTU && isCalm) {
+      confLevel = 'High';
+      confClass = 'viz-conf-high';
+      confTip = `Live turbidity (${D.turbSource}) + calm conditions`;
+    } else if (hasLiveNTU && hasLiveChl) {
+      confLevel = 'High';
+      confClass = 'viz-conf-high';
+      confTip = `Live turbidity (${D.turbSource}) + live chlorophyll`;
+    } else if (hasLiveNTU) {
+      // NTU available but no live chl and/or not calm — still decent
+      confLevel = hasWaveE && D.waveEnergy < 50 ? 'Moderate' : 'Moderate';
+      confClass = 'viz-conf-moderate';
+      confTip = `Live turbidity (${D.turbSource})`;
+      if (!hasLiveChl) confTip += ' — no live chlorophyll sensor';
+      if (hasWaveE && D.waveEnergy >= 50) confTip += ' — swell may shift conditions';
+    } else if (hasWaveE) {
+      confLevel = 'Low';
+      confClass = 'viz-conf-low';
+      confTip = 'No local turbidity sensor — estimate based on wave energy model';
+    } else {
+      confLevel = 'Very Low';
+      confClass = 'viz-conf-vlow';
+      confTip = 'No turbidity sensor or buoy data — rough estimate only';
+    }
+    // Downgrade if high swell (unpredictable stirring)
+    if (hasWaveE && D.waveEnergy > 100 && confLevel === 'High') {
+      confLevel = 'Moderate';
+      confClass = 'viz-conf-moderate';
+      confTip += ' (high swell increases uncertainty)';
+    } else if (hasWaveE && D.waveEnergy > 50 && confLevel === 'High') {
+      confTip += ' (moderate swell — conditions may vary)';
+    }
+    confEl.innerHTML = `<span class="${confClass}">⬤</span> <span class="${confClass}" title="${confTip}">${confLevel} confidence</span>`;
+    D.vizConfidence = confLevel;
+    D.vizConfidenceTip = confTip;
+  } else if (confEl) {
+    confEl.innerHTML = '';
+  }
 }
 
 function chlProductivity(c) {
