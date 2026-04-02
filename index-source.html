@@ -1135,6 +1135,15 @@
       </div>
     </section>
 
+    <!-- ===== SEASONAL PLAYBOOK ===== -->
+    <section class="factors-section" id="seasonalPlaybook" style="display:none">
+      <div class="category-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')">
+        📋 Seasonal Playbook
+        <span style="float:right;font-size:10px;color:var(--text-muted);font-weight:400" id="playbookMonth"></span>
+      </div>
+      <div id="playbookContent" style="padding:10px 14px;font-size:11px;line-height:1.7;color:var(--text-secondary)"></div>
+    </section>
+
     <!-- OFFSHORE SATELLITE DATA — only shows for bluewater spots -->
     <section class="factors-section" id="offshoreDataSection" style="display:none">
       <div class="category-header">🛰️ Offshore Satellite Intel</div>
@@ -4065,6 +4074,220 @@ function computeThermocline() {
   };
 }
 
+// =========================================================================
+// SEASONAL PLAYBOOK — auto-generated monthly briefing from CPFV data,
+// SST anomaly, moon phases, temp trends, thermocline, and species ranges
+// =========================================================================
+function generateSeasonalPlaybook() {
+  const section = document.getElementById('seasonalPlaybook');
+  const content = document.getElementById('playbookContent');
+  const monthLabel = document.getElementById('playbookMonth');
+  if (!section || !content) return;
+
+  const loc = LOCATIONS[currentLocation];
+  if (!loc) { section.style.display = 'none'; return; }
+
+  const now = new Date();
+  const month = now.getMonth(); // 0-indexed
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const shortMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthName = monthNames[month];
+
+  if (monthLabel) monthLabel.textContent = monthName;
+
+  const region = REGION_MAP[currentLocation] || 'sd';
+  const regionCPFV = getRegionalCPFV();
+  const cpfv = regionCPFV || CPFV;
+  const specRange = SPECIES_RANGE[region] || SPECIES_RANGE.sd;
+
+  const lines = [];
+
+  // ── Species in season ──
+  const speciesNames = { yellowtail: 'Yellowtail', wsb: 'White Sea Bass', halibut: 'Halibut', bluefin: 'Bluefin Tuna', dorado: 'Dorado' };
+  const hot = [], warming = [], cold = [];
+  for (const [sp, label] of Object.entries(speciesNames)) {
+    const avail = specRange[sp];
+    if (avail === 'absent') continue;
+    const data = cpfv[sp];
+    if (!data) continue;
+    const idx = data.index[month];
+    const nextIdx = data.index[(month + 1) % 12];
+    const prevIdx = data.index[(month - 1 + 12) % 12];
+    const suffix = avail === 'rare' ? ' (rare here)' : '';
+    if (idx >= 7) hot.push({ label: label + suffix, idx, trend: nextIdx > idx ? '↑' : nextIdx < idx ? '↓' : '→' });
+    else if (idx >= 4) warming.push({ label: label + suffix, idx, trend: nextIdx > idx ? '↑' : nextIdx < idx ? '↓' : '→' });
+    else if (nextIdx >= 5) cold.push({ label: label + suffix, nextMonth: shortMonths[(month + 1) % 12] });
+  }
+
+  if (hot.length > 0) {
+    lines.push('🔥 <b>In Season Now:</b> ' + hot.map(h => `${h.label} ${h.trend}`).join(', '));
+  }
+  if (warming.length > 0) {
+    lines.push('🌡️ <b>Building:</b> ' + warming.map(w => `${w.label} ${w.trend}`).join(', '));
+  }
+  if (cold.length > 0) {
+    lines.push('📅 <b>Coming Soon:</b> ' + cold.map(c => `${c.label} (${c.nextMonth})`).join(', '));
+  }
+  if (hot.length === 0 && warming.length === 0) {
+    lines.push('❄️ <b>Off-season</b> — limited gamefish activity this month');
+  }
+
+  // ── SST anomaly context ──
+  const sstClim = [58, 57, 58, 59, 61, 63, 66, 68, 69, 67, 63, 60];
+  const surfTemp = D.waterTemp || D.sstF;
+  if (surfTemp) {
+    const anomaly = surfTemp - sstClim[month];
+    if (anomaly >= 4) {
+      lines.push(`🌊 <b>Water unusually warm</b> (+${anomaly.toFixed(1)}°F above avg) — watch for early arrivals of warm-water species`);
+    } else if (anomaly >= 2) {
+      lines.push(`🌊 <b>Water running warm</b> (+${anomaly.toFixed(1)}°F) — favorable for pelagics`);
+    } else if (anomaly <= -3) {
+      lines.push(`🧊 <b>Water unusually cold</b> (${anomaly.toFixed(1)}°F below avg) — upwelling dominant, expect delayed seasons`);
+    } else if (anomaly <= -1.5) {
+      lines.push(`🧊 <b>Water running cool</b> (${anomaly.toFixed(1)}°F) — may push warm-water species later`);
+    }
+  }
+
+  // ── Temperature trend ──
+  if (D.tempTrend) {
+    const trendLabels = {
+      warming_fast: '📈 Water temps rising fast — keep an eye on species migrations',
+      warming: '📈 Water temps warming — conditions improving for warm-water targets',
+      cooling_fast: '📉 Water temps dropping fast — cold-water species may move in',
+      cooling: '📉 Water temps cooling — transition period',
+    };
+    if (trendLabels[D.tempTrend]) lines.push(trendLabels[D.tempTrend]);
+  }
+
+  // ── Moon phase outlook ──
+  const moon = getMoon(now);
+  const syn = 29.530588853;
+  // Find next new moon
+  const daysToNew = moon.age <= 1.85 ? 0 : syn - moon.age;
+  const daysToFull = moon.age <= (syn/2) ? (syn/2) - moon.age : syn - moon.age + (syn/2);
+  const nextNewDate = new Date(now.getTime() + daysToNew * 86400000);
+  const nextFullDate = new Date(now.getTime() + daysToFull * 86400000);
+
+  let moonLine = `${moon.emoji} <b>Moon:</b> ${moon.name}`;
+  if (daysToNew > 1 && daysToNew <= 14) {
+    moonLine += ` · Next new moon ${shortMonths[nextNewDate.getMonth()]} ${nextNewDate.getDate()} (${Math.round(daysToNew)}d)`;
+  } else if (daysToFull > 1 && daysToFull <= 14) {
+    moonLine += ` · Next full moon ${shortMonths[nextFullDate.getMonth()]} ${nextFullDate.getDate()} (${Math.round(daysToFull)}d)`;
+  }
+  // WSB/squid tactical note
+  if (moon.category === 'new' || daysToNew <= 5) {
+    if (specRange.wsb !== 'absent' && month >= 2 && month <= 9) {
+      moonLine += ' — <b>prime WSB window</b> (dark water, squid spawns)';
+    }
+  }
+  lines.push(moonLine);
+
+  // ── Grunion alert for halibut ──
+  if (specRange.halibut === 'full' && month >= 2 && month <= 8) {
+    const grunion = getGrunionStatus(now);
+    if (grunion.active && grunion.score >= 7) {
+      lines.push('🐟 <b>Grunion run active!</b> Halibut stacking in surf zone — prime ambush conditions');
+    } else if (grunion.daysToRun !== null && grunion.daysToRun <= 5) {
+      lines.push(`🐟 <b>Grunion run in ~${grunion.daysToRun} day${grunion.daysToRun === 1 ? '' : 's'}</b> — halibut positioning pre-run`);
+    }
+  }
+
+  // ── Thermocline context ──
+  if (D.thermocline) {
+    if (D.thermocline.status === 'active' && D.thermocline.depth) {
+      const d = D.thermocline.depth;
+      const below = D.thermocline.tempBelow;
+      if (d <= 30) {
+        lines.push(`🏊 <b>Shallow thermocline (~${d} ft)</b> — stay above for warmth, fish often stack just above the break`);
+      } else if (d >= 50) {
+        lines.push(`🏊 <b>Deep thermocline (~${d} ft)</b> — warm water column, comfortable for deep dives (${below}°F below)`);
+      }
+    } else if (D.thermocline.status === 'mixed') {
+      lines.push('🏊 <b>No thermocline</b> — well-mixed winter water column, uniform temps top to bottom');
+    } else if (D.thermocline.status === 'rollover') {
+      lines.push('⚠️ <b>Thermocline destroyed</b> — wind mixing has rolled cold water throughout. Expect cold at all depths');
+    }
+  }
+
+  // ── Regional tactical note by month ──
+  const regionTactics = {
+    sd: {
+      0: 'Lobster season wrapping up. Halibut starting in sandy spots.',
+      1: 'Pre-season lull. Good time for halibut in bays. Watch for early WSB scouts.',
+      2: 'Spring transition — YT scouts arrive if water hits 62°+. Grunion runs starting.',
+      3: 'YT spring surge. WSB moving inshore. Best halibut CPUE month (CDFW data).',
+      4: 'YT in full swing. WSB reliable. Halibut peak continues.',
+      5: 'Summer pattern establishing. WSB peak month. Calico bass excellent.',
+      6: 'Peak summer — WSB, YT, halibut all firing. Watch for first dorado reports offshore.',
+      7: 'Peak diversity month. Dorado arriving on kelp paddies. Warm water species stacking.',
+      8: 'Dorado peak. YT fall push begins. Best overall month historically.',
+      9: 'Fall YT run — biggest fish of the year. Dorado winding down. Water still warm.',
+      10: 'Late season YT. Lobster season opens. Water cooling.',
+      11: 'Winter transition. Lobster prime. Limited pelagic action.',
+    },
+    socal: {
+      0: 'Winter — calico bass, sheephead steady. Halibut in bays.',
+      2: 'Spring transition. Watch for YT at Horseshoe Kelp, Dana Point.',
+      3: 'YT arriving. WSB showing at Laguna reefs. Halibut reliable.',
+      5: 'WSB peak. Laguna kelp beds producing. Calico bass spawning.',
+      7: 'Peak season — full species diversity. Dorado possible offshore.',
+      9: 'Fall YT push. Best trophy fish month.',
+      11: 'Lobster season. Limited pelagics.',
+    },
+    islands: {
+      2: 'Spring scouts — early YT at Anacapa if water cooperates.',
+      3: 'YT peak at islands (CDFW: highest CPUE). Giant black sea bass returning.',
+      5: 'WSB building at Santa Cruz Island. Calico bass spawning.',
+      7: 'WSB peak. Bluefin showing. KP dorado starting.',
+      8: 'Peak diversity — all species present. Bluefin expanding.',
+      10: 'Late bluefin. Season extending in warm years.',
+      11: 'Bluefin peak month in recent warm years. Season pushing later.',
+    },
+    central: {
+      2: 'Halibut starting in Monterey Bay sand flats.',
+      3: 'WSB possible — first arrivals if water is 60°+. Halibut peak.',
+      5: 'Lingcod, cabezon reliable. WSB in kelp if present.',
+      6: 'Best overall month — WSB peak, halibut strong, rockfish abundant.',
+      8: 'Late summer — YT possible in warm years. Lingcod reopening.',
+      10: 'Rockfish season. Lingcod. Limited warm-water species.',
+    },
+    norcal: {
+      3: 'Lingcod opening. Rockfish improving.',
+      5: 'Peak rockfish. Halibut possible in SF Bay area.',
+      7: 'Best visibility month typically. Lingcod, cabezon, rockfish.',
+      9: 'Fall — good viz days between storms. Lingcod strong.',
+      11: 'Winter storms limit diving. Shore diving only on calm windows.',
+    },
+    sb: {
+      3: 'YT arriving. Halibut peak. WSB possible.',
+      5: 'WSB and calico bass prime. Kelp forest diving excellent.',
+      7: 'Peak season — all species. Warm water pushing north.',
+      9: 'Fall YT. Transitioning.',
+    },
+    offshore: {
+      5: 'Bluefin scouts arriving. Watch for temperature breaks.',
+      6: 'Bluefin building. Early dorado on paddies.',
+      7: 'Peak offshore month — bluefin + dorado. Work temp breaks and paddies.',
+      8: 'Dorado peak. Bluefin sustained. Best paddy month.',
+      10: 'Late season — bluefin still present in warm years. Dorado winding down.',
+    }
+  };
+
+  const tactics = regionTactics[region];
+  if (tactics && tactics[month]) {
+    lines.push('📍 <b>Local Intel:</b> ' + tactics[month]);
+  }
+
+  // ── Assemble ──
+  if (lines.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  content.innerHTML = lines.join('<br>');
+  section.style.display = '';
+}
+
 // Turbidity scoring from Scripps Pier SASS (NTU → vis quality)
 // Calibrated from Dec 2024 concurrent NTU + underwater camera observations
 // Pilings visible at: 4ft (always), 11ft, 14ft, 30ft
@@ -4498,6 +4721,7 @@ function recalculate() {
     updateInsight(fishAvg,vizFinal);
   }
   computeThermocline();
+  generateSeasonalPlaybook();
   updateConditionsBrief();
 
   D.fishAvg=fishAvg; D.vizAvg=vizFinal; D.spearAvg=spearAvg;
