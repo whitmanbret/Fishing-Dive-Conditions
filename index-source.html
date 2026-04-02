@@ -1281,7 +1281,7 @@ const LOCATIONS = {
   hiddenbank:  { name: 'Hidden Bank / 302 Spot', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46225'], lat: 32.55, lon: -117.53, depth: '100-400 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
   // ── Central Coast (San Luis Obispo / Monterey) ──
   morro:       { name: 'Morro Bay / Montana de Oro', bottom: 'rock', tideStation: '9412110', coast: 250, shelter: 'moderate', buoys: ['46028'], lat: 35.37, lon: -120.87, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/72,120' },
-  monterey:    { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46236','46042'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },
+  monterey:    { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236','46042'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },  // most dive sites (Breakwater, San Carlos, McAbee) are harbor-sheltered
   carmel:      { name: 'Carmel / Point Lobos', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46236','46042'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },
   // ── Northern California ──
   halfmoon:    { name: 'Half Moon Bay', bottom: 'rock', tideStation: '9414290', coast: 270, shelter: 'low', buoys: ['46012'], lat: 37.50, lon: -122.47, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/80,93' },
@@ -3744,6 +3744,16 @@ function updateDisplay() {
     if (locShelter === 'high') shelterMult += 0.10;
     else if (locShelter === 'moderate') shelterMult += 0.05;
 
+    // Wave energy dampening for sheltered locations — harbor breakwaters attenuate 70-90% of swell
+    // Ground truth: Monterey Breakwater 4/2 — buoy WE 461, actual viz 40 ft (calm inside harbor)
+    // Without dampening, WE 461 → 1-4 ft estimate. With 0.15x dampening → WE 69 → 7-12 ft (still conservative)
+    let effectiveWE = D.waveEnergy;
+    if (effectiveWE !== undefined && locShelter === 'high') {
+      effectiveWE = effectiveWE * 0.15;  // breakwater/harbor attenuates ~85% of open-ocean swell
+    } else if (effectiveWE !== undefined && locShelter === 'moderate') {
+      effectiveWE = effectiveWE * 0.7;   // partial shelter — headlands, kelp beds (mild dampening)
+    }
+
     // PRIORITY 0: Offshore islands — nearshore turbidity doesn't apply
     // Coronado Islands sit in open ocean; vis driven by swell, current, and upwelling
     // Ground truth: 40-50ft typical on good days (Mar 2026 report), 20-30ft average
@@ -3802,19 +3812,19 @@ function updateDisplay() {
       hi = Math.max(lo+1, Math.round(hi * turbShelter));
       // Calm conditions bonus — very low wave energy = less stirring, viz improves
       // Ground truth: 4/1 LJ glassy (WE 5-9) = 25-35ft; 3/23 LJ some swell (WE ~40) = 10-15ft
-      // 4 data points of glassy LJ under-prediction: 3/31 20ft, 4/1 20-35ft, 4/1 25+, 4/1 25+ (elite)
-      if (D.waveEnergy !== undefined && D.waveEnergy < 10) {
+      // Uses effectiveWE (shelter-dampened) so harbor sites get calm bonus even with big open-ocean swell
+      if (effectiveWE !== undefined && effectiveWE < 10) {
         lo = Math.round(lo * 1.35);  // glassy — ocean like a lake
         hi = Math.round(hi * 1.35);
-      } else if (D.waveEnergy !== undefined && D.waveEnergy < 20) {
+      } else if (effectiveWE !== undefined && effectiveWE < 20) {
         lo = Math.round(lo * 1.15);
         hi = Math.round(hi * 1.15);
       }
       // If swell is high, blend downward (pier is sheltered, open water gets more surge)
-      if (D.waveEnergy !== undefined && D.waveEnergy > 100) {
+      if (effectiveWE !== undefined && effectiveWE > 100) {
         lo = Math.max(1, Math.round(lo * 0.7));
         hi = Math.max(lo+1, Math.round(hi * 0.7));
-      } else if (D.waveEnergy !== undefined && D.waveEnergy > 50) {
+      } else if (effectiveWE !== undefined && effectiveWE > 50) {
         lo = Math.max(1, Math.round(lo * 0.85));
         hi = Math.max(lo+1, Math.round(hi * 0.85));
       }
@@ -3847,15 +3857,16 @@ function updateDisplay() {
       const hi = Math.min(lo + 5, Math.max(lo+1, Math.round(9 * shelterMult)));
       vizEst=`${lo}–${hi} ft`;
     }
-    // PRIORITY 3: Wave energy based estimate (same ranges as forecast estimateVizFeet)
+    // PRIORITY 3: Wave energy based estimate (uses effectiveWE — shelter-dampened)
     // Calibrated 2026-03-17: ground truth 20ft at Pt Loma on a clear/low-swell day
-    else if(D.waveEnergy!==undefined) {
+    // 2026-04-02: Monterey Breakwater WE 461 actual viz 40ft — shelter dampening critical
+    else if(effectiveWE!==undefined) {
       let lo, hi;
-      if(D.waveEnergy<10)  { lo=22; hi=28; }  // glassy — 4/1 LJ WE 5 = 25+ actual
-      else if(D.waveEnergy<=20) { lo=18; hi=23; }
-      else if(D.waveEnergy<=50) { lo=12; hi=17; }
-      else if(D.waveEnergy<=100) { lo=7; hi=12; }
-      else if(D.waveEnergy<=200) { lo=4; hi=7; }
+      if(effectiveWE<10)  { lo=22; hi=28; }  // glassy — 4/1 LJ WE 5 = 25+ actual
+      else if(effectiveWE<=20) { lo=18; hi=23; }
+      else if(effectiveWE<=50) { lo=12; hi=17; }
+      else if(effectiveWE<=100) { lo=7; hi=12; }
+      else if(effectiveWE<=200) { lo=4; hi=7; }
       else { lo=1; hi=4; }
       // Apply shelter multiplier
       lo = Math.max(1, Math.round(lo * shelterMult));
@@ -3897,7 +3908,7 @@ function updateDisplay() {
     const hasWaveE = D.waveEnergy !== undefined;
     const hasBuoy = hasWaveE || D.swellHt !== undefined;  // WE comes from buoy
     const isOffshore = loc.bluewater || loc.offshore;
-    const isCalm = hasWaveE && D.waveEnergy < 20;
+    const isCalm = hasWaveE && effectiveWE < 20;  // use shelter-dampened WE
 
     if (isOffshore) {
       // Offshore: satellite + buoy driven — moderate baseline
@@ -3932,12 +3943,12 @@ function updateDisplay() {
       confClass = 'viz-conf-vlow';
       confTip = 'No turbidity sensor or buoy data — rough estimate only';
     }
-    // Downgrade if high swell (unpredictable stirring)
-    if (hasWaveE && D.waveEnergy > 100 && confLevel === 'High') {
+    // Downgrade if high effective swell (unpredictable stirring)
+    if (hasWaveE && effectiveWE > 100 && confLevel === 'High') {
       confLevel = 'Moderate';
       confClass = 'viz-conf-moderate';
       confTip += ' (high swell increases uncertainty)';
-    } else if (hasWaveE && D.waveEnergy > 50 && confLevel === 'High') {
+    } else if (hasWaveE && effectiveWE > 50 && confLevel === 'High') {
       confTip += ' (moderate swell — conditions may vary)';
     }
     confEl.innerHTML = `<span class="${confClass}">⬤</span> <span class="${confClass}" title="${confTip}">${confLevel} confidence</span>`;
