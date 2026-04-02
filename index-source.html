@@ -3869,25 +3869,31 @@ function updateDisplay() {
     // PRIORITY 3: Wave energy based estimate (uses effectiveWE — shelter-dampened)
     // Calibrated 2026-03-17: ground truth 20ft at Pt Loma on a clear/low-swell day
     // 2026-04-02: Monterey Breakwater WE 461 actual viz 40ft — shelter dampening critical
+    // Recalibrated 2026-04-02: 3 consecutive days of 20-35ft viz at LJ Shores with WE 10-40
+    // WE 20-50 tier widened (was 12-17, now 14-22) — calm conditions produce better viz than modeled
     else if(effectiveWE!==undefined) {
       let lo, hi;
-      if(effectiveWE<10)  { lo=22; hi=28; }  // glassy — 4/1 LJ WE 5 = 25+ actual
-      else if(effectiveWE<=20) { lo=18; hi=23; }
-      else if(effectiveWE<=50) { lo=12; hi=17; }
+      if(effectiveWE<10)  { lo=22; hi=30; }  // glassy — 4/1 LJ WE 5 = 25-35 actual
+      else if(effectiveWE<=20) { lo=18; hi=25; }  // very calm — 4/2 LJ WE ~26 eff = 25+ actual
+      else if(effectiveWE<=35) { lo=14; hi=22; }  // calm — still producing 20+ ft in clean water
+      else if(effectiveWE<=50) { lo=10; hi=16; }
       else if(effectiveWE<=100) { lo=7; hi=12; }
       else if(effectiveWE<=200) { lo=4; hi=7; }
       else { lo=1; hi=4; }
       // Apply shelter multiplier
       lo = Math.max(1, Math.round(lo * shelterMult));
       hi = Math.max(lo+1, Math.round(hi * shelterMult));
-      // Chlorophyll penalty — only apply with live sensor or Scripps-proximity climatology
+      // Chlorophyll penalty — ONLY apply with LIVE sensor data, not climatology
+      // Climatology is a seasonal average (e.g. HABs 17yr mean) — too unreliable without
+      // live NTU to cross-validate. WE path is already low-confidence; adding chl climatology
+      // penalty was causing systematic 10-15ft under-prediction (3 reports 4/1-4/2 LJ Shores).
       let suffix2 = '';
-      const chlApplies2 = !D.chlIsClimatology || loc.scrippsProximity;
-      if(chlApplies2 && D.chlorophyll>8) { lo = Math.max(1, lo-4); hi = Math.max(lo+1, hi-4); suffix2 = ' (bloom)'; }
-      else if(chlApplies2 && D.chlorophyll>3) { lo = Math.max(1, lo-2); hi = Math.max(lo+1, hi-2); suffix2 = ' (green water)'; }
-      else if(chlApplies2 && D.chlorophyll>1) { lo = Math.max(1, lo-1); hi = Math.max(lo+1, hi-1); }
-      // Cap range spread to 5ft max
-      if (hi - lo > 5) hi = lo + 5;
+      const chlLive = D.chlorophyll !== undefined && !D.chlIsClimatology;
+      if(chlLive && D.chlorophyll>8) { lo = Math.max(1, lo-4); hi = Math.max(lo+1, hi-4); suffix2 = ' (bloom)'; }
+      else if(chlLive && D.chlorophyll>3) { lo = Math.max(1, lo-2); hi = Math.max(lo+1, hi-2); suffix2 = ' (green water)'; }
+      else if(chlLive && D.chlorophyll>1) { lo = Math.max(1, lo-1); hi = Math.max(lo+1, hi-1); }
+      // Cap range spread to 6ft max (widened from 5 — WE-only has genuine uncertainty)
+      if (hi - lo > 6) hi = lo + 6;
       vizEst = `${lo}–${hi} ft${suffix2}`;
     } else if(D.rainfall==='none'||D.rainfall==='trace') {
       const lo = Math.round(12 * shelterMult);
@@ -5600,9 +5606,10 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   } else if (D.waveEnergy !== undefined) {
     // No turbidity available — fall back to wave energy
     const we = D.waveEnergy;
-    if (we < 10)  { baseLo = 22; baseHi = 28; }  // glassy
-    else if (we <= 20) { baseLo = 18; baseHi = 23; }
-    else if (we <= 50) { baseLo = 12; baseHi = 17; }
+    if (we < 10)  { baseLo = 22; baseHi = 30; }  // glassy
+    else if (we <= 20) { baseLo = 18; baseHi = 25; }
+    else if (we <= 35) { baseLo = 14; baseHi = 22; }  // calm
+    else if (we <= 50) { baseLo = 10; baseHi = 16; }
     else if (we <= 100) { baseLo = 7; baseHi = 12; }
     else if (we <= 200) { baseLo = 4; baseHi = 7; }
     else { baseLo = 1; baseHi = 4; }
