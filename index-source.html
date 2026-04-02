@@ -1154,6 +1154,7 @@
     <section class="factors-section">
       <div class="category-header">Key Conditions</div>
       <div class="factor-row"><div class="factor-label">Water Temp</div><div class="factor-value" id="waterTempVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waterTempScore" style="display:none">-</div></div>
+      <div class="factor-row" id="thermoclineRow" style="display:none"><div class="factor-label">Thermocline</div><div class="factor-value" id="thermoclineVal">--</div></div>
       <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tideStateScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="moonPhaseScore" style="display:none">-</div></div>
@@ -3957,6 +3958,102 @@ function chlClarity(c) {
   if(c<15) return 'bloom'; return 'red tide';
 }
 
+// =========================================================================
+// THERMOCLINE ESTIMATE — depth + temp below for gear planning & species targeting
+// Based on SoCal Bight seasonal climatology (Scripps/CalCOFI 60+ year dataset)
+// Enhanced by real-time: wind mixing, upwelling, SST anomaly, wave energy
+// =========================================================================
+function computeThermocline() {
+  const row = document.getElementById('thermoclineRow');
+  const val = document.getElementById('thermoclineVal');
+  if (!row || !val) return;
+
+  const loc = LOCATIONS[currentLocation];
+  if (!loc) { row.style.display = 'none'; return; }
+
+  const month = new Date().getMonth(); // 0-indexed
+  const surfTemp = D.waterTemp || D.sstF;
+  if (!surfTemp) { row.style.display = 'none'; return; }
+
+  // ── Seasonal thermocline depth climatology (SoCal Bight, feet) ──
+  // CalCOFI/Scripps data: shallow in summer (warm surface layer), deep/absent in winter (mixing)
+  //         Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep  Oct  Nov  Dec
+  const clim = [0,   0,  30,  35,  40,  45,  35,  30,  30,  35,  25,   0]; // 0 = well-mixed, no thermocline
+  // Temperature drop across thermocline (°F) — larger in summer
+  const tempDrop = [0,   0,   4,   5,   6,   8,  10,  12,  12,  10,   6,   0];
+
+  let baseDepth = clim[month];     // feet
+  let baseDrop = tempDrop[month];  // °F
+
+  // If winter (well-mixed), show that clearly
+  if (baseDepth === 0) {
+    row.style.display = '';
+    val.innerHTML = '<span style="color:var(--text-muted)">Well-mixed — no thermocline (winter)</span>';
+    D.thermocline = { depth: null, tempBelow: null, status: 'mixed' };
+    return;
+  }
+
+  // ── Real-time adjustments ──
+
+  // 1. Wind mixing — sustained winds destroy thermocline (already computed)
+  if (D.rollover) {
+    row.style.display = '';
+    const msgs = {
+      3: '<span style="color:var(--poor)">Destroyed — wind rollover (mixed cold throughout)</span>',
+      2: '<span style="color:#e67e22">Weakened — sustained winds mixing water column</span>',
+      1: '<span style="color:#e67e22">Disrupted — high winds thinning thermocline</span>'
+    };
+    val.innerHTML = msgs[D.rolloverSeverity] || msgs[1];
+    D.thermocline = { depth: null, tempBelow: null, status: 'rollover' };
+    return;
+  }
+
+  // 2. Wave energy — high swell deepens thermocline via turbulent mixing
+  if (D.waveEnergy !== undefined) {
+    if (D.waveEnergy > 200)      baseDepth += 15;  // heavy swell pushes it way down
+    else if (D.waveEnergy > 100) baseDepth += 8;
+    else if (D.waveEnergy > 50)  baseDepth += 4;
+    else if (D.waveEnergy < 10)  baseDepth -= 5;   // glassy = thermocline rises (less mixing)
+  }
+
+  // 3. Upwelling — brings cold water shallow, sharpens thermocline
+  if (D.upwelling === 'strong_recent' || D.upwelling === 'active_now') {
+    baseDepth -= 8;  // thermocline shallower during upwelling
+    baseDrop += 3;   // sharper temperature gradient
+  } else if (D.upwelling === 'weak') {
+    baseDepth += 3;  // relaxed upwelling = deeper thermocline
+  }
+
+  // 4. SST anomaly — warm years have shallower, stronger thermoclines
+  const sstClim = [58, 57, 58, 59, 61, 63, 66, 68, 69, 67, 63, 60]; // same as dorado climatology
+  const anomaly = surfTemp - sstClim[month];
+  if (anomaly > 3)       { baseDepth -= 5; baseDrop += 2; }  // very warm surface = sharp shallow cline
+  else if (anomaly > 1)  { baseDepth -= 2; }
+  else if (anomaly < -2) { baseDepth += 5; baseDrop -= 2; }  // cold anomaly = weaker cline
+
+  // 5. Offshore locations have deeper thermoclines
+  if (loc.bluewater || loc.offshore) baseDepth += 15;
+
+  // Clamp
+  baseDepth = Math.max(10, Math.min(80, Math.round(baseDepth)));
+  baseDrop = Math.max(2, Math.min(18, baseDrop));
+
+  const tempBelow = Math.round(surfTemp - baseDrop);
+
+  // ── Display ──
+  row.style.display = '';
+  const depthColor = baseDepth <= 25 ? 'var(--excellent)' : baseDepth <= 40 ? 'var(--good)' : baseDepth <= 55 ? '#e67e22' : 'var(--poor)';
+  val.innerHTML = `<span style="color:${depthColor}">~${baseDepth} ft</span> · <span style="color:var(--text-muted)">${tempBelow}°F below</span>`;
+
+  D.thermocline = {
+    depth: baseDepth,
+    tempBelow: tempBelow,
+    surfTemp: Math.round(surfTemp),
+    drop: baseDrop,
+    status: 'active'
+  };
+}
+
 // Turbidity scoring from Scripps Pier SASS (NTU → vis quality)
 // Calibrated from Dec 2024 concurrent NTU + underwater camera observations
 // Pilings visible at: 4ft (always), 11ft, 14ft, 30ft
@@ -4389,6 +4486,7 @@ function recalculate() {
   } else {
     updateInsight(fishAvg,vizFinal);
   }
+  computeThermocline();
   updateConditionsBrief();
 
   D.fishAvg=fishAvg; D.vizAvg=vizFinal; D.spearAvg=spearAvg;
