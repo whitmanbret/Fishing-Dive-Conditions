@@ -1456,8 +1456,8 @@ const CPFV = {
   },
   dorado: {
     // FishDope 6,028 reports (2009-2026): 1,849 dorado mentions. Peak Aug. Season Jul-Oct.
-    // 70% kelp paddy associated. Avg temp 68.2°F. Declining trend since 2020.
-    // El Nino years nearly double mentions (163/yr vs 95/yr avg)
+    // 70% kelp paddy associated. Avg temp 68.2°F.
+    // El Nino years nearly double mentions (163/yr vs 95/yr avg). 2022 = historic (PDO warm phase).
     catch_per_trip: [0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.40, 0.80, 1.0, 0.65, 0.10, 0.02],
     five_yr_avg:    [0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.40, 0.80, 1.0, 0.65, 0.10, 0.02],
     peak_month: 8, // Sep peak in FishDope data
@@ -1618,7 +1618,7 @@ const SCORE = {
     // FishDope 6,028 reports: 1,849 dorado mentions. Avg temp 68.2°F. 70% kelp paddy.
     // NOT water-color picky (30% blue, 33% green — follow paddies regardless)
     // Season: Jul-Oct only. Temp threshold: 67°F+ for reliable presence.
-    tip: 'Dorado: FishDope 2009-2026 (1,849 reports). Peak Aug-Sep. 68-72°F optimal. 70% caught on kelp paddies. Not water-color picky. Season Jul-Oct, declining since 2020.',
+    tip: 'Dorado: FishDope 2009-2026 (1,849 reports). Peak Aug-Sep. 68-72°F optimal. 70% caught on kelp paddies. Not water-color picky. Season Jul-Oct. 2022 was historically massive — PDO warm phase overrode La Niña.',
     waterTemp: f => { if(f>=68&&f<=72) return 10; if(f>72&&f<=76) return 9; if(f>=66&&f<68) return 7; if(f>76) return 6; if(f>=64&&f<66) return 4; if(f>=62&&f<64) return 2; return 1; }, // 68-72°F peak (38%), avg 68.2°F
     sst: f => { if(f>=68&&f<=72) return 10; if(f>72&&f<=76) return 9; if(f>=66&&f<68) return 7; if(f>76) return 6; if(f>=64&&f<66) return 4; return 1; },
     tempTrend: v => ({warming_fast:10,warming:9,stable:6,cooling:3,cooling_fast:1}[v]||5), // warming brings dorado inshore
@@ -1627,6 +1627,7 @@ const SCORE = {
     upwelling: v => ({strong_recent:3,moderate_recent:5,active_now:4,weak:7}[v]||5), // upwelling = cold = bad for dorado
     chlFish: c => { if(c>=3) return 8; if(c>=1.5) return 7; if(c>=0.8) return 6; if(c>=0.3) return 5; return 4; }, // bait helps but not critical
     moonPhase: v => ({new:6,full:5,quarter:6,between:6}[v]||5), // minimal moon effect for dorado
+    sstAnomaly: (anomaly) => anomaly, // pass-through — computed externally (0-10 scale)
     reports: null, pressure: null,
     wind: (spd,dir) => {
       let ds = ({none:8,offshore:8,sideshore:6,onshore:4}[dir]||5);
@@ -4056,16 +4057,17 @@ const FISH_WEIGHTS_BY_SPECIES = {
     pressure:   0.00,  // 6,028 reports: zero correlation found
   },
   dorado: {
-    waterTemp:  0.28,  // #1 — 68°F+ hard gate. THE factor. n=1,549 readings, avg 68.2°F.
-    reports:    0.16,  // #2 — extreme seasonality (Jul-Oct only). Season index dominates.
-    seaState:   0.14,  // #3 — offshore kelp paddies require boat access
-    tempTrend:  0.12,  // #4 — warming brings dorado; cooling kills bite instantly
-    waterColor: 0.02,  // #5 — NOT picky (30% blue, 33% green in 1,849 reports). Neutral.
+    waterTemp:  0.22,  // #1 — 68°F+ hard gate. THE factor. n=1,549 readings, avg 68.2°F.
+    reports:    0.14,  // #2 — extreme seasonality (Jul-Oct only). Season index dominates.
+    seaState:   0.12,  // #3 — offshore kelp paddies require boat access
+    tempTrend:  0.10,  // #4 — warming brings dorado; cooling kills bite instantly
+    sstAnomaly: 0.12,  // #5 — NEW: SST vs monthly avg. 2022 lesson: PDO warm phase = historic dorado.
     current:    0.08,  // #6 — current moves kelp paddies, concentrates bait
     upwelling:  0.06,  // #7 — upwelling = cold = bad for dorado (opposite of bluefin)
-    moonPhase:  0.04,  // #8 — minimal effect in FishDope data
-    tempBreak:  0.04,  // #9 — warm side of breaks preferred
-    tideState:  0.02,  // #10 — minimal (offshore pelagic)
+    tempBreak:  0.04,  // #8 — warm side of breaks preferred
+    moonPhase:  0.04,  // #9 — minimal effect in FishDope data
+    waterColor: 0.02,  // #10 — NOT picky (30% blue, 33% green). Neutral.
+    tideState:  0.02,  // #11 — minimal (offshore pelagic)
     chlFish:    0.02,  // minor
     sst:        0.01,  // confirmation
     pressure:   0.01,
@@ -4155,6 +4157,33 @@ function recalculate() {
     D.squidProxy = Math.round(squidScore * 10) / 10;
 
     fishEntries.push({score: squidScore, key: 'squidProxy'});
+  }
+
+  // SST anomaly — how much warmer/cooler than the long-term monthly average?
+  // 2022 lesson: PDO warm phase pushed SSTs 2-4°F above avg → historic dorado season despite La Niña.
+  // ENSO alone is unreliable; the regional anomaly is what matters for tropical species.
+  if (currentSpecies === 'dorado') {
+    // SoCal offshore monthly SST climatology (°F) — NOAA long-term averages, SCB region
+    //                    Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep  Oct  Nov  Dec
+    const sstClimatology = [58,  57,  58,  59,  61,  63,  66,  68,  69,  67,  63,  60];
+    const month = new Date().getMonth();
+    const avgSST = sstClimatology[month];
+    const currentSST = D.waterTemp || D.sstF;
+    if (currentSST && avgSST) {
+      const anomaly = currentSST - avgSST;  // positive = warmer than normal
+      let anomalyScore;
+      if (anomaly >= 5)      anomalyScore = 10;  // extreme warm — 2015 El Niño, 2022 PDO
+      else if (anomaly >= 3) anomalyScore = 9;   // very warm — dorado push north, extended season
+      else if (anomaly >= 2) anomalyScore = 8;   // warm — above-average dorado year likely
+      else if (anomaly >= 1) anomalyScore = 7;   // slightly warm — normal-to-good
+      else if (anomaly >= 0) anomalyScore = 5;   // average
+      else if (anomaly >= -1) anomalyScore = 4;  // slightly cool
+      else if (anomaly >= -2) anomalyScore = 2;  // cool — dorado season compressed
+      else                    anomalyScore = 1;   // cold — poor dorado year
+      D.sstAnomaly = parseFloat(anomaly.toFixed(1));
+      D.sstAnomalyScore = anomalyScore;
+      fishEntries.push({score: anomalyScore, key: 'sstAnomaly'});
+    }
   }
 
   // Satellite water color + temp break — boosts/penalizes bluefin & yellowtail at offshore spots
