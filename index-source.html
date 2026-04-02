@@ -2705,7 +2705,11 @@ const SHORE_STATIONS = {
   humboldt:     { id: 'edu_humboldt_humboldt', name: 'Humboldt Bay Pier',
                   temp: 'sea_water_temperature', turb: 'sea_water_turbidity',
                   chl: 'mass_concentration_of_chlorophyll_in_sea_water', sal: 'sea_water_practical_salinity' },
-  // Monterey Bay — Aquarium seawater intake (temp only, no chl/turb but LOCAL to Monterey)
+  // Monterey Bay — MLML Moss Landing seawater intake (chl via fluorescence + temp + sal — closest live chl to Monterey)
+  mosslanding:  { id: 'mlml_mlml_sea', name: 'Moss Landing (MLML)',
+                  temp: 'sea_water_temperature', turb: null,
+                  chl: 'fluorescence', sal: 'sea_water_practical_salinity' },
+  // Monterey Bay — Aquarium seawater intake (temp only — fallback)
   montereyaq:   { id: 'monterey-bay-aquarium-seawate', name: 'Monterey Bay Aquarium',
                   temp: 'sea_water_temperature', turb: null,
                   chl: null, sal: null },
@@ -2727,7 +2731,7 @@ const SHORE_STATION_MAP = {
   // Channel Islands — Newport / Santa Monica
   catalina: ['newport','scripps'], anacapa: ['santamonica','newport'], santacruz: ['santamonica','calpoly'],
   // Central Coast — Cal Poly / Morro
-  morro: ['morro','calpoly'], monterey: ['montereyaq','calpoly','morro'], carmel: ['montereyaq','calpoly','morro'],
+  morro: ['morro','calpoly'], monterey: ['mosslanding','montereyaq','calpoly'], carmel: ['mosslanding','montereyaq','calpoly'],
   // NorCal — Trinidad, Humboldt
   halfmoon: ['calpoly'], bodega: ['trinidad','humboldt'],
   fortbragg: ['trinidad','humboldt'], trinidad: ['trinidad','humboldt'],
