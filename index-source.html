@@ -3793,8 +3793,12 @@ function updateDisplay() {
       lo = Math.max(1, Math.round(lo * turbShelter));
       hi = Math.max(lo+1, Math.round(hi * turbShelter));
       // Calm conditions bonus — very low wave energy = less stirring, viz improves
-      // Ground truth: 4/1 LJ glassy (WE 9) = 20-35ft; 3/23 LJ some swell (WE ~40) = 10-15ft
-      if (D.waveEnergy !== undefined && D.waveEnergy < 20) {
+      // Ground truth: 4/1 LJ glassy (WE 5-9) = 25-35ft; 3/23 LJ some swell (WE ~40) = 10-15ft
+      // 4 data points of glassy LJ under-prediction: 3/31 20ft, 4/1 20-35ft, 4/1 25+, 4/1 25+ (elite)
+      if (D.waveEnergy !== undefined && D.waveEnergy < 10) {
+        lo = Math.round(lo * 1.35);  // glassy — ocean like a lake
+        hi = Math.round(hi * 1.35);
+      } else if (D.waveEnergy !== undefined && D.waveEnergy < 20) {
         lo = Math.round(lo * 1.15);
         hi = Math.round(hi * 1.15);
       }
@@ -3839,7 +3843,8 @@ function updateDisplay() {
     // Calibrated 2026-03-17: ground truth 20ft at Pt Loma on a clear/low-swell day
     else if(D.waveEnergy!==undefined) {
       let lo, hi;
-      if(D.waveEnergy<=20) { lo=18; hi=23; }
+      if(D.waveEnergy<10)  { lo=22; hi=28; }  // glassy — 4/1 LJ WE 5 = 25+ actual
+      else if(D.waveEnergy<=20) { lo=18; hi=23; }
       else if(D.waveEnergy<=50) { lo=12; hi=17; }
       else if(D.waveEnergy<=100) { lo=7; hi=12; }
       else if(D.waveEnergy<=200) { lo=4; hi=7; }
@@ -5167,7 +5172,8 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   } else if (D.waveEnergy !== undefined) {
     // No turbidity available — fall back to wave energy
     const we = D.waveEnergy;
-    if (we <= 20) { baseLo = 18; baseHi = 23; }
+    if (we < 10)  { baseLo = 22; baseHi = 28; }  // glassy
+    else if (we <= 20) { baseLo = 18; baseHi = 23; }
     else if (we <= 50) { baseLo = 12; baseHi = 17; }
     else if (we <= 100) { baseLo = 7; baseHi = 12; }
     else if (we <= 200) { baseLo = 4; baseHi = 7; }
