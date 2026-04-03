@@ -700,10 +700,10 @@
     /* ===== INTERACTIVE MAP ===== */
     #mapContainer {
       display: block; margin: 0 auto 12px; border-radius: 12px; overflow: hidden;
-      border: 1px solid var(--border); height: 180px; width: 90%;
+      border: 1px solid var(--border); height: 240px; width: 92%;
     }
     @media (min-width: 481px) {
-      #mapContainer { height: 260px; }
+      #mapContainer { height: 320px; }
     }
     #diveMap { height: 100%; width: 100%; background: #0a1628; }
     /* Leaflet popup dark theme */
@@ -1162,6 +1162,16 @@
       </div>
     </section>
 
+    <!-- DETAILS TOGGLE BUTTON -->
+    <div style="text-align:center;margin-bottom:12px">
+      <button id="detailsToggleBtn" onclick="toggleAllDetails()" style="
+        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
+        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
+        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
+      ">Details ▼</button>
+    </div>
+    <div id="detailsSections" style="display:none">
+
     <!-- KEY CONDITIONS — Fish Bite (scores hidden to protect algorithm) -->
     <section class="factors-section">
       <div class="category-header">Key Conditions</div>
@@ -1220,6 +1230,8 @@
         <div class="source-item"><span>Calculated — Moon, pressure, current, energy</span><span class="source-status source-ok">CALC</span></div>
       </div>
     </section>
+
+    </div><!-- end #detailsSections -->
 
     <!-- BEACH WEBCAMS -->
     <section class="webcams" id="webcamSection">
@@ -2262,6 +2274,15 @@ function renderOffshoreFleetSummary() {
 function toggleBoatReports() {
   const section = document.getElementById('boatReportsSection');
   section.classList.toggle('expanded');
+}
+
+function toggleAllDetails() {
+  const sections = document.getElementById('detailsSections');
+  const btn = document.getElementById('detailsToggleBtn');
+  if (!sections || !btn) return;
+  const hidden = sections.style.display === 'none';
+  sections.style.display = hidden ? '' : 'none';
+  btn.textContent = hidden ? 'Details ▲' : 'Details ▼';
 }
 
 function applyBoatReportBoost() {
@@ -3845,8 +3866,15 @@ function updateDisplay() {
       }
       // Rain doesn't directly affect offshore, but heavy coastal runoff can spread
       if (D.rainfall === 'heavy') { lo = Math.max(5, lo - 5); hi = Math.max(lo + 5, hi - 5); }
-      if (hi - lo > 20) hi = lo + 20; // wider range OK for offshore
-      vizEst = `${lo}–${hi} ft${suffix}`;
+      // Cap spread to 10ft max — wider ranges look imprecise
+      // If the natural range exceeds 10ft, show "lo–hi+" to indicate upside
+      const maxSpreadOffshore = 10;
+      let offshorePlus = '';
+      if (hi - lo > maxSpreadOffshore) {
+        hi = lo + maxSpreadOffshore;
+        offshorePlus = '+';
+      }
+      vizEst = `${lo}–${hi}${offshorePlus} ft${suffix}`;
       vizSource = 'Offshore Model';
     }
     // PRIORITY 1: If we have real-time turbidity from shore station, use NTU-based estimate
