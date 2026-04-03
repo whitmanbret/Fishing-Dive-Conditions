@@ -1953,6 +1953,19 @@ function parseBoatReportsHTML(html) {
   const rows = doc.querySelectorAll('table.table tbody tr');
   const boats = [];
 
+  // Extract date from page — look for date in heading or datepicker
+  let pageDate = null;
+  const dateInput = doc.querySelector('input[name="date"], input.datepicker, #date');
+  if (dateInput && dateInput.value) {
+    pageDate = dateInput.value;
+  }
+  if (!pageDate) {
+    // Try to find date in page text (e.g. "Fish Counts for April 2, 2026" or "04/02/2026")
+    const bodyText = doc.body ? doc.body.textContent : '';
+    const dateMatch = bodyText.match(/(\w+ \d{1,2},?\s*\d{4})/);
+    if (dateMatch) pageDate = dateMatch[1];
+  }
+
   rows.forEach(row => {
     const cells = row.querySelectorAll('td');
     if (cells.length < 3) return;
@@ -1982,6 +1995,7 @@ function parseBoatReportsHTML(html) {
       boats.push({ boatName, landingName, anglers, tripType, tripCategory: categorizeTrip(tripType), catches });
     }
   });
+  boats._pageDate = pageDate; // attach date to result
   return boats;
 }
 
@@ -2017,30 +2031,47 @@ function aggregateBoatData(allBoats) {
 }
 
 async function fetchBoatReports() {
-  // Check sessionStorage cache first
+  // Check sessionStorage cache first — but invalidate if stale or too few boats
   const cacheKey = 'boatReportsCache';
   const cached = sessionStorage.getItem(cacheKey);
   if (cached) {
     try {
-      boatReportsData = JSON.parse(cached);
-      renderBoatReports();
-      renderOffshoreFleetSummary();
-      updateBriefFishing();
-      applyBoatReportBoost();
-      return;
+      const parsed = JSON.parse(cached);
+      // Invalidate cache if it has suspiciously few boats (likely partial proxy data)
+      // or if cached date doesn't match today/yesterday
+      const now0 = new Date();
+      const todayStr = `${now0.getFullYear()}-${String(now0.getMonth()+1).padStart(2,'0')}-${String(now0.getDate()).padStart(2,'0')}`;
+      const yest0 = new Date(now0.getTime() - 86400000);
+      const yestStr = `${yest0.getFullYear()}-${String(yest0.getMonth()+1).padStart(2,'0')}-${String(yest0.getDate()).padStart(2,'0')}`;
+      const dateOk = parsed.date === todayStr || parsed.date === yestStr;
+      if (dateOk && parsed.totalBoats >= 5) {
+        boatReportsData = parsed;
+        renderBoatReports();
+        renderOffshoreFleetSummary();
+        updateBriefFishing();
+        applyBoatReportBoost();
+        return;
+      } else {
+        sessionStorage.removeItem(cacheKey); // stale or partial — re-fetch
+      }
     } catch(e) { sessionStorage.removeItem(cacheKey); }
   }
 
-  // Yesterday's date in YYYY-MM-DD (Pacific time approximation)
+  // Fish report date — the default page (no date param) shows the latest reporting day
+  // Using no date param returns ALL boats; adding ?date=MM-DD-YYYY often returns partial
+  // data through CORS proxies (server-side rendering difference).
   const now = new Date();
   const yesterday = new Date(now.getTime() - 24 * 3600000);
   const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
-  // Also formatted as MM-DD-YYYY for the URL parameter
-  const yUrlStr = `${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}-${yesterday.getFullYear()}`;
 
-  const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
-  const sdUrl = `https://www.sandiegofishreports.com/dock_totals/boats.php?date=${yUrlStr}`;
-  const laUrl = `https://www.socalfishreports.com/dock_totals/boats.php?date=${yUrlStr}`;
+  // Use multiple CORS proxies with fallback chain for reliability
+  const CORS_PROXIES = [
+    'https://api.allorigins.win/raw?url=',
+    'https://api.codetabs.com/v1/proxy?quest=',
+  ];
+  // No date parameter — default page returns latest full data (all boats)
+  const sdUrl = 'https://www.sandiegofishreports.com/dock_totals/boats.php';
+  const laUrl = 'https://www.socalfishreports.com/dock_totals/boats.php';
 
   let allBoats = [];
   const sources = [
@@ -2049,15 +2080,22 @@ async function fetchBoatReports() {
   ];
 
   for (const src of sources) {
-    try {
-      const resp = await fetchWithTimeout(CORS_PROXY + encodeURIComponent(src.url), null, 8000);
-      if (!resp.ok) continue;
-      const html = await resp.text();
-      const boats = parseBoatReportsHTML(html);
-      boats.forEach(b => { b.source = src.label; });
-      allBoats = allBoats.concat(boats);
-    } catch(e) {
-      console.warn(`Boat reports fetch failed for ${src.label}:`, e.message);
+    let fetched = false;
+    for (const proxy of CORS_PROXIES) {
+      if (fetched) break;
+      try {
+        const resp = await fetchWithTimeout(proxy + encodeURIComponent(src.url), null, 8000);
+        if (!resp.ok) continue;
+        const html = await resp.text();
+        const boats = parseBoatReportsHTML(html);
+        if (boats.length > 0) {
+          boats.forEach(b => { b.source = src.label; });
+          allBoats = allBoats.concat(boats);
+          fetched = true;
+        }
+      } catch(e) {
+        console.warn(`Boat reports fetch failed for ${src.label} via proxy:`, e.message);
+      }
     }
   }
 
@@ -2073,8 +2111,10 @@ async function fetchBoatReports() {
     return;
   }
 
+  // Use page-extracted date if available, otherwise fall back to yesterday
+  const reportDate = allBoats._pageDate || yStr;
   const agg = aggregateBoatData(allBoats);
-  boatReportsData = { date: yStr, ...agg, boats: allBoats };
+  boatReportsData = { date: reportDate, ...agg, boats: allBoats };
 
   // Cache in sessionStorage
   try { sessionStorage.setItem(cacheKey, JSON.stringify(boatReportsData)); } catch(e) {}
