@@ -1092,91 +1092,7 @@
       <div class="brief-fishing" id="briefFishing" style="display:none"></div>
     </div>
 
-    <!-- ===== LATEST BOAT FISH REPORTS ===== -->
-    <div id="boatReportsToggleWrap" style="display:none;text-align:center;margin-bottom:12px">
-      <button id="boatReportsToggleBtn" onclick="toggleBoatReportsSection()" style="
-        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
-        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
-        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
-      ">Latest Boat Reports ▼</button>
-    </div>
-    <div class="boat-reports expanded" id="boatReportsSection" style="display:none">
-      <div class="boat-reports-header" onclick="toggleBoatReports()">
-        <div>
-          <span class="boat-reports-title">🐟 Latest Boat Reports</span>
-          <span class="boat-reports-date" id="boatReportsDate"></span>
-        </div>
-        <span class="boat-reports-toggle">▼</span>
-      </div>
-      <div class="boat-reports-summary" id="boatReportsSummary"></div>
-      <div class="boat-reports-body">
-        <div class="boat-reports-content" id="boatReportsContent"></div>
-      </div>
-    </div>
-
-    <!-- ===== DIVER VIZ REPORT ===== -->
-    <div class="viz-report" id="vizReportWidget" style="display:none">
-      <div class="viz-report-title">Was the visibility accurate today?</div>
-      <div class="viz-report-row" id="vizAccuracyRow">
-        <button class="viz-btn" onclick="submitVizReport('accurate')">Yes, accurate</button>
-        <button class="viz-btn" onclick="showVizOptions()">No, it was different</button>
-      </div>
-      <div class="viz-report-row" id="vizOptionsRow" style="display:none">
-        <span style="font-size:10px;color:var(--text-muted);width:100%;margin-bottom:2px">What was the actual visibility?</span>
-        <button class="viz-btn" onclick="submitVizReport('0-5')">0–5 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('6-10')">6–10 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('11-15')">11–15 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('16-20')">16–20 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('21-25')">21–25 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('26+')">26+ ft</button>
-      </div>
-      <div class="viz-report-thanks" id="vizThanks"></div>
-      <div class="viz-report-history" id="vizHistory"></div>
-    </div>
-
-    <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
-    <div style="text-align:center;margin-bottom:12px">
-      <button id="forecastToggleBtn" onclick="toggleForecastSection()" style="
-        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
-        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
-        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
-      ">5-Day Forecast ▼</button>
-    </div>
-    <section class="forecast-section" id="forecastSection" style="display:none">
-      <div class="forecast-title">
-        <span>5-Day Forecast</span>
-        <span style="font-size:10px; color:var(--text-muted)">NWS · NOAA Tides · WW3 Swell</span>
-      </div>
-      <div id="forecastDays">
-        <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;" class="loading-pulse">Loading forecast data...</div>
-      </div>
-    </section>
-
-    <!-- ===== SEASONAL PLAYBOOK ===== -->
-    <section class="factors-section" id="seasonalPlaybook" style="display:none">
-      <div class="category-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')">
-        📋 Seasonal Playbook
-        <span style="float:right;font-size:10px;color:var(--text-muted);font-weight:400" id="playbookMonth"></span>
-      </div>
-      <div id="playbookContent" style="padding:10px 14px;font-size:11px;line-height:1.7;color:var(--text-secondary)"></div>
-    </section>
-
-    <!-- OFFSHORE SATELLITE DATA — only shows for bluewater spots -->
-    <section class="factors-section" id="offshoreDataSection" style="display:none">
-      <div class="category-header">🛰️ Offshore Satellite Intel</div>
-      <div class="factor-row"><div class="factor-label">Water Color</div><div class="factor-value" id="waterColorVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waterColorScore" style="display:none">-</div></div>
-      <div class="factor-row"><div class="factor-label">Chlorophyll-a</div><div class="factor-value" id="satChlVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="satChlScore" style="display:none">-</div></div>
-      <div class="factor-row"><div class="factor-label">Temp Break</div><div class="factor-value" id="tempBreakVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tempBreakScore" style="display:none">-</div></div>
-      <div class="factor-row"><div class="factor-label">SST Range</div><div class="factor-value" id="sstRangeVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstRangeScore" style="display:none">-</div></div>
-      <div class="factor-row"><div class="factor-label">Sea State</div><div class="factor-value" id="seaStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="seaStateScore" style="display:none">-</div></div>
-      <!-- Offshore Fleet Summary (populated from boat reports) -->
-      <div id="offshoreFleetSummary" style="display:none;padding:10px 12px 8px;border-top:1px solid var(--border-subtle,rgba(255,255,255,0.06));margin-top:4px">
-        <div style="font-size:11px;font-weight:600;color:var(--text-primary);margin-bottom:6px">🚢 Offshore Fleet Report <span id="offshoreFleetDate" style="font-weight:400;color:var(--text-muted);font-size:10px"></span></div>
-        <div id="offshoreFleetContent" style="font-size:11px;color:var(--text-secondary);line-height:1.5"></div>
-      </div>
-    </section>
-
-    <!-- DETAILS TOGGLE BUTTON -->
+    <!-- ===== CONDITION DETAILS (moved up, right below Today's Conditions) ===== -->
     <div style="text-align:center;margin-bottom:12px">
       <button id="detailsToggleBtn" onclick="toggleAllDetails()" style="
         background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
@@ -1246,6 +1162,90 @@
     </section>
 
     </div><!-- end #detailsSections -->
+
+    <!-- ===== DIVER VIZ REPORT ===== -->
+    <div class="viz-report" id="vizReportWidget" style="display:none">
+      <div class="viz-report-title">Was the visibility accurate today?</div>
+      <div class="viz-report-row" id="vizAccuracyRow">
+        <button class="viz-btn" onclick="submitVizReport('accurate')">Yes, accurate</button>
+        <button class="viz-btn" onclick="showVizOptions()">No, it was different</button>
+      </div>
+      <div class="viz-report-row" id="vizOptionsRow" style="display:none">
+        <span style="font-size:10px;color:var(--text-muted);width:100%;margin-bottom:2px">What was the actual visibility?</span>
+        <button class="viz-btn" onclick="submitVizReport('0-5')">0–5 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('6-10')">6–10 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('11-15')">11–15 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('16-20')">16–20 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('21-25')">21–25 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('26+')">26+ ft</button>
+      </div>
+      <div class="viz-report-thanks" id="vizThanks"></div>
+      <div class="viz-report-history" id="vizHistory"></div>
+    </div>
+
+    <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
+    <div style="text-align:center;margin-bottom:12px">
+      <button id="forecastToggleBtn" onclick="toggleForecastSection()" style="
+        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
+        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
+        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
+      ">5-Day Forecast ▼</button>
+    </div>
+    <section class="forecast-section" id="forecastSection" style="display:none">
+      <div class="forecast-title">
+        <span>5-Day Forecast</span>
+        <span style="font-size:10px; color:var(--text-muted)">NWS · NOAA Tides · WW3 Swell</span>
+      </div>
+      <div id="forecastDays">
+        <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;" class="loading-pulse">Loading forecast data...</div>
+      </div>
+    </section>
+
+    <!-- ===== SEASONAL PLAYBOOK ===== -->
+    <section class="factors-section" id="seasonalPlaybook" style="display:none">
+      <div class="category-header" style="cursor:pointer" onclick="this.parentElement.classList.toggle('collapsed')">
+        📋 Seasonal Playbook
+        <span style="float:right;font-size:10px;color:var(--text-muted);font-weight:400" id="playbookMonth"></span>
+      </div>
+      <div id="playbookContent" style="padding:10px 14px;font-size:11px;line-height:1.7;color:var(--text-secondary)"></div>
+    </section>
+
+    <!-- OFFSHORE SATELLITE DATA — only shows for bluewater spots -->
+    <section class="factors-section" id="offshoreDataSection" style="display:none">
+      <div class="category-header">🛰️ Offshore Satellite Intel</div>
+      <div class="factor-row"><div class="factor-label">Water Color</div><div class="factor-value" id="waterColorVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waterColorScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Chlorophyll-a</div><div class="factor-value" id="satChlVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="satChlScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Temp Break</div><div class="factor-value" id="tempBreakVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tempBreakScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">SST Range</div><div class="factor-value" id="sstRangeVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstRangeScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Sea State</div><div class="factor-value" id="seaStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="seaStateScore" style="display:none">-</div></div>
+      <!-- Offshore Fleet Summary (populated from boat reports) -->
+      <div id="offshoreFleetSummary" style="display:none;padding:10px 12px 8px;border-top:1px solid var(--border-subtle,rgba(255,255,255,0.06));margin-top:4px">
+        <div style="font-size:11px;font-weight:600;color:var(--text-primary);margin-bottom:6px">🚢 Offshore Fleet Report <span id="offshoreFleetDate" style="font-weight:400;color:var(--text-muted);font-size:10px"></span></div>
+        <div id="offshoreFleetContent" style="font-size:11px;color:var(--text-secondary);line-height:1.5"></div>
+      </div>
+    </section>
+
+    <!-- ===== LATEST BOAT FISH REPORTS (just above webcams) ===== -->
+    <div id="boatReportsToggleWrap" style="display:none;text-align:center;margin-bottom:12px">
+      <button id="boatReportsToggleBtn" onclick="toggleBoatReportsSection()" style="
+        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
+        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
+        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
+      ">Latest Boat Reports ▼</button>
+    </div>
+    <div class="boat-reports expanded" id="boatReportsSection" style="display:none">
+      <div class="boat-reports-header" onclick="toggleBoatReports()">
+        <div>
+          <span class="boat-reports-title">🐟 Latest Boat Reports</span>
+          <span class="boat-reports-date" id="boatReportsDate"></span>
+        </div>
+        <span class="boat-reports-toggle">▼</span>
+      </div>
+      <div class="boat-reports-summary" id="boatReportsSummary"></div>
+      <div class="boat-reports-body">
+        <div class="boat-reports-content" id="boatReportsContent"></div>
+      </div>
+    </div>
 
     <!-- BEACH WEBCAMS -->
     <section class="webcams" id="webcamSection">
