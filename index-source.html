@@ -3919,6 +3919,53 @@ function updateDisplay() {
   // Auto-calibrate from diver reports — adjust estimate based on crowd feedback
   vizEst = applyVizCalibration(vizEst);
 
+  // ── Sanity check — catch obviously wrong estimates ──
+  // When conditions are calm and clean, viz should never be absurdly low.
+  // This catches cases where a penalty (chl climatology, stale data, etc.)
+  // crushes the estimate below a physically reasonable floor.
+  // Uses D.waveEnergy since effectiveWE is block-scoped above
+  if (vizEst !== '--' && !loc.offshore && !loc.bluewater) {
+    const sanityMatch = vizEst.match(/(\d+)/);
+    const sanityMatch2 = vizEst.match(/(\d+)\D+(\d+)/);
+    if (sanityMatch) {
+      let sLo = parseInt(sanityMatch[1], 10);
+      let sHi = sanityMatch2 ? parseInt(sanityMatch2[2], 10) : sLo + 5;
+      const noRain = !D.rainfall || D.rainfall === 'none' || D.rainfall === 'trace';
+      // Compute effective WE for sanity check (same logic as above)
+      let sanityWE = D.waveEnergy;
+      if (sanityWE !== undefined) {
+        const ls = loc.shelter || 'low';
+        if (ls === 'high') sanityWE *= 0.15;
+        else if (ls === 'moderate') sanityWE *= 0.7;
+        if (D.swellPeriod && sanityWE > 30) {
+          if (D.swellPeriod >= 15) sanityWE *= 0.55;
+          else if (D.swellPeriod >= 12) sanityWE *= 0.7;
+          else if (D.swellPeriod <= 6) sanityWE *= 1.3;
+        }
+      }
+      let adjusted = false;
+
+      // Rule 1: Calm conditions (WE < 50, no rain) — floor at 5 ft
+      if (sanityWE !== undefined && sanityWE < 50 && noRain && sLo < 5) {
+        sLo = 5; sHi = Math.max(sHi, sLo + 4); adjusted = true;
+      }
+      // Rule 2: Very calm (WE < 20, no rain) — floor at 10 ft
+      if (sanityWE !== undefined && sanityWE < 20 && noRain && sLo < 10) {
+        sLo = 10; sHi = Math.max(sHi, sLo + 5); adjusted = true;
+      }
+      // Rule 3: Glassy (WE < 10, no rain) — floor at 15 ft
+      if (sanityWE !== undefined && sanityWE < 10 && noRain && sLo < 15) {
+        sLo = 15; sHi = Math.max(sHi, sLo + 5); adjusted = true;
+      }
+
+      if (adjusted) {
+        // Preserve any suffix like (bloom) or (green water)
+        const suffixM = vizEst.match(/ft\s*(\(.+\))/);
+        vizEst = `${sLo}–${sHi} ft` + (suffixM ? ' ' + suffixM[1] : '');
+      }
+    }
+  }
+
   setVal('estVizVal', vizEst, vizSource);
   const vizFeetEl = document.getElementById('vizFeetLabel');
   if (vizFeetEl) vizFeetEl.textContent = vizEst !== '--' ? `Est. ${vizEst}` : '--';
@@ -6906,25 +6953,33 @@ if (!isStandalone && !deferredPrompt) {
   }
 }
 
-// Force-clear stale service workers from old deployments (GitHub Pages, old versions)
-// Then register the current one. This ensures users never get stuck on cached code.
+// Service Worker — network-first for HTML, cache for offline
+// Version string forces browser to re-fetch sw.js and detect changes
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then(registrations => {
-    let cleared = false;
+    // Clean up any non-sw.js workers from old deployments
     for (const reg of registrations) {
-      // Unregister any SW that isn't from current origin or is outdated
       if (reg.active && reg.active.scriptURL && !reg.active.scriptURL.includes('sw.js')) {
         reg.unregister();
-        cleared = true;
       }
     }
-    // Register current SW (will replace old versions via skipWaiting)
-    navigator.serviceWorker.register('/sw.js?v=4').then(reg => {
-      // Force update check on every page load
-      reg.update();
+    // Register with cache-bust version — browser compares sw.js byte-for-byte
+    // When CACHE_VERSION inside sw.js changes, browser activates new worker
+    navigator.serviceWorker.register('/sw.js?v=20260403a').then(reg => {
+      reg.update(); // Force update check on every page load
+      // When a new SW activates, reload to get fresh code
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+              // New version active — reload once to get fresh HTML
+              location.reload();
+            }
+          });
+        }
+      });
     }).catch(() => {});
-    // If we cleared old workers, reload once to get fresh content
-    if (cleared) location.reload();
   });
 }
 
