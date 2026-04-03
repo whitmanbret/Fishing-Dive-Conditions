@@ -3762,6 +3762,18 @@ function updateDisplay() {
     } else if (effectiveWE !== undefined && locShelter === 'moderate') {
       effectiveWE = effectiveWE * 0.7;   // partial shelter — headlands, kelp beds (mild dampening)
     }
+    // Long-period swell correction — organized groundswell (>12s) produces less turbulent
+    // mixing than short-period wind chop at same WE. Physics: long-period orbital velocities
+    // are deeper & smoother; short chop creates chaotic near-surface stirring that suspends sediment.
+    // Ground truth: Pt Loma 4/2 — 3.5ft @ 14s south swell (WE 172) but clean organized swell,
+    // viz should be 10-15+ ft, not 5-8 ft. Same day LJ Shores 25+ ft with WE 32.
+    if (effectiveWE !== undefined && D.swellPeriod && effectiveWE > 30) {
+      // Only apply period correction when there's meaningful swell energy
+      // Below WE 30 it's calm regardless of period
+      if (D.swellPeriod >= 15) effectiveWE *= 0.55;       // very long period — clean groundswell
+      else if (D.swellPeriod >= 12) effectiveWE *= 0.7;   // long period — organized swell
+      else if (D.swellPeriod <= 6) effectiveWE *= 1.3;    // short period — choppy wind swell, more mixing
+    }
 
     // PRIORITY 0: Offshore islands — nearshore turbidity doesn't apply
     // Coronado Islands sit in open ocean; vis driven by swell, current, and upwelling
