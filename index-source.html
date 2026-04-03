@@ -3806,6 +3806,7 @@ function updateDisplay() {
 
   let vizEst='--';
   let vizSource = 'EST';
+  let effectiveWE = D.waveEnergy; // hoisted so confidence section can access it
   if(D.waveEnergy!==undefined||D.rainfall||D.turbidity!==undefined) {
     // Location-aware visibility: kelp and shelter improve viz, but capped to stay realistic
     const locShelter = loc.shelter || 'low';
@@ -3820,7 +3821,7 @@ function updateDisplay() {
     // Wave energy dampening for sheltered locations — harbor breakwaters attenuate 70-90% of swell
     // Ground truth: Monterey Breakwater 4/2 — buoy WE 461, actual viz 40 ft (calm inside harbor)
     // Without dampening, WE 461 → 1-4 ft estimate. With 0.15x dampening → WE 69 → 7-12 ft (still conservative)
-    let effectiveWE = D.waveEnergy;
+    effectiveWE = D.waveEnergy;
     if (effectiveWE !== undefined && locShelter === 'high') {
       effectiveWE = effectiveWE * 0.15;  // breakwater/harbor attenuates ~85% of open-ocean swell
     } else if (effectiveWE !== undefined && locShelter === 'moderate') {
