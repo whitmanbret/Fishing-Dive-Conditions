@@ -4115,14 +4115,35 @@ function updateDisplay() {
       confTip = `Live turbidity (${D.turbSource})`;
       if (!hasLiveChl) confTip += ' — no live chlorophyll sensor';
       if (hasWaveE && D.waveEnergy >= 50) confTip += ' — swell may shift conditions';
+    } else if (hasWaveE && hasLiveChl) {
+      // No turbidity sensor but we have live chlorophyll + wave energy — two real data streams
+      confLevel = isCalm ? 'High' : 'Moderate';
+      confClass = isCalm ? 'viz-conf-high' : 'viz-conf-moderate';
+      confTip = `Wave energy model + live chlorophyll (${D.chlSource || 'pier sensor'})`;
+      if (isCalm) confTip += ' + calm conditions';
     } else if (hasWaveE) {
-      confLevel = 'Low';
-      confClass = 'viz-conf-low';
-      confTip = 'No local turbidity sensor — estimate based on wave energy model';
+      // Wave energy model only — but if conditions are calm and no rain, the model is reliable
+      const noRain = !D.rainfall || D.rainfall === 0;
+      const reasonablePeriod = D.swellPeriod === undefined || D.swellPeriod >= 8;
+      if (isCalm && noRain) {
+        confLevel = 'Moderate';
+        confClass = 'viz-conf-moderate';
+        confTip = 'Wave energy model — calm conditions, no rainfall';
+      } else if (noRain && reasonablePeriod) {
+        confLevel = 'Moderate';
+        confClass = 'viz-conf-moderate';
+        confTip = 'Wave energy model — no rainfall, moderate swell';
+      } else {
+        confLevel = 'Low';
+        confClass = 'viz-conf-low';
+        confTip = 'Wave energy model only';
+        if (D.rainfall > 0) confTip += ' — recent rainfall adds uncertainty';
+        if (!reasonablePeriod) confTip += ' — short-period swell is unpredictable';
+      }
     } else {
       confLevel = 'Very Low';
       confClass = 'viz-conf-vlow';
-      confTip = 'No turbidity sensor or buoy data — rough estimate only';
+      confTip = 'No buoy data available — rough estimate only';
     }
     // Downgrade if high effective swell (unpredictable stirring)
     if (hasWaveE && effectiveWE > 100 && confLevel === 'High') {
