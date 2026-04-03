@@ -1093,7 +1093,14 @@
     </div>
 
     <!-- ===== LATEST BOAT FISH REPORTS ===== -->
-    <div class="boat-reports" id="boatReportsSection" style="display:none">
+    <div id="boatReportsToggleWrap" style="display:none;text-align:center;margin-bottom:12px">
+      <button id="boatReportsToggleBtn" onclick="toggleBoatReportsSection()" style="
+        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
+        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
+        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
+      ">Latest Boat Reports ▼</button>
+    </div>
+    <div class="boat-reports expanded" id="boatReportsSection" style="display:none">
       <div class="boat-reports-header" onclick="toggleBoatReports()">
         <div>
           <span class="boat-reports-title">🐟 Latest Boat Reports</span>
@@ -1128,7 +1135,14 @@
     </div>
 
     <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
-    <section class="forecast-section" id="forecastSection">
+    <div style="text-align:center;margin-bottom:12px">
+      <button id="forecastToggleBtn" onclick="toggleForecastSection()" style="
+        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
+        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
+        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
+      ">5-Day Forecast ▼</button>
+    </div>
+    <section class="forecast-section" id="forecastSection" style="display:none">
       <div class="forecast-title">
         <span>5-Day Forecast</span>
         <span style="font-size:10px; color:var(--text-muted)">NWS · NOAA Tides · WW3 Swell</span>
@@ -1168,7 +1182,7 @@
         background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
         border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
         cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
-      ">Details ▼</button>
+      ">Condition Details ▼</button>
     </div>
     <div id="detailsSections" style="display:none">
 
@@ -2112,10 +2126,11 @@ async function fetchBoatReports() {
   }
 
   if (allBoats.length === 0) {
-    // Show unavailable message
+    // Show unavailable message — show button but no section
+    const wrap = document.getElementById('boatReportsToggleWrap');
+    if (wrap) wrap.style.display = '';
     const section = document.getElementById('boatReportsSection');
     if (section) {
-      section.style.display = '';
       document.getElementById('boatReportsSummary').innerHTML =
         '<span class="boat-reports-unavailable">Fish reports unavailable — check back later</span>';
       document.getElementById('boatReportsDate').textContent = yStr;
@@ -2140,8 +2155,10 @@ async function fetchBoatReports() {
 function renderBoatReports() {
   if (!boatReportsData) return;
   const data = boatReportsData;
+  const wrap = document.getElementById('boatReportsToggleWrap');
+  if (wrap) wrap.style.display = '';
   const section = document.getElementById('boatReportsSection');
-  section.style.display = '';
+  // Section stays hidden until user clicks the toggle button
 
   // Date
   document.getElementById('boatReportsDate').textContent = ` — ${data.date}`;
@@ -2276,13 +2293,31 @@ function toggleBoatReports() {
   section.classList.toggle('expanded');
 }
 
+function toggleForecastSection() {
+  const section = document.getElementById('forecastSection');
+  const btn = document.getElementById('forecastToggleBtn');
+  if (!section || !btn) return;
+  const hidden = section.style.display === 'none';
+  section.style.display = hidden ? '' : 'none';
+  btn.textContent = hidden ? '5-Day Forecast ▲' : '5-Day Forecast ▼';
+}
+
+function toggleBoatReportsSection() {
+  const section = document.getElementById('boatReportsSection');
+  const btn = document.getElementById('boatReportsToggleBtn');
+  if (!section || !btn) return;
+  const hidden = section.style.display === 'none';
+  section.style.display = hidden ? '' : 'none';
+  btn.textContent = hidden ? 'Latest Boat Reports ▲' : 'Latest Boat Reports ▼';
+}
+
 function toggleAllDetails() {
   const sections = document.getElementById('detailsSections');
   const btn = document.getElementById('detailsToggleBtn');
   if (!sections || !btn) return;
   const hidden = sections.style.display === 'none';
   sections.style.display = hidden ? '' : 'none';
-  btn.textContent = hidden ? 'Details ▲' : 'Details ▼';
+  btn.textContent = hidden ? 'Condition Details ▲' : 'Condition Details ▼';
 }
 
 function applyBoatReportBoost() {
@@ -6711,6 +6746,14 @@ function onLocationChange() {
   // Clear stale insight text and forecast immediately on location switch
   document.getElementById('insightText').textContent = 'Loading conditions for ' + loc.name + '...';
   document.getElementById('forecastDays').innerHTML = '<div class="forecast-loading">Loading forecast data...</div>';
+  // Reset collapsible sections to collapsed state on location switch
+  document.getElementById('forecastSection').style.display = 'none';
+  document.getElementById('forecastToggleBtn').textContent = '5-Day Forecast ▼';
+  document.getElementById('boatReportsSection').style.display = 'none';
+  document.getElementById('boatReportsToggleBtn').textContent = 'Latest Boat Reports ▼';
+  document.getElementById('boatReportsToggleWrap').style.display = 'none';
+  document.getElementById('detailsSections').style.display = 'none';
+  document.getElementById('detailsToggleBtn').textContent = 'Condition Details ▼';
   updateReportLinks();
   updateWebcams();
   updateFavoriteStar();
