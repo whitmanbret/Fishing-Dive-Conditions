@@ -1253,6 +1253,47 @@
 
     </div><!-- end #detailsSections -->
 
+    <!-- ===== CHLOROPHYLL MAP ===== -->
+    <div style="margin-bottom:12px">
+      <button id="chlMapToggleBtn" onclick="toggleChlMap()" style="
+        width:100%; background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
+        border-radius: 0; padding: 10px 20px; font-size: 12px; font-weight: 600;
+        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
+      ">Chlorophyll Map <span class="forecast-chevron"><span style="font-size:10px;font-weight:500;margin-right:3px">Details</span>▼</span></button>
+    </div>
+    <div id="chlMapSection" style="display:none; margin-bottom:16px;">
+      <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:11px; color:var(--text-muted);">Satellite Chlorophyll-a Concentration</span>
+          <div style="display:flex; gap:6px;">
+            <button id="chlMap8dayBtn" onclick="setChlMapView('8day')" style="
+              padding:4px 10px; font-size:10px; border-radius:4px; cursor:pointer; font-weight:600;
+              background:var(--accent); color:#fff; border:1px solid var(--accent);
+            ">8-Day</button>
+            <button id="chlMapDailyBtn" onclick="setChlMapView('daily')" style="
+              padding:4px 10px; font-size:10px; border-radius:4px; cursor:pointer; font-weight:600;
+              background:transparent; color:var(--text-muted); border:1px solid var(--border);
+            ">Daily</button>
+          </div>
+        </div>
+        <div style="position:relative; width:100%; background:#0a1628; border-radius:6px; overflow:hidden; min-height:200px;">
+          <img id="chlMapImg" src="" alt="Chlorophyll satellite map — California coast"
+            style="width:100%; display:block; border-radius:6px;"
+            onerror="this.style.display='none'; document.getElementById('chlMapError').style.display='block';">
+          <div id="chlMapError" style="display:none; padding:30px; text-align:center; color:var(--text-muted); font-size:12px;">
+            Satellite image unavailable — cloud cover may be blocking data
+          </div>
+          <div id="chlMapLoading" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:var(--text-muted); font-size:12px;">
+            Loading satellite imagery...
+          </div>
+        </div>
+        <div style="margin-top:8px; font-size:10px; color:var(--text-muted); line-height:1.5;">
+          <span id="chlMapSourceLabel">VIIRS S-NPP · 8-day composite · 750m resolution</span><br>
+          Source: NOAA CoastWatch / ERDDAP · Green = high chlorophyll (reduced viz) · Blue = clear water
+        </div>
+      </div>
+    </div>
+
     <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
     <div style="margin-bottom:12px">
       <button id="forecastToggleBtn" onclick="toggleForecastSection()" style="
