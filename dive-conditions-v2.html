@@ -1259,7 +1259,7 @@
         width:100%; background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
         border-radius: 0; padding: 10px 20px; font-size: 12px; font-weight: 600;
         cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
-      ">Chlorophyll Map <span class="forecast-chevron"><span style="font-size:10px;font-weight:500;margin-right:3px">Details</span>▼</span></button>
+      ">Chlorophyll Map ▼</button>
     </div>
     <div id="chlMapSection" style="display:none; margin-bottom:16px;">
       <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:12px;">
@@ -1416,9 +1416,7 @@ function toggleChlMap() {
   if (!section || !btn) return;
   var hidden = section.style.display === 'none';
   section.style.display = hidden ? '' : 'none';
-  btn.innerHTML = hidden
-    ? 'Chlorophyll Map <span class="forecast-chevron"><span style="font-size:10px;font-weight:500;margin-right:3px">Details</span>\u25B2</span>'
-    : 'Chlorophyll Map <span class="forecast-chevron"><span style="font-size:10px;font-weight:500;margin-right:3px">Details</span>\u25BC</span>';
+  btn.textContent = hidden ? 'Chlorophyll Map \u25B2' : 'Chlorophyll Map \u25BC';
   if (hidden && !chlMapLoaded) loadChlMap();
 }
 function setChlMapView(view) {
