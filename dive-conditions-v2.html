@@ -1447,6 +1447,25 @@ function loadChlMap() {
   img.onerror = function() { loadDiv.style.display = 'none'; img.style.display = 'none'; errDiv.style.display = 'block'; };
   img.src = url;
 }
+function updateMoonDateBadges() {
+  var syn = 29.530588853;
+  var ref = new Date(Date.UTC(2000, 0, 6, 18, 14, 0)).getTime();
+  var now = new Date();
+  var diff = (now.getTime() - ref) / 86400000;
+  var age = ((diff % syn) + syn) % syn;
+  var daysToNew = (syn - age) % syn;
+  var half = syn / 2;
+  var daysToFull = age < half ? (half - age) : (syn - age + half);
+  var nextNew = new Date(now.getTime() + daysToNew * 86400000);
+  var nextFull = new Date(now.getTime() + daysToFull * 86400000);
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var fmt = function(d) { return months[d.getMonth()] + ' ' + d.getDate(); };
+  var newEl = document.getElementById('nextNewMoonBadge');
+  var fullEl = document.getElementById('nextFullMoonBadge');
+  if (newEl) newEl.textContent = '\uD83C\uDF11 New: ' + fmt(nextNew);
+  if (fullEl) fullEl.textContent = '\uD83C\uDF15 Full: ' + fmt(nextFull);
+}
+updateMoonDateBadges();
 </script>
 
 <script>
