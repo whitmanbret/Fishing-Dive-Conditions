@@ -910,7 +910,7 @@
   <nav class="site-nav">
     <div style="display:flex;align-items:center;gap:8px">
       <a href="https://www.spearfactor.com" class="nav-home"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> SpearFactor</a>
-      <a class="nav-coffee" href="https://buymeacoffee.com/spearfactor" target="_blank" rel="noopener">☕ Tip</a>
+      <a class="nav-coffee" href="https://buymeacoffee.com/spearfactor" target="_blank" rel="noopener">☕ Support</a>
     </div>
     <div class="nav-links">
       <a href="https://www.spearfactor.com/spearfishing-how-tos">Blog</a>
@@ -1310,7 +1310,7 @@ const LOCATIONS = {
   // ── Channel Islands ──
   anacapa:     { name: 'Anacapa Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46217'], lat: 34.01, lon: -119.36, depth: '10-60 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/119,62' },
   santacruz:   { name: 'Santa Cruz Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46054'], lat: 34.00, lon: -119.73, depth: '10-80 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/105,70' },
-  catalina:    { name: 'Catalina Island', bottom: 'kelp', tideStation: '9410660', coast: 90, shelter: 'moderate', buoys: ['46248','46222'], lat: 33.34, lon: -118.33, depth: '10-100 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/147,32' },
+  catalina:    { name: 'Catalina Island', bottom: 'kelp', tideStation: '9410660', coast: 90, shelter: 'moderate', buoys: ['46222'], lat: 33.34, lon: -118.33, depth: '10-100 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/147,32' },
   // ── Offshore / Bluewater ──
   ninemile:    { name: '9 Mile Bank', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46225'], lat: 32.58, lon: -117.47, depth: '60-300 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
   tannerbank:  { name: 'Tanner / Cortez Bank', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46047'], lat: 32.45, lon: -119.13, depth: '30-500 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
@@ -2547,6 +2547,7 @@ const CDIP_STATIONS = {
   anacapa:     { id: '183p1', name: 'Santa Barbara Channel' },
   santacruz:   { id: '183p1', name: 'Santa Barbara Channel' },
   catalina:    { id: '092p1', name: 'San Pedro' },
+  sanclemente: { id: '092p1', name: 'San Pedro' },
   // Central Coast
   morro:       { id: '076p1', name: 'Diablo Canyon' },
   monterey:    { id: '156p1', name: 'Monterey Bay' },
@@ -3941,12 +3942,21 @@ function updateDisplay() {
       // Calm conditions bonus — very low wave energy = less stirring, viz improves
       // Ground truth: 4/1 LJ glassy (WE 5-9) = 25-35ft; 3/23 LJ some swell (WE ~40) = 10-15ft
       // Uses effectiveWE (shelter-dampened) so harbor sites get calm bonus even with big open-ocean swell
+      // IMPORTANT: Reduce calm bonus during phytoplankton blooms — green water limits viz
+      // regardless of surface conditions. Ground truth: 4/15-16 Scripps cam "really green",
+      // ocean flat (WE ~9), but viz only 5-10ft at LJ Shores. NTU 0.32 (clean particles)
+      // but chl 0.94 = bloom absorbing light. Calm bonus was inflating estimate to 16-21ft.
+      const chlLiveSensor = D.chlorophyll !== undefined && !D.chlIsClimatology;
+      const chlRelevant = chlLiveSensor || (D.chlorophyll !== undefined && D.chlIsClimatology && loc.scrippsProximity);
+      const bloomActive = chlRelevant && D.chlorophyll > 0.5;
       if (effectiveWE !== undefined && effectiveWE < 10) {
-        lo = Math.round(lo * 1.35);  // glassy — ocean like a lake
-        hi = Math.round(hi * 1.35);
+        const calmMult = bloomActive ? 1.10 : 1.35;  // bloom = minimal calm bonus
+        lo = Math.round(lo * calmMult);
+        hi = Math.round(hi * calmMult);
       } else if (effectiveWE !== undefined && effectiveWE < 20) {
-        lo = Math.round(lo * 1.15);
-        hi = Math.round(hi * 1.15);
+        const calmMult = bloomActive ? 1.05 : 1.15;
+        lo = Math.round(lo * calmMult);
+        hi = Math.round(hi * calmMult);
       }
       // If swell is high, blend downward (pier is sheltered, open water gets more surge)
       if (effectiveWE !== undefined && effectiveWE > 100) {
@@ -3964,10 +3974,14 @@ function updateDisplay() {
       let suffix = '';
       const chlApplies = D.chlorophyll !== undefined && D.chlorophyll > 0 && (!D.chlIsClimatology || loc.scrippsProximity);
       if (chlApplies) {
+        // Recalibrated 4/16: 0.94 chl + 0.32 NTU = camera "really green", actual 5-10ft
+        // Old 0.85x for >0.4 was far too mild — predicted 16-21ft vs actual 5-10ft
+        // 3/22: 0.65 chl + 0.27 NTU = 8-10ft actual
         if (D.chlorophyll > 8)       { lo = Math.max(1, Math.round(lo * 0.35)); hi = Math.max(lo+1, Math.round(hi * 0.35)); suffix = ' (bloom)'; }
-        else if (D.chlorophyll > 3)  { lo = Math.max(1, Math.round(lo * 0.5));  hi = Math.max(lo+1, Math.round(hi * 0.5));  suffix = ' (green water)'; }
-        else if (D.chlorophyll > 1)  { lo = Math.max(1, Math.round(lo * 0.65)); hi = Math.max(lo+1, Math.round(hi * 0.65)); suffix = ' (green tinge)'; }
-        else if (D.chlorophyll > 0.4){ lo = Math.max(1, Math.round(lo * 0.85)); hi = Math.max(lo+1, Math.round(hi * 0.85)); }
+        else if (D.chlorophyll > 3)  { lo = Math.max(1, Math.round(lo * 0.45)); hi = Math.max(lo+1, Math.round(hi * 0.45)); suffix = ' (green water)'; }
+        else if (D.chlorophyll > 1.5){ lo = Math.max(1, Math.round(lo * 0.55)); hi = Math.max(lo+1, Math.round(hi * 0.55)); suffix = ' (green water)'; }
+        else if (D.chlorophyll > 0.8){ lo = Math.max(1, Math.round(lo * 0.45)); hi = Math.max(lo+1, Math.round(hi * 0.45)); suffix = ' (green water)'; }
+        else if (D.chlorophyll > 0.4){ lo = Math.max(1, Math.round(lo * 0.65)); hi = Math.max(lo+1, Math.round(hi * 0.65)); suffix = ' (green tinge)'; }
       }
       // Cap range spread — wider for clean water (low NTU has genuine variability)
       const maxSpread = ntu < 0.25 ? 8 : 5;
@@ -4048,17 +4062,20 @@ function updateDisplay() {
         }
       }
       let adjusted = false;
+      // Skip sanity floors during active blooms — green water limits viz even when calm
+      const chlBlocksSanity = D.chlorophyll !== undefined && D.chlorophyll > 0.5 &&
+        (!D.chlIsClimatology || loc.scrippsProximity);
 
       // Rule 1: Calm conditions (WE < 50, no rain) — floor at 5 ft
-      if (sanityWE !== undefined && sanityWE < 50 && noRain && sLo < 5) {
+      if (!chlBlocksSanity && sanityWE !== undefined && sanityWE < 50 && noRain && sLo < 5) {
         sLo = 5; sHi = Math.max(sHi, sLo + 4); adjusted = true;
       }
       // Rule 2: Very calm (WE < 20, no rain) — floor at 10 ft
-      if (sanityWE !== undefined && sanityWE < 20 && noRain && sLo < 10) {
+      if (!chlBlocksSanity && sanityWE !== undefined && sanityWE < 20 && noRain && sLo < 10) {
         sLo = 10; sHi = Math.max(sHi, sLo + 5); adjusted = true;
       }
       // Rule 3: Glassy (WE < 10, no rain) — floor at 15 ft
-      if (sanityWE !== undefined && sanityWE < 10 && noRain && sLo < 15) {
+      if (!chlBlocksSanity && sanityWE !== undefined && sanityWE < 10 && noRain && sLo < 15) {
         sLo = 15; sHi = Math.max(sHi, sLo + 5); adjusted = true;
       }
 
@@ -5861,8 +5878,9 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     const chlEff = (D.chlorophyll || 0) * chlDecay;
     if (chlEff > 8) { baseLo = Math.max(1, Math.round(baseLo * 0.4)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.45)); }
     else if (chlEff > 3) { baseLo = Math.max(1, Math.round(baseLo * 0.6)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.65)); }
-    else if (chlEff > 1.5) { baseLo = Math.max(1, Math.round(baseLo * 0.75)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.8)); }
-    else if (chlEff > 0.5) { baseLo = Math.max(1, Math.round(baseLo * 0.88)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.90)); }
+    else if (chlEff > 1.5) { baseLo = Math.max(1, Math.round(baseLo * 0.55)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.60)); }
+    else if (chlEff > 0.8) { baseLo = Math.max(1, Math.round(baseLo * 0.50)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.55)); }
+    else if (chlEff > 0.5) { baseLo = Math.max(1, Math.round(baseLo * 0.70)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.75)); }
   }
 
   // Turbidity also drifts toward regional average over future days (less certainty)
