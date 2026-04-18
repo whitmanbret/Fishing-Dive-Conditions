@@ -418,9 +418,8 @@
       font-size: 12px; font-weight: 600;
     }
     .forecast-chevron {
-      font-size: 11px; color: var(--text-muted); transition: transform 0.2s;
+      font-size: 11px; color: var(--text-muted);
     }
-    .forecast-day.open .forecast-chevron { transform: rotate(180deg); }
 
     /* 3-column time slot grid */
     .forecast-time-grid {
@@ -1092,7 +1091,45 @@
       <div class="brief-fishing" id="briefFishing" style="display:none"></div>
     </div>
 
-    <!-- ===== CONDITION DETAILS (moved up, right below Today's Conditions) ===== -->
+    <!-- ===== DIVER VIZ REPORT ===== -->
+    <div class="viz-report" id="vizReportWidget" style="display:none">
+      <div class="viz-report-title">Was the visibility accurate today?</div>
+      <div class="viz-report-row" id="vizAccuracyRow">
+        <button class="viz-btn" onclick="submitVizReport('accurate')">Yes, accurate</button>
+        <button class="viz-btn" onclick="showVizOptions()">No, it was different</button>
+      </div>
+      <div class="viz-report-row" id="vizOptionsRow" style="display:none">
+        <span style="font-size:10px;color:var(--text-muted);width:100%;margin-bottom:2px">What was the actual visibility?</span>
+        <button class="viz-btn" onclick="submitVizReport('0-5')">0–5 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('6-10')">6–10 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('11-15')">11–15 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('16-20')">16–20 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('21-25')">21–25 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('26+')">26+ ft</button>
+      </div>
+      <div class="viz-report-thanks" id="vizThanks"></div>
+      <div class="viz-report-history" id="vizHistory"></div>
+    </div>
+
+    <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
+    <div style="text-align:center;margin-bottom:12px">
+      <button id="forecastToggleBtn" onclick="toggleForecastSection()" style="
+        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
+        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
+        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
+      ">5-Day Forecast ▼</button>
+    </div>
+    <section class="forecast-section" id="forecastSection" style="display:none">
+      <div class="forecast-title">
+        <span>5-Day Forecast</span>
+        <span style="font-size:10px; color:var(--text-muted)">NWS · NOAA Tides · WW3 Swell</span>
+      </div>
+      <div id="forecastDays">
+        <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;" class="loading-pulse">Loading forecast data...</div>
+      </div>
+    </section>
+
+    <!-- ===== CONDITION DETAILS (below 5-Day Forecast) ===== -->
     <div style="text-align:center;margin-bottom:12px">
       <button id="detailsToggleBtn" onclick="toggleAllDetails()" style="
         background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
@@ -1162,44 +1199,6 @@
     </section>
 
     </div><!-- end #detailsSections -->
-
-    <!-- ===== DIVER VIZ REPORT ===== -->
-    <div class="viz-report" id="vizReportWidget" style="display:none">
-      <div class="viz-report-title">Was the visibility accurate today?</div>
-      <div class="viz-report-row" id="vizAccuracyRow">
-        <button class="viz-btn" onclick="submitVizReport('accurate')">Yes, accurate</button>
-        <button class="viz-btn" onclick="showVizOptions()">No, it was different</button>
-      </div>
-      <div class="viz-report-row" id="vizOptionsRow" style="display:none">
-        <span style="font-size:10px;color:var(--text-muted);width:100%;margin-bottom:2px">What was the actual visibility?</span>
-        <button class="viz-btn" onclick="submitVizReport('0-5')">0–5 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('6-10')">6–10 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('11-15')">11–15 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('16-20')">16–20 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('21-25')">21–25 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('26+')">26+ ft</button>
-      </div>
-      <div class="viz-report-thanks" id="vizThanks"></div>
-      <div class="viz-report-history" id="vizHistory"></div>
-    </div>
-
-    <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
-    <div style="text-align:center;margin-bottom:12px">
-      <button id="forecastToggleBtn" onclick="toggleForecastSection()" style="
-        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
-        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
-        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
-      ">5-Day Forecast ▼</button>
-    </div>
-    <section class="forecast-section" id="forecastSection" style="display:none">
-      <div class="forecast-title">
-        <span>5-Day Forecast</span>
-        <span style="font-size:10px; color:var(--text-muted)">NWS · NOAA Tides · WW3 Swell</span>
-      </div>
-      <div id="forecastDays">
-        <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;" class="loading-pulse">Loading forecast data...</div>
-      </div>
-    </section>
 
     <!-- ===== SEASONAL PLAYBOOK ===== -->
     <section class="factors-section" id="seasonalPlaybook" style="display:none">
@@ -2318,6 +2317,8 @@ function toggleAllDetails() {
   const hidden = sections.style.display === 'none';
   sections.style.display = hidden ? '' : 'none';
   btn.textContent = hidden ? 'Condition Details ▲' : 'Condition Details ▼';
+  // Persist preference — if user explicitly collapses/expands, remember it
+  try { sessionStorage.setItem('detailsOpen', hidden ? '1' : '0'); } catch(e){}
 }
 
 function applyBoatReportBoost() {
@@ -2830,6 +2831,16 @@ const SHORE_STATIONS = {
   montereyaq:   { id: 'monterey-bay-aquarium-seawate', name: 'Monterey Bay Aquarium',
                   temp: 'sea_water_temperature', turb: null,
                   chl: null, sal: null },
+  // Monterey Wharf — CeNCOOS real-time sampling (has NTU + chl)
+  montereywharf:{ id: 'monterey-wharf-real-time-samplin', name: 'Monterey Wharf',
+                  temp: 'sea_water_temperature', turb: 'sea_water_turbidity',
+                  chl: 'mass_concentration_of_chlorophyll_in_sea_water', sal: null,
+                  erddapBase: 'https://erddap.cencoos.org' },
+  // Stearns Wharf, Santa Barbara — CeNCOOS automated shore station (chl only)
+  stearnswharf: { id: 'stearns-wharf-automated-shore-st-1', name: 'Stearns Wharf',
+                  temp: 'sea_water_temperature_ctd', turb: null,
+                  chl: 'mass_concentration_of_chlorophyll_in_sea_water_ctd', sal: null,
+                  erddapBase: 'https://erddap.cencoos.org' },
 };
 
 // Map each dive spot to shore stations in priority order (nearest first, fallbacks after)
@@ -2843,12 +2854,12 @@ const SHORE_STATION_MAP = {
   newport: ['newport','scripps'], huntington: ['newport','scripps'],
   // LA — Santa Monica Pier, fallback Newport
   pv: ['santamonica','newport'], horseshoe: ['santamonica','newport'], malibu: ['santamonica','newport'], leocarrillo: ['santamonica','newport'],
-  // Ventura / Santa Barbara — Cal Poly, fallback Morro, Santa Monica
-  ventura: ['calpoly','morro','santamonica'], sb: ['calpoly','morro'], refugio: ['calpoly','morro'],
-  // Channel Islands — Newport / Santa Monica
-  catalina: ['newport','scripps'], anacapa: ['santamonica','newport'], santacruz: ['santamonica','calpoly'],
-  // Central Coast — Cal Poly / Morro
-  morro: ['morro','calpoly'], monterey: ['mosslanding','montereyaq','calpoly'], carmel: ['mosslanding','montereyaq','calpoly'],
+  // Ventura / Santa Barbara — Stearns Wharf primary, fallback Cal Poly, Morro
+  ventura: ['stearnswharf','calpoly','morro'], sb: ['stearnswharf','calpoly','morro'], refugio: ['stearnswharf','calpoly','morro'],
+  // Channel Islands — Stearns Wharf for northern islands, Newport for Catalina
+  catalina: ['newport','scripps'], anacapa: ['stearnswharf','santamonica','newport'], santacruz: ['stearnswharf','santamonica','calpoly'],
+  // Central Coast — Monterey Wharf + Moss Landing primary, Cal Poly / Morro fallback
+  morro: ['morro','calpoly'], monterey: ['montereywharf','mosslanding','montereyaq','calpoly'], carmel: ['montereywharf','mosslanding','montereyaq','calpoly'],
   // NorCal — Trinidad, Humboldt
   halfmoon: ['calpoly'], bodega: ['trinidad','humboldt'],
   fortbragg: ['trinidad','humboldt'], trinidad: ['trinidad','humboldt'],
@@ -2887,7 +2898,8 @@ async function fetchSingleShoreStation(station, isFallback = false) {
   if (station.chl) vars.push(station.chl);
   if (station.sal) vars.push(station.sal);
   const cbName = '_shore_' + Date.now() + '_' + station.id.slice(0,8).replace(/[^a-zA-Z0-9]/g, '');
-  const url = `https://erddap.caloos.org/erddap/tabledap/${station.id}.json?${vars.join(',')}&time%3E=${fmt(yesterday)}&time%3C=${fmt(now)}&.jsonp=${cbName}`;
+  const erddapBase = station.erddapBase || 'https://erddap.caloos.org';
+  const url = `${erddapBase}/erddap/tabledap/${station.id}.json?${vars.join(',')}&time%3E=${fmt(yesterday)}&time%3C=${fmt(now)}&.jsonp=${cbName}`;
   const d = await new Promise((resolve, reject) => {
     const timeout = setTimeout(() => { delete window[cbName]; reject('timeout'); }, 8000);
     window[cbName] = data => { clearTimeout(timeout); delete window[cbName]; resolve(data); };
@@ -5514,7 +5526,7 @@ function buildForecast() {
       html += `<div style="font-size:10px;font-weight:600;color:${bwColor};margin-top:1px">${bwIcon} ${bestWindow.range} <span style="font-weight:400;color:var(--text-muted)">${bestWindow.reason}</span></div>`;
     }
     html += `</div>`;
-    html += `<span class="forecast-chevron">▼</span>`;
+    html += `<span class="forecast-chevron">Details ▼</span>`;
     html += `</div>`;
 
     // 3-column time slot grid (always visible) — no onclick, prevents scroll hijack on mobile
@@ -6325,7 +6337,11 @@ function buildTidePanel(dayTides, dayTideHourly, date) {
 
 function toggleForecastDay(idx) {
   const el = document.getElementById('fDay' + idx);
-  if (el) el.classList.toggle('open');
+  if (el) {
+    el.classList.toggle('open');
+    const chev = el.querySelector('.forecast-chevron');
+    if (chev) chev.textContent = el.classList.contains('open') ? 'Details ▲' : 'Details ▼';
+  }
 }
 
 // =========================================================================
