@@ -2465,17 +2465,22 @@ async function fetchWind() {
 }
 
 // --- NWS: Hourly Forecast (5-day, for forecast section) ---
+// NWS hourly endpoint returns ~156 periods which can take 5-10s on some grids.
+// Use 12s timeout with one retry to handle slow responses (e.g. LOX/167,20 for Laguna).
 async function fetchHourlyForecast() {
-  try {
-    const grid = LOCATIONS[currentLocation].nwsGrid || 'SGX/55,17';
-    const r=await fetchWithTimeout(`https://api.weather.gov/gridpoints/${grid}/forecast/hourly`,{
-      headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
-    });
-    const d=await r.json();
-    if(d.properties&&d.properties.periods) {
-      D.hourlyForecast=d.properties.periods; // ~156 hours
-    }
-  } catch(e) {}
+  const grid = LOCATIONS[currentLocation].nwsGrid || 'SGX/55,17';
+  const url = `https://api.weather.gov/gridpoints/${grid}/forecast/hourly`;
+  const opts = { headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'} };
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const r=await fetchWithTimeout(url, opts, 12000);
+      const d=await r.json();
+      if(d.properties&&d.properties.periods) {
+        D.hourlyForecast=d.properties.periods; // ~156 hours
+        return;
+      }
+    } catch(e) { /* retry once */ }
+  }
 }
 
 // --- NWS: Wind Forecast (legacy 12h periods) ---
@@ -2484,7 +2489,7 @@ async function fetchWindForecast() {
     const grid = LOCATIONS[currentLocation].nwsGrid || 'SGX/55,17';
     const r=await fetchWithTimeout(`https://api.weather.gov/gridpoints/${grid}/forecast`,{
       headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
-    });
+    }, 8000);
     const d=await r.json();
     if(d.properties&&d.properties.periods) D.windForecast=d.properties.periods.slice(0,6);
   } catch(e) {}
