@@ -2837,10 +2837,13 @@ const SHORE_STATIONS = {
                   temp: 'sea_water_temperature', turb: null,
                   chl: null, sal: null },
   // Monterey Wharf — CeNCOOS real-time sampling (has NTU + chl)
+  // Monterey Wharf is INSIDE the harbor — its NTU reads harbor sediment (often 10-30 NTU)
+  // which is NOT representative of open-ocean dive sites. Use for chl only.
   montereywharf:{ id: 'monterey-wharf-real-time-samplin', name: 'Monterey Wharf',
                   temp: 'sea_water_temperature', turb: 'sea_water_turbidity',
                   chl: 'mass_concentration_of_chlorophyll_in_sea_water', sal: null,
-                  erddapBase: 'https://erddap.cencoos.org' },
+                  erddapBase: 'https://erddap.cencoos.org',
+                  harborOnly: true },
   // Stearns Wharf, Santa Barbara — CeNCOOS automated shore station (chl only)
   stearnswharf: { id: 'stearns-wharf-automated-shore-st-1', name: 'Stearns Wharf',
                   temp: 'sea_water_temperature_ctd', turb: null,
@@ -2957,7 +2960,9 @@ async function fetchSingleShoreStation(station, isFallback = false) {
       }
       // Turbidity — clamp negative sensor noise to 0
       // SKIP for fallback stations — turbidity is hyper-local, using a sensor 100+ miles away is wrong
-      if (!isFallback) {
+      // SKIP for harborOnly stations — Monterey Wharf sits in the harbor (10-30 NTU sediment)
+      // which is NOT representative of exposed open-ocean dive sites like Carmel/Point Lobos.
+      if (!isFallback && !station.harborOnly) {
         const turbRaw = extract(station.turb);
         const turb = turbRaw !== null ? Math.max(0, turbRaw) : null;
         if (turb !== null) {
