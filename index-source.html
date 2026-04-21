@@ -3999,11 +3999,26 @@ function updateDisplay() {
         // Recalibrated 4/16: 0.94 chl + 0.32 NTU = camera "really green", actual 5-10ft
         // Old 0.85x for >0.4 was far too mild — predicted 16-21ft vs actual 5-10ft
         // 3/22: 0.65 chl + 0.27 NTU = 8-10ft actual
+        // 4/21: 1.0 chl + 0.25 NTU = 25-30ft actual (bloom-DECAY phase — cells settled
+        //       but fluorometer still reads pigment. Detect via clean NTU + moderate chl.)
+        const bloomDecay = ntu !== undefined && ntu < 0.35 && D.chlorophyll >= 0.5 && D.chlorophyll < 3;
         if (D.chlorophyll > 8)       { lo = Math.max(1, Math.round(lo * 0.35)); hi = Math.max(lo+1, Math.round(hi * 0.35)); suffix = ' (bloom)'; }
         else if (D.chlorophyll > 3)  { lo = Math.max(1, Math.round(lo * 0.45)); hi = Math.max(lo+1, Math.round(hi * 0.45)); suffix = ' (green water)'; }
-        else if (D.chlorophyll > 1.5){ lo = Math.max(1, Math.round(lo * 0.55)); hi = Math.max(lo+1, Math.round(hi * 0.55)); suffix = ' (green water)'; }
-        else if (D.chlorophyll > 0.8){ lo = Math.max(1, Math.round(lo * 0.45)); hi = Math.max(lo+1, Math.round(hi * 0.45)); suffix = ' (green water)'; }
-        else if (D.chlorophyll > 0.4){ lo = Math.max(1, Math.round(lo * 0.65)); hi = Math.max(lo+1, Math.round(hi * 0.65)); suffix = ' (green tinge)'; }
+        else if (D.chlorophyll > 1.5){
+          const m = bloomDecay ? 0.90 : 0.50;
+          lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
+          suffix = bloomDecay ? ' (clearing)' : ' (green water)';
+        }
+        else if (D.chlorophyll > 0.8){
+          const m = bloomDecay ? 0.95 : 0.55;
+          lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
+          suffix = bloomDecay ? ' (clearing)' : ' (green water)';
+        }
+        else if (D.chlorophyll > 0.4){
+          const m = bloomDecay ? 1.00 : 0.75;
+          lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
+          suffix = bloomDecay ? '' : ' (green tinge)';
+        }
       }
       // Cap range spread — wider for clean water (low NTU has genuine variability)
       const maxSpread = ntu < 0.25 ? 8 : 5;
@@ -5898,11 +5913,23 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   if (chlAppliesFcst) {
     const chlDecay = [1.0, 0.9, 0.8, 0.65, 0.50][Math.min(dayIdx, 4)];
     const chlEff = (D.chlorophyll || 0) * chlDecay;
+    // Bloom-decay detection: particles settled (low NTU) but chl fluorescence persists.
+    // In decay phase, visible viz has recovered ahead of the sensor.
+    const fcstBloomDecay = D.turbidity !== undefined && D.turbidity < 0.35 && chlEff >= 0.5 && chlEff < 3;
     if (chlEff > 8) { baseLo = Math.max(1, Math.round(baseLo * 0.4)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.45)); }
     else if (chlEff > 3) { baseLo = Math.max(1, Math.round(baseLo * 0.6)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.65)); }
-    else if (chlEff > 1.5) { baseLo = Math.max(1, Math.round(baseLo * 0.55)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.60)); }
-    else if (chlEff > 0.8) { baseLo = Math.max(1, Math.round(baseLo * 0.50)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.55)); }
-    else if (chlEff > 0.5) { baseLo = Math.max(1, Math.round(baseLo * 0.70)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.75)); }
+    else if (chlEff > 1.5) {
+      const m = fcstBloomDecay ? 0.90 : 0.55;
+      baseLo = Math.max(1, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
+    }
+    else if (chlEff > 0.8) {
+      const m = fcstBloomDecay ? 0.95 : 0.55;
+      baseLo = Math.max(1, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
+    }
+    else if (chlEff > 0.5) {
+      const m = fcstBloomDecay ? 1.00 : 0.75;
+      baseLo = Math.max(1, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
+    }
   }
 
   // Turbidity also drifts toward regional average over future days (less certainty)
