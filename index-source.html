@@ -1127,7 +1127,11 @@
       <div class="factor-row"><div class="factor-label">Water Temp</div><div class="factor-value" id="waterTempVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waterTempScore" style="display:none">-</div></div>
       <div class="factor-row" id="thermoclineRow" style="display:none"><div class="factor-label">Thermocline</div><div class="factor-value" id="thermoclineVal">--</div></div>
       <div class="factor-row" id="oceanForecastRow" style="display:none"><div class="factor-label">Ocean Forecast</div><div class="factor-value" id="oceanForecastVal">--</div></div>
+      <div class="factor-row" id="thermoclineEvoRow" style="display:none"><div class="factor-label">Thermocline 5-Day</div><div class="factor-value" id="thermoclineEvoVal">--</div></div>
+      <div class="factor-row" id="currentProfileRow" style="display:none"><div class="factor-label">Currents (by depth)</div><div class="factor-value" id="currentProfileVal">--</div></div>
       <div class="factor-row" id="surfaceCurrentRow" style="display:none"><div class="factor-label">Surface Current</div><div class="factor-value" id="surfaceCurrentVal">--</div></div>
+      <div class="factor-row" id="salinityRow" style="display:none"><div class="factor-label">Salinity</div><div class="factor-value" id="salinityVal">--</div></div>
+      <div class="factor-row" id="targetDepthRow" style="display:none"><div class="factor-label">Target Depths</div><div class="factor-value" id="targetDepthVal">--</div></div>
       <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tideStateScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="moonPhaseScore" style="display:none">-</div></div>
@@ -3138,85 +3142,237 @@ async function fetchNDBCBuoy() {
 // Called AFTER main fetch round so it can override shore station temps.
 
 // =========================================================================
-// HYCOM 3D TEMPERATURE PROFILE — subsurface thermocline forecast
-// Uses NOAA/NRL ESPC-D-V02 Global 1/12° forecast (7-day horizon)
-// Via codetabs.com CORS proxy since HYCOM TDS doesn't send CORS headers
+// HYCOM 3D OCEAN MODEL — temperature, salinity, currents, forecasts
+// Via NOAA/NRL ESPC-D-V02 Global 1/12° model (7-day forecast)
+// Uses codetabs.com CORS proxy since HYCOM TDS doesn't send CORS headers
 // =========================================================================
+
+// Helper — parse HYCOM CSV into depth/value pairs
+function _parseHycomCSV(csv, valueIdx) {
+  const rows = csv.split('\n').filter(l => l.trim() && !l.startsWith('time,'));
+  const result = [];
+  for (const row of rows) {
+    const parts = row.split(',');
+    if (parts.length < 5) continue;
+    const depthM = parseFloat(parts[3]);
+    const val = parseFloat(parts[valueIdx || 4]);
+    if (isNaN(depthM) || isNaN(val)) continue;
+    result.push({ depthM, val, depthFt: Math.round(depthM * 3.28084) });
+  }
+  return result;
+}
+
+// Shift coordinates offshore to ensure we land in an ocean grid cell.
+// HYCOM's 1/12° (~9 km) model treats coastal points as land-masked (returns NaN).
+// Uses loc.coast field (azimuth the coast faces / ocean direction). Offset ~11 km offshore.
+function _hycomOffshoreCoords(loc) {
+  if (loc.offshore || loc.bluewater) return { lat: loc.lat, lon: loc.lon };
+  const coastAz = loc.coast !== undefined ? loc.coast : 270;
+  const offsetDeg = 0.10;
+  const rad = coastAz * Math.PI / 180;
+  const dLat = Math.cos(rad) * offsetDeg;
+  const dLon = Math.sin(rad) * offsetDeg / Math.cos(loc.lat * Math.PI / 180);
+  return { lat: parseFloat((loc.lat + dLat).toFixed(4)), lon: parseFloat((loc.lon + dLon).toFixed(4)) };
+}
+
+// Fetch a single HYCOM variable profile at given lat/lon/time.
+// Retries with increased offshore offset if we hit the land mask (empty parse).
+async function _fetchHycomProfile(datasetId, varName, lat, lon, timeStr) {
+  const tryFetch = async (la, lo) => {
+    try {
+      const url = `https://tds.hycom.org/thredds/ncss/grid/FMRC_ESPC-D-V02_${datasetId}/FMRC_ESPC-D-V02_${datasetId}_best.ncd?var=${varName}&latitude=${la}&longitude=${lo}&time=${encodeURIComponent(timeStr)}&vertStride=1&accept=csv`;
+      const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url);
+      const r = await fetchWithTimeout(proxyUrl, {}, 15000);
+      if (!r.ok) return null;
+      const csv = await r.text();
+      const parsed = _parseHycomCSV(csv);
+      return (parsed && parsed.length > 0) ? parsed : null;
+    } catch(e) { return null; }
+  };
+  let result = await tryFetch(lat, lon);
+  if (result) return result;
+  // Fallback: try further west (most SoCal coast is N-S so west = offshore)
+  result = await tryFetch(lat, lon - 0.15);
+  return result;
+}
+
+// Fetch multi-day SST evolution (single depth, many time steps).
+// Auto-retries further offshore if we hit the land mask.
+async function _fetchHycomSstEvolution(lat, lon, startIso, endIso) {
+  const tryFetch = async (la, lo) => {
+    try {
+      const url = `https://tds.hycom.org/thredds/ncss/grid/FMRC_ESPC-D-V02_t3z/FMRC_ESPC-D-V02_t3z_best.ncd?var=water_temp&latitude=${la}&longitude=${lo}&time_start=${encodeURIComponent(startIso)}&time_end=${encodeURIComponent(endIso)}&vertCoord=0&accept=csv`;
+      const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url);
+      const r = await fetchWithTimeout(proxyUrl, {}, 15000);
+      if (!r.ok) return null;
+      const csv = await r.text();
+      const rows = csv.split('\n').filter(l => l.trim() && !l.startsWith('time,'));
+      const series = [];
+      for (const row of rows) {
+        const parts = row.split(',');
+        if (parts.length < 5) continue;
+        const tempC = parseFloat(parts[4]);
+        if (isNaN(tempC)) continue;
+        series.push({ time: parts[0], tempC, tempF: tempC * 9/5 + 32 });
+      }
+      return series.length > 0 ? series : null;
+    } catch(e) { return null; }
+  };
+  let r = await tryFetch(lat, lon);
+  if (r) return r;
+  r = await tryFetch(lat, lon - 0.15);
+  return r;
+}
+
+// Compute thermocline + mixed layer depth from a temperature profile
+function _computeThermocline(profile) {
+  if (!profile || profile.length < 3) return null;
+  const surfTempC = profile[0].val;
+  // Mixed layer: where temp hasn't dropped more than 0.5°C from surface
+  let mldDepthM = 0;
+  for (const p of profile) {
+    if (surfTempC - p.val < 0.5) mldDepthM = p.depthM;
+    else break;
+  }
+  // Find max gradient (thermocline center)
+  let maxGradient = 0;
+  let thermoCenterM = mldDepthM;
+  let thermoBottomM = mldDepthM;
+  for (let i = 1; i < profile.length; i++) {
+    const dT = profile[i-1].val - profile[i].val;
+    const dZ = profile[i].depthM - profile[i-1].depthM;
+    if (dZ === 0) continue;
+    const grad = dT / dZ;
+    if (grad > maxGradient) {
+      maxGradient = grad;
+      thermoCenterM = (profile[i-1].depthM + profile[i].depthM) / 2;
+    }
+    if (grad < 0.05 && profile[i].depthM > mldDepthM + 2 && thermoBottomM === mldDepthM) {
+      thermoBottomM = profile[i].depthM;
+    }
+  }
+  if (thermoBottomM === mldDepthM) thermoBottomM = profile[profile.length - 1].depthM;
+  // Temperature below thermocline
+  const deep = profile.find(p => p.depthM >= thermoBottomM) || profile[profile.length - 1];
+  return {
+    mldDepthFt: Math.round(mldDepthM * 3.28084),
+    thermoclineCenterFt: Math.round(thermoCenterM * 3.28084),
+    thermoclineBottomFt: Math.round(thermoBottomM * 3.28084),
+    tempBelowThermoclineF: Math.round(deep.val * 9/5 + 32),
+    surfTempF: Math.round(profile[0].val * 9/5 + 32),
+    gradientCPerM: maxGradient
+  };
+}
+
+// Main fetch — pulls temperature, salinity, currents for current time +
+// multi-day SST evolution, then computes all derived metrics
 async function fetchHycomProfile() {
   try {
     const loc = LOCATIONS[currentLocation];
     if (!loc) return;
-    // Format time as ISO string for the current hour (rounded down to 3-hourly grid)
     const now = new Date();
     const hr = Math.floor(now.getUTCHours() / 3) * 3;
-    const timeStr = `${now.getUTCFullYear()}-${String(now.getUTCMonth()+1).padStart(2,'0')}-${String(now.getUTCDate()).padStart(2,'0')}T${String(hr).padStart(2,'0')}:00:00Z`;
-    // HYCOM NCSS URL — request full depth profile at one lat/lon/time
-    const hycomUrl = `https://tds.hycom.org/thredds/ncss/grid/FMRC_ESPC-D-V02_t3z/FMRC_ESPC-D-V02_t3z_best.ncd?var=water_temp&latitude=${loc.lat}&longitude=${loc.lon}&time=${encodeURIComponent(timeStr)}&vertStride=1&accept=csv`;
-    const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(hycomUrl);
-    const r = await fetchWithTimeout(proxyUrl, {}, 15000);
-    if (!r.ok) return;
-    const csv = await r.text();
-    const lines = csv.split('\n').filter(l => l.trim().length > 0);
-    if (lines.length < 3) return;
-    // Parse CSV rows: time,lat,lon,depth_m,temp_C
-    const profile = [];
-    for (let i = 1; i < lines.length; i++) {
-      const parts = lines[i].split(',');
-      if (parts.length < 5) continue;
-      const depthM = parseFloat(parts[3]);
-      const tempC = parseFloat(parts[4]);
-      if (isNaN(depthM) || isNaN(tempC)) continue;
-      profile.push({ depthM, tempC, depthFt: depthM * 3.28084, tempF: tempC * 9/5 + 32 });
-    }
-    if (profile.length < 3) return;
-    // Compute thermocline from profile
-    // Mixed layer: where temp doesn't drop more than 0.5°C from surface
-    // Thermocline depth: where rate of temp drop is maximum
-    const surfTempC = profile[0].tempC;
-    let mldDepthM = 0;
-    for (const p of profile) {
-      if (surfTempC - p.tempC < 0.5) mldDepthM = p.depthM;
-      else break;
-    }
-    // Find thermocline center: maximum temperature gradient (dT/dz)
-    let maxGradient = 0;
-    let thermoCenterM = mldDepthM;
-    let thermoBottomM = mldDepthM;
-    for (let i = 1; i < profile.length; i++) {
-      const dT = profile[i-1].tempC - profile[i].tempC;
-      const dZ = profile[i].depthM - profile[i-1].depthM;
-      if (dZ === 0) continue;
-      const grad = dT / dZ;
-      if (grad > maxGradient) {
-        maxGradient = grad;
-        thermoCenterM = (profile[i-1].depthM + profile[i].depthM) / 2;
-      }
-      // Bottom of thermocline: gradient drops below 0.05°C/m
-      if (grad < 0.05 && profile[i].depthM > mldDepthM + 2) {
-        thermoBottomM = profile[i].depthM;
-        break;
+    const fmtTime = d => `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}T${String(hr).padStart(2,'0')}:00:00Z`;
+    const timeStr = fmtTime(now);
+    const startEvo = fmtTime(now);
+    const endDate = new Date(now.getTime() + 5*24*60*60*1000);
+    const endEvo = `${endDate.getUTCFullYear()}-${String(endDate.getUTCMonth()+1).padStart(2,'0')}-${String(endDate.getUTCDate()).padStart(2,'0')}T00:00:00Z`;
+
+    // Coastal locations need to be shifted offshore to escape HYCOM's land mask.
+    const hc = _hycomOffshoreCoords(loc);
+
+    // Fire all fetches in parallel
+    const [tempProfile, salProfile, uProfile, vProfile, sstEvo] = await Promise.all([
+      _fetchHycomProfile('t3z', 'water_temp', hc.lat, hc.lon, timeStr),
+      _fetchHycomProfile('s3z', 'salinity', hc.lat, hc.lon, timeStr),
+      _fetchHycomProfile('u3z', 'water_u', hc.lat, hc.lon, timeStr),
+      _fetchHycomProfile('v3z', 'water_v', hc.lat, hc.lon, timeStr),
+      _fetchHycomSstEvolution(hc.lat, hc.lon, startEvo, endEvo)
+    ]);
+
+    D.hycom = {};
+
+    // Thermocline / MLD from temperature profile
+    if (tempProfile && tempProfile.length >= 3) {
+      const tc = _computeThermocline(tempProfile);
+      if (tc) {
+        Object.assign(D.hycom, tc);
+        // Store profile with Fahrenheit for UI
+        D.hycom.tempProfile = tempProfile.map(p => ({
+          depthFt: p.depthFt, tempF: Math.round(p.val * 9/5 + 32)
+        }));
       }
     }
-    // Find temp at bottom of thermocline (deep water)
-    const deepTemp = profile.find(p => p.depthM >= thermoBottomM);
-    const tempBelowF = deepTemp ? Math.round(deepTemp.tempF) : null;
-    D.hycom = {
-      profile: profile,
-      mixedLayerDepthFt: Math.round(mldDepthM * 3.28084),
-      thermoclineCenterFt: Math.round(thermoCenterM * 3.28084),
-      thermoclineBottomFt: Math.round(thermoBottomM * 3.28084),
-      tempBelowThermoclineF: tempBelowF,
-      surfTempF: Math.round(profile[0].tempF),
-      gradient: maxGradient
-    };
+
+    // Salinity profile — detect freshwater plume (low surface salinity)
+    if (salProfile && salProfile.length >= 1) {
+      const surfSal = salProfile[0].val;
+      D.hycom.surfSalinity = parseFloat(surfSal.toFixed(2));
+      // PSU < 33.0 at surface in SoCal = freshwater plume (normal ~33.4)
+      D.hycom.freshwaterPlume = surfSal < 33.0;
+      D.hycom.plumeSeverity = surfSal < 32.5 ? 'heavy' : (surfSal < 33.0 ? 'mild' : null);
+    }
+
+    // Currents — compute speed + direction at surface and at depth
+    if (uProfile && vProfile && uProfile.length > 0 && vProfile.length > 0) {
+      const depthsToReport = [0, 30, 80]; // meters: surface, mid, deep
+      D.hycom.currentProfile = [];
+      for (const targetM of depthsToReport) {
+        const u = uProfile.find(p => Math.abs(p.depthM - targetM) < 2);
+        const v = vProfile.find(p => Math.abs(p.depthM - targetM) < 2);
+        if (!u || !v) continue;
+        const speedMs = Math.sqrt(u.val * u.val + v.val * v.val);
+        const speedKt = speedMs * 1.94384;
+        // Direction current is flowing TOWARD (0=N, 90=E, 180=S, 270=W)
+        let dirDeg = (Math.atan2(u.val, v.val) * 180 / Math.PI);
+        if (dirDeg < 0) dirDeg += 360;
+        D.hycom.currentProfile.push({
+          depthFt: Math.round(targetM * 3.28084),
+          speedKt: parseFloat(speedKt.toFixed(2)),
+          dirDeg: Math.round(dirDeg)
+        });
+      }
+      // Detect opposing surface/deep currents (upwelling signature)
+      if (D.hycom.currentProfile.length >= 2) {
+        const surf = D.hycom.currentProfile[0];
+        const deep = D.hycom.currentProfile[D.hycom.currentProfile.length - 1];
+        if (surf.speedKt > 0.15 && deep.speedKt > 0.15) {
+          const diff = Math.abs(surf.dirDeg - deep.dirDeg);
+          const angleDiff = Math.min(diff, 360 - diff);
+          D.hycom.opposingCurrents = angleDiff > 120;
+        }
+      }
+    }
+
+    // Multi-day SST evolution → daily averages + thermocline evolution
+    if (sstEvo && sstEvo.length > 0) {
+      const days = {};
+      for (const pt of sstEvo) {
+        const day = pt.time.substring(0, 10);
+        if (!days[day]) days[day] = [];
+        days[day].push(pt.tempF);
+      }
+      const dayList = Object.keys(days).sort();
+      D.hycom.sstEvolution = dayList.map(day => ({
+        day,
+        avgF: parseFloat((days[day].reduce((a,b)=>a+b,0) / days[day].length).toFixed(1)),
+        minF: parseFloat(Math.min(...days[day]).toFixed(1)),
+        maxF: parseFloat(Math.max(...days[day]).toFixed(1))
+      }));
+    }
+
     srcStatus.hycom = 'ok';
+    // Re-render Ocean Forecast panel now that HYCOM data is available
+    // (initial render during fetchAllData happens before slow HYCOM async resolves)
+    try { if (typeof renderOceanForecast === 'function') renderOceanForecast(); } catch(e) {}
+    // Also refresh thermocline display with modeled data
+    try { if (typeof computeThermocline === 'function') computeThermocline(); } catch(e) {}
   } catch(e) {
-    console.warn('HYCOM profile fetch failed:', e);
+    console.warn('HYCOM fetch failed:', e);
     srcStatus.hycom = 'fail';
   }
 }
 
-// =========================================================================
 // OPEN-METEO MARINE FORECAST — 7-day SST + surface currents
 // Direct CORS support; JSON response; fast and reliable
 // =========================================================================
@@ -3275,6 +3431,7 @@ async function fetchOceanForecast() {
       times
     };
     srcStatus.marineFcst = 'ok';
+    try { if (typeof renderOceanForecast === 'function') renderOceanForecast(); } catch(e) {}
   } catch(e) {
     console.warn('Ocean forecast fetch failed:', e);
     srcStatus.marineFcst = 'fail';
@@ -3837,6 +3994,39 @@ function detectRollover() {
 
 // =========================================================================
 // MASTER FETCH
+
+// =========================================================================
+// SPECIES THERMAL PREFERENCES — for depth-targeting recommendations
+// Optimal water temp ranges for common SoCal species (°F)
+// =========================================================================
+const SPECIES_THERMAL = {
+  yellowtail:    { min: 62, max: 70, label: 'Yellowtail' },
+  whiteseabass:  { min: 58, max: 66, label: 'White Seabass' },
+  calico:        { min: 60, max: 68, label: 'Calico Bass' },
+  halibut:       { min: 58, max: 64, label: 'Halibut' },
+  lingcod:       { min: 48, max: 56, label: 'Lingcod' },
+  rockfish:      { min: 48, max: 58, label: 'Rockfish' },
+  sheephead:     { min: 58, max: 66, label: 'Sheephead' },
+  bluefin:       { min: 64, max: 72, label: 'Bluefin Tuna' },
+  yellowfin:     { min: 68, max: 78, label: 'Yellowfin Tuna' },
+  dorado:        { min: 68, max: 80, label: 'Dorado' },
+  wahoo:         { min: 70, max: 82, label: 'Wahoo' },
+};
+
+// Find depth range where temp is within species preference
+function getTargetDepthRange(profile, minF, maxF) {
+  if (!profile || profile.length === 0) return null;
+  let minDepth = null, maxDepth = null;
+  for (const p of profile) {
+    if (p.tempF >= minF && p.tempF <= maxF) {
+      if (minDepth === null) minDepth = p.depthFt;
+      maxDepth = p.depthFt;
+    }
+  }
+  return (minDepth === null) ? null : { minDepth, maxDepth };
+}
+
+
 // =========================================================================
 let _fetchGen = 0; // generation counter to discard stale fetch results on location switch
 async function fetchAllData() {
@@ -4412,54 +4602,126 @@ function chlClarity(c) {
 // Enhanced by real-time: wind mixing, upwelling, SST anomaly, wave energy
 
 // =========================================================================
-// Render Ocean Forecast (5-day SST + currents + upwelling alert)
+// Render Ocean Forecast — SST trend, thermocline evolution, currents, salinity,
+// target depths, upwelling detection
 // =========================================================================
 function renderOceanForecast() {
+  // ── Open-Meteo surface forecast (existing) ──
   const ofRow = document.getElementById('oceanForecastRow');
   const ofVal = document.getElementById('oceanForecastVal');
   const scRow = document.getElementById('surfaceCurrentRow');
   const scVal = document.getElementById('surfaceCurrentVal');
   if (!ofRow || !ofVal) return;
-  if (!D.oceanForecast) { ofRow.style.display = 'none'; scRow && (scRow.style.display = 'none'); return; }
   const oc = D.oceanForecast;
-  // SST trend display
-  let trendHtml = '';
-  if (oc.dailySst && oc.dailySst.length >= 3) {
-    const todayC = oc.dailySst[0].avg;
-    const day3C = oc.dailySst[2].avg;
-    const change = day3C - todayC;
-    const arrow = change > 0.5 ? '↑' : change < -0.5 ? '↓' : '→';
-    const arrowColor = change < -2 ? 'var(--poor)' : change > 2 ? '#e67e22' : 'var(--text-muted)';
-    trendHtml = `${Math.round(todayC)}°F → ${Math.round(day3C)}°F <span style="color:${arrowColor}">${arrow}</span> (3-day)`;
-  }
-  // Upwelling alert (highest priority)
-  if (oc.upwellingAlert) {
-    const mag = oc.upwellingAlert.magnitude.toFixed(1);
-    ofVal.innerHTML = `<span style="color:var(--poor);font-weight:600">⚠ Upwelling expected</span> · ${trendHtml} <span class="src-badge sat" style="font-size:8px">Open-Meteo</span>`;
-  } else {
-    ofVal.innerHTML = `${trendHtml} <span class="src-badge sat" style="font-size:8px">Open-Meteo</span>`;
-  }
-  ofRow.style.display = '';
-  // Surface current display
-  if (scRow && scVal && oc.currentSurfaceVel !== null && oc.currentSurfaceDir !== null) {
-    const velKt = (oc.currentSurfaceVel * 1.94384).toFixed(1); // m/s to knots
+  if (oc) {
+    let trendHtml = '';
+    if (oc.dailySst && oc.dailySst.length >= 3) {
+      const todayC = oc.dailySst[0].avg;
+      const day3C = oc.dailySst[2].avg;
+      const change = day3C - todayC;
+      const arrow = change > 0.5 ? '↑' : change < -0.5 ? '↓' : '→';
+      const arrowColor = change < -2 ? 'var(--poor)' : change > 2 ? '#e67e22' : 'var(--text-muted)';
+      trendHtml = `${Math.round(todayC)}°F → ${Math.round(day3C)}°F <span style="color:${arrowColor}">${arrow}</span> (3-day)`;
+    }
+    if (oc.upwellingAlert) {
+      ofVal.innerHTML = `<span style="color:var(--poor);font-weight:600">⚠ Upwelling expected</span> · ${trendHtml} <span class="src-badge sat" style="font-size:8px">Open-Meteo</span>`;
+    } else {
+      ofVal.innerHTML = `${trendHtml} <span class="src-badge sat" style="font-size:8px">Open-Meteo</span>`;
+    }
+    ofRow.style.display = '';
+    if (scRow && scVal && oc.currentSurfaceVel !== null && oc.currentSurfaceDir !== null) {
+      const velKt = (oc.currentSurfaceVel * 1.94384).toFixed(1);
+      const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+      const dirLabel = dirs[Math.round((oc.currentSurfaceDir % 360) / 22.5) % 16];
+      const dir = oc.currentSurfaceDir;
+      let interp = '';
+      if (velKt < 0.2) interp = 'slack';
+      else if ((dir >= 315 || dir < 45)) interp = 'northward (upwelling signal)';
+      else if (dir >= 135 && dir < 225) interp = 'southward (bloom transport risk)';
+      else if (dir >= 45 && dir < 135) interp = 'onshore';
+      else interp = 'offshore';
+      scVal.innerHTML = `${velKt} kt · ${dirLabel} <span style="color:var(--text-muted);font-size:10px">(${interp})</span> <span class="src-badge sat" style="font-size:8px">Open-Meteo</span>`;
+      scRow.style.display = '';
+    } else if (scRow) scRow.style.display = 'none';
+  } else { ofRow.style.display = 'none'; scRow && (scRow.style.display = 'none'); }
+
+  // ── HYCOM thermocline 5-day evolution ──
+  const teRow = document.getElementById('thermoclineEvoRow');
+  const teVal = document.getElementById('thermoclineEvoVal');
+  if (teRow && teVal && D.hycom && D.hycom.sstEvolution && D.hycom.sstEvolution.length >= 3) {
+    const days = D.hycom.sstEvolution.slice(0, 5);
+    const labels = ['Today','+1','+2','+3','+4'];
+    const trendParts = days.map((d, i) => `${labels[i] || '+' + i}: ${Math.round(d.avgF)}°F`);
+    teVal.innerHTML = `${trendParts.join(' · ')} <span class="src-badge sat" style="font-size:8px">HYCOM</span>`;
+    teRow.style.display = '';
+  } else if (teRow) teRow.style.display = 'none';
+
+  // ── Subsurface current profile ──
+  const cpRow = document.getElementById('currentProfileRow');
+  const cpVal = document.getElementById('currentProfileVal');
+  if (cpRow && cpVal && D.hycom && D.hycom.currentProfile && D.hycom.currentProfile.length >= 2) {
     const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-    const dirIdx = Math.round((oc.currentSurfaceDir % 360) / 22.5) % 16;
-    const dirLabel = dirs[dirIdx];
-    // Interpretation: northward/offshore = clean upwelled water; southward = bloom transport
-    let interp = '';
-    const dir = oc.currentSurfaceDir;
-    if (velKt < 0.2) interp = 'slack';
-    else if ((dir >= 315 || dir < 45)) interp = 'northward (upwelling signal)';
-    else if (dir >= 135 && dir < 225) interp = 'southward (bloom transport risk)';
-    else if (dir >= 45 && dir < 135) interp = 'onshore';
-    else interp = 'offshore';
-    scVal.innerHTML = `${velKt} kt · ${dirLabel} <span style="color:var(--text-muted);font-size:10px">(${interp})</span> <span class="src-badge sat" style="font-size:8px">Open-Meteo</span>`;
-    scRow.style.display = '';
-  } else if (scRow) {
-    scRow.style.display = 'none';
-  }
+    const profile = D.hycom.currentProfile;
+    const parts = profile.map(p => {
+      const dirLabel = dirs[Math.round((p.dirDeg % 360) / 22.5) % 16];
+      return `${p.depthFt}ft: ${p.speedKt}kt ${dirLabel}`;
+    });
+    let html = parts.join(' · ');
+    if (D.hycom.opposingCurrents) {
+      html += ' <span style="color:#e67e22;font-size:10px">⇌ opposing (upwelling signature)</span>';
+    }
+    cpVal.innerHTML = `${html} <span class="src-badge sat" style="font-size:8px">HYCOM</span>`;
+    cpRow.style.display = '';
+  } else if (cpRow) cpRow.style.display = 'none';
+
+  // ── Salinity / freshwater plume ──
+  const saRow = document.getElementById('salinityRow');
+  const saVal = document.getElementById('salinityVal');
+  if (saRow && saVal && D.hycom && D.hycom.surfSalinity !== undefined) {
+    const psu = D.hycom.surfSalinity;
+    let label = `${psu.toFixed(1)} PSU`;
+    if (D.hycom.plumeSeverity === 'heavy') {
+      label += ' <span style="color:var(--poor);font-weight:600">(heavy freshwater plume — runoff)</span>';
+    } else if (D.hycom.plumeSeverity === 'mild') {
+      label += ' <span style="color:#e67e22">(mild freshwater — recent runoff)</span>';
+    } else {
+      label += ' <span style="color:var(--text-muted)">(normal)</span>';
+    }
+    saVal.innerHTML = `${label} <span class="src-badge sat" style="font-size:8px">HYCOM</span>`;
+    saRow.style.display = '';
+  } else if (saRow) saRow.style.display = 'none';
+
+  // ── Target depth recommendations based on species thermal preferences ──
+  const tdRow = document.getElementById('targetDepthRow');
+  const tdVal = document.getElementById('targetDepthVal');
+  if (tdRow && tdVal && D.hycom && D.hycom.tempProfile && D.hycom.tempProfile.length >= 3) {
+    const profile = D.hycom.tempProfile;
+    // Pick species relevant to the region
+    const loc = LOCATIONS[currentLocation];
+    let speciesKeys = [];
+    if (loc && (loc.bluewater || loc.offshore)) {
+      speciesKeys = ['bluefin', 'yellowfin', 'dorado', 'yellowtail', 'rockfish', 'lingcod'];
+    } else {
+      speciesKeys = ['yellowtail', 'whiteseabass', 'calico', 'halibut', 'rockfish', 'lingcod'];
+    }
+    const recs = [];
+    for (const key of speciesKeys) {
+      const thermal = SPECIES_THERMAL[key];
+      if (!thermal) continue;
+      const range = getTargetDepthRange(profile, thermal.min, thermal.max);
+      if (range && range.minDepth !== range.maxDepth) {
+        recs.push(`${thermal.label}: ${range.minDepth}-${range.maxDepth}ft`);
+      } else if (range) {
+        recs.push(`${thermal.label}: ~${range.minDepth}ft`);
+      }
+    }
+    if (recs.length > 0) {
+      tdVal.innerHTML = `${recs.slice(0, 4).join(' · ')} <span class="src-badge sat" style="font-size:8px">HYCOM</span>`;
+      tdRow.style.display = '';
+    } else tdRow.style.display = 'none';
+  } else if (tdRow) tdRow.style.display = 'none';
 }
+
 
 
 // =========================================================================
