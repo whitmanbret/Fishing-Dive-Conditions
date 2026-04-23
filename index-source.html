@@ -1241,32 +1241,6 @@
       </div>
     </div>
 
-    <!-- ===== REGIONAL OCEAN MAP (SST) ===== -->
-    <div style="text-align:center;margin-bottom:12px">
-      <button id="sstMapToggleBtn" onclick="toggleSstMap()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Ocean Temperature Map ▼</button>
-    </div>
-    <div id="sstMapSection" style="display:none;margin-bottom:16px;">
-      <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-          <span style="font-size:11px;color:var(--text-muted);">Sea Surface Temperature — regional view</span>
-          <div style="display:flex;gap:6px;">
-            <button id="sstMapSoCalBtn" onclick="setSstMapRegion('socal')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:var(--accent);color:#fff;border:1px solid var(--accent);">SoCal</button>
-            <button id="sstMapCenCalBtn" onclick="setSstMapRegion('cencal')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:transparent;color:var(--text-muted);border:1px solid var(--border);">Central</button>
-            <button id="sstMapNorCalBtn" onclick="setSstMapRegion('norcal')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:transparent;color:var(--text-muted);border:1px solid var(--border);">Nor Cal</button>
-          </div>
-        </div>
-        <div style="position:relative;width:100%;background:#0a1628;border-radius:6px;overflow:hidden;min-height:200px;">
-          <img id="sstMapImg" src="" alt="Sea surface temperature map" style="width:100%;display:block;border-radius:6px;" onerror="this.style.display='none';document.getElementById('sstMapError').style.display='block';">
-          <div id="sstMapError" style="display:none;padding:30px;text-align:center;color:var(--text-muted);font-size:12px;">Satellite SST imagery unavailable</div>
-          <div id="sstMapLoading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-muted);font-size:12px;">Loading SST map...</div>
-        </div>
-        <div style="margin-top:8px;font-size:10px;color:var(--text-muted);line-height:1.5;">
-          <span id="sstMapSourceLabel">NOAA/NCEI Blended SST · Daily · ~5km resolution</span><br>
-          Red = warm · Blue = cold · Sharp color transitions = temperature breaks where fish concentrate
-        </div>
-      </div>
-    </div>
-
     <!-- ===== BEST SPOT NEARBY ===== -->
     <div style="text-align:center;margin-bottom:12px">
       <button id="bestSpotToggleBtn" onclick="toggleBestSpot()" style="
