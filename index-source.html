@@ -554,6 +554,10 @@
       background: var(--bg-secondary); border-radius: 12px;
       border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
     }
+    /* Full-width collapsible section toggle buttons (Condition Details, Maps, Forecast, Boat Reports) */
+    .section-toggle-btn {
+      width: 100%; box-sizing: border-box; text-align: center;
+    }
     .category-header {
       padding: 8px 14px; font-size: 11px; font-weight: 700;
       text-transform: uppercase; letter-spacing: 1.5px;
@@ -1113,9 +1117,9 @@
 
     <!-- ===== CONDITION DETAILS (above Chlorophyll Map and 5-Day Forecast) ===== -->
     <div style="text-align:center;margin-bottom:12px">
-      <button id="detailsToggleBtn" onclick="toggleAllDetails()" style="
+      <button id="detailsToggleBtn" class="section-toggle-btn" onclick="toggleAllDetails()" style="
         background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
-        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
+        border-radius: 8px; padding: 10px 20px; font-size: 12px; font-weight: 600;
         cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
       ">Condition Details ▼</button>
     </div>
@@ -1192,7 +1196,7 @@
 
     <!-- ===== REGIONAL OCEAN TEMPERATURE MAP ===== -->
     <div style="text-align:center;margin-bottom:12px">
-      <button id="sstMapToggleBtn" onclick="toggleSstMap()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Ocean Temperature Map ▼</button>
+      <button id="sstMapToggleBtn" class="section-toggle-btn" onclick="toggleSstMap()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:10px 20px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Ocean Temperature Map ▼</button>
     </div>
     <div id="sstMapSection" style="display:none;margin-bottom:16px;">
       <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;">
@@ -1218,7 +1222,7 @@
 
     <!-- ===== CHLOROPHYLL MAP ===== -->
     <div style="text-align:center;margin-bottom:12px">
-      <button id="chlMapToggleBtn" onclick="toggleChlMap()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Chlorophyll Map ▼</button>
+      <button id="chlMapToggleBtn" class="section-toggle-btn" onclick="toggleChlMap()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:10px 20px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Chlorophyll Map ▼</button>
     </div>
     <div id="chlMapSection" style="display:none;margin-bottom:16px;">
       <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;">
@@ -1243,9 +1247,9 @@
 
     <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
     <div style="text-align:center;margin-bottom:12px">
-      <button id="forecastToggleBtn" onclick="toggleForecastSection()" style="
+      <button id="forecastToggleBtn" class="section-toggle-btn" onclick="toggleForecastSection()" style="
         background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
-        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
+        border-radius: 8px; padding: 10px 20px; font-size: 12px; font-weight: 600;
         cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
       ">5-Day Forecast ▼</button>
     </div>
@@ -1276,9 +1280,9 @@
 
     <!-- ===== LATEST BOAT FISH REPORTS (just above webcams) ===== -->
     <div id="boatReportsToggleWrap" style="display:none;text-align:center;margin-bottom:12px">
-      <button id="boatReportsToggleBtn" onclick="toggleBoatReportsSection()" style="
+      <button id="boatReportsToggleBtn" class="section-toggle-btn" onclick="toggleBoatReportsSection()" style="
         background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
-        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
+        border-radius: 8px; padding: 10px 20px; font-size: 12px; font-weight: 600;
         cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
       ">Latest Boat Reports ▼</button>
     </div>
