@@ -2440,10 +2440,16 @@ async function fetchTempTrend() {
 // --- NOAA CO-OPS: Tide State & Current Estimate ---
 async function fetchTideState() {
   try {
-    const r=await fetchWithTimeout(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`);
+    // Use a 2-day range (today + tomorrow) so late-evening queries still find a future event.
+    // NOAA's date=today cuts off after midnight local time — if it's 10pm and last tide was
+    // at 7pm, we need tomorrow's events to compute incoming/outgoing state.
+    const now=new Date();
+    const fmtDate=d=>`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    const yesterday=new Date(now.getTime()-24*60*60*1000);
+    const tomorrow=new Date(now.getTime()+24*60*60*1000);
+    const r=await fetchWithTimeout(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmtDate(yesterday)}&end_date=${fmtDate(tomorrow)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`);
     const d=await r.json();
     if(d.predictions&&d.predictions.length>0) {
-      const now=new Date();
       const events=d.predictions.map(p=>({time:new Date(p.t.replace(' ','T')),type:p.type,value:parseFloat(p.v)}));
       D.tideEvents=events;
       let prev=null,next=null;
