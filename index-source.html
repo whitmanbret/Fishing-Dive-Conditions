@@ -1133,6 +1133,7 @@
       <div class="factor-row" id="salinityRow" style="display:none"><div class="factor-label">Salinity</div><div class="factor-value" id="salinityVal">--</div></div>
       <div class="factor-row" id="targetDepthRow" style="display:none"><div class="factor-label">Target Depths</div><div class="factor-value" id="targetDepthVal">--</div></div>
       <div class="factor-row" id="eddyRow" style="display:none"><div class="factor-label">Eddy Feature</div><div class="factor-value" id="eddyVal">--</div></div>
+      <div class="factor-row" id="frontRow" style="display:none"><div class="factor-label">Temp Break (front)</div><div class="factor-value" id="frontVal">--</div></div>
       <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tideStateScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="moonPhaseScore" style="display:none">-</div></div>
@@ -3437,6 +3438,50 @@ async function _detectEddy(lat, lon, timeStr) {
   };
 }
 
+// Fetch surface temp only (single depth) at a point
+async function _fetchHycomSurfaceTemp(lat, lon, timeStr) {
+  const profile = await _fetchHycomProfile('t3z', 'water_temp', lat, lon, timeStr);
+  if (!profile || profile.length === 0) return null;
+  return profile[0].val; // surface temp in °C
+}
+
+// Detect frontal zone by sampling SST at center + 4 cardinal points.
+// Sharp SST gradient (>1.5°F over ~30 km) = front = fish concentrate.
+// Returns null, or { gradientF: number, strongDir: string (compass label), temps: { center, N, S, E, W } }
+async function _detectFront(lat, lon, timeStr) {
+  const offset = 0.2; // ~22 km between points
+  const [c, n, s, e, w] = await Promise.all([
+    _fetchHycomSurfaceTemp(lat, lon, timeStr),
+    _fetchHycomSurfaceTemp(lat + offset, lon, timeStr),
+    _fetchHycomSurfaceTemp(lat - offset, lon, timeStr),
+    _fetchHycomSurfaceTemp(lat, lon + offset, timeStr),
+    _fetchHycomSurfaceTemp(lat, lon - offset, timeStr)
+  ]);
+  if (c === null) return null;
+  const temps = { center: c, N: n, S: s, E: e, W: w };
+  // Compute max gradient in any direction from center
+  let maxDelta = 0;
+  let maxDir = null;
+  for (const [dir, val] of [['N', n], ['S', s], ['E', e], ['W', w]]) {
+    if (val === null) continue;
+    const d = Math.abs(val - c);
+    if (d > maxDelta) { maxDelta = d; maxDir = dir; }
+  }
+  const gradientF = maxDelta * 9 / 5; // Celsius delta → Fahrenheit delta (same magnitude)
+  if (gradientF < 1.5) return null; // no significant front
+  // Determine which side is warm vs cold (gradient points toward warmer water)
+  let dirLabel = maxDir;
+  if (maxDir && temps[maxDir] !== null) {
+    const warmer = temps[maxDir] > c;
+    dirLabel = warmer ? `warmer ${maxDir}` : `colder ${maxDir}`;
+  }
+  return {
+    gradientF: parseFloat(gradientF.toFixed(1)),
+    strongDir: dirLabel,
+    centerTempF: parseFloat((c * 9/5 + 32).toFixed(1))
+  };
+}
+
 // Compute thermocline + mixed layer depth from a temperature profile
 function _computeThermocline(profile) {
   if (!profile || profile.length < 3) return null;
@@ -3494,17 +3539,18 @@ async function fetchHycomProfile() {
     // Coastal locations need to be shifted offshore to escape HYCOM's land mask.
     const hc = _hycomOffshoreCoords(loc);
 
-    // Eddy detection is expensive (5 extra API calls) — only run for offshore/bluewater spots
-    const runEddyDetection = !!(loc.bluewater || loc.offshore);
+    // Eddy & frontal detection are expensive (5 extra API calls each) — only for offshore/bluewater
+    const runOffshoreChecks = !!(loc.bluewater || loc.offshore);
 
     // Fire all fetches in parallel
-    const [tempProfile, salProfile, uProfile, vProfile, sstEvo, eddy] = await Promise.all([
+    const [tempProfile, salProfile, uProfile, vProfile, sstEvo, eddy, front] = await Promise.all([
       _fetchHycomProfile('t3z', 'water_temp', hc.lat, hc.lon, timeStr),
       _fetchHycomProfile('s3z', 'salinity', hc.lat, hc.lon, timeStr),
       _fetchHycomProfile('u3z', 'water_u', hc.lat, hc.lon, timeStr),
       _fetchHycomProfile('v3z', 'water_v', hc.lat, hc.lon, timeStr),
       _fetchHycomSstEvolution(hc.lat, hc.lon, startEvo, endEvo),
-      runEddyDetection ? _detectEddy(hc.lat, hc.lon, timeStr) : Promise.resolve(null)
+      runOffshoreChecks ? _detectEddy(hc.lat, hc.lon, timeStr) : Promise.resolve(null),
+      runOffshoreChecks ? _detectFront(hc.lat, hc.lon, timeStr) : Promise.resolve(null)
     ]);
 
     D.hycom = {};
@@ -3564,6 +3610,10 @@ async function fetchHycomProfile() {
     // Eddy detection (offshore only)
     if (eddy) {
       D.hycom.eddy = eddy;
+    }
+    // Frontal zone detection (offshore only)
+    if (front) {
+      D.hycom.front = front;
     }
 
     // Multi-day SST evolution → daily averages + thermocline evolution
@@ -4957,6 +5007,17 @@ function renderOceanForecast() {
     eddyVal.innerHTML = `<span style="color:${color};font-weight:600">${typeLabel}</span> · ${e.strength} (${cm > 0 ? '+' : ''}${cm} cm) <span style="color:var(--text-muted);font-size:10px">${interp}</span> <span class="src-badge sat" style="font-size:8px">HYCOM</span>`;
     eddyRow.style.display = '';
   } else if (eddyRow) eddyRow.style.display = 'none';
+
+  // ── Frontal zone (offshore/bluewater only) — sharp SST gradient marks fish concentration zone ──
+  const frontRow = document.getElementById('frontRow');
+  const frontVal = document.getElementById('frontVal');
+  if (frontRow && frontVal && D.hycom && D.hycom.front) {
+    const f = D.hycom.front;
+    const strength = f.gradientF > 3 ? 'strong' : f.gradientF > 2 ? 'moderate' : 'mild';
+    const color = f.gradientF > 3 ? 'var(--excellent)' : f.gradientF > 2 ? '#e67e22' : 'var(--text-secondary)';
+    frontVal.innerHTML = `<span style="color:${color};font-weight:600">⚡ ${strength} front</span> · ${f.gradientF}°F break · ${f.strongDir} <span style="color:var(--text-muted);font-size:10px">(fish target zone)</span> <span class="src-badge sat" style="font-size:8px">HYCOM</span>`;
+    frontRow.style.display = '';
+  } else if (frontRow) frontRow.style.display = 'none';
 }
 
 
