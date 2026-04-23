@@ -1190,6 +1190,32 @@
 
     </div><!-- end #detailsSections -->
 
+    <!-- ===== REGIONAL OCEAN TEMPERATURE MAP ===== -->
+    <div style="text-align:center;margin-bottom:12px">
+      <button id="sstMapToggleBtn" onclick="toggleSstMap()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Ocean Temperature Map ▼</button>
+    </div>
+    <div id="sstMapSection" style="display:none;margin-bottom:16px;">
+      <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+          <span style="font-size:11px;color:var(--text-muted);">Regional SST — look for temp breaks where fish concentrate</span>
+          <div style="display:flex;gap:6px;">
+            <button id="sstMapSoCalBtn" onclick="setSstMapRegion('socal')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:var(--accent);color:#fff;border:1px solid var(--accent);">SoCal</button>
+            <button id="sstMapCenCalBtn" onclick="setSstMapRegion('cencal')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:transparent;color:var(--text-muted);border:1px solid var(--border);">Central</button>
+            <button id="sstMapNorCalBtn" onclick="setSstMapRegion('norcal')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:transparent;color:var(--text-muted);border:1px solid var(--border);">NorCal</button>
+          </div>
+        </div>
+        <div style="position:relative;width:100%;background:#0a1628;border-radius:6px;overflow:hidden;min-height:220px;">
+          <img id="sstMapImg" src="" alt="Regional SST map" style="width:100%;display:block;border-radius:6px;" onerror="this.style.display='none';document.getElementById('sstMapError').style.display='block';">
+          <div id="sstMapError" style="display:none;padding:30px;text-align:center;color:var(--text-muted);font-size:12px;">Satellite image unavailable — cloud cover may be blocking data</div>
+          <div id="sstMapLoading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-muted);font-size:12px;">Loading satellite imagery...</div>
+        </div>
+        <div style="margin-top:8px;font-size:10px;color:var(--text-muted);line-height:1.5;">
+          <span id="sstMapSourceLabel">NOAA/NCEI Blended SST · Southern California · Daily · ~5km</span><br>
+          Source: NOAA CoastWatch / ERDDAP · Red = warmer · Blue = colder · Sharp color boundaries = temp breaks (fish concentrate here)
+        </div>
+      </div>
+    </div>
+
     <!-- ===== CHLOROPHYLL MAP ===== -->
     <div style="text-align:center;margin-bottom:12px">
       <button id="chlMapToggleBtn" onclick="toggleChlMap()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Chlorophyll Map ▼</button>
@@ -1211,6 +1237,32 @@
         <div style="margin-top:8px;font-size:10px;color:var(--text-muted);line-height:1.5;">
           <span id="chlMapSourceLabel">VIIRS S-NPP · Weekly composite · 4km resolution</span><br>
           Source: NOAA CoastWatch / ERDDAP · Green = high chlorophyll (reduced viz) · Blue = clear water
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== REGIONAL OCEAN MAP (SST) ===== -->
+    <div style="text-align:center;margin-bottom:12px">
+      <button id="sstMapToggleBtn" onclick="toggleSstMap()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Ocean Temperature Map ▼</button>
+    </div>
+    <div id="sstMapSection" style="display:none;margin-bottom:16px;">
+      <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="font-size:11px;color:var(--text-muted);">Sea Surface Temperature — regional view</span>
+          <div style="display:flex;gap:6px;">
+            <button id="sstMapSoCalBtn" onclick="setSstMapRegion('socal')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:var(--accent);color:#fff;border:1px solid var(--accent);">SoCal</button>
+            <button id="sstMapCenCalBtn" onclick="setSstMapRegion('cencal')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:transparent;color:var(--text-muted);border:1px solid var(--border);">Central</button>
+            <button id="sstMapNorCalBtn" onclick="setSstMapRegion('norcal')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:transparent;color:var(--text-muted);border:1px solid var(--border);">Nor Cal</button>
+          </div>
+        </div>
+        <div style="position:relative;width:100%;background:#0a1628;border-radius:6px;overflow:hidden;min-height:200px;">
+          <img id="sstMapImg" src="" alt="Sea surface temperature map" style="width:100%;display:block;border-radius:6px;" onerror="this.style.display='none';document.getElementById('sstMapError').style.display='block';">
+          <div id="sstMapError" style="display:none;padding:30px;text-align:center;color:var(--text-muted);font-size:12px;">Satellite SST imagery unavailable</div>
+          <div id="sstMapLoading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-muted);font-size:12px;">Loading SST map...</div>
+        </div>
+        <div style="margin-top:8px;font-size:10px;color:var(--text-muted);line-height:1.5;">
+          <span id="sstMapSourceLabel">NOAA/NCEI Blended SST · Daily · ~5km resolution</span><br>
+          Red = warm · Blue = cold · Sharp color transitions = temperature breaks where fish concentrate
         </div>
       </div>
     </div>
@@ -8351,6 +8403,67 @@ function loadChlMap() {
 window.toggleChlMap = toggleChlMap;
 window.setChlMapView = setChlMapView;
 window.loadChlMap = loadChlMap;
+
+// ===== Regional Ocean Temperature Map =====
+// NOAA Blended SST daily, rendered as PNG from ERDDAP. Three regional presets.
+var SST_MAP_REGIONS = {
+  'socal': { bbox: '%5B(32.0):(35.5)%5D%5B(-121.5):(-116.5)%5D', label: 'Southern California' },
+  'cencal': { bbox: '%5B(35.0):(38.0)%5D%5B(-124.0):(-120.5)%5D', label: 'Central California' },
+  'norcal': { bbox: '%5B(37.5):(41.5)%5D%5B(-125.5):(-122.5)%5D', label: 'Northern California' }
+};
+var sstMapCurrentRegion = 'socal';
+var sstMapLoaded = false;
+function toggleSstMap() {
+  var section = document.getElementById('sstMapSection');
+  var btn = document.getElementById('sstMapToggleBtn');
+  if (!section || !btn) return;
+  var hidden = section.style.display === 'none';
+  section.style.display = hidden ? '' : 'none';
+  btn.textContent = hidden ? 'Ocean Temperature Map \u25B2' : 'Ocean Temperature Map \u25BC';
+  if (hidden && !sstMapLoaded) loadSstMap();
+}
+function setSstMapRegion(region) {
+  sstMapCurrentRegion = region;
+  var btns = {
+    'socal': document.getElementById('sstMapSoCalBtn'),
+    'cencal': document.getElementById('sstMapCenCalBtn'),
+    'norcal': document.getElementById('sstMapNorCalBtn')
+  };
+  for (var k in btns) {
+    if (!btns[k]) continue;
+    if (k === region) {
+      btns[k].style.background = 'var(--accent)';
+      btns[k].style.color = '#fff';
+      btns[k].style.borderColor = 'var(--accent)';
+    } else {
+      btns[k].style.background = 'transparent';
+      btns[k].style.color = 'var(--text-muted)';
+      btns[k].style.borderColor = 'var(--border)';
+    }
+  }
+  var labelEl = document.getElementById('sstMapSourceLabel');
+  if (labelEl && SST_MAP_REGIONS[region]) {
+    labelEl.textContent = 'NOAA/NCEI Blended SST \u00B7 ' + SST_MAP_REGIONS[region].label + ' \u00B7 Daily \u00B7 ~5km';
+  }
+  loadSstMap();
+}
+function loadSstMap() {
+  var img = document.getElementById('sstMapImg');
+  var errDiv = document.getElementById('sstMapError');
+  var loadDiv = document.getElementById('sstMapLoading');
+  if (!img) return;
+  errDiv.style.display = 'none';
+  img.style.display = 'none';
+  loadDiv.style.display = '';
+  var bbox = SST_MAP_REGIONS[sstMapCurrentRegion].bbox;
+  var url = 'https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDsstDaily.png?analysed_sst%5B(last)%5D' + bbox + '&.colorBar=Rainbow2%7C%7CLinear%7C285%7C293%7C&.size=400%7C340&.timestamp=' + Date.now();
+  img.onload = function() { loadDiv.style.display = 'none'; img.style.display = 'block'; sstMapLoaded = true; };
+  img.onerror = function() { loadDiv.style.display = 'none'; img.style.display = 'none'; errDiv.style.display = 'block'; };
+  img.src = url;
+}
+window.toggleSstMap = toggleSstMap;
+window.setSstMapRegion = setSstMapRegion;
+window.loadSstMap = loadSstMap;
 </script>
 </body>
 </html>
