@@ -7708,10 +7708,26 @@ function applyVizCalibration(vizEst) {
   return vizEst;
 }
 
-// INIT — populate spot dropdown for default county, then fetch
+// INIT — populate spot dropdown, defaulting to first saved favorite if any
 (function initSpots() {
-  const county = document.getElementById('countySelect').value;
-  const spots = COUNTY_SPOTS[county] || [];
+  // Check for saved favorites — if present, first favorite becomes the default spot
+  let defaultSpot = 'ljshores';
+  try {
+    const favs = JSON.parse(localStorage.getItem('favSpots') || '[]');
+    if (favs.length > 0 && LOCATIONS[favs[0]]) {
+      defaultSpot = favs[0];
+    }
+  } catch(e) { /* fallback to ljshores */ }
+
+  // Find which county contains the default spot and switch to it
+  let defaultCounty = 'sandiego';
+  for (const [county, spots] of Object.entries(COUNTY_SPOTS)) {
+    if (spots.includes(defaultSpot)) { defaultCounty = county; break; }
+  }
+  const countySel = document.getElementById('countySelect');
+  if (countySel) countySel.value = defaultCounty;
+
+  const spots = COUNTY_SPOTS[defaultCounty] || [];
   const sel = document.getElementById('locationSelect');
   sel.innerHTML = '';
   spots.forEach(key => {
@@ -7720,8 +7736,8 @@ function applyVizCalibration(vizEst) {
     opt.textContent = LOCATIONS[key].name;
     sel.appendChild(opt);
   });
-  sel.value = 'ljshores'; // default to La Jolla Shores
-  currentLocation = 'ljshores';
+  sel.value = defaultSpot;
+  currentLocation = defaultSpot;
 })();
 updateReportLinks();
 updateWebcams();
@@ -7731,9 +7747,15 @@ fetchAllData();
 mapVisible = true;
 initMap();
 
-// Geolocation: auto-select nearest dive spot
+// Geolocation: auto-select nearest dive spot — UNLESS user has saved favorites.
+// Users who favorited a spot want the app to open to that spot, not jump to
+// whatever happens to be geographically closest (often wrong for traveling divers).
 (function() {
   if (!navigator.geolocation) return;
+  try {
+    const favs = JSON.parse(localStorage.getItem('favSpots') || '[]');
+    if (favs.length > 0) return; // respect user's favorite choice
+  } catch(e) {}
   navigator.geolocation.getCurrentPosition(function(pos) {
     const userLat = pos.coords.latitude;
     const userLon = pos.coords.longitude;
