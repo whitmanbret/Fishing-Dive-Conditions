@@ -1126,6 +1126,8 @@
       <div class="category-header">Key Conditions</div>
       <div class="factor-row"><div class="factor-label">Water Temp</div><div class="factor-value" id="waterTempVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waterTempScore" style="display:none">-</div></div>
       <div class="factor-row" id="thermoclineRow" style="display:none"><div class="factor-label">Thermocline</div><div class="factor-value" id="thermoclineVal">--</div></div>
+      <div class="factor-row" id="oceanForecastRow" style="display:none"><div class="factor-label">Ocean Forecast</div><div class="factor-value" id="oceanForecastVal">--</div></div>
+      <div class="factor-row" id="surfaceCurrentRow" style="display:none"><div class="factor-label">Surface Current</div><div class="factor-value" id="surfaceCurrentVal">--</div></div>
       <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tideStateScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="moonPhaseScore" style="display:none">-</div></div>
@@ -3128,6 +3130,152 @@ async function fetchNDBCBuoy() {
 // NDBC BUOY SST — direct fetch from NDBC realtime2 text files
 // For bluewater/offshore spots, this is more accurate than shore stations.
 // Called AFTER main fetch round so it can override shore station temps.
+
+// =========================================================================
+// HYCOM 3D TEMPERATURE PROFILE — subsurface thermocline forecast
+// Uses NOAA/NRL ESPC-D-V02 Global 1/12° forecast (7-day horizon)
+// Via codetabs.com CORS proxy since HYCOM TDS doesn't send CORS headers
+// =========================================================================
+async function fetchHycomProfile() {
+  try {
+    const loc = LOCATIONS[currentLocation];
+    if (!loc) return;
+    // Format time as ISO string for the current hour (rounded down to 3-hourly grid)
+    const now = new Date();
+    const hr = Math.floor(now.getUTCHours() / 3) * 3;
+    const timeStr = `${now.getUTCFullYear()}-${String(now.getUTCMonth()+1).padStart(2,'0')}-${String(now.getUTCDate()).padStart(2,'0')}T${String(hr).padStart(2,'0')}:00:00Z`;
+    // HYCOM NCSS URL — request full depth profile at one lat/lon/time
+    const hycomUrl = `https://tds.hycom.org/thredds/ncss/grid/FMRC_ESPC-D-V02_t3z/FMRC_ESPC-D-V02_t3z_best.ncd?var=water_temp&latitude=${loc.lat}&longitude=${loc.lon}&time=${encodeURIComponent(timeStr)}&vertStride=1&accept=csv`;
+    const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(hycomUrl);
+    const r = await fetchWithTimeout(proxyUrl, {}, 15000);
+    if (!r.ok) return;
+    const csv = await r.text();
+    const lines = csv.split('\n').filter(l => l.trim().length > 0);
+    if (lines.length < 3) return;
+    // Parse CSV rows: time,lat,lon,depth_m,temp_C
+    const profile = [];
+    for (let i = 1; i < lines.length; i++) {
+      const parts = lines[i].split(',');
+      if (parts.length < 5) continue;
+      const depthM = parseFloat(parts[3]);
+      const tempC = parseFloat(parts[4]);
+      if (isNaN(depthM) || isNaN(tempC)) continue;
+      profile.push({ depthM, tempC, depthFt: depthM * 3.28084, tempF: tempC * 9/5 + 32 });
+    }
+    if (profile.length < 3) return;
+    // Compute thermocline from profile
+    // Mixed layer: where temp doesn't drop more than 0.5°C from surface
+    // Thermocline depth: where rate of temp drop is maximum
+    const surfTempC = profile[0].tempC;
+    let mldDepthM = 0;
+    for (const p of profile) {
+      if (surfTempC - p.tempC < 0.5) mldDepthM = p.depthM;
+      else break;
+    }
+    // Find thermocline center: maximum temperature gradient (dT/dz)
+    let maxGradient = 0;
+    let thermoCenterM = mldDepthM;
+    let thermoBottomM = mldDepthM;
+    for (let i = 1; i < profile.length; i++) {
+      const dT = profile[i-1].tempC - profile[i].tempC;
+      const dZ = profile[i].depthM - profile[i-1].depthM;
+      if (dZ === 0) continue;
+      const grad = dT / dZ;
+      if (grad > maxGradient) {
+        maxGradient = grad;
+        thermoCenterM = (profile[i-1].depthM + profile[i].depthM) / 2;
+      }
+      // Bottom of thermocline: gradient drops below 0.05°C/m
+      if (grad < 0.05 && profile[i].depthM > mldDepthM + 2) {
+        thermoBottomM = profile[i].depthM;
+        break;
+      }
+    }
+    // Find temp at bottom of thermocline (deep water)
+    const deepTemp = profile.find(p => p.depthM >= thermoBottomM);
+    const tempBelowF = deepTemp ? Math.round(deepTemp.tempF) : null;
+    D.hycom = {
+      profile: profile,
+      mixedLayerDepthFt: Math.round(mldDepthM * 3.28084),
+      thermoclineCenterFt: Math.round(thermoCenterM * 3.28084),
+      thermoclineBottomFt: Math.round(thermoBottomM * 3.28084),
+      tempBelowThermoclineF: tempBelowF,
+      surfTempF: Math.round(profile[0].tempF),
+      gradient: maxGradient
+    };
+    srcStatus.hycom = 'ok';
+  } catch(e) {
+    console.warn('HYCOM profile fetch failed:', e);
+    srcStatus.hycom = 'fail';
+  }
+}
+
+// =========================================================================
+// OPEN-METEO MARINE FORECAST — 7-day SST + surface currents
+// Direct CORS support; JSON response; fast and reliable
+// =========================================================================
+async function fetchOceanForecast() {
+  try {
+    const loc = LOCATIONS[currentLocation];
+    if (!loc) return;
+    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}&hourly=sea_surface_temperature,ocean_current_velocity,ocean_current_direction&forecast_days=7&timezone=America/Los_Angeles`;
+    const r = await fetchWithTimeout(url, {}, 10000);
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d.hourly || !d.hourly.sea_surface_temperature) return;
+    const sstC = d.hourly.sea_surface_temperature;
+    const times = d.hourly.time;
+    const currentVel = d.hourly.ocean_current_velocity;
+    const currentDir = d.hourly.ocean_current_direction;
+    // Convert SST to Fahrenheit and build daily min/max/avg
+    const sstF = sstC.map(c => c === null ? null : c * 9/5 + 32);
+    // Find today's SST (current hour)
+    const nowIdx = 0; // first entry is ~current time
+    const currentSstF = sstF[nowIdx];
+    // 48-hour-ahead SST
+    const sst48h = sstF[48] !== undefined ? sstF[48] : null;
+    // Build daily summary (5 days ahead)
+    const dailySst = [];
+    for (let d = 0; d < 7; d++) {
+      const startIdx = d * 24;
+      const endIdx = Math.min(startIdx + 24, sstF.length);
+      const dayVals = sstF.slice(startIdx, endIdx).filter(v => v !== null);
+      if (dayVals.length === 0) continue;
+      dailySst.push({
+        day: d,
+        min: Math.min(...dayVals),
+        max: Math.max(...dayVals),
+        avg: dayVals.reduce((a,b) => a+b, 0) / dayVals.length
+      });
+    }
+    // Upwelling detection: SST drop of >3°F from today to day 2 or 3
+    let upwellingAlert = null;
+    if (dailySst.length >= 3) {
+      const todayAvg = dailySst[0].avg;
+      const d2Avg = dailySst[2].avg;
+      const drop = todayAvg - d2Avg;
+      if (drop > 3) upwellingAlert = { magnitude: drop, day: 2 };
+      else if (dailySst.length >= 4 && todayAvg - dailySst[3].avg > 3) {
+        upwellingAlert = { magnitude: todayAvg - dailySst[3].avg, day: 3 };
+      }
+    }
+    D.oceanForecast = {
+      currentSstF,
+      sst48h,
+      dailySst,
+      currentSurfaceVel: currentVel ? currentVel[nowIdx] : null,
+      currentSurfaceDir: currentDir ? currentDir[nowIdx] : null,
+      upwellingAlert,
+      times
+    };
+    srcStatus.marineFcst = 'ok';
+  } catch(e) {
+    console.warn('Ocean forecast fetch failed:', e);
+    srcStatus.marineFcst = 'fail';
+  }
+}
+
+
 // =========================================================================
 async function fetchBuoySST() {
   const loc = LOCATIONS[currentLocation];
@@ -3712,6 +3860,8 @@ async function fetchAllData() {
     fetchNDBCBuoy(),        // real-time buoy wind & water temp from NDBC
     fetchBoatReports(),     // daily CPFV dock totals from fish reports sites
     fetchBeachAdvisory(),   // SD County DEH water quality advisories
+    fetchHycomProfile(),    // HYCOM 3D temperature profile — modeled thermocline depth
+    fetchOceanForecast(),   // Open-Meteo Marine — 7-day SST forecast + surface currents
   ]);
 
   // If location changed while we were fetching, discard these stale results
@@ -4254,6 +4404,58 @@ function chlClarity(c) {
 // THERMOCLINE ESTIMATE — depth + temp below for gear planning & species targeting
 // Based on SoCal Bight seasonal climatology (Scripps/CalCOFI 60+ year dataset)
 // Enhanced by real-time: wind mixing, upwelling, SST anomaly, wave energy
+
+// =========================================================================
+// Render Ocean Forecast (5-day SST + currents + upwelling alert)
+// =========================================================================
+function renderOceanForecast() {
+  const ofRow = document.getElementById('oceanForecastRow');
+  const ofVal = document.getElementById('oceanForecastVal');
+  const scRow = document.getElementById('surfaceCurrentRow');
+  const scVal = document.getElementById('surfaceCurrentVal');
+  if (!ofRow || !ofVal) return;
+  if (!D.oceanForecast) { ofRow.style.display = 'none'; scRow && (scRow.style.display = 'none'); return; }
+  const oc = D.oceanForecast;
+  // SST trend display
+  let trendHtml = '';
+  if (oc.dailySst && oc.dailySst.length >= 3) {
+    const todayC = oc.dailySst[0].avg;
+    const day3C = oc.dailySst[2].avg;
+    const change = day3C - todayC;
+    const arrow = change > 0.5 ? '↑' : change < -0.5 ? '↓' : '→';
+    const arrowColor = change < -2 ? 'var(--poor)' : change > 2 ? '#e67e22' : 'var(--text-muted)';
+    trendHtml = `${Math.round(todayC)}°F → ${Math.round(day3C)}°F <span style="color:${arrowColor}">${arrow}</span> (3-day)`;
+  }
+  // Upwelling alert (highest priority)
+  if (oc.upwellingAlert) {
+    const mag = oc.upwellingAlert.magnitude.toFixed(1);
+    ofVal.innerHTML = `<span style="color:var(--poor);font-weight:600">⚠ Upwelling expected</span> · ${trendHtml} <span class="src-badge sat" style="font-size:8px">Open-Meteo</span>`;
+  } else {
+    ofVal.innerHTML = `${trendHtml} <span class="src-badge sat" style="font-size:8px">Open-Meteo</span>`;
+  }
+  ofRow.style.display = '';
+  // Surface current display
+  if (scRow && scVal && oc.currentSurfaceVel !== null && oc.currentSurfaceDir !== null) {
+    const velKt = (oc.currentSurfaceVel * 1.94384).toFixed(1); // m/s to knots
+    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    const dirIdx = Math.round((oc.currentSurfaceDir % 360) / 22.5) % 16;
+    const dirLabel = dirs[dirIdx];
+    // Interpretation: northward/offshore = clean upwelled water; southward = bloom transport
+    let interp = '';
+    const dir = oc.currentSurfaceDir;
+    if (velKt < 0.2) interp = 'slack';
+    else if ((dir >= 315 || dir < 45)) interp = 'northward (upwelling signal)';
+    else if (dir >= 135 && dir < 225) interp = 'southward (bloom transport risk)';
+    else if (dir >= 45 && dir < 135) interp = 'onshore';
+    else interp = 'offshore';
+    scVal.innerHTML = `${velKt} kt · ${dirLabel} <span style="color:var(--text-muted);font-size:10px">(${interp})</span> <span class="src-badge sat" style="font-size:8px">Open-Meteo</span>`;
+    scRow.style.display = '';
+  } else if (scRow) {
+    scRow.style.display = 'none';
+  }
+}
+
+
 // =========================================================================
 function computeThermocline() {
   const row = document.getElementById('thermoclineRow');
@@ -4330,19 +4532,31 @@ function computeThermocline() {
   baseDepth = Math.max(10, Math.min(80, Math.round(baseDepth)));
   baseDrop = Math.max(2, Math.min(18, baseDrop));
 
-  const tempBelow = Math.round(surfTemp - baseDrop);
+  let tempBelow = Math.round(surfTemp - baseDrop);
+  let sourceLabel = 'CALC';
+
+  // ── PREFER HYCOM modeled data when available ──
+  // HYCOM gives us actual 3D temperature profile from the operational ocean model.
+  // Far more accurate than climatology for predicting thermocline depth.
+  if (D.hycom && D.hycom.thermoclineCenterFt && D.hycom.thermoclineCenterFt > 0) {
+    baseDepth = D.hycom.thermoclineCenterFt;
+    if (D.hycom.tempBelowThermoclineF) tempBelow = D.hycom.tempBelowThermoclineF;
+    sourceLabel = 'HYCOM';
+  }
 
   // ── Display ──
   row.style.display = '';
   const depthColor = baseDepth <= 25 ? 'var(--excellent)' : baseDepth <= 40 ? 'var(--good)' : baseDepth <= 55 ? '#e67e22' : 'var(--poor)';
-  val.innerHTML = `<span style="color:${depthColor}">~${baseDepth} ft</span> · <span style="color:var(--text-muted)">${tempBelow}°F below</span>`;
+  const srcBadge = sourceLabel === 'HYCOM' ? ' <span class="src-badge sat" style="font-size:8px">HYCOM</span>' : '';
+  val.innerHTML = `<span style="color:${depthColor}">~${baseDepth} ft</span> · <span style="color:var(--text-muted)">${tempBelow}°F below</span>${srcBadge}`;
 
   D.thermocline = {
     depth: baseDepth,
     tempBelow: tempBelow,
     surfTemp: Math.round(surfTemp),
     drop: baseDrop,
-    status: 'active'
+    status: 'active',
+    source: sourceLabel
   };
 }
 
@@ -4993,6 +5207,7 @@ function recalculate() {
     updateInsight(fishAvg,vizFinal);
   }
   computeThermocline();
+  renderOceanForecast();
   generateSeasonalPlaybook();
   updateConditionsBrief();
 
