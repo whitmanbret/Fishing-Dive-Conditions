@@ -1132,6 +1132,7 @@
       <div class="factor-row" id="surfaceCurrentRow" style="display:none"><div class="factor-label">Surface Current</div><div class="factor-value" id="surfaceCurrentVal">--</div></div>
       <div class="factor-row" id="salinityRow" style="display:none"><div class="factor-label">Salinity</div><div class="factor-value" id="salinityVal">--</div></div>
       <div class="factor-row" id="targetDepthRow" style="display:none"><div class="factor-label">Target Depths</div><div class="factor-value" id="targetDepthVal">--</div></div>
+      <div class="factor-row" id="eddyRow" style="display:none"><div class="factor-label">Eddy Feature</div><div class="factor-value" id="eddyVal">--</div></div>
       <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tideStateScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="moonPhaseScore" style="display:none">-</div></div>
@@ -1212,6 +1213,19 @@
         </div>
       </div>
     </div>
+
+    <!-- ===== BEST SPOT NEARBY ===== -->
+    <div style="text-align:center;margin-bottom:12px">
+      <button id="bestSpotToggleBtn" onclick="toggleBestSpot()" style="
+        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
+        border-radius: 8px; padding: 8px 20px; font-size: 12px; font-weight: 600;
+        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
+      ">🏆 Best Spot Nearby ▼</button>
+    </div>
+    <section id="bestSpotSection" style="display:none; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:16px">
+      <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px">Spots in current county ranked by conditions</div>
+      <div id="bestSpotContent"><div style="color:var(--text-muted);font-size:12px;text-align:center;padding:10px">Ranking spots...</div></div>
+    </section>
 
     <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
     <div style="text-align:center;margin-bottom:12px">
@@ -2332,6 +2346,152 @@ function toggleForecastSection() {
   btn.textContent = hidden ? '5-Day Forecast ▲' : '5-Day Forecast ▼';
 }
 
+function toggleBestSpot() {
+  const section = document.getElementById('bestSpotSection');
+  const btn = document.getElementById('bestSpotToggleBtn');
+  if (!section || !btn) return;
+  const hidden = section.style.display === 'none';
+  section.style.display = hidden ? '' : 'none';
+  btn.textContent = hidden ? '🏆 Best Spot Nearby ▲' : '🏆 Best Spot Nearby ▼';
+  if (hidden) renderBestSpotRanking();
+}
+
+// =========================================================================
+// BEST SPOT RANKING — score every spot in the current county using shared
+// regional data (wind, swell, chl, NTU, SST) + per-spot metadata
+// (shelter, kelp, coast orientation, offshore). No extra API calls.
+// =========================================================================
+function _scoreSpotForRanking(spotKey) {
+  const loc = LOCATIONS[spotKey];
+  if (!loc) return null;
+
+  // Use current D data as the regional approximation
+  const wind = D.windSpeed || 8;
+  const chl = D.chlorophyll;
+  const ntu = D.turbidity;
+  const we = D.waveEnergy;
+  const rain = D.rainfall;
+  const swellPeriod = D.swellPeriod;
+
+  let score = 5; // neutral baseline
+
+  // Shelter — huge factor in protecting viz from wind chop + swell
+  if (loc.shelter === 'high') score += 1.5;
+  else if (loc.shelter === 'moderate') score += 0.7;
+  else if (loc.shelter === 'low') score -= 0.3;
+
+  // Kelp — filters particles, often holds fish
+  if (loc.kelpDensity === 'high') score += 0.8;
+  else if (loc.kelpDensity === 'moderate') score += 0.4;
+
+  // Offshore/bluewater = much higher baseline viz
+  if (loc.bluewater) score += 2.5;
+  else if (loc.offshore) score += 1.8;
+
+  // Wind vs coast orientation (coast = direction coastline faces / offshore direction)
+  if (D.windDir && loc.coast !== undefined) {
+    // Compute angle between wind TO-direction and coast offshore-direction
+    // Offshore wind = wind pointing INTO ocean (opposite of coast azimuth)
+    const windToDir = (D.windDir + 180) % 360; // wind "to" direction
+    const offshoreDir = (loc.coast + 180) % 360;
+    let diff = Math.abs(windToDir - offshoreDir);
+    if (diff > 180) diff = 360 - diff;
+    // diff near 0 = offshore wind (flat surface, good viz)
+    // diff near 180 = onshore wind (chop, bad viz)
+    if (diff < 45) score += 0.8;          // offshore wind
+    else if (diff > 135) score -= 0.5;     // onshore wind
+  }
+
+  // Wind strength penalty (regardless of direction)
+  if (wind > 18) score -= 1.5;
+  else if (wind > 12) score -= 0.8;
+  else if (wind < 5) score += 0.5;
+
+  // Wave energy (swell impact)
+  if (we !== undefined) {
+    // Shelter dampens swell
+    let effWe = we;
+    if (loc.shelter === 'high') effWe *= 0.15;
+    else if (loc.shelter === 'moderate') effWe *= 0.7;
+    if (swellPeriod && effWe > 30) {
+      if (swellPeriod >= 15) effWe *= 0.55;
+      else if (swellPeriod >= 12) effWe *= 0.7;
+      else if (swellPeriod <= 6) effWe *= 1.3;
+    }
+    if (effWe > 200) score -= 2.0;
+    else if (effWe > 100) score -= 1.2;
+    else if (effWe > 50) score -= 0.5;
+    else if (effWe < 15) score += 0.8;
+  }
+
+  // River/runoff vulnerability
+  if (loc.riverInfluence && (rain === 'recent' || rain === 'heavy' || rain === 'moderate')) {
+    score -= 1.5; // river-influenced spots get hammered by rain
+  } else if (loc.riverInfluence) {
+    score -= 0.3; // constant slight penalty
+  }
+
+  // Chlorophyll bloom penalty — but only for Scripps-proximity spots (others use climatology)
+  if (chl !== undefined && loc.scrippsProximity && !D.chlIsClimatology) {
+    if (chl > 3) score -= 2;
+    else if (chl > 1.5) score -= 1.3;
+    else if (chl > 0.8) score -= 0.8;
+    else if (chl > 0.4) score -= 0.3;
+  }
+
+  // Turbidity (if we have it and it applies)
+  if (ntu !== undefined && !loc.offshore) {
+    // Only meaningful if the spot is near the NTU source
+    // For now, just use as a regional tilt
+    if (ntu > 1) score -= 0.4;
+    else if (ntu < 0.25) score += 0.2;
+  }
+
+  // Marine reserve = extra clean + bigger fish (indirect viz benefit)
+  // Not scored here since it's about what you can catch, not viz.
+
+  return score;
+}
+
+function renderBestSpotRanking() {
+  const el = document.getElementById('bestSpotContent');
+  if (!el) return;
+  const county = document.getElementById('countySelect')?.value;
+  const spots = COUNTY_SPOTS[county] || [];
+  if (spots.length < 2) {
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px">Only one spot in this region.</div>';
+    return;
+  }
+  const scored = spots
+    .map(key => ({ key, name: LOCATIONS[key]?.name || key, score: _scoreSpotForRanking(key) }))
+    .filter(x => x.score !== null)
+    .sort((a, b) => b.score - a.score);
+
+  if (scored.length === 0) {
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px">No data available yet.</div>';
+    return;
+  }
+
+  const currentKey = currentLocation;
+  const top = scored.slice(0, Math.min(5, scored.length));
+  let html = '';
+  top.forEach((s, i) => {
+    const isCurrent = s.key === currentKey;
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+    const delta = i === 0 ? '' : ` <span style="color:var(--text-muted);font-size:10px">(${(s.score - top[0].score).toFixed(1)})</span>`;
+    const scoreColor = s.score > 7 ? 'var(--excellent)' : s.score > 5 ? 'var(--good)' : s.score > 3 ? '#e67e22' : 'var(--poor)';
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:6px;margin-bottom:4px;${isCurrent ? 'background:rgba(44,140,255,0.08);border:1px solid rgba(44,140,255,0.3)' : ''}">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:14px">${medal}</span>
+        <span style="font-weight:${isCurrent ? '700' : '500'};color:${isCurrent ? 'var(--text-primary)' : 'var(--text-secondary)'};font-size:12px">${s.name}${isCurrent ? ' <span style="font-size:10px;color:var(--text-muted)">(current)</span>' : ''}</span>
+      </div>
+      <div style="color:${scoreColor};font-weight:600;font-size:12px">${s.score.toFixed(1)}${delta}</div>
+    </div>`;
+  });
+  html += '<div style="font-size:10px;color:var(--text-muted);margin-top:8px;line-height:1.4">Score uses shelter, kelp, wind direction vs coast, swell, and local factors. Regional wind/swell/chl shared across spots.</div>';
+  el.innerHTML = html;
+}
+
 function toggleBoatReportsSection() {
   const section = document.getElementById('boatReportsSection');
   const btn = document.getElementById('boatReportsToggleBtn');
@@ -3224,6 +3384,59 @@ async function _fetchHycomSstEvolution(lat, lon, startIso, endIso) {
   return r;
 }
 
+// Fetch sea surface height (surf_el) at a single point. SSH anomalies reveal
+// mesoscale eddies: positive = warm anticyclonic (bait holds), negative = cold cyclonic (upwelling).
+async function _fetchHycomSSH(lat, lon, timeStr) {
+  const tryFetch = async (la, lo) => {
+    try {
+      const url = `https://tds.hycom.org/thredds/ncss/grid/FMRC_ESPC-D-V02_ssh/FMRC_ESPC-D-V02_ssh_best.ncd?var=surf_el&latitude=${la}&longitude=${lo}&time=${encodeURIComponent(timeStr)}&accept=csv`;
+      const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url);
+      const r = await fetchWithTimeout(proxyUrl, {}, 12000);
+      if (!r.ok) return null;
+      const csv = await r.text();
+      const rows = csv.split('\n').filter(l => l.trim() && !l.startsWith('time,'));
+      for (const row of rows) {
+        const parts = row.split(',');
+        if (parts.length < 4) continue;
+        const ssh = parseFloat(parts[3]);
+        if (!isNaN(ssh)) return ssh;
+      }
+      return null;
+    } catch(e) { return null; }
+  };
+  let r = await tryFetch(lat, lon);
+  if (r !== null) return r;
+  r = await tryFetch(lat, lon - 0.15);
+  return r;
+}
+
+// Detect mesoscale eddy by comparing SSH at center vs surrounding points.
+// Returns null, or { type: 'warm'|'cold', strength: 'weak'|'moderate'|'strong', anomalyM: number }
+async function _detectEddy(lat, lon, timeStr) {
+  // Sample 5 points: center + 4 surrounding (0.25° = ~28 km offset)
+  const offset = 0.25;
+  const [center, north, south, east, west] = await Promise.all([
+    _fetchHycomSSH(lat, lon, timeStr),
+    _fetchHycomSSH(lat + offset, lon, timeStr),
+    _fetchHycomSSH(lat - offset, lon, timeStr),
+    _fetchHycomSSH(lat, lon + offset, timeStr),
+    _fetchHycomSSH(lat, lon - offset, timeStr)
+  ]);
+  if (center === null) return null;
+  const surrounding = [north, south, east, west].filter(v => v !== null);
+  if (surrounding.length < 2) return null;
+  const avgSurround = surrounding.reduce((a,b) => a+b, 0) / surrounding.length;
+  const anomaly = center - avgSurround; // positive = high center = warm eddy
+  const absA = Math.abs(anomaly);
+  if (absA < 0.05) return null; // less than 5cm — no significant feature
+  const strength = absA > 0.15 ? 'strong' : absA > 0.08 ? 'moderate' : 'weak';
+  return {
+    type: anomaly > 0 ? 'warm' : 'cold',
+    strength,
+    anomalyM: parseFloat(anomaly.toFixed(3))
+  };
+}
+
 // Compute thermocline + mixed layer depth from a temperature profile
 function _computeThermocline(profile) {
   if (!profile || profile.length < 3) return null;
@@ -3281,13 +3494,17 @@ async function fetchHycomProfile() {
     // Coastal locations need to be shifted offshore to escape HYCOM's land mask.
     const hc = _hycomOffshoreCoords(loc);
 
+    // Eddy detection is expensive (5 extra API calls) — only run for offshore/bluewater spots
+    const runEddyDetection = !!(loc.bluewater || loc.offshore);
+
     // Fire all fetches in parallel
-    const [tempProfile, salProfile, uProfile, vProfile, sstEvo] = await Promise.all([
+    const [tempProfile, salProfile, uProfile, vProfile, sstEvo, eddy] = await Promise.all([
       _fetchHycomProfile('t3z', 'water_temp', hc.lat, hc.lon, timeStr),
       _fetchHycomProfile('s3z', 'salinity', hc.lat, hc.lon, timeStr),
       _fetchHycomProfile('u3z', 'water_u', hc.lat, hc.lon, timeStr),
       _fetchHycomProfile('v3z', 'water_v', hc.lat, hc.lon, timeStr),
-      _fetchHycomSstEvolution(hc.lat, hc.lon, startEvo, endEvo)
+      _fetchHycomSstEvolution(hc.lat, hc.lon, startEvo, endEvo),
+      runEddyDetection ? _detectEddy(hc.lat, hc.lon, timeStr) : Promise.resolve(null)
     ]);
 
     D.hycom = {};
@@ -3342,6 +3559,11 @@ async function fetchHycomProfile() {
           D.hycom.opposingCurrents = angleDiff > 120;
         }
       }
+    }
+
+    // Eddy detection (offshore only)
+    if (eddy) {
+      D.hycom.eddy = eddy;
     }
 
     // Multi-day SST evolution → daily averages + thermocline evolution
@@ -4720,6 +4942,21 @@ function renderOceanForecast() {
       tdRow.style.display = '';
     } else tdRow.style.display = 'none';
   } else if (tdRow) tdRow.style.display = 'none';
+
+  // ── Eddy feature (offshore/bluewater only) ──
+  const eddyRow = document.getElementById('eddyRow');
+  const eddyVal = document.getElementById('eddyVal');
+  if (eddyRow && eddyVal && D.hycom && D.hycom.eddy) {
+    const e = D.hycom.eddy;
+    const typeLabel = e.type === 'warm' ? '🌀 Warm eddy (anticyclonic)' : '❄️ Cold eddy (cyclonic)';
+    const interp = e.type === 'warm'
+      ? 'offshore warm-water mass — can hold yellowfin/dorado'
+      : 'upwelling feature — cold, nutrient-rich, baitfish concentration';
+    const cm = Math.round(e.anomalyM * 100);
+    const color = e.type === 'warm' ? '#e67e22' : 'var(--viz-color)';
+    eddyVal.innerHTML = `<span style="color:${color};font-weight:600">${typeLabel}</span> · ${e.strength} (${cm > 0 ? '+' : ''}${cm} cm) <span style="color:var(--text-muted);font-size:10px">${interp}</span> <span class="src-badge sat" style="font-size:8px">HYCOM</span>`;
+    eddyRow.style.display = '';
+  } else if (eddyRow) eddyRow.style.display = 'none';
 }
 
 
@@ -6437,6 +6674,26 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     else if (chlEff > 0.5) {
       const m = fcstBloomDecay ? 1.00 : 0.75;
       baseLo = Math.max(1, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
+    }
+  }
+
+  // HYCOM ocean model adjustment — SST evolution reveals upwelling/downwelling signals
+  // that wave-energy and turbidity forecasts can't capture on their own.
+  // - Sharp SST drop (> 3°F) forecasted = upwelling = cleaner cold water = viz improves
+  // - Sharp SST rise (> 2°F) + already-warm surface = bloom risk = viz degrades
+  // - Only apply to future days (dayIdx > 0); today uses direct sensor data
+  if (dayIdx > 0 && D.hycom && D.hycom.sstEvolution && D.hycom.sstEvolution.length > dayIdx) {
+    const todaySst = D.hycom.sstEvolution[0].avgF;
+    const forecastSst = D.hycom.sstEvolution[Math.min(dayIdx, D.hycom.sstEvolution.length - 1)].avgF;
+    const sstDelta = forecastSst - todaySst;
+    let hycomMult = 1.0;
+    if (sstDelta < -3) hycomMult = 1.15;       // upwelling = cleaner
+    else if (sstDelta < -1.5) hycomMult = 1.07; // mild cooling = mild clearing
+    else if (sstDelta > 2 && todaySst > 64) hycomMult = 0.85; // warming + already warm = bloom risk
+    else if (sstDelta > 1) hycomMult = 0.95;
+    if (hycomMult !== 1.0) {
+      baseLo = Math.max(1, Math.round(baseLo * hycomMult));
+      baseHi = Math.max(baseLo + 1, Math.round(baseHi * hycomMult));
     }
   }
 
