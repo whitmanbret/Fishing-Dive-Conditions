@@ -5246,12 +5246,8 @@ function updateDataWarning() {
   const el = document.getElementById('dataWarning');
   if (!el) return;
   const warnings = [];
-  // Critical: turbidity sensor down = viz estimate is wave-energy based (less accurate)
-  if (srcStatus.sass === 'err') {
-    const stKeys = SHORE_STATION_MAP[currentLocation];
-    const stName = stKeys && stKeys[0] ? (SHORE_STATIONS[stKeys[0]]||{}).name : 'Shore station';
-    warnings.push(`${stName} sensor offline — visibility estimate is based on wave energy model (less accurate)`);
-  }
+  // (Shore-station offline notice removed per user request — kept algorithm logic,
+  //  just hide the UI warning. Confidence badge on viz already conveys uncertainty.)
   // CDIP buoy down = no swell data
   if (srcStatus.noaa === 'err' && srcStatus.ndbc === 'err') {
     warnings.push('Buoy data unavailable — swell and water temp may be inaccurate');
