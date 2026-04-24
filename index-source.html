@@ -1354,6 +1354,7 @@ const LOCATIONS = {
   mission:     { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low', riverInfluence: true, nwsGrid: 'SGX/54,20' },
   ljshores:    { name: 'La Jolla Shores', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8586, lon: -117.2572, depth: '10-60 ft', kelpDensity: 'moderate', marineReserve: true, scrippsProximity: true, nwsGrid: 'SGX/54,20' },
   lajolla:     { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20' },
+  ljcove:      { name: 'La Jolla Cove', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.8505, lon: -117.2728, depth: '5-80 ft', kelpDensity: 'high', marineReserve: true, scrippsProximity: true, nwsGrid: 'SGX/54,20' },
   birdrock:    { name: 'Bird Rock / Windansea', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225','46254'], lat: 32.81, lon: -117.27, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20' },
   delmar:      { name: 'Del Mar Reefs', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.95, lon: -117.28, depth: '10-25 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20' },
   encinitas:   { name: 'Encinitas / Swamis', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.03, lon: -117.30, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20' },
@@ -1362,6 +1363,7 @@ const LOCATIONS = {
   // ── Orange County ──
   danapoint:   { name: 'Dana Point / Salt Creek', bottom: 'mixed', tideStation: '9410580', coast: 230, shelter: 'low', buoys: ['46242','46225'], lat: 33.4756, lon: -117.7218, depth: '35-70 ft', kelpDensity: 'heavy', nwsGrid: 'SGX/42,51' },
   laguna:      { name: 'Laguna Beach (Shaw\'s / Diver\'s Cove)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5450, lon: -117.7987, depth: '15-50 ft', kelpDensity: 'moderate', marineReserve: true, nwsGrid: 'LOX/167,20' },
+  brooksstreet:{ name: 'Brooks Street (Laguna)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5368, lon: -117.7886, depth: '10-40 ft', kelpDensity: 'moderate', marineReserve: true, nwsGrid: 'LOX/167,20' },
   crystalcove: { name: 'Crystal Cove', bottom: 'mixed', tideStation: '9410580', coast: 220, shelter: 'low', buoys: ['46242'], lat: 33.5571, lon: -117.8360, depth: '10-52 ft', kelpDensity: 'heavy', nwsGrid: 'LOX/166,21' },
   newport:     { name: 'Newport / Corona del Mar', bottom: 'rock', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.59, lon: -117.87, depth: '10-30 ft', kelpDensity: 'low', nwsGrid: 'SGX/35,58' },
   huntington:  { name: 'Huntington Cliffs', bottom: 'sand', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.65, lon: -117.98, depth: '8-20 ft', kelpDensity: 'none', nwsGrid: 'SGX/35,58' },
@@ -1378,6 +1380,7 @@ const LOCATIONS = {
   // ── Channel Islands ──
   anacapa:     { name: 'Anacapa Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46217'], lat: 34.01, lon: -119.36, depth: '10-60 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/119,62' },
   santacruz:   { name: 'Santa Cruz Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46054'], lat: 34.00, lon: -119.73, depth: '10-80 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/105,70' },
+  sannicolas:  { name: 'San Nicolas Island', bottom: 'rock', tideStation: '9411406', coast: 210, shelter: 'low', buoys: ['46086','46047'], lat: 33.24, lon: -119.49, depth: '20-100 ft', kelpDensity: 'high', offshore: true, bluewater: true, nwsGrid: 'LOX/147,32' },
   catalina:    { name: 'Catalina Island', bottom: 'kelp', tideStation: '9410660', coast: 90, shelter: 'moderate', buoys: ['46222'], lat: 33.34, lon: -118.33, depth: '10-100 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/147,32' },
   // ── Offshore / Bluewater ──
   ninemile:    { name: '9 Mile Bank', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46225'], lat: 32.58, lon: -117.47, depth: '60-300 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
@@ -1388,6 +1391,7 @@ const LOCATIONS = {
   // ── Central Coast (San Luis Obispo / Monterey) ──
   morro:       { name: 'Morro Bay / Montana de Oro', bottom: 'rock', tideStation: '9412110', coast: 250, shelter: 'moderate', buoys: ['46028'], lat: 35.37, lon: -120.87, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/72,120' },
   monterey:    { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236','46042'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },  // most dive sites (Breakwater, San Carlos, McAbee) are harbor-sheltered
+  loverspoint: { name: 'Lovers Point (Pacific Grove)', bottom: 'rock', tideStation: '9413450', coast: 0, shelter: 'high', buoys: ['46236','46042'], lat: 36.6267, lon: -121.9166, depth: '10-40 ft', kelpDensity: 'high', marineReserve: true, nwsGrid: 'MTR/93,51' },
   carmel:      { name: 'Carmel / Point Lobos', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46236','46042'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },
   // ── Northern California ──
   halfmoon:    { name: 'Half Moon Bay', bottom: 'rock', tideStation: '9414290', coast: 270, shelter: 'low', buoys: ['46012'], lat: 37.50, lon: -122.47, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/80,93' },
@@ -7636,14 +7640,14 @@ function selectSpotFromMap(key) {
 
 // County → Spots mapping (south to north within each county)
 const COUNTY_SPOTS = {
-  sandiego:     ['coronado','imperial','pointloma','mission','birdrock','ljshores','lajolla','delmar','encinitas','carlsbad','oceanside'],
-  orange:       ['danapoint','laguna','crystalcove','newport','huntington'],
+  sandiego:     ['coronado','imperial','pointloma','mission','birdrock','ljshores','ljcove','lajolla','delmar','encinitas','carlsbad','oceanside'],
+  orange:       ['danapoint','laguna','brooksstreet','crystalcove','newport','huntington'],
   la:           ['pv','horseshoe','malibu','leocarrillo'],
   ventura:      ['ventura'],
   santabarbara: ['sb','refugio'],
-  islands:      ['catalina','anacapa','santacruz','sanclemente'],
+  islands:      ['catalina','anacapa','santacruz','sanclemente','sannicolas'],
   slo:          ['morro'],
-  monterey:     ['monterey','carmel'],
+  monterey:     ['monterey','loverspoint','carmel'],
   sanmateo:     ['halfmoon'],
   sonoma:       ['bodega'],
   mendocino:    ['fortbragg'],
@@ -7694,6 +7698,24 @@ const WEBCAMS = {
     { name: 'La Jolla (EarthCam)', url: 'https://www.earthcam.com/usa/california/lajolla/', type: 'Free Live' },
     { name: 'La Jolla Cam', url: 'https://www.lajolla.com/lajollacam/', type: 'Free Live' },
     { name: 'Scripps Pier (DeepSea)', url: 'https://www.deepsea.com/sio-piercam/', type: 'Free Backup' },
+  ],
+  ljcove: [
+    { name: 'La Jolla Kelp Forest Cam', url: 'https://explore.org/livecams/oceans/la-jolla-kelp-forest-cam-birch-aquarium', type: 'Free — Underwater' },
+    { name: 'La Jolla (EarthCam)', url: 'https://www.earthcam.com/usa/california/lajolla/', type: 'Free Live' },
+    { name: 'La Jolla Cam', url: 'https://www.lajolla.com/lajollacam/', type: 'Free Live' },
+    { name: 'Scripps Pier Cam', url: 'https://scripps.ucsd.edu/piercam', type: 'Free Live' },
+  ],
+  brooksstreet: [
+    { name: 'S Laguna Cam', url: 'https://www.surfline.com/surf-report/brooks-street/5842041f4e65fad6a7708869', type: 'Surfline' },
+    { name: 'Salt Creek', url: 'https://www.surfline.com/surf-report/salt-creek/5842041f4e65fad6a77088a0', type: 'Surfline' },
+  ],
+  sannicolas: [
+    { name: 'Channel Islands Kelp Forest', url: 'https://www.nps.gov/chis/photosmultimedia/ocean-webcam.htm', type: 'Free — Underwater' },
+  ],
+  loverspoint: [
+    { name: 'Lovers Point', url: 'https://www.surfline.com/surf-report/lovers-point/5842041f4e65fad6a7708bbc', type: 'Surfline' },
+    { name: 'MBA Live Cams', url: 'https://www.montereybayaquarium.org/animals/live-cams', type: 'Free — Multiple underwater tanks' },
+    { name: 'Monterey Bay', url: 'https://www.surfline.com/surf-report/monterey-bay/584204214e65fad6a7709d05', type: 'Surfline' },
   ],
   birdrock: [
     { name: 'Windansea', url: 'https://www.surfline.com/surf-report/windansea/5842041f4e65fad6a770883c', type: 'Surfline' },
