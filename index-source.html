@@ -1143,6 +1143,7 @@
       <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="moonPhaseScore" style="display:none">-</div></div>
       <div class="factor-row" id="baroTrendRow" style="display:none"><div class="factor-label">Barometric Trend</div><div class="factor-value" id="baroTrendVal">--</div></div>
       <div class="factor-row" id="riverFlowRow" style="display:none"><div class="factor-label">River Runoff</div><div class="factor-value" id="riverFlowVal">--</div></div>
+      <div class="factor-row" id="marineAlertRow" style="display:none"><div class="factor-label">Marine Advisory</div><div class="factor-value" id="marineAlertVal">--</div></div>
     </section>
 
     <!-- DIVE VISIBILITY CONDITIONS (scores hidden to protect algorithm) -->
@@ -1203,7 +1204,10 @@
     <div id="sstMapSection" style="display:none;margin-bottom:16px;">
       <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
-          <span style="font-size:11px;color:var(--text-muted);">Regional SST — look for temp breaks where fish concentrate</span>
+          <div style="display:flex;gap:4px">
+            <button id="sstMapTypeSstBtn" onclick="setSstMapType('sst')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:var(--accent);color:#fff;border:1px solid var(--accent);">SST</button>
+            <button id="sstMapTypeAnomBtn" onclick="setSstMapType('anomaly')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:transparent;color:var(--text-muted);border:1px solid var(--border);" title="Difference from climatological average — reveals heat events and cold upwelling zones">Anomaly</button>
+          </div>
           <div style="display:flex;gap:6px;">
             <button id="sstMapSoCalBtn" onclick="setSstMapRegion('socal')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:var(--accent);color:#fff;border:1px solid var(--accent);">SoCal</button>
             <button id="sstMapCenCalBtn" onclick="setSstMapRegion('cencal')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:transparent;color:var(--text-muted);border:1px solid var(--border);">Central</button>
@@ -3266,6 +3270,53 @@ async function fetchPressureTrend() {
 }
 
 // =========================================================================
+// NWS MARINE ALERTS — active Small Craft Advisories, Gale Warnings, etc.
+// for the marine zone containing each dive spot. More specific than land
+// weather alerts — captures "seas building to 8 ft" type guidance.
+// =========================================================================
+// Map dive regions → primary NWS marine zone codes (inner waters 0-10 NM)
+const MARINE_ZONES_BY_REGION = {
+  sandiego: ['PZZ775','PZZ770','PZZ673'],
+  orange:   ['PZZ665','PZZ673'],
+  la:       ['PZZ655','PZZ665'],
+  ventura:  ['PZZ655','PZZ650'],
+  santabarbara: ['PZZ650','PZZ645'],
+  islands:  ['PZZ650','PZZ665','PZZ670','PZZ770'],
+  slo:      ['PZZ575','PZZ645'],
+  monterey: ['PZZ570','PZZ535'],
+  sanmateo: ['PZZ560','PZZ530'],
+  sonoma:   ['PZZ565'],
+  mendocino:['PZZ565','PZZ545'],
+  humboldt: ['PZZ470','PZZ455'],
+  offshore: ['PZZ775','PZZ770','PZZ750']
+};
+async function fetchMarineAlerts() {
+  const region = _getRegionForLocation(currentLocation);
+  const zones = MARINE_ZONES_BY_REGION[region] || [];
+  if (zones.length === 0) { srcStatus.marineAlerts = 'n/a'; return; }
+  try {
+    // Single request with comma-separated zones
+    const url = `https://api.weather.gov/alerts/active?zone=${zones.join(',')}`;
+    const r = await fetchWithTimeout(url, { headers: {'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'} }, 6000);
+    if (!r.ok) { srcStatus.marineAlerts = 'err'; return; }
+    const d = await r.json();
+    const alerts = (d.features || []).map(f => {
+      const p = f.properties || {};
+      return {
+        event: p.event || '',
+        headline: p.headline || '',
+        severity: p.severity || 'Unknown',
+        urgency: p.urgency || 'Unknown',
+        expires: p.expires || null,
+        areaDesc: p.areaDesc || ''
+      };
+    });
+    D.marineAlerts = alerts;
+    srcStatus.marineAlerts = 'ok';
+  } catch(e) { srcStatus.marineAlerts = 'err'; }
+}
+
+// =========================================================================
 // USGS RIVER DISCHARGE — predicts coastal runoff plume arrival.
 // River discharge spikes 6-24 hrs before bloom/turbidity reaches the coast.
 // Direct causal chain: rain → streamflow → coastal plume → viz degraded.
@@ -4408,6 +4459,7 @@ async function fetchAllData() {
     fetchNDBCBuoy(),        // real-time buoy wind & water temp from NDBC
     fetchPressureTrend(),   // 24-hr barometric pressure trend (storm leading indicator)
     fetchRiverDischarge(),  // USGS streamflow — runoff plume early warning
+    fetchMarineAlerts(),    // NWS marine zone alerts — SCAs, gale warnings, etc.
     fetchBoatReports(),     // daily CPFV dock totals from fish reports sites
     fetchBeachAdvisory(),   // SD County DEH water quality advisories
     fetchHycomProfile(),    // HYCOM 3D temperature profile — modeled thermocline depth
@@ -4510,6 +4562,25 @@ function updateDisplay() {
   setVal('moonPhaseVal', `${D.moon.emoji} ${D.moon.name}`, 'CALC');
   setVal('reportsVal', getReportsLabel(currentSpecies, new Date().getMonth()), getRegionalCPFV() ? 'Regional CPFV' : 'CPFV 5yr');
   setVal('pressureVal', getPressureLabel(D.pressure), 'CALC');
+
+  // NWS marine alerts (SCA, gale, storm warning, etc.)
+  const alertRow = document.getElementById('marineAlertRow');
+  const alertVal = document.getElementById('marineAlertVal');
+  if (alertRow && alertVal && D.marineAlerts !== undefined) {
+    if (D.marineAlerts.length > 0) {
+      // Sort by severity
+      const sevOrder = { Extreme: 0, Severe: 1, Moderate: 2, Minor: 3, Unknown: 4 };
+      const sorted = [...D.marineAlerts].sort((a,b) => (sevOrder[a.severity]||9) - (sevOrder[b.severity]||9));
+      const primary = sorted[0];
+      const eventColor = /warning/i.test(primary.event) ? 'var(--poor)' : /advisory/i.test(primary.event) ? '#e67e22' : 'var(--text-secondary)';
+      const extra = sorted.length > 1 ? ` +${sorted.length - 1} more` : '';
+      const expiryStr = primary.expires ? ` · until ${new Date(primary.expires).toLocaleString('en-US',{weekday:'short',hour:'numeric',hour12:true})}` : '';
+      alertVal.innerHTML = `<span style="color:${eventColor};font-weight:600">⚠ ${primary.event}</span>${extra}<span style="color:var(--text-muted);font-size:10px">${expiryStr}</span> <span class="src-badge sat" style="font-size:8px">NWS</span>`;
+      alertRow.style.display = '';
+    } else {
+      alertRow.style.display = 'none';
+    }
+  }
 
   // River runoff / plume warning
   const riverRow = document.getElementById('riverFlowRow');
@@ -7822,6 +7893,7 @@ function submitVizReport(value) {
   const vizEstimate = document.getElementById('vizEstimateVal') ? document.getElementById('vizEstimateVal').textContent : '';
   const report = {
     date: new Date().toISOString(),
+    time: Date.now(), // millisecond timestamp for time-weighted calibration
     location: currentLocation,
     locationName: loc.name,
     species: currentSpecies,
@@ -7831,7 +7903,15 @@ function submitVizReport(value) {
     waterTemp: D.waterTemp,
     swellFt: D.swellFt,
     windSpeed: D.windSpeed,
-    tideState: D.tideState
+    tideState: D.tideState,
+    // Condition snapshot — used for condition-aware calibration weighting
+    conditions: {
+      chlorophyll: D.chlorophyll,
+      turbidity: D.turbidity,
+      waveEnergy: D.waveEnergy,
+      rainfall: D.rainfall,
+      pressureTrend: D.pressureTrend ? D.pressureTrend.tendency : null
+    }
   };
   saveVizReport(report);
   // Show thanks
@@ -7919,37 +7999,56 @@ function shareConditions() {
 // =========================================================================
 // VIZ AUTO-CALIBRATION — learns from diver reports to adjust predictions
 // =========================================================================
+// Time-weighted + condition-aware calibration from user reports.
+// Recent reports weigh more than old ones. If reports were submitted during
+// similar current conditions (bloom / calm / rainy), those match more heavily.
 function applyVizCalibration(vizEst) {
   if (vizEst === '--') return vizEst;
-  const reports = getVizReports().filter(r => r.location === currentLocation && !r.accurate);
-  if (reports.length < 5) return vizEst; // need 5+ inaccurate reports to calibrate
+  const allReports = getVizReports().filter(r => r.location === currentLocation && !r.accurate);
+  if (allReports.length < 3) { D.calibration = null; return vizEst; }
 
-  // Parse predicted midpoints from reports and compare to actual
-  let totalError = 0;
-  let count = 0;
-  for (const r of reports) {
+  const now = Date.now();
+  const currentChl = D.chlorophyll;
+  const currentNtu = D.turbidity;
+  const currentWe = D.waveEnergy;
+  const currentBloom = currentChl !== undefined && currentChl > 0.8;
+
+  let weightedSum = 0;
+  let weightTotal = 0;
+  let matchedCount = 0;
+  for (const r of allReports) {
     const predMatch = (r.predicted || '').match(/(\d+)/);
     if (!predMatch) continue;
     const predicted = parseInt(predMatch[0]);
-    // Convert actual range to midpoint
     const actualMid = {'0-5': 3, '6-10': 8, '11-15': 13, '16-20': 18, '21-25': 23, '26+': 30}[r.actual];
     if (!actualMid) continue;
-    totalError += actualMid - predicted; // positive = we under-predicted
-    count++;
+    const error = actualMid - predicted;
+
+    // Time weight — exponential decay with 14-day half-life
+    const ageDays = (now - (r.time || r.timestamp || now)) / (24 * 3600000);
+    let weight = Math.pow(0.5, ageDays / 14);
+    // Condition similarity — reports during similar chl conditions weigh 2x
+    if (r.conditions) {
+      const reportBloom = (r.conditions.chlorophyll !== undefined && r.conditions.chlorophyll > 0.8);
+      if (reportBloom === currentBloom) weight *= 2;
+    }
+    weightedSum += error * weight;
+    weightTotal += weight;
+    matchedCount++;
   }
-  if (count < 3) return vizEst; // not enough comparable reports
+  if (matchedCount < 3 || weightTotal < 0.5) { D.calibration = null; return vizEst; }
 
-  const avgError = totalError / count;
-  // Only calibrate if consistent bias (>2ft avg error)
-  if (Math.abs(avgError) < 2) return vizEst;
+  const avgError = weightedSum / weightTotal;
+  if (Math.abs(avgError) < 2) { D.calibration = null; return vizEst; } // no consistent bias
 
-  // Apply correction (cap at ±5ft adjustment)
-  const correction = Math.max(-5, Math.min(5, Math.round(avgError)));
+  const correction = Math.max(-6, Math.min(6, Math.round(avgError)));
   const match = vizEst.match(/(\d+)–(\d+)\s*ft/);
   if (match) {
     let lo = Math.max(1, parseInt(match[1]) + correction);
     let hi = Math.max(lo + 1, parseInt(match[2]) + correction);
     const suffix = vizEst.includes('(') ? vizEst.slice(vizEst.indexOf('(') - 1) : ' ft';
+    // Store for display
+    D.calibration = { correction, avgError: parseFloat(avgError.toFixed(1)), reports: matchedCount };
     return `${lo}–${hi}${suffix.startsWith(' ft') ? ' ft' : suffix}`;
   }
   return vizEst;
@@ -8501,7 +8600,21 @@ var SST_MAP_REGIONS = {
   'norcal': { bbox: '%5B(37.5):(41.5)%5D%5B(-125.5):(-122.5)%5D', label: 'Northern California' }
 };
 var sstMapCurrentRegion = 'socal';
+var sstMapCurrentType = 'sst';
 var sstMapLoaded = false;
+function setSstMapType(type) {
+  sstMapCurrentType = type;
+  var btnSst = document.getElementById('sstMapTypeSstBtn');
+  var btnAnom = document.getElementById('sstMapTypeAnomBtn');
+  if (type === 'sst') {
+    btnSst.style.background = 'var(--accent)'; btnSst.style.color = '#fff'; btnSst.style.borderColor = 'var(--accent)';
+    btnAnom.style.background = 'transparent'; btnAnom.style.color = 'var(--text-muted)'; btnAnom.style.borderColor = 'var(--border)';
+  } else {
+    btnAnom.style.background = 'var(--accent)'; btnAnom.style.color = '#fff'; btnAnom.style.borderColor = 'var(--accent)';
+    btnSst.style.background = 'transparent'; btnSst.style.color = 'var(--text-muted)'; btnSst.style.borderColor = 'var(--border)';
+  }
+  loadSstMap();
+}
 function toggleSstMap() {
   var section = document.getElementById('sstMapSection');
   var btn = document.getElementById('sstMapToggleBtn');
@@ -8545,13 +8658,24 @@ function loadSstMap() {
   img.style.display = 'none';
   loadDiv.style.display = '';
   var bbox = SST_MAP_REGIONS[sstMapCurrentRegion].bbox;
-  var url = 'https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDsstDaily.png?analysed_sst%5B(last)%5D' + bbox + '&.colorBar=Rainbow2%7C%7CLinear%7C285%7C293%7C&.size=400%7C340&.timestamp=' + Date.now();
+  var url, labelText;
+  if (sstMapCurrentType === 'anomaly') {
+    // Coral Reef Watch daily anomaly — difference from long-term climatology (°C)
+    url = 'https://coastwatch.noaa.gov/erddap/griddap/noaacrwsstanomalyDaily.png?sea_surface_temperature_anomaly%5B(last)%5D' + bbox + '&.colorBar=BlueWhiteRed%7C%7CLinear%7C-3%7C3%7C&.size=400%7C340&.timestamp=' + Date.now();
+    labelText = 'NOAA Coral Reef Watch \u00B7 SST Anomaly (\u00B0C vs climatology) \u00B7 ' + SST_MAP_REGIONS[sstMapCurrentRegion].label + ' \u00B7 Daily \u00B7 ~5km';
+  } else {
+    url = 'https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDsstDaily.png?analysed_sst%5B(last)%5D' + bbox + '&.colorBar=Rainbow2%7C%7CLinear%7C285%7C293%7C&.size=400%7C340&.timestamp=' + Date.now();
+    labelText = 'NOAA/NCEI Blended SST \u00B7 ' + SST_MAP_REGIONS[sstMapCurrentRegion].label + ' \u00B7 Daily \u00B7 ~5km';
+  }
+  var labelEl = document.getElementById('sstMapSourceLabel');
+  if (labelEl) labelEl.textContent = labelText;
   img.onload = function() { loadDiv.style.display = 'none'; img.style.display = 'block'; sstMapLoaded = true; };
   img.onerror = function() { loadDiv.style.display = 'none'; img.style.display = 'none'; errDiv.style.display = 'block'; };
   img.src = url;
 }
 window.toggleSstMap = toggleSstMap;
 window.setSstMapRegion = setSstMapRegion;
+window.setSstMapType = setSstMapType;
 window.loadSstMap = loadSstMap;
 </script>
 </body>
