@@ -1142,6 +1142,7 @@
       <div class="factor-row"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tideStateScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="moonPhaseScore" style="display:none">-</div></div>
       <div class="factor-row" id="baroTrendRow" style="display:none"><div class="factor-label">Barometric Trend</div><div class="factor-value" id="baroTrendVal">--</div></div>
+      <div class="factor-row" id="riverFlowRow" style="display:none"><div class="factor-label">River Runoff</div><div class="factor-value" id="riverFlowVal">--</div></div>
     </section>
 
     <!-- DIVE VISIBILITY CONDITIONS (scores hidden to protect algorithm) -->
@@ -3265,6 +3266,118 @@ async function fetchPressureTrend() {
 }
 
 // =========================================================================
+// USGS RIVER DISCHARGE — predicts coastal runoff plume arrival.
+// River discharge spikes 6-24 hrs before bloom/turbidity reaches the coast.
+// Direct causal chain: rain → streamflow → coastal plume → viz degraded.
+// =========================================================================
+// Map dive spots to nearest significant river gauges (USGS site IDs).
+// Baseline flows are "normal" cfs for low/no-runoff conditions.
+const RIVER_GAUGES_BY_SPOT = {
+  // San Diego — multiple plume sources
+  imperial:   [{site:'11013000', name:'Tijuana R', baseline:15}],
+  coronado:   [{site:'11013000', name:'Tijuana R', baseline:15}],
+  pointloma:  [{site:'11022480', name:'San Diego R', baseline:10}, {site:'11013000', name:'Tijuana R', baseline:15}],
+  mission:    [{site:'11022480', name:'San Diego R', baseline:10}],
+  birdrock:   [{site:'11022480', name:'San Diego R', baseline:10}],
+  ljshores:   [{site:'11022480', name:'San Diego R', baseline:10}],
+  lajolla:    [{site:'11022480', name:'San Diego R', baseline:10}],
+  delmar:     [{site:'11023000', name:'San Dieguito R', baseline:5}],
+  encinitas:  [{site:'11023000', name:'San Dieguito R', baseline:5}],
+  carlsbad:   [{site:'11042000', name:'San Luis Rey R', baseline:20}],
+  oceanside:  [{site:'11042000', name:'San Luis Rey R', baseline:20}],
+  // Orange County — Santa Ana / San Juan / Aliso / Los Trancos creeks
+  danapoint:  [{site:'11046300', name:'San Juan Cr', baseline:3}],
+  laguna:     [{site:'11046300', name:'San Juan Cr', baseline:3}],
+  crystalcove:[{site:'11046300', name:'San Juan Cr', baseline:3}],
+  newport:    [{site:'11078000', name:'Santa Ana R', baseline:80}],
+  huntington: [{site:'11078000', name:'Santa Ana R', baseline:80}],
+  // LA County — Santa Monica / LA / San Gabriel rivers
+  pv:         [{site:'11103000', name:'LA R', baseline:30}, {site:'11089500', name:'San Gabriel R', baseline:5}],
+  horseshoe:  [{site:'11103000', name:'LA R', baseline:30}],
+  malibu:     [{site:'11105510', name:'Malibu Cr', baseline:2}],
+  leocarrillo:[{site:'11105510', name:'Malibu Cr', baseline:2}],
+  // Ventura / SB
+  ventura:    [{site:'11118500', name:'Ventura R', baseline:3}],
+  sb:         [{site:'11119750', name:'Mission Cr', baseline:1}],
+  refugio:    [{site:'11120500', name:'Refugio Cr', baseline:0.5}],
+  // Central coast
+  morro:      [{site:'11141280', name:'Los Osos Cr', baseline:1}],
+  monterey:   [{site:'11152500', name:'Salinas R', baseline:20}],
+  carmel:     [{site:'11143250', name:'Carmel R', baseline:5}],
+  // NorCal
+  halfmoon:   [{site:'11162720', name:'Pescadero Cr', baseline:2}],
+  bodega:     [{site:'11467000', name:'Russian R', baseline:80}],
+  fortbragg:  [{site:'11472150', name:'Noyo R', baseline:20}],
+  trinidad:   [{site:'11530000', name:'Klamath R', baseline:3000}]
+};
+async function fetchRiverDischarge() {
+  const gauges = RIVER_GAUGES_BY_SPOT[currentLocation];
+  if (!gauges || gauges.length === 0) { srcStatus.usgs = 'n/a'; return; }
+  const siteList = gauges.map(g => g.site).join(',');
+  try {
+    // parameterCd 00060 = discharge (cfs), period P3D = last 3 days
+    const url = `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${siteList}&parameterCd=00060&period=P3D`;
+    const r = await fetchWithTimeout(url, null, 8000);
+    if (!r.ok) { srcStatus.usgs = 'err'; return; }
+    const data = await r.json();
+    const ts = data?.value?.timeSeries || [];
+    const rivers = [];
+    for (const series of ts) {
+      const siteCode = series?.sourceInfo?.siteCode?.[0]?.value;
+      const siteName = series?.sourceInfo?.siteName || '?';
+      const values = series?.values?.[0]?.value || [];
+      if (values.length === 0) continue;
+      // Most recent + 24-hr ago for spike detection
+      const latest = values[values.length - 1];
+      const latestTime = new Date(latest.dateTime);
+      const latestCfs = parseFloat(latest.value);
+      if (isNaN(latestCfs) || latestCfs < 0) continue;
+      // Find 24h-ago reading
+      const target24 = new Date(latestTime - 24 * 3600000);
+      let prev24Cfs = null;
+      for (let i = values.length - 1; i >= 0; i--) {
+        const t = new Date(values[i].dateTime);
+        if (t <= target24) { prev24Cfs = parseFloat(values[i].value); break; }
+      }
+      // Peak over last 24h (runoff pulses)
+      const cutoff24 = latestTime - 24 * 3600000;
+      let peak24 = latestCfs;
+      for (const v of values) {
+        const t = new Date(v.dateTime).getTime();
+        if (t >= cutoff24) {
+          const cfs = parseFloat(v.value);
+          if (!isNaN(cfs) && cfs > peak24) peak24 = cfs;
+        }
+      }
+      // Match to our gauge config for baseline
+      const cfg = gauges.find(g => g.site === siteCode);
+      const baseline = cfg ? cfg.baseline : Math.min(...values.slice(0, Math.min(20, values.length)).map(v => parseFloat(v.value)).filter(v => !isNaN(v)));
+      const elevation = baseline > 0 ? peak24 / baseline : peak24;
+      rivers.push({
+        siteCode,
+        name: cfg ? cfg.name : siteName,
+        latestCfs: parseFloat(latestCfs.toFixed(1)),
+        peak24Cfs: parseFloat(peak24.toFixed(1)),
+        baselineCfs: baseline,
+        elevation: parseFloat(elevation.toFixed(1)),
+        prev24Cfs: prev24Cfs !== null ? parseFloat(prev24Cfs.toFixed(1)) : null
+      });
+    }
+    if (rivers.length === 0) { srcStatus.usgs = 'err'; return; }
+    // Worst offender (highest elevation over baseline)
+    rivers.sort((a, b) => b.elevation - a.elevation);
+    const worst = rivers[0];
+    let runoffStatus = 'normal';
+    if (worst.elevation >= 10) runoffStatus = 'major_flood';
+    else if (worst.elevation >= 5) runoffStatus = 'moderate_flood';
+    else if (worst.elevation >= 2.5) runoffStatus = 'elevated';
+    else if (worst.elevation >= 1.5) runoffStatus = 'slightly_elevated';
+    D.riverDischarge = { rivers, worst, status: runoffStatus };
+    srcStatus.usgs = 'ok';
+  } catch(e) { srcStatus.usgs = 'err'; }
+}
+
+// =========================================================================
 // NDBC BUOY SST — direct fetch from NDBC realtime2 text files
 // For bluewater/offshore spots, this is more accurate than shore stations.
 // Called AFTER main fetch round so it can override shore station temps.
@@ -4294,6 +4407,7 @@ async function fetchAllData() {
     fetchHFRadarCurrent(),  // real-time surface current from SIO HF Radar
     fetchNDBCBuoy(),        // real-time buoy wind & water temp from NDBC
     fetchPressureTrend(),   // 24-hr barometric pressure trend (storm leading indicator)
+    fetchRiverDischarge(),  // USGS streamflow — runoff plume early warning
     fetchBoatReports(),     // daily CPFV dock totals from fish reports sites
     fetchBeachAdvisory(),   // SD County DEH water quality advisories
     fetchHycomProfile(),    // HYCOM 3D temperature profile — modeled thermocline depth
@@ -4396,6 +4510,26 @@ function updateDisplay() {
   setVal('moonPhaseVal', `${D.moon.emoji} ${D.moon.name}`, 'CALC');
   setVal('reportsVal', getReportsLabel(currentSpecies, new Date().getMonth()), getRegionalCPFV() ? 'Regional CPFV' : 'CPFV 5yr');
   setVal('pressureVal', getPressureLabel(D.pressure), 'CALC');
+
+  // River runoff / plume warning
+  const riverRow = document.getElementById('riverFlowRow');
+  const riverVal = document.getElementById('riverFlowVal');
+  if (riverRow && riverVal && D.riverDischarge) {
+    const rd = D.riverDischarge;
+    const statusLabels = {
+      normal: { text: 'Normal — no runoff event', color: 'var(--text-secondary)' },
+      slightly_elevated: { text: '💧 Slightly elevated', color: 'var(--text-secondary)' },
+      elevated: { text: '⚠ Elevated flow — watch for plume', color: '#e67e22' },
+      moderate_flood: { text: '⚠ Runoff event active — plume likely', color: 'var(--poor)' },
+      major_flood: { text: '🚨 Major flood — avoid diving near river mouths', color: 'var(--poor)' }
+    };
+    const s = statusLabels[rd.status] || statusLabels.normal;
+    const detail = `${rd.worst.name}: ${rd.worst.peak24Cfs} cfs (${rd.worst.elevation}× baseline)`;
+    riverVal.innerHTML = `<span style="color:${s.color};font-weight:600">${s.text}</span> · <span style="color:var(--text-muted);font-size:10px">${detail}</span> <span class="src-badge sat" style="font-size:8px">USGS</span>`;
+    riverRow.style.display = '';
+  } else if (riverRow) {
+    riverRow.style.display = 'none';
+  }
 
   // Barometric pressure trend (storm leading indicator)
   const baroRow = document.getElementById('baroTrendRow');
