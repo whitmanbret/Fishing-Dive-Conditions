@@ -7023,12 +7023,18 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     }
 
     // Apply widening — cap at reasonable bounds
-    widenLo = Math.min(widenLo, 10);
-    widenHi = Math.min(widenHi, 10);
+    widenLo = Math.min(widenLo, 6);
+    widenHi = Math.min(widenHi, 6);
     baseLo = Math.max(1, baseLo - widenLo);
     baseHi = Math.min(35, baseHi + widenHi);
-    // Ensure total spread is sensible (min 3, max 18)
-    if (baseHi - baseLo > 18) baseHi = baseLo + 18;
+    // Ensure total spread is sensible (min 3, max 10 — keep ranges readable)
+    if (baseHi - baseLo > 10) {
+      // When widening exceeds 10, pull back proportionally from both ends
+      // Prefer shifting toward the midpoint so we don't lose signal
+      const mid = (baseLo + baseHi) / 2;
+      baseLo = Math.max(1, Math.round(mid - 5));
+      baseHi = Math.round(mid + 5);
+    }
     if (baseHi - baseLo < 3) baseHi = baseLo + 3;
   }
 
