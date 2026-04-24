@@ -1768,12 +1768,17 @@ function getRating(s) {
 }
 // Rating based on visibility feet string (e.g. "12–17 ft") — keeps label consistent with feet
 function getVizRatingFromFeet(vizFeetStr) {
-  const m = vizFeetStr.match(/(\d+)/);
-  if (!m) return getRating(0);
-  const lo = parseInt(m[1], 10);
-  if (lo >= 18) return {label:'Excellent',cls:'rating-excellent',color:'var(--excellent)'};
-  if (lo >= 12) return {label:'Good',cls:'rating-good',color:'var(--good)'};
-  if (lo >= 7)  return {label:'Fair',cls:'rating-fair',color:'var(--fair)'};
+  // Use midpoint of the range — wide forecast ranges shouldn't auto-rate as "Poor"
+  // when the low end is poor but the high end is good. Midpoint represents the
+  // central expectation.
+  const range = vizFeetStr.match(/(\d+)\D+(\d+)/);
+  const single = vizFeetStr.match(/(\d+)/);
+  if (!single) return getRating(0);
+  const lo = parseInt(single[1], 10);
+  const mid = range ? (parseInt(range[1], 10) + parseInt(range[2], 10)) / 2 : lo;
+  if (mid >= 18) return {label:'Excellent',cls:'rating-excellent',color:'var(--excellent)'};
+  if (mid >= 12) return {label:'Good',cls:'rating-good',color:'var(--good)'};
+  if (mid >= 7)  return {label:'Fair',cls:'rating-fair',color:'var(--fair)'};
   return {label:'Poor',cls:'rating-poor',color:'var(--poor)'};
 }
 
@@ -6973,10 +6978,59 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     }
   }
 
-  // Cap range spread to 5ft max, and realistic max of 30ft
+  // Cap range spread to 5ft max, and realistic max of 30ft (today's estimate)
   if (baseHi - baseLo > 5) baseHi = baseLo + 5;
   baseHi = Math.min(30, baseHi);
   baseLo = Math.min(baseLo, baseHi - 1);
+
+  // Future-day uncertainty widening — forecasts genuinely don't know as much
+  // as the live sensor data does. Widen the range to honestly represent what
+  // could happen. Rather than hiding uncertainty behind a point estimate,
+  // show a range that captures likely outcomes.
+  if (dayIdx > 0) {
+    // Base horizon widening: each day out adds ~1.5 ft on each side
+    let widenLo = Math.round(dayIdx * 1.5);
+    let widenHi = Math.round(dayIdx * 1.5);
+
+    // Bloom state uncertainty — bloom decay is unpredictable
+    if (D.chlorophyll !== undefined && D.chlorophyll > 0.8) {
+      widenLo += 2;
+      widenHi += 2;
+    }
+
+    // Storm uncertainty — if pressure is falling rapidly, bad day is more likely
+    if (D.pressureTrend && D.pressureTrend.tendency === 'falling_rapid') {
+      widenLo += 3; // expand the LOW side more (bad case dominates)
+      widenHi += 1;
+    } else if (D.pressureTrend && D.pressureTrend.tendency === 'falling') {
+      widenLo += 2;
+      widenHi += 1;
+    }
+
+    // Precipitation forecast uncertainty
+    if (precipPct > 40) {
+      widenLo += Math.round((precipPct - 40) / 20) + 1;
+    }
+
+    // Upwelling uncertainty — sharp SST shifts mean the viz could go either way
+    if (D.hycom && D.hycom.sstEvolution && D.hycom.sstEvolution.length > dayIdx) {
+      const todaySst = D.hycom.sstEvolution[0].avgF;
+      const forecastSst = D.hycom.sstEvolution[Math.min(dayIdx, D.hycom.sstEvolution.length - 1)].avgF;
+      if (Math.abs(forecastSst - todaySst) > 3) {
+        widenHi += 2;
+        widenLo += 1;
+      }
+    }
+
+    // Apply widening — cap at reasonable bounds
+    widenLo = Math.min(widenLo, 10);
+    widenHi = Math.min(widenHi, 10);
+    baseLo = Math.max(1, baseLo - widenLo);
+    baseHi = Math.min(35, baseHi + widenHi);
+    // Ensure total spread is sensible (min 3, max 18)
+    if (baseHi - baseLo > 18) baseHi = baseLo + 18;
+    if (baseHi - baseLo < 3) baseHi = baseLo + 3;
+  }
 
   return `${baseLo}–${baseHi} ft`;
 }
