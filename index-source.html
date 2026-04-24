@@ -950,8 +950,6 @@
           <option value="sonoma">Sonoma County</option>
           <option value="mendocino">Mendocino County</option>
           <option value="humboldt">Humboldt County</option>
-          <option value="hawaii">Hawaii</option>
-          <option value="baja">Baja California (MX)</option>
         </select>
       </div>
       <div class="control-group spot-group">
@@ -1396,30 +1394,6 @@ const LOCATIONS = {
   bodega:      { name: 'Bodega Bay / Sonoma', bottom: 'rock', tideStation: '9415020', coast: 270, shelter: 'moderate', buoys: ['46013'], lat: 38.33, lon: -123.06, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/68,134' },
   fortbragg:   { name: 'Fort Bragg / Mendocino', bottom: 'rock', tideStation: '9416841', coast: 270, shelter: 'low', buoys: ['46014'], lat: 39.45, lon: -123.81, depth: '10-55 ft', kelpDensity: 'moderate', nwsGrid: 'EKA/61,45' },
   trinidad:    { name: 'Trinidad / Humboldt', bottom: 'rock', tideStation: '9418767', coast: 270, shelter: 'moderate', buoys: ['46022'], lat: 40.77, lon: -124.20, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'EKA/61,107' },
-
-  // ── HAWAII ──
-  // HYCOM covers globally; buoys are NDBC Hawaii network. NWS grid is HFO (Honolulu forecast office).
-  // Tide stations: 1612340 (Honolulu), 1617760 (Kahului Maui), 1611400 (Kawaihae Big Island), 1611347 (Nawiliwili Kauai).
-  oahu_northshore:  { name: 'Oahu — North Shore (Sharks Cove / Three Tables)', bottom: 'rock', tideStation: '1612340', coast: 0, shelter: 'low', buoys: ['51001','51003'], lat: 21.649, lon: -158.065, depth: '15-50 ft', kelpDensity: 'none', offshore: false, nwsGrid: 'HFO/59,138' },
-  oahu_hanauma:     { name: 'Oahu — Hanauma Bay', bottom: 'rock', tideStation: '1612340', coast: 180, shelter: 'high', buoys: ['51001','51003'], lat: 21.269, lon: -157.693, depth: '5-30 ft', kelpDensity: 'none', marineReserve: true, nwsGrid: 'HFO/73,108' },
-  oahu_electric:    { name: 'Oahu — Electric Beach (Kahe)', bottom: 'sand', tideStation: '1612340', coast: 250, shelter: 'moderate', buoys: ['51201','51003'], lat: 21.353, lon: -158.130, depth: '10-40 ft', kelpDensity: 'none', nwsGrid: 'HFO/52,111' },
-  maui_molokini:    { name: 'Maui — Molokini Crater', bottom: 'rock', tideStation: '1617760', coast: 200, shelter: 'moderate', buoys: ['51202','51001'], lat: 20.630, lon: -156.497, depth: '30-100 ft', kelpDensity: 'none', offshore: true, nwsGrid: 'HFO/131,104' },
-  maui_blackrock:   { name: 'Maui — Black Rock (Kaanapali)', bottom: 'rock', tideStation: '1617760', coast: 270, shelter: 'moderate', buoys: ['51202','51001'], lat: 20.930, lon: -156.695, depth: '5-40 ft', kelpDensity: 'none', nwsGrid: 'HFO/120,121' },
-  bigisland_kona:   { name: 'Big Island — Kona (Honokohau)', bottom: 'rock', tideStation: '1611400', coast: 270, shelter: 'moderate', buoys: ['51203','51202'], lat: 19.668, lon: -156.029, depth: '10-100 ft', kelpDensity: 'none', nwsGrid: 'HFO/164,59' },
-  bigisland_pukakoa:{ name: 'Big Island — Puako', bottom: 'rock', tideStation: '1611400', coast: 270, shelter: 'low', buoys: ['51203','51202'], lat: 19.977, lon: -155.840, depth: '10-80 ft', kelpDensity: 'none', nwsGrid: 'HFO/172,77' },
-  kauai_tunnels:    { name: 'Kauai — Tunnels Reef', bottom: 'rock', tideStation: '1611347', coast: 0, shelter: 'low', buoys: ['51001','51101'], lat: 22.225, lon: -159.571, depth: '10-70 ft', kelpDensity: 'none', nwsGrid: 'HFO/24,170' },
-  kauai_poipu:      { name: 'Kauai — Poipu / Sheraton Caverns', bottom: 'rock', tideStation: '1611347', coast: 180, shelter: 'moderate', buoys: ['51002','51001'], lat: 21.871, lon: -159.464, depth: '20-80 ft', kelpDensity: 'none', nwsGrid: 'HFO/32,150' },
-
-  // ── BAJA CALIFORNIA ──
-  // HYCOM + Open-Meteo cover; NDBC has limited MX coverage so rely on model data.
-  // Tide stations: Ensenada (limited), model SST only.
-  ensenada:      { name: 'Ensenada / Todos Santos Island', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'moderate', buoys: ['46086','46232'], lat: 31.815, lon: -116.777, depth: '20-120 ft', kelpDensity: 'high', offshore: false, nwsGrid: 'SGX/54,10' },
-  islas_coronado:{ name: 'Islas Coronado (MX)', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'moderate', buoys: ['46086','46232'], lat: 32.417, lon: -117.250, depth: '30-150 ft', kelpDensity: 'high', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
-  san_quintin:   { name: 'San Quintin', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'moderate', buoys: ['46086'], lat: 30.483, lon: -116.017, depth: '20-80 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,10' },
-  isla_cedros:   { name: 'Isla Cedros', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086'], lat: 28.200, lon: -115.250, depth: '20-200 ft', kelpDensity: 'high', offshore: true, bluewater: true, nwsGrid: 'SGX/54,10' },
-  guerrero_negro:{ name: 'Guerrero Negro', bottom: 'sand', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086'], lat: 27.967, lon: -114.050, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,10' },
-  cabo_pulmo:    { name: 'Cabo Pulmo (Sea of Cortez)', bottom: 'rock', tideStation: '9410170', coast: 90, shelter: 'high', buoys: [], lat: 23.446, lon: -109.420, depth: '15-100 ft', kelpDensity: 'none', marineReserve: true, offshore: false, nwsGrid: 'SGX/54,10' },
-  cabo_san_lucas:{ name: 'Cabo San Lucas', bottom: 'rock', tideStation: '9410170', coast: 180, shelter: 'moderate', buoys: [], lat: 22.884, lon: -109.909, depth: '15-150 ft', kelpDensity: 'none', bluewater: true, nwsGrid: 'SGX/54,10' },
 };
 
 const WEATHER_STATION = 'KSAN'; // fallback; overridden per-region in fetchWeather
@@ -3222,9 +3196,7 @@ const BARO_BUOYS_BY_REGION = {
   sonoma:   ['46013','46014'],
   mendocino:['46014','46022'],
   humboldt: ['46022','46244'],
-  offshore: ['46086','46232','46025'],
-  hawaii:   ['51001','51101','51003','51201'],
-  baja:     ['46086','46232']
+  offshore: ['46086','46232','46025']
 };
 function _getRegionForLocation(locKey) {
   for (const [region, spots] of Object.entries(COUNTY_SPOTS)) {
@@ -3316,9 +3288,7 @@ const MARINE_ZONES_BY_REGION = {
   sonoma:   ['PZZ565'],
   mendocino:['PZZ565','PZZ545'],
   humboldt: ['PZZ470','PZZ455'],
-  offshore: ['PZZ775','PZZ770','PZZ750'],
-  hawaii:   ['PHZ110','PHZ113','PHZ124','PHZ131','PHZ170'],
-  baja:     []  // NWS doesn't issue alerts for MX waters
+  offshore: ['PZZ775','PZZ770','PZZ750']
 };
 async function fetchMarineAlerts() {
   const region = _getRegionForLocation(currentLocation);
@@ -7619,8 +7589,10 @@ const COUNTY_SPOTS = {
   mendocino:    ['fortbragg'],
   humboldt:     ['trinidad'],
   offshore:     ['ninemile','fortythree','hiddenbank','tannerbank'],
-  hawaii:       ['oahu_northshore','oahu_hanauma','oahu_electric','maui_molokini','maui_blackrock','bigisland_kona','bigisland_pukakoa','kauai_tunnels','kauai_poipu'],
-  baja:         ['ensenada','islas_coronado','san_quintin','isla_cedros','guerrero_negro','cabo_pulmo','cabo_san_lucas'],
+  // Hawaii/Baja spots deferred — the viz algorithm (NTU tiers, thermocline
+  // climatology, chlorophyll thresholds) is tuned from CA diver reports and
+  // would mis-predict outside the SoCal Bight. Re-enable once the algorithm
+  // is region-aware.
 };
 
 // =========================================================================
