@@ -4749,11 +4749,23 @@ function updateDisplay() {
     // Ground truth: 40-50ft typical on good days (Mar 2026 report), 20-30ft average
     if (loc.offshore) {
       let lo, hi;
-      const we = D.waveEnergy || 0;
+      // Dampen nearshore CDIP wave energy to represent open-ocean conditions.
+      // Swell shoals (builds) as it approaches shore — open-ocean WE is ~40-60% of nearshore.
+      // Further dampen for long-period groundswell (clean, doesn't disturb water column)
+      // and amplify for short-period wind swell (messy, stirs everything up).
+      // Ground truth: nearshore WE 271 + 14s period = 70ft vis at Coronado Islands (4/24/2026)
+      const rawWe = D.waveEnergy || 0;
+      const shoalingMult = loc.bluewater ? 0.4 : 0.55;
+      // Period-based dampening — clean groundswell preserves viz even at high energy
+      let periodMult = 1.0;
+      if (D.swellPeriod !== undefined) {
+        if (D.swellPeriod >= 15)      periodMult = 0.40;  // very clean groundswell
+        else if (D.swellPeriod >= 13) periodMult = 0.50;  // clean groundswell
+        else if (D.swellPeriod >= 11) periodMult = 0.70;  // mild groundswell
+        else if (D.swellPeriod <= 6)  periodMult = 1.35;  // short-period wind swell
+      }
+      const we = rawWe * shoalingMult * periodMult;
       // Offshore baseline is much higher — no runoff, no surf zone turbidity
-      // NOTE: waveEnergy comes from nearshore CDIP buoy which overestimates open-ocean conditions
-      // because swell shoals and builds as it approaches shore. Offshore deep-water swell is ~40-60%
-      // of nearshore energy. Ground truth: waveEnergy ~120 (nearshore) = 40-50ft vis at Coronados (Mar 2026)
       if (we <= 30) { lo = 50; hi = 70; }        // glassy = exceptional offshore clarity
       else if (we <= 80) { lo = 40; hi = 60; }    // light swell — still excellent
       else if (we <= 150) { lo = 30; hi = 50; }   // moderate nearshore = mild offshore, great vis
