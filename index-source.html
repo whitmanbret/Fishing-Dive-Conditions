@@ -1141,6 +1141,7 @@
       <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tideStateScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="moonPhaseScore" style="display:none">-</div></div>
+      <div class="factor-row" id="baroTrendRow" style="display:none"><div class="factor-label">Barometric Trend</div><div class="factor-value" id="baroTrendVal">--</div></div>
     </section>
 
     <!-- DIVE VISIBILITY CONDITIONS (scores hidden to protect algorithm) -->
@@ -3170,6 +3171,100 @@ async function fetchNDBCBuoy() {
 }
 
 // =========================================================================
+// BAROMETRIC PRESSURE TREND — leading indicator of incoming weather.
+// Uses NDBC realtime2 text file (updates every ~10 min, ~30 hrs history).
+// CDIP wave buoys don't report pressure — use regional meteorological
+// buoys instead. Pressure systems are regional-scale so a single nearby
+// met buoy is adequate for all locations in the region.
+// =========================================================================
+const BARO_BUOYS_BY_REGION = {
+  // SoCal + offshore
+  sandiego: ['46086','46232','46224'],
+  orange:   ['46086','46224','46232'],
+  la:       ['46025','46222','46086'],
+  ventura:  ['46053','46025','46054'],
+  santabarbara: ['46053','46054'],
+  islands:  ['46086','46025','46053'],
+  slo:      ['46028','46011'],
+  monterey: ['46042','46236','46012'],
+  sanmateo: ['46012','46214','46042'],
+  sonoma:   ['46013','46014'],
+  mendocino:['46014','46022'],
+  humboldt: ['46022','46244'],
+  offshore: ['46086','46232','46025']
+};
+function _getRegionForLocation(locKey) {
+  for (const [region, spots] of Object.entries(COUNTY_SPOTS)) {
+    if (spots.includes(locKey)) return region;
+  }
+  return 'sandiego';
+}
+async function fetchPressureTrend() {
+  const region = _getRegionForLocation(currentLocation);
+  const buoyIds = BARO_BUOYS_BY_REGION[region] || BARO_BUOYS_BY_REGION['sandiego'];
+  for (const buoyId of buoyIds) {
+    try {
+      const ndbcUrl = `https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`;
+      const url = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(ndbcUrl);
+      const r = await fetchWithTimeout(url, null, 10000);
+      if (!r.ok) continue;
+      const text = await r.text();
+      const lines = text.split('\n');
+      const dataLines = lines.filter(l => l && !l.startsWith('#'));
+      // Columns from header: YY MM DD hh mm WDIR WSPD GST WVHT DPD APD MWD PRES ATMP WTMP DEWP VIS PTDY TIDE
+      // Pressure (PRES) is index 12
+      const pressureSeries = [];
+      const now = new Date();
+      for (const line of dataLines) {
+        const parts = line.trim().split(/\s+/);
+        if (parts.length < 13) continue;
+        const [yr, mo, dy, hr, mn] = parts.slice(0, 5).map(Number);
+        const presStr = parts[12];
+        if (presStr === 'MM' || presStr === '' || isNaN(parseFloat(presStr))) continue;
+        const pres = parseFloat(presStr);
+        if (pres < 950 || pres > 1050) continue; // sanity
+        // Times are UTC
+        const ts = new Date(Date.UTC(yr, mo - 1, dy, hr, mn));
+        const hoursAgo = (now - ts) / 3600000;
+        if (hoursAgo < 0 || hoursAgo > 30) continue;
+        pressureSeries.push({ hoursAgo, mb: pres });
+      }
+      if (pressureSeries.length < 4) continue;
+      pressureSeries.sort((a, b) => a.hoursAgo - b.hoursAgo);
+      const latest = pressureSeries[0];
+      const find = hrs => {
+        let best = null, bestDiff = Infinity;
+        for (const p of pressureSeries) {
+          const d = Math.abs(p.hoursAgo - hrs);
+          if (d < bestDiff && d < 3) { best = p; bestDiff = d; }
+        }
+        return best;
+      };
+      const p6 = find(6);
+      const p24 = find(24);
+      D.pressureTrend = {
+        currentMb: parseFloat(latest.mb.toFixed(1)),
+        delta6h: p6 ? parseFloat((latest.mb - p6.mb).toFixed(1)) : null,
+        delta24h: p24 ? parseFloat((latest.mb - p24.mb).toFixed(1)) : null,
+        tendency: null,
+        buoy: buoyId
+      };
+      const d6 = D.pressureTrend.delta6h;
+      if (d6 !== null) {
+        if (d6 <= -3) D.pressureTrend.tendency = 'falling_rapid';
+        else if (d6 <= -1.5) D.pressureTrend.tendency = 'falling';
+        else if (d6 >= 3) D.pressureTrend.tendency = 'rising_rapid';
+        else if (d6 >= 1.5) D.pressureTrend.tendency = 'rising';
+        else D.pressureTrend.tendency = 'steady';
+      }
+      srcStatus.baro = 'ok';
+      return;
+    } catch(e) { continue; }
+  }
+  srcStatus.baro = 'err';
+}
+
+// =========================================================================
 // NDBC BUOY SST — direct fetch from NDBC realtime2 text files
 // For bluewater/offshore spots, this is more accurate than shore stations.
 // Called AFTER main fetch round so it can override shore station temps.
@@ -4198,6 +4293,7 @@ async function fetchAllData() {
     fetchSwellForecast(),  // WW3 5-day swell forecast from NOAA/PacIOOS
     fetchHFRadarCurrent(),  // real-time surface current from SIO HF Radar
     fetchNDBCBuoy(),        // real-time buoy wind & water temp from NDBC
+    fetchPressureTrend(),   // 24-hr barometric pressure trend (storm leading indicator)
     fetchBoatReports(),     // daily CPFV dock totals from fish reports sites
     fetchBeachAdvisory(),   // SD County DEH water quality advisories
     fetchHycomProfile(),    // HYCOM 3D temperature profile — modeled thermocline depth
@@ -4300,6 +4396,27 @@ function updateDisplay() {
   setVal('moonPhaseVal', `${D.moon.emoji} ${D.moon.name}`, 'CALC');
   setVal('reportsVal', getReportsLabel(currentSpecies, new Date().getMonth()), getRegionalCPFV() ? 'Regional CPFV' : 'CPFV 5yr');
   setVal('pressureVal', getPressureLabel(D.pressure), 'CALC');
+
+  // Barometric pressure trend (storm leading indicator)
+  const baroRow = document.getElementById('baroTrendRow');
+  const baroVal = document.getElementById('baroTrendVal');
+  if (baroRow && baroVal && D.pressureTrend) {
+    const pt = D.pressureTrend;
+    const tendencyLabels = {
+      falling_rapid: { text: '⛈️ Falling rapidly — storm approaching', color: 'var(--poor)' },
+      falling: { text: '📉 Falling — deteriorating conditions likely', color: '#e67e22' },
+      steady: { text: 'Steady — stable conditions', color: 'var(--text-secondary)' },
+      rising: { text: '📈 Rising — clearing / improving', color: 'var(--good)' },
+      rising_rapid: { text: '☀️ Rising rapidly — high pressure building', color: 'var(--excellent)' }
+    };
+    const t = tendencyLabels[pt.tendency] || { text: pt.tendency || 'unknown', color: 'var(--text-secondary)' };
+    const delta6 = pt.delta6h !== null ? ` · ${pt.delta6h >= 0 ? '+' : ''}${pt.delta6h} mb/6h` : '';
+    const delta24 = pt.delta24h !== null ? ` · ${pt.delta24h >= 0 ? '+' : ''}${pt.delta24h} mb/24h` : '';
+    baroVal.innerHTML = `<span style="color:${t.color}">${t.text}</span><span style="color:var(--text-muted);font-size:10px">${delta6}${delta24}</span> <span class="src-badge sat" style="font-size:8px">NDBC</span>`;
+    baroRow.style.display = '';
+  } else if (baroRow) {
+    baroRow.style.display = 'none';
+  }
 
   // Grunion run display — show only for halibut
   const grunionRow = document.getElementById('grunionRow');
