@@ -364,17 +364,12 @@
       border-radius: 14px; padding: 12px 8px; text-align: center;
       box-shadow: 0 2px 6px rgba(0,0,0,0.18), 0 1px 0 rgba(255,255,255,0.02) inset;
     }
-    .score-gauge.spear-gauge { grid-column: 1 / -1; border-width: 1px; padding: 12px 8px; }
     .gauge-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.4px; margin-bottom: 6px; color: var(--text-muted); }
     .gauge-ring-wrap { width: 100px; height: 60px; margin: 0 auto 2px; position: relative; }
     .gauge-ring-wrap svg { width: 100px; height: 60px; }
     .gauge-arc-bg { fill: none; stroke: var(--bg-card); stroke-width: 7; }
     .gauge-arc { fill: none; stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease, stroke 0.3s; }
     .gauge-ring-score { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: -0.5px; }
-    .spear-gauge .gauge-ring-wrap { width: 130px; height: 75px; }
-    .spear-gauge .gauge-ring-wrap svg { width: 130px; height: 75px; }
-    .spear-gauge .gauge-arc-bg, .spear-gauge .gauge-arc { stroke-width: 9; }
-    .spear-gauge .gauge-ring-score { font-size: 32px; }
     .gauge-rating {
       display: inline-block; margin-top: 6px; padding: 3px 11px; border-radius: 16px;
       font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
@@ -694,26 +689,6 @@
     .loading-pulse { animation: pulse 1.5s ease-in-out infinite; }
     @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-    /* Data Sources Panel */
-    .sources-panel {
-      background: var(--bg-secondary); border-radius: 12px;
-      border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
-    }
-    .sources-header {
-      padding: 8px 14px; font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 1.5px;
-      color: var(--text-muted); background: var(--bg-primary);
-      border-bottom: 1px solid var(--border); cursor: pointer;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .sources-body { padding: 10px 14px; font-size: 11px; color: var(--text-muted); line-height: 1.8; display: none; }
-    .sources-body.open { display: block; }
-    .source-item { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
-    .source-status { font-size: 10px; font-weight: 600; }
-    .source-ok { color: var(--excellent); }
-    .source-fail { color: var(--poor); }
-    .source-na { color: var(--text-muted); }
-
     /* Diver Viz Report Widget */
     .viz-report { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
     .viz-report-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 8px; }
@@ -748,12 +723,6 @@
     .webcam-link .cam-type { font-size: 9px; color: var(--text-muted); }
     @media (max-width: 480px) { .webcam-grid { grid-template-columns: 1fr; } }
 
-    .breakdown-footer {
-      text-align: center; padding: 14px; font-size: 12px;
-      color: var(--text-muted); border-top: 1px solid var(--border); margin-top: 16px;
-    }
-    .breakdown-footer a { color: var(--accent); text-decoration: none; }
-
     @media (max-width: 480px) {
       .container { padding: 8px; }
       .site-nav { padding: 8px 12px; }
@@ -783,9 +752,6 @@
       .gauge-ring-wrap { width: 80px; height: 48px; }
       .gauge-ring-wrap svg { width: 80px; height: 48px; }
       .gauge-ring-score { font-size: 20px; }
-      .spear-gauge .gauge-ring-wrap { width: 110px; height: 62px; }
-      .spear-gauge .gauge-ring-wrap svg { width: 110px; height: 62px; }
-      .spear-gauge .gauge-ring-score { font-size: 26px; }
       .gauge-rating { font-size: 9px; padding: 2px 8px; margin-top: 2px; }
       .gauge-formula { font-size: 8px; }
       .viz-feet-hero { font-size: 18px; }
@@ -1187,7 +1153,7 @@
 
     <!-- Species cards removed — species selection via dropdown only -->
 
-    <!-- THREE SCORE GAUGES -->
+    <!-- TWO SCORE GAUGES -->
     <div class="scores-grid">
       <div class="score-gauge">
         <div class="gauge-label" id="fishGaugeLabel" style="color:var(--fish-color)">Fish Forecast</div>
@@ -1207,15 +1173,6 @@
         <!-- Hidden gauge for score calc -->
         <div style="display:none"><svg viewBox="0 0 120 70"><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="vizArc" style="stroke:var(--viz-color)"/></svg><div id="vizScore">--</div></div>
       </div>
-      <div class="score-gauge spear-gauge">
-        <div class="gauge-label" id="spearGaugeLabel" style="color:var(--spear-color)">Spearfishing Opportunity</div>
-        <div class="gauge-ring-wrap">
-          <svg viewBox="0 0 160 90"><path d="M 10 85 A 70 70 0 0 1 150 85" class="gauge-arc-bg"/><path d="M 10 85 A 70 70 0 0 1 150 85" class="gauge-arc" id="spearArc" style="stroke:var(--spear-color)"/></svg>
-          <div class="gauge-ring-score" id="spearScore" style="color:var(--text-muted)">--</div>
-        </div>
-        <div class="gauge-rating rating-none" id="spearRating">--</div>
-        <div class="gauge-formula" id="spearFormula" style="display:none">S = 0.6 × Fish + 0.4 × Visibility</div>
-      </div>
     </div>
 
     <div class="data-status" id="dataStatus">Fetching live oceanographic data...</div>
@@ -1233,26 +1190,6 @@
       <div class="brief-am" id="briefAM"></div>
       <div class="brief-pm" id="briefPM"></div>
       <div class="brief-fishing" id="briefFishing" style="display:none"></div>
-    </div>
-
-    <!-- ===== DIVER VIZ REPORT ===== -->
-    <div class="viz-report" id="vizReportWidget" style="display:none">
-      <div class="viz-report-title">Was the visibility accurate today?</div>
-      <div class="viz-report-row" id="vizAccuracyRow">
-        <button class="viz-btn" onclick="submitVizReport('accurate')">Yes, accurate</button>
-        <button class="viz-btn" onclick="showVizOptions()">No, it was different</button>
-      </div>
-      <div class="viz-report-row" id="vizOptionsRow" style="display:none">
-        <span style="font-size:10px;color:var(--text-muted);width:100%;margin-bottom:2px">What was the actual visibility?</span>
-        <button class="viz-btn" onclick="submitVizReport('0-5')">0–5 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('6-10')">6–10 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('11-15')">11–15 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('16-20')">16–20 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('21-25')">21–25 ft</button>
-        <button class="viz-btn" onclick="submitVizReport('26+')">26+ ft</button>
-      </div>
-      <div class="viz-report-thanks" id="vizThanks"></div>
-      <div class="viz-report-history" id="vizHistory"></div>
     </div>
 
     <!-- ===== CONDITION DETAILS (above Chlorophyll Map and 5-Day Forecast) ===== -->
@@ -1312,28 +1249,6 @@
       <span id="estVizVal"></span><span id="estVizScore"></span>
     </div>
     <div id="grunionRow" style="display:none"></div>
-
-    <!-- DATA SOURCES PANEL -->
-    <section class="sources-panel" style="display:none">
-      <div class="sources-header" onclick="toggleSources()">
-        <span>Data Sources</span>
-        <span id="sourcesToggle">▼</span>
-      </div>
-      <div class="sources-body" id="sourcesBody">
-        <div class="source-item"><span>NOAA CO-OPS — Water temp, tides</span><span class="source-status" id="srcNoaa">--</span></div>
-        <div class="source-item"><span>NDBC Buoy — Swell, wave, wind</span><span class="source-status" id="srcNdbc">--</span></div>
-        <div class="source-item"><span>NWS — Wind, rainfall, forecast</span><span class="source-status" id="srcNws">--</span></div>
-        <div class="source-item"><span>NCEI ERDDAP — SST (OISST)</span><span class="source-status" id="srcSst">--</span></div>
-        <div class="source-item"><span>NCEI ERDDAP — Chlorophyll (Climo)</span><span class="source-status" id="srcChl">--</span></div>
-        <div class="source-item"><span id="srcSassLabel">Shore Station — Pier Temp/Turbidity/Chl (Live)</span><span class="source-status" id="srcSass">--</span></div>
-        <div class="source-item"><span>NOAA PFEL — Upwelling Index</span><span class="source-status" id="srcUpwell">--</span></div>
-        <div class="source-item" id="srcSatSstRow" style="display:none"><span>MUR SST Satellite — Temp Break Detection</span><span class="source-status" id="srcSatSst">--</span></div>
-        <div class="source-item" id="srcSatChlRow" style="display:none"><span>VIIRS Satellite — Chlorophyll / Water Color</span><span class="source-status" id="srcSatChl">--</span></div>
-        <div class="source-item" id="srcBeachWQRow"><span>SD County DEH — Beach Water Quality</span><span class="source-status" id="srcBeachWQ">--</span></div>
-        <div class="source-item"><span>CDFW CPFV Logbooks — Seasonal baselines</span><span class="source-status source-ok">LOCAL</span></div>
-        <div class="source-item"><span>Calculated — Moon, pressure, current, energy</span><span class="source-status source-ok">CALC</span></div>
-      </div>
-    </section>
 
     </div><!-- end #detailsSections -->
 
@@ -1446,6 +1361,26 @@
       </div>
     </div>
 
+    <!-- ===== DIVER VIZ REPORT ===== -->
+    <div class="viz-report" id="vizReportWidget" style="display:none">
+      <div class="viz-report-title">Was this visibility accurate today?</div>
+      <div class="viz-report-row" id="vizAccuracyRow">
+        <button class="viz-btn" onclick="submitVizReport('accurate')">Yes, accurate</button>
+        <button class="viz-btn" onclick="showVizOptions()">No, it was different</button>
+      </div>
+      <div class="viz-report-row" id="vizOptionsRow" style="display:none">
+        <span style="font-size:10px;color:var(--text-muted);width:100%;margin-bottom:2px">What was the actual visibility?</span>
+        <button class="viz-btn" onclick="submitVizReport('0-5')">0–5 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('6-10')">6–10 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('11-15')">11–15 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('16-20')">16–20 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('21-25')">21–25 ft</button>
+        <button class="viz-btn" onclick="submitVizReport('26+')">26+ ft</button>
+      </div>
+      <div class="viz-report-thanks" id="vizThanks"></div>
+      <div class="viz-report-history" id="vizHistory"></div>
+    </div>
+
     <!-- BEACH WEBCAMS -->
     <section class="webcams" id="webcamSection">
       <div class="webcams-title">📹 Live Beach Cams</div>
@@ -1458,19 +1393,6 @@
       <div id="reportLinks"></div>
     </section>
 
-    <div class="breakdown-footer">
-      Fish Forecast · Dive Visibility · Spearfishing Opportunity<br>
-      Data: <a href="https://tidesandcurrents.noaa.gov" target="_blank">NOAA CO-OPS</a> ·
-      <a href="https://cdip.ucsd.edu" target="_blank">CDIP/UCSD</a> (raw buoy — includes all wave energy, may differ from Surfline/iWindSurf which filter swell bands) ·
-      <a href="https://weather.gov" target="_blank">NWS</a> ·
-      <a href="https://www.ncei.noaa.gov/erddap/" target="_blank">NCEI Satellite</a> ·
-      <a href="https://pae-paha.pacioos.hawaii.edu/erddap/" target="_blank">WaveWatch III</a> (NOAA/PacIOOS swell forecast) ·
-      <a href="https://hfradar.ioos.us/" target="_blank">HF Radar</a> (SIO/IOOS surface currents) ·
-      <a href="https://sccoos.org/autoss/" target="_blank">SCCOOS</a> / <a href="https://www.cencoos.org/" target="_blank">CeNCOOS</a> Shore Stations ·
-      <a href="https://coollab.ucsd.edu/pierviz/" target="_blank">Scripps Pier Cam</a> ·
-      CDFW CPFV Logbooks (2019–2025)<br>
-      <span id="stationFooter">Station: La Jolla (9410230) · Buoy: connecting...</span>
-    </div>
   </div>
 
 <script>
@@ -4805,11 +4727,6 @@ async function fetchAllData() {
   updateDataWarning();
 
   btn.disabled=false; btn.textContent='Refresh';
-  updateSourceStatus();
-
-  const loc = LOCATIONS[currentLocation];
-  const buoyLabel = D.buoyId ? `Buoy: ${D.buoyName||D.buoyId} (${D.buoySource||'NDBC'})` : `Buoy: connecting...`;
-  document.getElementById('stationFooter').textContent = `Station: ${loc.name} (${loc.tideStation}) · ${buoyLabel}`;
 
   // Re-apply boat report boost after all fetches complete (boost may have been set during fetchBoatReports)
   applyBoatReportBoost();
@@ -5707,36 +5624,6 @@ function updateDataWarning() {
   }
 }
 
-function updateSourceStatus() {
-  const map = {noaa:'srcNoaa',ndbc:'srcNdbc',nws:'srcNws',sst:'srcSst',chl:'srcChl',sass:'srcSass',upwell:'srcUpwell',beachWQ:'srcBeachWQ'};
-  for(const [key,elId] of Object.entries(map)) {
-    const el=document.getElementById(elId);
-    if(!el) continue;
-    if(srcStatus[key]==='ok') { el.textContent='OK'; el.className='source-status source-ok'; }
-    else if(srcStatus[key]==='n/a') { el.textContent='N/A'; el.className='source-status source-na'; }
-    else { el.textContent='FAIL'; el.className='source-status source-fail'; }
-  }
-  // Update shore station label to show which station is being used
-  const sassLabel = document.getElementById('srcSassLabel');
-  if (sassLabel) {
-    // D.turbSource holds the name of whichever station succeeded
-    if (D.turbSource) {
-      sassLabel.textContent = `${D.turbSource} — Pier Temp/Turbidity/Chl (Live)`;
-    } else {
-      const stKeys = SHORE_STATION_MAP[currentLocation];
-      const st = stKeys && stKeys[0] ? SHORE_STATIONS[stKeys[0]] : null;
-      sassLabel.textContent = st ? `${st.name} — Pier Sensor (Offline)` : 'Shore Station — No nearby station';
-    }
-  }
-}
-
-function toggleSources() {
-  const body=document.getElementById('sourcesBody');
-  const toggle=document.getElementById('sourcesToggle');
-  body.classList.toggle('open');
-  toggle.textContent=body.classList.contains('open')?'▲':'▼';
-}
-
 // =========================================================================
 // SCORE CALCULATOR — WEIGHTED by real-world impact
 // =========================================================================
@@ -6061,20 +5948,8 @@ function recalculate() {
     else if (fishAvg !== null) fishAvg = Math.max(1, fishAvg - penalty * 0.5);
   }
 
-  let spearAvg = null;
-  if(fishAvg!==null&&vizFinal!==null) spearAvg=0.6*fishAvg+0.4*vizFinal;
-  else if(fishAvg!==null) spearAvg=fishAvg;
-  else if(vizFinal!==null) spearAvg=vizFinal;
-
-  // Marine reserve locations: keep Fish Forecast (snorkelers/scuba want it),
-  // but show "Not Permitted" for Spearfishing only
   updateGauge('fish',fishAvg,'var(--fish-color)');
   updateGauge('viz',vizFinal,'var(--viz-color)');
-  if (loc.marineReserve) {
-    updateGaugeNotPermitted('spear');
-  } else {
-    updateGauge('spear',spearAvg,'var(--spear-color)');
-  }
   // Show small score under viz feet hero
   const vizSmall = document.getElementById('vizScoreSmall');
   if (vizSmall && vizFinal !== null) vizSmall.textContent = `Score: ${vizFinal.toFixed(1)} / 10`;
@@ -6087,7 +5962,7 @@ function recalculate() {
   renderOceanForecast();
   updateConditionsBrief();
 
-  D.fishAvg=fishAvg; D.vizAvg=vizFinal; D.spearAvg=spearAvg;
+  D.fishAvg=fishAvg; D.vizAvg=vizFinal;
   // Update map markers to reflect new scores
   if (mapVisible) updateMapMarkers();
   // Check alert conditions after scores are computed
@@ -6130,7 +6005,7 @@ function setScore(elId, s) {
 
 function setArc(id,pct,color) {
   const arc=document.getElementById(id);
-  const len=id==='spearArc'?220:157;
+  const len=157;
   arc.style.strokeDasharray=len;
   arc.style.strokeDashoffset=len-len*Math.min(pct,1);
   arc.style.stroke=color;
@@ -6138,10 +6013,6 @@ function setArc(id,pct,color) {
 
 function updateGauge(name,score,defaultColor) {
   const sEl=document.getElementById(name+'Score'), rEl=document.getElementById(name+'Rating');
-  // Reset any styles set by updateGaugeNotPermitted
-  sEl.style.fontSize = '';
-  rEl.style.fontSize = '';
-  rEl.style.color = '';
   if(score===null) { sEl.textContent='--'; sEl.style.color='var(--text-muted)'; rEl.textContent='No Data'; rEl.className='gauge-rating rating-none'; setArc(name+'Arc',0,'var(--bg-card)'); return; }
   sEl.textContent=score.toFixed(1);
   // For viz gauge, derive rating from feet estimate so label matches the feet display
@@ -6153,19 +6024,6 @@ function updateGauge(name,score,defaultColor) {
   }
   sEl.style.color=r.color; rEl.textContent=r.label; rEl.className=`gauge-rating ${r.cls}`;
   setArc(name+'Arc',score/10,r.color);
-}
-
-function updateGaugeNotPermitted(name) {
-  const sEl = document.getElementById(name+'Score');
-  const rEl = document.getElementById(name+'Rating');
-  sEl.textContent = '🚫';
-  sEl.style.color = '#e74c3c';
-  sEl.style.fontSize = '28px';
-  rEl.textContent = 'Not Permitted — Marine Preserve';
-  rEl.className = 'gauge-rating rating-none';
-  rEl.style.color = '#e74c3c';
-  rEl.style.fontSize = '11px';
-  setArc(name+'Arc', 0, '#e74c3c33');
 }
 
 function updateInsightReserve(fish, viz) {
@@ -8025,39 +7883,10 @@ function onCountyChange() {
 function onLocationChange() {
   currentLocation=document.getElementById('locationSelect').value;
   const loc = LOCATIONS[currentLocation];
-  // Update gauge labels for marine reserves
-  const fishLabel = document.getElementById('fishGaugeLabel');
-  const spearLabel = document.getElementById('spearGaugeLabel');
-  const spearFormula = document.getElementById('spearFormula');
   // Fish Forecast always shows normally (snorkelers/scuba divers want to see fish activity)
+  const fishLabel = document.getElementById('fishGaugeLabel');
   fishLabel.textContent = 'Fish Forecast';
   fishLabel.style.color = 'var(--fish-color)';
-  const spearGauge = document.querySelector('.spear-gauge');
-  if (loc.marineReserve) {
-    spearLabel.textContent = '🏛️ Marine Reserve — Spearfishing Not Permitted';
-    spearLabel.style.color = '#e74c3c';
-    spearFormula.textContent = 'Take of all marine life is prohibited at this location';
-    spearFormula.style.color = '#e74c3c';
-    spearFormula.style.display = 'block';
-    // Collapse the gauge ring — just show the label
-    if (spearGauge) {
-      spearGauge.querySelector('.gauge-ring-wrap').style.display = 'none';
-      document.getElementById('spearRating').style.display = 'none';
-      spearGauge.style.padding = '12px 14px';
-      spearGauge.style.minHeight = 'auto';
-    }
-  } else {
-    spearLabel.textContent = 'Spearfishing Opportunity';
-    spearLabel.style.color = 'var(--spear-color)';
-    spearFormula.textContent = 'S = 0.6 × Fish + 0.4 × Visibility';
-    spearFormula.style.color = 'var(--text-muted)';
-    if (spearGauge) {
-      spearGauge.querySelector('.gauge-ring-wrap').style.display = '';
-      document.getElementById('spearRating').style.display = '';
-      spearGauge.style.padding = '';
-      spearGauge.style.minHeight = '';
-    }
-  }
   // Hide/show species cards based on geographic range
   updateSpeciesCards();
 
@@ -8190,13 +8019,14 @@ function initVizReport() {
 function shareConditions() {
   const loc = LOCATIONS[currentLocation];
   const viz = D.vizFeetStr || '--';
-  const spear = D.spearAvg !== null ? D.spearAvg.toFixed(1) : '--';
-  const rating = D.spearAvg !== null ? getRating(D.spearAvg).label : '';
+  const vizRating = (D.vizAvg !== undefined && D.vizAvg !== null) ? getRating(D.vizAvg).label : '';
+  const fish = (D.fishAvg !== undefined && D.fishAvg !== null) ? D.fishAvg.toFixed(1) : '--';
   const wind = D.windSpeedMph !== undefined ? `${D.windSpeedMph}mph` : '';
   const swell = D.swellFt ? `${D.swellFt}ft @${D.swellPeriod}s` : '';
 
-  let text = `${loc.name} conditions: ${rating} (${spear}/10)`;
+  let text = `${loc.name} conditions: ${vizRating}`;
   if (viz !== '--') text += ` · Viz: ${viz}`;
+  if (fish !== '--') text += ` · Fish: ${fish}/10`;
   if (swell) text += ` · Swell: ${swell}`;
   if (wind) text += ` · Wind: ${wind}`;
   text += `\n\nhttps://conditions.spearfactor.com/`;
