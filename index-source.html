@@ -31,6 +31,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+  <!-- Inter font — modern, clean UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <!-- Open Graph (Facebook, iMessage, etc.) -->
   <meta property="og:title" content="California Spearfishing Conditions — Live Forecast">
   <meta property="og:description" content="Real-time dive visibility & fish probability scores for 30+ California dive sites. Swell, tide, wind, and 5-day forecast from San Diego to Humboldt.">
@@ -177,9 +182,12 @@
     }
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
       background: var(--bg-primary); color: var(--text-primary);
       line-height: 1.5;
+      font-feature-settings: 'cv11', 'ss01';  /* slightly cleaner Inter glyphs */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       /* Critical for mobile/iframe scroll — no height constraints */
       height: auto !important;
       min-height: auto !important;
@@ -189,6 +197,31 @@
       overscroll-behavior: auto;
     }
     .container { max-width: 700px; margin: 0 auto; padding: 16px; }
+
+    /* Tabular numbers for any element showing scores/measurements — keeps columns aligned */
+    .viz-feet-hero, .gauge-ring-score, .factor-value, .ftc-fish-val, .ftc-viz-feet,
+    .ftc-spear-val, .ftc-time, .ftc-wind-info {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Smoother transitions on collapsible sections + interactive elements */
+    #detailsSections, #forecastSection, #boatReportsSection, #chlMapSection,
+    #sstMapSection {
+      transition: opacity 0.18s ease;
+    }
+    .section-toggle-btn, .control-group select, .fav-btn, .action-bar-btn,
+    button.viz-btn, .nav-coffee, .nav-home {
+      transition: background-color 0.15s ease, border-color 0.15s ease,
+                  transform 0.1s ease, box-shadow 0.15s ease;
+    }
+    .section-toggle-btn:hover {
+      background: var(--bg-card) !important;
+      border-color: var(--accent) !important;
+      color: var(--text-primary) !important;
+    }
+    .section-toggle-btn:active {
+      transform: scale(0.985);
+    }
 
     .site-nav { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: rgba(10, 22, 40, 0.95); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
     .site-nav .nav-home { display: inline-flex; align-items: center; gap: 6px; color: #fff; background: var(--accent); text-decoration: none; font-size: 15px; font-weight: 700; padding: 8px 18px; border-radius: 6px; letter-spacing: 0.5px; transition: background 0.2s; }
@@ -264,25 +297,28 @@
     /* Species Selector — dropdown only (cards removed) */
 
     /* Score Gauges */
-    .scores-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .scores-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
     .score-gauge {
-      background: var(--bg-secondary); border: 1px solid var(--border);
-      border-radius: 12px; padding: 10px 8px; text-align: center;
+      background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-input) 100%);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 12px 8px; text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.18), 0 1px 0 rgba(255,255,255,0.02) inset;
     }
-    .score-gauge.spear-gauge { grid-column: 1 / -1; border-width: 2px; padding: 10px 8px; }
-    .gauge-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 4px; }
+    .score-gauge.spear-gauge { grid-column: 1 / -1; border-width: 1px; padding: 12px 8px; }
+    .gauge-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.4px; margin-bottom: 6px; color: var(--text-muted); }
     .gauge-ring-wrap { width: 100px; height: 60px; margin: 0 auto 2px; position: relative; }
     .gauge-ring-wrap svg { width: 100px; height: 60px; }
-    .gauge-arc-bg { fill: none; stroke: var(--bg-card); stroke-width: 8; }
-    .gauge-arc { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease, stroke 0.3s; }
-    .gauge-ring-score { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: 800; line-height: 1; }
+    .gauge-arc-bg { fill: none; stroke: var(--bg-card); stroke-width: 7; }
+    .gauge-arc { fill: none; stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease, stroke 0.3s; }
+    .gauge-ring-score { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 26px; font-weight: 800; line-height: 1; letter-spacing: -0.5px; }
     .spear-gauge .gauge-ring-wrap { width: 130px; height: 75px; }
     .spear-gauge .gauge-ring-wrap svg { width: 130px; height: 75px; }
-    .spear-gauge .gauge-arc-bg, .spear-gauge .gauge-arc { stroke-width: 10; }
-    .spear-gauge .gauge-ring-score { font-size: 30px; }
+    .spear-gauge .gauge-arc-bg, .spear-gauge .gauge-arc { stroke-width: 9; }
+    .spear-gauge .gauge-ring-score { font-size: 32px; }
     .gauge-rating {
-      display: inline-block; margin-top: 4px; padding: 2px 10px; border-radius: 16px;
+      display: inline-block; margin-top: 6px; padding: 3px 11px; border-radius: 16px;
       font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
+      background: rgba(255,255,255,0.04);
     }
     .gauge-formula { font-size: 9px; color: var(--text-muted); margin-top: 4px; }
     /* Viz feet prominent display */
@@ -552,11 +588,17 @@
     /* Factor Display (read-only) */
     .factors-section {
       background: var(--bg-secondary); border-radius: 12px;
-      border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px;
+      border: 1px solid var(--border); overflow: hidden; margin-bottom: 14px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
     }
     /* Full-width collapsible section toggle buttons (Condition Details, Maps, Forecast, Boat Reports) */
     .section-toggle-btn {
       width: 100%; box-sizing: border-box; text-align: center;
+      background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-input) 100%) !important;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .section-toggle-btn:hover {
+      box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 2px 8px rgba(44,140,255,0.15);
     }
     .category-header {
       padding: 8px 14px; font-size: 11px; font-weight: 700;
@@ -568,15 +610,17 @@
     .cat-fish { background: rgba(240,160,48,0.2); color: var(--fish-color); }
     .cat-viz { background: rgba(44,140,255,0.2); color: var(--viz-color); }
     .factor-row {
-      display: flex; align-items: center; padding: 8px 14px;
-      border-bottom: 1px solid var(--border); gap: 8px;
+      display: flex; align-items: center; padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04); gap: 8px;
     }
+    .factor-row:hover { background: rgba(255,255,255,0.015); }
     .factor-row:last-child { border-bottom: none; }
-    .factor-label { flex: 0 0 100px; font-size: 12px; font-weight: 500; color: var(--text-muted); }
+    .factor-label { flex: 0 0 100px; font-size: 12px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.2px; }
     .factor-value { flex: 1; font-size: 13px; color: var(--text-primary); font-weight: 500; }
     .factor-value .src-badge {
       font-size: 9px; background: rgba(44,140,255,0.15); color: var(--accent);
-      padding: 1px 5px; border-radius: 4px; margin-left: 6px; font-weight: 600;
+      padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: 600;
+      letter-spacing: 0.3px;
     }
     .factor-value .src-badge.sat { background: rgba(46,204,113,0.15); color: var(--excellent); }
     .factor-value .src-badge.buoy { background: rgba(240,160,48,0.15); color: var(--fish-color); }
