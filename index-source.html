@@ -1970,6 +1970,17 @@ function fetchWithTimeout(url, opts, ms=4000) {
 }
 
 // =========================================================================
+// CORS PROXY — SpearFactor's own Cloudflare Worker (edge-cached, reliable).
+// Whitelisted upstream hosts: HYCOM, NDBC, NWS, USGS, CoastWatch, CeNCOOS,
+// SD/SoCal fish reports, NOAA Tides. Falls back to public proxies if worker
+// is ever unavailable.
+// =========================================================================
+const SF_PROXY = 'https://spearfactor-api.whitmanbret.workers.dev/proxy?url=';
+function sfProxyUrl(targetUrl) {
+  return SF_PROXY + encodeURIComponent(targetUrl);
+}
+
+// =========================================================================
 // BOAT FISH COUNT SCRAPER — daily CPFV dock totals
 // =========================================================================
 let boatReportsData = null; // cached parsed data
@@ -2169,6 +2180,7 @@ async function fetchBoatReports() {
 
   // Use multiple CORS proxies with fallback chain for reliability
   const CORS_PROXIES = [
+    'https://spearfactor-api.whitmanbret.workers.dev/proxy?url=',
     'https://api.allorigins.win/raw?url=',
     'https://api.codetabs.com/v1/proxy?quest=',
   ];
@@ -3219,7 +3231,7 @@ async function fetchPressureTrend() {
   for (const buoyId of buoyIds) {
     try {
       const ndbcUrl = `https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`;
-      const url = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(ndbcUrl);
+      const url = sfProxyUrl(ndbcUrl);
       const r = await fetchWithTimeout(url, null, 10000);
       if (!r.ok) continue;
       const text = await r.text();
@@ -3482,7 +3494,7 @@ async function _fetchHycomProfile(datasetId, varName, lat, lon, timeStr) {
   const tryFetch = async (la, lo) => {
     try {
       const url = `https://tds.hycom.org/thredds/ncss/grid/FMRC_ESPC-D-V02_${datasetId}/FMRC_ESPC-D-V02_${datasetId}_best.ncd?var=${varName}&latitude=${la}&longitude=${lo}&time=${encodeURIComponent(timeStr)}&vertStride=1&accept=csv`;
-      const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url);
+      const proxyUrl = sfProxyUrl(url);
       const r = await fetchWithTimeout(proxyUrl, {}, 15000);
       if (!r.ok) return null;
       const csv = await r.text();
@@ -3503,7 +3515,7 @@ async function _fetchHycomSstEvolution(lat, lon, startIso, endIso) {
   const tryFetch = async (la, lo) => {
     try {
       const url = `https://tds.hycom.org/thredds/ncss/grid/FMRC_ESPC-D-V02_t3z/FMRC_ESPC-D-V02_t3z_best.ncd?var=water_temp&latitude=${la}&longitude=${lo}&time_start=${encodeURIComponent(startIso)}&time_end=${encodeURIComponent(endIso)}&vertCoord=0&accept=csv`;
-      const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url);
+      const proxyUrl = sfProxyUrl(url);
       const r = await fetchWithTimeout(proxyUrl, {}, 15000);
       if (!r.ok) return null;
       const csv = await r.text();
@@ -3531,7 +3543,7 @@ async function _fetchHycomSSH(lat, lon, timeStr) {
   const tryFetch = async (la, lo) => {
     try {
       const url = `https://tds.hycom.org/thredds/ncss/grid/FMRC_ESPC-D-V02_ssh/FMRC_ESPC-D-V02_ssh_best.ncd?var=surf_el&latitude=${la}&longitude=${lo}&time=${encodeURIComponent(timeStr)}&accept=csv`;
-      const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url);
+      const proxyUrl = sfProxyUrl(url);
       const r = await fetchWithTimeout(proxyUrl, {}, 12000);
       if (!r.ok) return null;
       const csv = await r.text();
@@ -3953,7 +3965,7 @@ async function fetchSatelliteOffshore() {
   // CORS proxy chain — ERDDAP doesn't support CORS
   // Try multiple proxies for resilience (allorigins often times out on large ERDDAP responses)
   const proxyChain = [
-    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    url => sfProxyUrl(url),
     url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
   ];
   async function proxyFetch(url, timeout = 15000) {
