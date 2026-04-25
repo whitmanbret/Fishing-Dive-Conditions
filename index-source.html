@@ -27,9 +27,11 @@
   <link rel="apple-touch-icon" href="/icon-192.jpg">
   <meta name="theme-color" content="#0a1628">
 
-  <!-- Leaflet.js for interactive map -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Leaflet.js for interactive map — deferred so it doesn't block HTML parsing.
+       The map init waits on DOMContentLoaded so it runs after this is ready. -->
+  <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" onload="this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <!-- Inter font — modern, clean UI -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -280,6 +282,64 @@
     .share-action { background: rgba(46,204,113,0.12); border-color: var(--excellent); color: var(--excellent); }
     .share-action:hover { background: rgba(46,204,113,0.22); }
     .alerts-action.active { color: var(--accent); border-color: var(--accent); background: rgba(44,140,255,0.1); }
+    .report-action { background: rgba(255,165,0,0.12); border-color: rgba(255,165,0,0.55); color: #ffb347; }
+    .report-action:hover { background: rgba(255,165,0,0.22); }
+
+    /* Report Dive modal */
+    .report-modal-backdrop {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      z-index: 9999; align-items: flex-start; justify-content: center; padding: 40px 16px;
+      overflow-y: auto; backdrop-filter: blur(4px);
+    }
+    .report-modal-backdrop.open { display: flex; }
+    .report-modal {
+      background: var(--card-bg, #161a20); border: 1px solid var(--border);
+      border-radius: 14px; padding: 0; width: 100%; max-width: 460px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+    }
+    .report-modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      font-size: 16px; font-weight: 700; letter-spacing: 0.3px;
+    }
+    .report-modal-close {
+      background: transparent; border: none; color: var(--text-muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 0 4px;
+    }
+    .report-modal-close:hover { color: var(--text-primary); }
+    .report-modal-body { padding: 16px 20px 20px; }
+    .report-modal-spot { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .report-modal-pred { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+    .report-field { display: block; margin-bottom: 12px; }
+    .report-field-label {
+      display: block; font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;
+    }
+    .report-field input, .report-field textarea {
+      width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);
+      padding: 9px 12px; font-size: 14px; font-family: inherit;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .report-field input:focus, .report-field textarea:focus {
+      outline: none; border-color: var(--accent); background: rgba(255,255,255,0.07);
+    }
+    .report-field textarea { resize: vertical; min-height: 60px; }
+    .report-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; }
+    .report-cancel-btn, .report-submit-btn {
+      padding: 9px 18px; border-radius: 20px; font-size: 13px; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border); transition: all 0.15s;
+      font-family: inherit; letter-spacing: 0.3px;
+    }
+    .report-cancel-btn { background: transparent; color: var(--text-muted); }
+    .report-cancel-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+    .report-submit-btn { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .report-submit-btn:hover { opacity: 0.9; }
+    .report-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .report-modal-status { margin-top: 10px; font-size: 12px; min-height: 16px; text-align: right; }
+    .report-modal-status.success { color: var(--excellent); }
+    .report-modal-status.error   { color: var(--poor); }
+
     .data-status { font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 8px; }
     .data-status.error { color: var(--poor); }
     .data-status.success { color: var(--excellent); }
@@ -1022,6 +1082,7 @@
       <button class="action-bar-btn refresh-action" id="refreshBtn" onclick="fetchAllData()">Refresh</button>
       <button class="action-bar-btn share-action" id="shareBtn" onclick="shareConditions()">Share</button>
       <button class="action-bar-btn alerts-action" id="alertBtn" onclick="toggleAlertsPanel()">Alerts</button>
+      <button class="action-bar-btn report-action" id="reportBtn" onclick="openReportModal()">Report Dive</button>
     </div>
 
     <!-- Favorites Bar -->
@@ -1064,6 +1125,41 @@
           </div>
         </div>
         <div class="alert-note">Alerts only work while this page is open in a browser tab. Conditions are checked every 30 minutes.</div>
+      </div>
+    </div>
+
+    <!-- Report Dive Modal -->
+    <div class="report-modal-backdrop" id="reportModalBackdrop" onclick="closeReportModal(event)">
+      <div class="report-modal" onclick="event.stopPropagation()">
+        <div class="report-modal-header">
+          <span>Report Your Dive</span>
+          <button class="report-modal-close" onclick="closeReportModal()" aria-label="Close">&times;</button>
+        </div>
+        <div class="report-modal-body">
+          <div class="report-modal-spot" id="reportModalSpot">--</div>
+          <div class="report-modal-pred" id="reportModalPred"></div>
+          <label class="report-field">
+            <span class="report-field-label">Actual visibility (ft) *</span>
+            <input type="number" id="reportViz" min="0" max="200" step="1" inputmode="numeric" placeholder="e.g. 15">
+          </label>
+          <label class="report-field">
+            <span class="report-field-label">Water temp (°F)</span>
+            <input type="number" id="reportTemp" min="40" max="90" step="0.1" inputmode="decimal" placeholder="optional">
+          </label>
+          <label class="report-field">
+            <span class="report-field-label">Notes</span>
+            <textarea id="reportNotes" rows="3" maxlength="1000" placeholder="Time of day, depth, conditions, what you saw, anything weird..."></textarea>
+          </label>
+          <label class="report-field">
+            <span class="report-field-label">Email (optional, for follow-up)</span>
+            <input type="email" id="reportEmail" maxlength="128" placeholder="you@example.com">
+          </label>
+          <div class="report-modal-actions">
+            <button class="report-cancel-btn" onclick="closeReportModal()">Cancel</button>
+            <button class="report-submit-btn" id="reportSubmitBtn" onclick="submitReport()">Submit Report</button>
+          </div>
+          <div class="report-modal-status" id="reportModalStatus"></div>
+        </div>
       </div>
     </div>
 
@@ -2019,10 +2115,105 @@ function fetchWithTimeout(url, opts, ms=4000) {
 // SD/SoCal fish reports, NOAA Tides. Falls back to public proxies if worker
 // is ever unavailable.
 // =========================================================================
-const SF_PROXY = 'https://spearfactor-api.whitmanbret.workers.dev/proxy?url=';
+const SF_PROXY_BASE = 'https://spearfactor-api.whitmanbret.workers.dev';
+const SF_PROXY = SF_PROXY_BASE + '/proxy?url=';
 function sfProxyUrl(targetUrl) {
   return SF_PROXY + encodeURIComponent(targetUrl);
 }
+
+// =========================================================================
+// REPORT DIVE — user-submitted viz/temp/notes pushed to the worker's KV
+// =========================================================================
+function openReportModal() {
+  const loc = LOCATIONS[currentLocation];
+  const spotEl = document.getElementById('reportModalSpot');
+  const predEl = document.getElementById('reportModalPred');
+  if (spotEl) spotEl.textContent = loc ? loc.name : 'Current spot';
+
+  const vizRangeEl = document.getElementById('vizFeetHero');
+  const ratingEl = document.getElementById('vizRating');
+  if (predEl) {
+    const pred = (vizRangeEl && vizRangeEl.textContent && vizRangeEl.textContent !== '--')
+      ? vizRangeEl.textContent : '';
+    const rating = (ratingEl && ratingEl.textContent && ratingEl.textContent !== '--')
+      ? ratingEl.textContent : '';
+    predEl.textContent = pred ? `Predicted: ${pred}${rating ? ' (' + rating + ')' : ''}` : '';
+  }
+
+  ['reportViz','reportTemp','reportNotes','reportEmail'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const status = document.getElementById('reportModalStatus');
+  if (status) { status.textContent = ''; status.className = 'report-modal-status'; }
+  const btn = document.getElementById('reportSubmitBtn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Submit Report'; }
+
+  document.getElementById('reportModalBackdrop').classList.add('open');
+  setTimeout(() => { const v = document.getElementById('reportViz'); if (v) v.focus(); }, 50);
+}
+
+function closeReportModal(e) {
+  if (e && e.target && !e.target.classList.contains('report-modal-backdrop')) return;
+  document.getElementById('reportModalBackdrop').classList.remove('open');
+}
+
+async function submitReport() {
+  const status = document.getElementById('reportModalStatus');
+  const btn = document.getElementById('reportSubmitBtn');
+  const vizEl  = document.getElementById('reportViz');
+  const tempEl = document.getElementById('reportTemp');
+  const notesEl= document.getElementById('reportNotes');
+  const emailEl= document.getElementById('reportEmail');
+
+  const viz = parseFloat(vizEl.value);
+  if (!Number.isFinite(viz) || viz < 0 || viz > 200) {
+    status.textContent = 'Visibility is required (0-200 ft)';
+    status.className = 'report-modal-status error';
+    vizEl.focus();
+    return;
+  }
+
+  const loc = LOCATIONS[currentLocation] || {};
+  const predEl = document.getElementById('reportModalPred');
+  const payload = {
+    spotId: currentLocation,
+    spotName: loc.name || currentLocation,
+    viz,
+    waterTemp: tempEl.value ? parseFloat(tempEl.value) : null,
+    notes: (notesEl.value || '').trim(),
+    email: (emailEl.value || '').trim(),
+    predictedViz: (document.getElementById('vizFeetHero')||{}).textContent || '',
+    predictedRange: (predEl ? predEl.textContent : '') || '',
+  };
+
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  status.textContent = ''; status.className = 'report-modal-status';
+
+  try {
+    const r = await fetch(`${SF_PROXY_BASE}/report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || !data.ok) throw new Error(data.error || `HTTP ${r.status}`);
+    status.textContent = 'Thanks — report saved.';
+    status.className = 'report-modal-status success';
+    btn.textContent = 'Submitted';
+    setTimeout(() => closeReportModal({ target: document.getElementById('reportModalBackdrop') }), 1200);
+  } catch (err) {
+    status.textContent = `Failed to submit: ${err.message}`;
+    status.className = 'report-modal-status error';
+    btn.disabled = false; btn.textContent = 'Submit Report';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const bd = document.getElementById('reportModalBackdrop');
+    if (bd && bd.classList.contains('open')) bd.classList.remove('open');
+  }
+});
 
 // =========================================================================
 // BOAT FISH COUNT SCRAPER — daily CPFV dock totals
@@ -4496,6 +4687,56 @@ function getTargetDepthRange(profile, minF, maxF) {
 
 
 // =========================================================================
+// SF_CACHE — instant-render of last-known-good data per spot
+// On page open / spot switch, hydrate the UI from localStorage so the user sees
+// something within ~50ms instead of waiting 2-5s for HYCOM/buoys/etc. The fresh
+// fetch then overwrites the cached values when it lands.
+// =========================================================================
+const SF_CACHE_VERSION = 1;
+const SF_CACHE_PREFIX = 'sf-cache:v' + SF_CACHE_VERSION + ':';
+const SF_CACHE_TTL_MS = 24 * 3600 * 1000;  // 24h — older than this, don't hydrate
+
+function sfCacheSave(spotId) {
+  try {
+    const payload = { D, srcStatus, species: currentSpecies, ts: Date.now() };
+    localStorage.setItem(SF_CACHE_PREFIX + spotId, JSON.stringify(payload));
+  } catch (e) { /* quota / private mode */ }
+}
+
+function sfCacheLoad(spotId) {
+  try {
+    const raw = localStorage.getItem(SF_CACHE_PREFIX + spotId);
+    if (!raw) return null;
+    const payload = JSON.parse(raw);
+    if (!payload || !payload.D) return null;
+    if (Date.now() - (payload.ts || 0) > SF_CACHE_TTL_MS) return null;
+    return payload;
+  } catch (e) { return null; }
+}
+
+// Hydrate the page from cache. Returns true if cache was found and applied.
+function sfCacheHydrate(spotId) {
+  const cached = sfCacheLoad(spotId);
+  if (!cached) return false;
+  D = cached.D || {};
+  srcStatus = cached.srcStatus || {};
+  const minsAgo = Math.max(1, Math.round((Date.now() - cached.ts) / 60000));
+  const statusEl = document.getElementById('dataStatus');
+  if (statusEl) {
+    statusEl.textContent = `Showing cached conditions from ${minsAgo} min ago — refreshing…`;
+    statusEl.className = 'data-status';
+  }
+  // Defer the heavy rendering one frame so we don't block the parser on initial load
+  requestAnimationFrame(() => {
+    try {
+      if (typeof updateDisplay === 'function') updateDisplay();
+      if (typeof recalculate === 'function')   recalculate();
+      if (typeof buildForecast === 'function') buildForecast();
+    } catch (e) { console.warn('SF_CACHE hydrate render skipped:', e); }
+  });
+  return true;
+}
+
 let _fetchGen = 0; // generation counter to discard stale fetch results on location switch
 async function fetchAllData() {
   const thisGen = ++_fetchGen;
@@ -4525,7 +4766,6 @@ async function fetchAllData() {
     fetchPressureTrend(),   // 24-hr barometric pressure trend (storm leading indicator)
     fetchRiverDischarge(),  // USGS streamflow — runoff plume early warning
     fetchMarineAlerts(),    // NWS marine zone alerts — SCAs, gale warnings, etc.
-    fetchBoatReports(),     // daily CPFV dock totals from fish reports sites
     fetchBeachAdvisory(),   // SD County DEH water quality advisories
     fetchHycomProfile(),    // HYCOM 3D temperature profile — modeled thermocline depth
     fetchOceanForecast(),   // Open-Meteo Marine — 7-day SST forecast + surface currents
@@ -4587,6 +4827,21 @@ async function fetchAllData() {
   recalculate();
   buildForecast();
   initVizReport();
+
+  // Persist last-known-good for instant render on next visit
+  sfCacheSave(currentLocation);
+
+  // Boat reports run in the background — they're a slow scrape from fish report
+  // sites and only feed the (collapsed) boat reports section plus a small fish
+  // forecast boost. No reason to make the user wait for them.
+  fetchBoatReports().then(() => {
+    if (thisGen !== _fetchGen) return; // user moved on
+    try {
+      applyBoatReportBoost();
+      recalculate();         // re-render gauges with the boost applied
+      sfCacheSave(currentLocation);  // re-save with updated state
+    } catch (e) { /* ignore */ }
+  }).catch(() => {});
 }
 
 // =========================================================================
@@ -8049,6 +8304,8 @@ function onLocationChange() {
   updateWebcams();
   updateFavoriteStar();
   renderFavoritesBar();
+  // Hydrate from cache for instant feedback, then fetch fresh in background
+  sfCacheHydrate(currentLocation);
   fetchAllData();
 }
 
@@ -8297,11 +8554,26 @@ function applyVizCalibration(vizEst) {
 })();
 updateReportLinks();
 updateWebcams();
+// Instant-render from cache (if any), then kick off the fresh fetch
+sfCacheHydrate(currentLocation);
 fetchAllData();
 
-// Initialize map immediately (always visible)
-mapVisible = true;
-initMap();
+// Initialize map once Leaflet has loaded (deferred script in <head>).
+// `defer` scripts execute after HTML parsing, before DOMContentLoaded fires —
+// so by the time DOMContentLoaded runs, window.L is guaranteed to exist.
+function _bootMap() {
+  if (!window.L) return; // shouldn't happen, but bail safely if Leaflet failed
+  mapVisible = true;
+  initMap();
+}
+if (window.L) {
+  _bootMap();
+} else if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _bootMap);
+} else {
+  // DOM already ready but L isn't yet — wait for the deferred script to land
+  window.addEventListener('load', _bootMap);
+}
 
 // Geolocation: auto-select nearest dive spot — UNLESS user has saved favorites.
 // Users who favorited a spot want the app to open to that spot, not jump to

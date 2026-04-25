@@ -1,6 +1,6 @@
 // SpearFactor Conditions — Service Worker
 // Version is bumped on every deploy to bust cache
-const CACHE_VERSION = 'sf-v20260424o';
+const CACHE_VERSION = 'sf-v20260424p';
 const CACHE_FILES = [
   '/',
   '/dive-conditions-v2.html',
@@ -24,23 +24,46 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: network-first strategy for HTML (always get fresh code)
-// Cache-first for static assets only
+// Fetch strategy:
+//   HTML pages → STALE-WHILE-REVALIDATE: serve cached HTML instantly, fetch a
+//   fresh copy in the background and cache it for the NEXT visit. This makes
+//   page loads feel instant on every warm visit. New code lands on the visit
+//   after a deploy — the activate handler + skipWaiting() above keeps that gap
+//   to a single page load.
+//
+//   Static assets (manifest, icons) → CACHE-FIRST.
+//
+//   Cross-origin requests (NOAA, HYCOM, our worker, etc.) → bypass entirely.
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // API calls, ERDDAP, NOAA, etc — always network, never cache
+  // API calls, ERDDAP, NOAA, etc — always network, never cache through SW
   if (url.origin !== self.location.origin) return;
 
-  // HTML pages — network first, fall back to cache for offline
+  // HTML pages — stale-while-revalidate
   if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/') {
     event.respondWith(
-      fetch(event.request).then(response => {
-        // Update cache with fresh version
-        const clone = response.clone();
-        caches.open(CACHE_VERSION).then(cache => cache.put(event.request, clone));
-        return response;
-      }).catch(() => caches.match(event.request)) // Offline fallback
+      caches.open(CACHE_VERSION).then(async cache => {
+        const cached = await cache.match(event.request);
+        // Kick off the network fetch in the background regardless
+        const networkPromise = fetch(event.request).then(response => {
+          // Only cache 2xx
+          if (response && response.status >= 200 && response.status < 300) {
+            cache.put(event.request, response.clone());
+          }
+          return response;
+        }).catch(() => null);
+
+        // If we have something cached, return it immediately. Otherwise wait
+        // for the network (first-ever visit / cleared cache).
+        if (cached) {
+          // Don't await networkPromise — let it update cache in background.
+          event.waitUntil(networkPromise);
+          return cached;
+        }
+        const fresh = await networkPromise;
+        return fresh || new Response('Offline', { status: 503 });
+      })
     );
     return;
   }
