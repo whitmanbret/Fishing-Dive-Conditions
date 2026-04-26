@@ -2930,6 +2930,11 @@ function classifySwellDir(mwd) {
 }
 
 // --- NWS: Rainfall ---
+// Aggregates the last 72 hourly precipitation observations and bucket-sums
+// them into 24/48/72hr windows, plus tracks how long since the most recent
+// rain hour. The runoff advisory rule (computeRunoffAdvisory) needs both
+// total amount AND recency: heavy rain 70hr ago is way different from
+// heavy rain 6hr ago even if total is the same.
 async function fetchRainfall() {
   try {
     const r=await fetchWithTimeout(`https://api.weather.gov/stations/${WEATHER_STATION}/observations?limit=72`,{
@@ -2937,9 +2942,25 @@ async function fetchRainfall() {
     });
     const d=await r.json();
     if(d.features&&d.features.length>0) {
-      let mm=0;
-      for(const obs of d.features) { const p=obs.properties.precipitationLastHour; if(p&&p.value>0) mm+=p.value; }
-      const inches=mm/25.4; D.rainfallInches=inches;
+      const now = Date.now();
+      let mmTotal = 0, mm24 = 0, mm48 = 0;
+      let lastRainTs = null;  // timestamp of most recent rain observation
+      for (const obs of d.features) {
+        const p = obs.properties.precipitationLastHour;
+        if (!p || !(p.value > 0)) continue;
+        const ts = obs.properties.timestamp ? new Date(obs.properties.timestamp).getTime() : now;
+        const hrsAgo = (now - ts) / 3600000;
+        mmTotal += p.value;
+        if (hrsAgo <= 24) mm24 += p.value;
+        if (hrsAgo <= 48) mm48 += p.value;
+        if (lastRainTs === null || ts > lastRainTs) lastRainTs = ts;
+      }
+      const inches = mmTotal/25.4;
+      D.rainfallInches    = inches;
+      D.rainfallInches24  = mm24/25.4;
+      D.rainfallInches48  = mm48/25.4;
+      D.lastRainHrsAgo    = lastRainTs ? (now - lastRainTs) / 3600000 : null;
+
       if(inches<0.01) D.rainfall='none'; else if(inches<0.1) D.rainfall='trace';
       else if(inches<0.5) D.rainfall='light'; else if(inches<1.0) D.rainfall='moderate'; else D.rainfall='heavy';
       srcStatus.nws='ok';
@@ -4428,22 +4449,106 @@ async function fetchBeachAdvisory() {
   }
 }
 
+// =========================================================================
+// POST-STORM RUNOFF ADVISORY (universal — applies to all California spots)
+// CA county health agencies (SD DEH, OC HCA, LA County, etc.) all issue a
+// 72-hour no-contact recommendation after measurable rainfall — the rain
+// flushes urban runoff, sewage, and bacteria into the surf zone. Even if
+// no county-specific advisory has been scraped yet, we can derive the same
+// warning from rainfall alone. This makes the rule work statewide without
+// per-county scraping (Laguna 4/26/2026 was the trigger case — OC issued
+// an advisory at 8:15 AM after 1:15 AM rain; tool needs to reflect that).
+// =========================================================================
+function computeRunoffAdvisory() {
+  D.runoffAdvisory = null;
+  const loc = LOCATIONS[currentLocation];
+  if (!loc) return;
+  // Bluewater / offshore / island spots aren't affected by mainland runoff
+  if (loc.bluewater || loc.offshore) return;
+
+  const i24  = D.rainfallInches24 || 0;
+  const i48  = D.rainfallInches48 || 0;
+  const i72  = D.rainfallInches   || 0;
+  const last = D.lastRainHrsAgo;
+  if (last === null || last === undefined) return;
+  if (i72 < 0.1) return;  // below threshold — no advisory needed
+
+  // Severity tiers — based on amount + recency. The 72-hour clock starts at
+  // the most recent rain hour, so we report hours-remaining accurately.
+  let severity = 'light';   // yellow
+  let icon = '💧';
+  let label = 'POST-STORM RUNOFF ADVISORY';
+  if (i24 >= 0.5 || i48 >= 1.0) {
+    severity = 'heavy';     // red
+    icon = '🚫';
+    label = 'POST-STORM NO-CONTACT';
+  } else if (i24 >= 0.1 || i48 >= 0.3 || i72 >= 0.5) {
+    severity = 'moderate';  // orange
+    icon = '⚠️';
+  }
+
+  const hrsRemaining = Math.max(0, 72 - last);
+  D.runoffAdvisory = {
+    severity, icon, label,
+    inches24: i24, inches48: i48, inches72: i72,
+    lastRainHrsAgo: last,
+    hrsRemaining,
+  };
+}
+
+function _formatRainAmount(inches, hrs) {
+  // Pick the most recent meaningful window for display
+  return `${inches.toFixed(2)} in within ${Math.round(hrs)}hr`;
+}
+
 function updateAdvisoryBanner() {
   const banner = document.getElementById('beachAdvisoryBanner');
   if (!banner) return;
+
+  // Build potentially multiple stacked notices. WQ closures/advisories take
+  // priority visually but the runoff notice is independent — both can show.
+  const blocks = [];
+  let cssMod = '';
+
   if (D.beachAdvisory) {
     const a = D.beachAdvisory;
     const icon = a.type === 'closure' ? '🚫' : '⚠️';
     const typeLabel = a.type === 'closure' ? 'BEACH CLOSURE' : 'WATER QUALITY ADVISORY';
     const sinceStr = a.since ? ` · Since ${a.since}` : '';
-    banner.innerHTML = `<div class="advisory-title">${icon} ${typeLabel}</div>` +
+    const sourceLabel = a.source || 'SD County Dept. of Environmental Health · sdbeachinfo.com';
+    blocks.push(
+      `<div class="advisory-title">${icon} ${typeLabel}</div>` +
       `<div><strong>Bacteria levels exceed health standards.</strong> Avoid water contact in the affected area.${sinceStr}</div>` +
-      `<div class="advisory-source">Source: SD County Dept. of Environmental Health · sdbeachinfo.com</div>`;
-    banner.className = `beach-advisory-banner show${a.type === 'closure' ? ' closure' : ''}`;
-  } else {
+      `<div class="advisory-source">Source: ${sourceLabel}</div>`
+    );
+    if (a.type === 'closure') cssMod = ' closure';
+  }
+
+  if (D.runoffAdvisory) {
+    const r = D.runoffAdvisory;
+    // Show whichever amount/window is most informative
+    let amountStr;
+    if (r.lastRainHrsAgo <= 24)        amountStr = _formatRainAmount(r.inches24, 24);
+    else if (r.lastRainHrsAgo <= 48)   amountStr = _formatRainAmount(r.inches48, 48);
+    else                                amountStr = _formatRainAmount(r.inches72, 72);
+    const hrsLeft = Math.round(r.hrsRemaining);
+    const since = Math.round(r.lastRainHrsAgo);
+    blocks.push(
+      `<div class="advisory-title">${r.icon} ${r.label}</div>` +
+      `<div><strong>Recent rainfall (${amountStr}).</strong> County health agencies typically advise no ocean contact for 72 hours after rain — runoff carries bacteria, urban pollutants, and sewage into the surf zone. Last rain ~${since}hr ago · Advisory clears in ~${hrsLeft}hr.</div>` +
+      `<div class="advisory-source">Rule-based · NWS rainfall data</div>`
+    );
+    // If no WQ closure but heavy runoff, treat banner as red
+    if (!cssMod && r.severity === 'heavy') cssMod = ' closure';
+  }
+
+  if (blocks.length === 0) {
     banner.className = 'beach-advisory-banner';
     banner.innerHTML = '';
+    return;
   }
+  banner.innerHTML = blocks.join('<div style="height:8px"></div>');
+  banner.className = `beach-advisory-banner show${cssMod}`;
 }
 
 // =========================================================================
@@ -4731,6 +4836,10 @@ async function fetchAllData() {
 
   // Detect wind-driven rollover — sustained 20+ mph winds destroy thermocline
   detectRollover();
+
+  // Compute post-storm runoff advisory from rainfall data + refresh banner
+  computeRunoffAdvisory();
+  updateAdvisoryBanner();
 
   const liveSources = Object.keys(srcStatus).filter(k=>srcStatus[k]==='ok').length;
   const totalSources = 8;
