@@ -1453,7 +1453,40 @@ const LOCATIONS = {
   trinidad:    { name: 'Trinidad / Humboldt', bottom: 'rock', tideStation: '9418767', coast: 270, shelter: 'moderate', buoys: ['46022'], lat: 40.77, lon: -124.20, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'EKA/61,107' },
 };
 
-const WEATHER_STATION = 'KSAN'; // fallback; overridden per-region in fetchWeather
+const WEATHER_STATION = 'KSAN'; // legacy fallback — most lookups now go through getWeatherStation()
+
+// Per-region NWS observation stations (coastal where available). Picking the
+// nearest coastal ASOS/AWOS dramatically improves rainfall + wind accuracy:
+// using KSAN for Laguna meant Laguna's coastal rain wasn't visible in the
+// data because the storm had passed San Diego differently. Updated 4/26/2026.
+const WEATHER_STATION_BY_REGION = {
+  sd:       'KSAN',  // San Diego Lindbergh — SD County coastal proxy
+  socal:    'KSNA',  // John Wayne / Santa Ana — closest coastal ASOS for OC
+  sb:       'KSBA',  // Santa Barbara
+  islands:  'KOXR',  // Oxnard — best mainland proxy for Channel Islands
+  offshore: 'KSAN',  // bluewater banks — SD default
+  central:  'KMRY',  // Monterey
+  norcal:   'KSFO',  // SFO area
+};
+
+// Per-spot overrides for places where the regional station is too far inland
+// or geographically wrong. Add entries here when ground truth disagrees with
+// the regional default.
+const WEATHER_STATION_BY_SPOT = {
+  pv:           'KLGB',  // Palos Verdes is closer to Long Beach than to OC
+  horseshoe:    'KLGB',
+  malibu:       'KSMO',  // Santa Monica
+  leocarrillo:  'KOXR',  // closer to Oxnard than LA
+  ventura:      'KOXR',
+  fortbragg:    'KACV',  // Arcata (closer than SFO for Mendo)
+  trinidad:     'KACV',
+};
+
+function getWeatherStation(spotKey) {
+  if (WEATHER_STATION_BY_SPOT[spotKey]) return WEATHER_STATION_BY_SPOT[spotKey];
+  const region = (typeof REGION_MAP !== 'undefined' && REGION_MAP[spotKey]) || 'sd';
+  return WEATHER_STATION_BY_REGION[region] || 'KSAN';
+}
 
 let currentSpecies = 'general';
 let currentLocation = 'ljshores';
@@ -2688,7 +2721,8 @@ async function fetchTideState() {
 // --- NWS: Wind ---
 async function fetchWind() {
   try {
-    const r=await fetchWithTimeout(`https://api.weather.gov/stations/${WEATHER_STATION}/observations/latest`,{
+    const station = getWeatherStation(currentLocation);
+    const r=await fetchWithTimeout(`https://api.weather.gov/stations/${station}/observations/latest`,{
       headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
     });
     const d=await r.json(), p=d.properties;
@@ -2930,36 +2964,72 @@ function classifySwellDir(mwd) {
 }
 
 // --- NWS: Rainfall ---
-// Aggregates the last 72 hourly precipitation observations and bucket-sums
-// them into 24/48/72hr windows, plus tracks how long since the most recent
-// rain hour. The runoff advisory rule (computeRunoffAdvisory) needs both
-// total amount AND recency: heavy rain 70hr ago is way different from
-// heavy rain 6hr ago even if total is the same.
+// Aggregates hourly precipitation into 24/48/72hr buckets and tracks the
+// most recent rain hour. The runoff advisory rule needs both total AND
+// recency: heavy rain 70hr ago is different from heavy rain 6hr ago.
+//
+// Bug discovered 4/26/2026: many NWS stations (KSNA / John Wayne is one)
+// don't always populate precipitationLastHour even when the station is
+// reporting rain. They DO populate precipitationLast3Hours and
+// precipitationLast6Hours instead. The original code only read LastHour
+// and missed today's 1:15 AM Laguna rain entirely → runoff banner never
+// fired. Fix: when LastHour is null at a given timestamp, fall back to
+// LastN-hour fields by deriving an hourly rate for that bucket. We
+// dedupe so we don't double-count overlapping windows.
 async function fetchRainfall() {
   try {
-    const r=await fetchWithTimeout(`https://api.weather.gov/stations/${WEATHER_STATION}/observations?limit=72`,{
+    const station = getWeatherStation(currentLocation);
+    const r=await fetchWithTimeout(`https://api.weather.gov/stations/${station}/observations?limit=72`,{
       headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
     });
     const d=await r.json();
     if(d.features&&d.features.length>0) {
       const now = Date.now();
-      let mmTotal = 0, mm24 = 0, mm48 = 0;
-      let lastRainTs = null;  // timestamp of most recent rain observation
+      // Hour-binned rainfall buckets (mm). Keying by hour-since-now lets us
+      // dedupe overlapping precipitationLastN windows: if hour t is already
+      // recorded from precipitationLastHour, a later precipitationLast6Hours
+      // at t+5 won't double-count.
+      const hourly = new Map();  // floor(hrsAgo) → mm
+
+      function recordHour(hrsAgo, mm) {
+        const key = Math.floor(hrsAgo);
+        if (key < 0 || key > 72) return;
+        // Take MAX over the same hour to avoid bigger-window dilution
+        if (mm > (hourly.get(key) || 0)) hourly.set(key, mm);
+      }
+
       for (const obs of d.features) {
-        const p = obs.properties.precipitationLastHour;
-        if (!p || !(p.value > 0)) continue;
         const ts = obs.properties.timestamp ? new Date(obs.properties.timestamp).getTime() : now;
         const hrsAgo = (now - ts) / 3600000;
-        mmTotal += p.value;
-        if (hrsAgo <= 24) mm24 += p.value;
-        if (hrsAgo <= 48) mm48 += p.value;
-        if (lastRainTs === null || ts > lastRainTs) lastRainTs = ts;
+        const lastHour = obs.properties.precipitationLastHour;
+        const last3    = obs.properties.precipitationLast3Hours;
+        const last6    = obs.properties.precipitationLast6Hours;
+        // Best-available: hourly direct, else 3-hr rate spread across 3 hours, else 6-hr / 6
+        if (lastHour && lastHour.value > 0) {
+          recordHour(hrsAgo, lastHour.value);
+        } else if (last3 && last3.value > 0) {
+          const perHr = last3.value / 3;
+          for (let h = 0; h < 3; h++) recordHour(hrsAgo + h, perHr);
+        } else if (last6 && last6.value > 0) {
+          const perHr = last6.value / 6;
+          for (let h = 0; h < 6; h++) recordHour(hrsAgo + h, perHr);
+        }
       }
+
+      // Sum the buckets into windows + find most recent rain hour
+      let mm24 = 0, mm48 = 0, mmTotal = 0, lastRainHrs = null;
+      for (const [h, mm] of hourly) {
+        if (h <= 24) mm24 += mm;
+        if (h <= 48) mm48 += mm;
+        if (h <= 72) mmTotal += mm;
+        if (lastRainHrs === null || h < lastRainHrs) lastRainHrs = h;
+      }
+
       const inches = mmTotal/25.4;
       D.rainfallInches    = inches;
       D.rainfallInches24  = mm24/25.4;
       D.rainfallInches48  = mm48/25.4;
-      D.lastRainHrsAgo    = lastRainTs ? (now - lastRainTs) / 3600000 : null;
+      D.lastRainHrsAgo    = lastRainHrs;
 
       if(inches<0.01) D.rainfall='none'; else if(inches<0.1) D.rainfall='trace';
       else if(inches<0.5) D.rainfall='light'; else if(inches<1.0) D.rainfall='moderate'; else D.rainfall='heavy';
@@ -5208,33 +5278,54 @@ function updateDisplay() {
       // Chlorophyll reduction — phytoplankton makes water green, reduces viz independent of NTU
       // NTU only measures particle scattering; chlorophyll absorbs light and cuts underwater visibility
       // Ground truth: 2026-03-22 LJ Shores, 0.27 NTU + 0.65 chl = 8-10 ft (green water)
-      // Skip penalty when chl is climatology AND location is far from Scripps Pier
-      // (HABs 17yr avg is Scripps-specific; Monterey April avg 12.73 crushes viz but actual can be 50ft)
+      //
+      // Climatology now applies everywhere — we have per-region monthly curves
+      // (CHL_CLIMATOLOGY_BY_REGION) that ARE the regional bloom signal. A May
+      // climatology of 14 in Monterey or 8.5 in SoCal isn't "noise" — that's
+      // peak bloom season. Skipping the penalty there was systematically
+      // over-predicting viz at non-Scripps spots (Laguna 16-22ft 4/26, but
+      // SoCal April climatology is 8.5 mg/m³, plus rain → realistic 5-12ft).
+      // Live sensor data still applies at full strength; climatology applies
+      // at 70% strength (a regional average, not a same-day measurement).
       let suffix = '';
-      const chlApplies = D.chlorophyll !== undefined && D.chlorophyll > 0 && (!D.chlIsClimatology || loc.scrippsProximity);
+      const chlApplies = D.chlorophyll !== undefined && D.chlorophyll > 0;
+      const climoStrength = D.chlIsClimatology ? 0.7 : 1.0;
       if (chlApplies) {
+        // Helper: blend a hardcoded multiplier toward 1.0 by (1 - climoStrength).
+        // Live sensor (climoStrength=1.0) gets the raw mult; climatology
+        // (climoStrength=0.7) gets a softened version.
+        const blendMult = (m) => 1 - climoStrength * (1 - m);
+
         // Recalibrated 4/16: 0.94 chl + 0.32 NTU = camera "really green", actual 5-10ft
-        // Old 0.85x for >0.4 was far too mild — predicted 16-21ft vs actual 5-10ft
         // 3/22: 0.65 chl + 0.27 NTU = 8-10ft actual
         // 4/21: 1.0 chl + 0.25 NTU = 25-30ft actual (bloom-DECAY phase — cells settled
         //       but fluorometer still reads pigment. Detect via clean NTU + moderate chl.)
         const bloomDecay = ntu !== undefined && ntu < 0.35 && D.chlorophyll >= 0.5 && D.chlorophyll < 3;
-        if (D.chlorophyll > 8)       { lo = Math.max(1, Math.round(lo * 0.35)); hi = Math.max(lo+1, Math.round(hi * 0.35)); suffix = ' (bloom)'; }
-        else if (D.chlorophyll > 3)  { lo = Math.max(1, Math.round(lo * 0.45)); hi = Math.max(lo+1, Math.round(hi * 0.45)); suffix = ' (green water)'; }
-        else if (D.chlorophyll > 1.5){
-          const m = bloomDecay ? 0.90 : 0.50;
+        const climoLabel = D.chlIsClimatology ? ' (bloom season)' : '';
+        if (D.chlorophyll > 8)       {
+          const m = blendMult(0.35);
           lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
-          suffix = bloomDecay ? ' (clearing)' : ' (green water)';
+          suffix = D.chlIsClimatology ? ' (bloom season)' : ' (bloom)';
+        }
+        else if (D.chlorophyll > 3)  {
+          const m = blendMult(0.45);
+          lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
+          suffix = D.chlIsClimatology ? ' (bloom season)' : ' (green water)';
+        }
+        else if (D.chlorophyll > 1.5){
+          const m = blendMult(bloomDecay ? 0.90 : 0.50);
+          lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
+          suffix = bloomDecay ? ' (clearing)' : (D.chlIsClimatology ? ' (bloom season)' : ' (green water)');
         }
         else if (D.chlorophyll > 0.8){
-          const m = bloomDecay ? 0.95 : 0.55;
+          const m = blendMult(bloomDecay ? 0.95 : 0.55);
           lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
-          suffix = bloomDecay ? ' (clearing)' : ' (green water)';
+          suffix = bloomDecay ? ' (clearing)' : (D.chlIsClimatology ? ' (bloom season)' : ' (green water)');
         }
         else if (D.chlorophyll > 0.4){
-          const m = bloomDecay ? 1.00 : 0.75;
+          const m = blendMult(bloomDecay ? 1.00 : 0.75);
           lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
-          suffix = bloomDecay ? '' : ' (green tinge)';
+          suffix = bloomDecay ? '' : (D.chlIsClimatology ? '' : ' (green tinge)');
         }
       }
       // Cap range spread — wider for clean water (low NTU has genuine variability)
@@ -5270,15 +5361,24 @@ function updateDisplay() {
       // Apply shelter multiplier
       lo = Math.max(1, Math.round(lo * shelterMult));
       hi = Math.max(lo+1, Math.round(hi * shelterMult));
-      // Chlorophyll penalty — ONLY apply with LIVE sensor data, not climatology
-      // Climatology is a seasonal average (e.g. HABs 17yr mean) — too unreliable without
-      // live NTU to cross-validate. WE path is already low-confidence; adding chl climatology
-      // penalty was causing systematic 10-15ft under-prediction (3 reports 4/1-4/2 LJ Shores).
+      // Chlorophyll penalty — applies for both live sensor and regional climatology.
+      // Climatology now uses per-region monthly curves (CHL_CLIMATOLOGY_BY_REGION),
+      // which IS meaningful seasonal signal. Climo penalty applied at 70% strength
+      // since it's a regional average, not a same-day reading. Without this, Laguna
+      // in April was reading 16-22 ft when peak bloom climatology + rain suggests
+      // 5-12 ft (per ground truth 4/26/2026).
       let suffix2 = '';
-      const chlLive = D.chlorophyll !== undefined && !D.chlIsClimatology;
-      if(chlLive && D.chlorophyll>8) { lo = Math.max(1, lo-4); hi = Math.max(lo+1, hi-4); suffix2 = ' (bloom)'; }
-      else if(chlLive && D.chlorophyll>3) { lo = Math.max(1, lo-2); hi = Math.max(lo+1, hi-2); suffix2 = ' (green water)'; }
-      else if(chlLive && D.chlorophyll>1) { lo = Math.max(1, lo-1); hi = Math.max(lo+1, hi-1); }
+      const chlOk = D.chlorophyll !== undefined && D.chlorophyll > 0;
+      const cs = D.chlIsClimatology ? 0.7 : 1.0;  // climo applied at 70% strength
+      if(chlOk && D.chlorophyll>8) {
+        lo = Math.max(1, Math.round(lo - 4 * cs)); hi = Math.max(lo+1, Math.round(hi - 4 * cs));
+        suffix2 = D.chlIsClimatology ? ' (bloom season)' : ' (bloom)';
+      } else if(chlOk && D.chlorophyll>3) {
+        lo = Math.max(1, Math.round(lo - 2 * cs)); hi = Math.max(lo+1, Math.round(hi - 2 * cs));
+        suffix2 = D.chlIsClimatology ? ' (bloom season)' : ' (green water)';
+      } else if(chlOk && D.chlorophyll>1) {
+        lo = Math.max(1, Math.round(lo - 1 * cs)); hi = Math.max(lo+1, Math.round(hi - 1 * cs));
+      }
       // Cap range spread to 6ft max (widened from 5 — WE-only has genuine uncertainty)
       if (hi - lo > 6) hi = lo + 6;
       vizEst = `${lo}–${hi} ft${suffix2}`;
