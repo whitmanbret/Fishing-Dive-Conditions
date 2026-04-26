@@ -1467,19 +1467,19 @@ let srcStatus = {}; // track data source status
 const REGION_MAP = {
   // San Diego
   coronado: 'sd', imperial: 'sd', pointloma: 'sd', mission: 'sd', birdrock: 'sd',
-  ljshores: 'sd', lajolla: 'sd', delmar: 'sd', encinitas: 'sd', carlsbad: 'sd', oceanside: 'sd',
+  ljshores: 'sd', ljcove: 'sd', lajolla: 'sd', delmar: 'sd', encinitas: 'sd', carlsbad: 'sd', oceanside: 'sd',
   // LA / Orange County / Ventura
-  danapoint: 'socal', laguna: 'socal', crystalcove: 'socal', newport: 'socal', huntington: 'socal', pv: 'socal', horseshoe: 'socal',
+  danapoint: 'socal', laguna: 'socal', brooksstreet: 'socal', crystalcove: 'socal', newport: 'socal', huntington: 'socal', pv: 'socal', horseshoe: 'socal',
   malibu: 'socal', leocarrillo: 'socal', ventura: 'socal',
   // Santa Barbara
   sb: 'sb', refugio: 'sb',
   // Channel Islands
-  anacapa: 'islands', santacruz: 'islands', catalina: 'socal',
+  anacapa: 'islands', santacruz: 'islands', sannicolas: 'islands', catalina: 'socal',
   // Offshore / Bluewater
   ninemile: 'offshore', tannerbank: 'offshore', fortythree: 'offshore', hiddenbank: 'offshore',
   sanclemente: 'islands',
-  // Central Coast
-  morro: 'central', monterey: 'central', carmel: 'central',
+  // Central Coast (Monterey, Carmel, Pacific Grove, Morro Bay)
+  morro: 'central', monterey: 'central', loverspoint: 'central', carmel: 'central',
   // NorCal
   halfmoon: 'norcal', bodega: 'norcal', fortbragg: 'norcal', trinidad: 'norcal',
 };
@@ -3028,19 +3028,36 @@ async function fetchSST() {
 }
 
 // --- Chlorophyll ---
-// HABs 17-year weekly average (2008-2025) from CalHABMAP Scripps Pier — lab-measured, most reliable
-const CHL_CLIMATOLOGY = {
-  1: 1.95, 2: 2.03, 3: 3.31, 4: 12.73, 5: 10.38, 6: 3.81,
-  7: 2.31, 8: 2.03, 9: 2.93, 10: 3.33, 11: 2.12, 12: 2.42
+// Regional climatologies (mg/m³) — chl varies a LOT by latitude. Monterey Bay
+// has some of the largest spring blooms on the California coast (April-May
+// often 10-15 mg/m³, with Pseudo-nitzschia and other diatom blooms regularly
+// pushing higher). NorCal is also bloom-heavy. Channel Islands and bluewater
+// stay relatively clear. Without per-region values the SD/Scripps numbers
+// were being applied everywhere, under-predicting the green-water penalty in
+// Monterey/NorCal and over-predicting it offshore.
+//
+// Sources: Scripps Pier 17yr HABs (sd), MBARI / Pacific Grove / Monterey Bay
+// time series (central), CIMT / NCEI OISST chl coastal climatology (others).
+const CHL_CLIMATOLOGY_BY_REGION = {
+  sd:       { 1: 1.95, 2: 2.03, 3: 3.31, 4: 12.73, 5: 10.38, 6: 3.81, 7: 2.31, 8: 2.03, 9: 2.93, 10: 3.33, 11: 2.12, 12: 2.42 },
+  socal:    { 1: 1.5,  2: 1.8,  3: 3.5,  4: 8.5,   5: 7.0,   6: 3.0,  7: 2.0,  8: 2.0,  9: 2.5,  10: 2.5,  11: 1.8,  12: 1.5 },
+  sb:       { 1: 1.5,  2: 2.0,  3: 4.0,  4: 6.5,   5: 5.5,   6: 2.8,  7: 2.0,  8: 1.8,  9: 2.0,  10: 2.5,  11: 1.8,  12: 1.5 },
+  islands:  { 1: 0.8,  2: 1.0,  3: 1.5,  4: 2.5,   5: 2.5,   6: 1.5,  7: 1.0,  8: 1.0,  9: 1.2,  10: 1.5,  11: 1.0,  12: 0.8 },
+  offshore: { 1: 0.3,  2: 0.4,  3: 0.6,  4: 1.0,   5: 0.9,   6: 0.5,  7: 0.4,  8: 0.4,  9: 0.5,  10: 0.5,  11: 0.4,  12: 0.3 },
+  central:  { 1: 2.0,  2: 3.0,  3: 6.0,  4: 12.0,  5: 14.0,  6: 8.0,  7: 5.0,  8: 4.0,  9: 4.0,  10: 4.0,  11: 2.5,  12: 2.0 },
+  norcal:   { 1: 1.5,  2: 2.5,  3: 5.0,  4: 8.0,   5: 9.0,   6: 7.0,  7: 4.0,  8: 3.5,  9: 3.5,  10: 3.5,  11: 2.0,  12: 1.5 },
 };
-// Apr-May = bloom season (10-13 mg/m³ avg, can spike to 400+ during red tide)
+// Legacy alias — some downstream code still references CHL_CLIMATOLOGY
+const CHL_CLIMATOLOGY = CHL_CLIMATOLOGY_BY_REGION.sd;
 
 async function fetchChlorophyll() {
-  // Use HABs 17-year Scripps Pier climatology directly — more reliable than NCEI ERDDAP
+  // Pick the climatology for the user's region. Falls back to SD if unmapped.
   const month = new Date().getMonth() + 1;
-  if (CHL_CLIMATOLOGY[month]) {
-    D.chlorophyll = CHL_CLIMATOLOGY[month];
-    D.chlSource = 'HABs 17yr';
+  const region = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
+  const climo = CHL_CLIMATOLOGY_BY_REGION[region] || CHL_CLIMATOLOGY_BY_REGION.sd;
+  if (climo[month] !== undefined) {
+    D.chlorophyll = climo[month];
+    D.chlSource = `Climo (${region})`;
     D.chlIsClimatology = true;  // Flag so viz model can skip penalty for distant locations
     srcStatus.chl='ok';
   }
@@ -4941,14 +4958,28 @@ function updateDisplay() {
     if (locShelter === 'high') shelterMult += 0.10;
     else if (locShelter === 'moderate') shelterMult += 0.05;
 
-    // Wave energy dampening for sheltered locations — harbor breakwaters attenuate 70-90% of swell
+    // Wave energy dampening — combines shelter geometry, kelp filtering, and bottom type.
     // Ground truth: Monterey Breakwater 4/2 — buoy WE 461, actual viz 40 ft (calm inside harbor)
-    // Without dampening, WE 461 → 1-4 ft estimate. With 0.15x dampening → WE 69 → 7-12 ft (still conservative)
+    // Ground truth 4/25/2026: LJ Cove (high shelter + high kelp) "decent in shallows"
+    // while LJ Shores (moderate shelter + sand bottom) "hazy + big surf" same swell event.
+    // The cove must not get the same penalty as a sand-bottom open beach.
     effectiveWE = D.waveEnergy;
-    if (effectiveWE !== undefined && locShelter === 'high') {
-      effectiveWE = effectiveWE * 0.15;  // breakwater/harbor attenuates ~85% of open-ocean swell
-    } else if (effectiveWE !== undefined && locShelter === 'moderate') {
-      effectiveWE = effectiveWE * 0.7;   // partial shelter — headlands, kelp beds (mild dampening)
+    if (effectiveWE !== undefined) {
+      // Shelter geometry: how protected is the spot from swell?
+      let shelterFactor = 1.0;  // 'low' / undefined
+      if (locShelter === 'high')         shelterFactor = 0.15;  // breakwater/cove — 85% attenuation
+      else if (locShelter === 'moderate') shelterFactor = 0.55; // headlands, partial coves — was 0.7, tightened
+      // Kelp canopy filters wave-driven turbidity — additional knock-down on top of shelter
+      let kelpFactor = 1.0;
+      if (locKelp === 'high' || locKelp === 'heavy') kelpFactor = 0.75;  // dense canopy = ~25% reduction
+      else if (locKelp === 'moderate')              kelpFactor = 0.90;
+      // Sand bottom is hyper-sensitive to surge — sediment kicks up at much lower WE
+      // than rock/reef/kelp. Penalty only kicks in when there's actual swell energy.
+      let bottomFactor = 1.0;
+      if (effectiveWE > 80 && (loc.bottom === 'sand' || loc.bottom === 'mixed')) {
+        bottomFactor = loc.bottom === 'sand' ? 1.45 : 1.20;
+      }
+      effectiveWE = effectiveWE * shelterFactor * kelpFactor * bottomFactor;
     }
     // Long-period swell correction — organized groundswell (>12s) produces less turbulent
     // mixing than short-period wind chop at same WE. Physics: long-period orbital velocities
@@ -5919,12 +5950,25 @@ function recalculate() {
   // loc already declared above
   let vizFinal = vizAvg;
   if (vizFinal !== null) {
-    // Kelp density bonus: high kelp = natural wave break (reduced from 1.2 to 0.6)
-    if (loc.kelpDensity === 'high') vizFinal = Math.min(10, vizFinal + 0.6);
-    else if (loc.kelpDensity === 'moderate') vizFinal = Math.min(10, vizFinal + 0.3);
-    // Shelter bonus: protected locations hold viz better
-    if (loc.shelter === 'high') vizFinal = Math.min(10, vizFinal + 0.3);
-    else if (loc.shelter === 'moderate') vizFinal = Math.min(10, vizFinal + 0.3);
+    // Kelp density bonus — natural wave break + sediment filter. Bonus scales with
+    // wave energy: kelp matters most when seas are up (calm days, the spot doesn't
+    // need filtering). On big-surf days like 4/25/2026, LJ Cove (high kelp + high
+    // shelter) held viz while LJ Shores (moderate + sand) was unswimmable.
+    const we = D.waveEnergy || 0;
+    const surgeMult = Math.min(1.0, we / 150);  // 0 at flat, 1.0 at WE>=150 (~3ft @ 12s)
+    if (loc.kelpDensity === 'heavy' || loc.kelpDensity === 'high') {
+      vizFinal = Math.min(10, vizFinal + 0.5 + 0.6 * surgeMult);
+    } else if (loc.kelpDensity === 'moderate') {
+      vizFinal = Math.min(10, vizFinal + 0.25 + 0.3 * surgeMult);
+    }
+    // Shelter geometry — sheltered coves/breakwaters preserve viz when seas are up
+    if (loc.shelter === 'high') vizFinal = Math.min(10, vizFinal + 0.3 + 0.5 * surgeMult);
+    else if (loc.shelter === 'moderate') vizFinal = Math.min(10, vizFinal + 0.15 + 0.2 * surgeMult);
+    // Sand bottom under surf — extra penalty: sediment suspends easily
+    if (we > 80 && (loc.bottom === 'sand' || loc.bottom === 'mixed')) {
+      const sandPenalty = (loc.bottom === 'sand' ? 0.7 : 0.4) * surgeMult;
+      vizFinal = Math.max(1, vizFinal - sandPenalty);
+    }
 
     // Tide-specific viz: outgoing at river mouths dumps turbid water
     if (D.tideState) {
