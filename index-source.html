@@ -3329,9 +3329,28 @@ async function fetchSingleShoreStation(station, isFallback = false) {
       if (!isFallback) {
         const chl = extract(station.chl);
         if (chl !== null) {
-          D.chlorophyll = chl;
-          D.chlSource = station.name;
-          D.chlIsClimatology = false;  // Live sensor — trust it
+          // Hedge against bloom-season climatology. A single fluorometer reading
+          // can be unrepresentative — sensor calibration drift, harbor effects
+          // (Monterey Wharf), micro-patchiness. During peak-bloom climatology
+          // (≥5 mg/m³) a "clean" live reading should be sanity-checked against
+          // the regional seasonal expectation.
+          // Ground truth 4/26/2026: Monterey Bay reports show plankton + 5-10ft
+          // viz, but Monterey Wharf live chl reads <1 → tool predicted 23-29ft.
+          // The bay IS bloomy; the harbor sensor is missing it.
+          const month = new Date().getMonth() + 1;
+          const region = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
+          const climoTable = (typeof CHL_CLIMATOLOGY_BY_REGION !== 'undefined') ? CHL_CLIMATOLOGY_BY_REGION[region] : null;
+          const climo = climoTable ? climoTable[month] : null;
+          let final = chl, isClimo = false, sourceLabel = station.name;
+          if (climo && climo >= 5 && chl < climo * 0.4) {
+            // Wild mismatch during peak-bloom season → blend toward climo
+            final = Math.max(chl, climo * 0.5);
+            isClimo = true;
+            sourceLabel = `${station.name} + climo hedge`;
+          }
+          D.chlorophyll = final;
+          D.chlSource = sourceLabel;
+          D.chlIsClimatology = isClimo;
           srcStatus.chl = 'ok';
         }
       }
@@ -5361,23 +5380,32 @@ function updateDisplay() {
       // Apply shelter multiplier
       lo = Math.max(1, Math.round(lo * shelterMult));
       hi = Math.max(lo+1, Math.round(hi * shelterMult));
-      // Chlorophyll penalty — applies for both live sensor and regional climatology.
-      // Climatology now uses per-region monthly curves (CHL_CLIMATOLOGY_BY_REGION),
-      // which IS meaningful seasonal signal. Climo penalty applied at 70% strength
-      // since it's a regional average, not a same-day reading. Without this, Laguna
-      // in April was reading 16-22 ft when peak bloom climatology + rain suggests
-      // 5-12 ft (per ground truth 4/26/2026).
+      // Chlorophyll penalty — multiplicative so it scales with baseline. The
+      // previous subtractive form (-4 ft for bloom) only docked 4 ft off the
+      // 22-30 calm tier, leaving 18-26 — way too high for actual bloom days.
+      // A multiplicative penalty (×0.4) brings 22-30 down to 9-12 which
+      // matches ground truth (Monterey 4/26/2026 bloom = 5-10 ft actual).
+      // Climatology applied at 70% strength via blendMult: live ×0.4 → climo ×0.58.
       let suffix2 = '';
       const chlOk = D.chlorophyll !== undefined && D.chlorophyll > 0;
-      const cs = D.chlIsClimatology ? 0.7 : 1.0;  // climo applied at 70% strength
+      const cs2 = D.chlIsClimatology ? 0.7 : 1.0;
+      const blend2 = (m) => 1 - cs2 * (1 - m);  // blend toward 1.0 by (1-cs)
       if(chlOk && D.chlorophyll>8) {
-        lo = Math.max(1, Math.round(lo - 4 * cs)); hi = Math.max(lo+1, Math.round(hi - 4 * cs));
+        const m = blend2(0.40);
+        lo = Math.max(2, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
         suffix2 = D.chlIsClimatology ? ' (bloom season)' : ' (bloom)';
       } else if(chlOk && D.chlorophyll>3) {
-        lo = Math.max(1, Math.round(lo - 2 * cs)); hi = Math.max(lo+1, Math.round(hi - 2 * cs));
+        const m = blend2(0.55);
+        lo = Math.max(2, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
         suffix2 = D.chlIsClimatology ? ' (bloom season)' : ' (green water)';
+      } else if(chlOk && D.chlorophyll>1.5) {
+        const m = blend2(0.75);
+        lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
+        suffix2 = D.chlIsClimatology ? '' : ' (green tinge)';
       } else if(chlOk && D.chlorophyll>1) {
-        lo = Math.max(1, Math.round(lo - 1 * cs)); hi = Math.max(lo+1, Math.round(hi - 1 * cs));
+        // Mild
+        const m = blend2(0.90);
+        lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
       }
       // Cap range spread to 6ft max (widened from 5 — WE-only has genuine uncertainty)
       if (hi - lo > 6) hi = lo + 6;
