@@ -5136,10 +5136,13 @@ function updateDisplay() {
     const locKelp = loc.kelpDensity || 'none';
     // Shelter multiplier — capped at 1.25 to avoid unrealistic 70+ ft estimates
     let shelterMult = 1.0;
-    if (locKelp === 'high') shelterMult += 0.15;
-    else if (locKelp === 'moderate') shelterMult += 0.10;
-    if (locShelter === 'high') shelterMult += 0.10;
-    else if (locShelter === 'moderate') shelterMult += 0.05;
+    // Shelter+kelp bonuses trimmed in calibration pass 4/26/2026 — Monterey Bay
+    // (high shelter + high kelp = 1.25× boost) was producing 23-29 ft when actual
+    // was ~20 ft for similar conditions. Stacking high+high too generously.
+    if (locKelp === 'high') shelterMult += 0.10;       // was 0.15
+    else if (locKelp === 'moderate') shelterMult += 0.07;
+    if (locShelter === 'high') shelterMult += 0.07;     // was 0.10
+    else if (locShelter === 'moderate') shelterMult += 0.04;
 
     // Wave energy dampening — combines shelter geometry, kelp filtering, and bottom type.
     // Ground truth: Monterey Breakwater 4/2 — buoy WE 461, actual viz 40 ft (calm inside harbor)
@@ -5374,9 +5377,13 @@ function updateDisplay() {
     // WE 20-50 tier widened (was 12-17, now 14-22) — calm conditions produce better viz than modeled
     else if(effectiveWE!==undefined) {
       let lo, hi;
-      if(effectiveWE<10)  { lo=22; hi=30; }  // glassy — 4/1 LJ WE 5 = 25-35 actual
-      else if(effectiveWE<=20) { lo=18; hi=25; }  // very calm — 4/2 LJ WE ~26 eff = 25+ actual
-      else if(effectiveWE<=35) { lo=14; hi=22; }  // calm — still producing 20+ ft in clean water
+      // Calm tiers tightened 4/26/2026 — Monterey Bay actual 20 ft on glassy
+      // day, tool predicted 23-29 (high+high shelter stack). Dropped 22-30 →
+      // 20-28 baseline so the prediction better matches "slightly over 20"
+      // ground truth on clean calm days. Surf tiers unchanged (already calibrated).
+      if(effectiveWE<10)  { lo=20; hi=28; }  // glassy
+      else if(effectiveWE<=20) { lo=16; hi=24; }
+      else if(effectiveWE<=35) { lo=13; hi=20; }
       else if(effectiveWE<=50) { lo=10; hi=16; }
       else if(effectiveWE<=100) { lo=7; hi=12; }
       else if(effectiveWE<=200) { lo=4; hi=7; }
@@ -7135,12 +7142,13 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
 
   // Location shelter/kelp multiplier — capped to avoid unrealistic numbers
   // Skip for scrippsProximity — SASS is the direct source
+  // Trimmed 4/26/2026 (see calibration note in primary path).
   let shelterMult = 1.0;
   if (!loc.scrippsProximity) {
-    if (loc.kelpDensity === 'high') shelterMult += 0.15;       // kelp helps, but modestly
-    else if (loc.kelpDensity === 'moderate') shelterMult += 0.10;
-    if (loc.shelter === 'high') shelterMult += 0.10;
-    else if (loc.shelter === 'moderate') shelterMult += 0.05;
+    if (loc.kelpDensity === 'high') shelterMult += 0.10;
+    else if (loc.kelpDensity === 'moderate') shelterMult += 0.07;
+    if (loc.shelter === 'high') shelterMult += 0.07;
+    else if (loc.shelter === 'moderate') shelterMult += 0.04;
   }
   baseLo = Math.round(baseLo * shelterMult);
   baseHi = Math.round(baseHi * shelterMult);
