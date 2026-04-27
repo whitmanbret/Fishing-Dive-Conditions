@@ -1,6 +1,6 @@
 // SpearFactor Conditions — Service Worker
 // Version is bumped on every deploy to bust cache
-const CACHE_VERSION = 'sf-v20260426c';
+const CACHE_VERSION = 'sf-v20260426d';
 const CACHE_FILES = [
   '/',
   '/dive-conditions-v2.html',

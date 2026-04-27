@@ -1415,8 +1415,8 @@ const LOCATIONS = {
   oceanside:   { name: 'Oceanside', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225'], lat: 33.19, lon: -117.40, depth: '15-60 ft', kelpDensity: 'low', nwsGrid: 'SGX/54,20' },
   // ── Orange County ──
   danapoint:   { name: 'Dana Point / Salt Creek', bottom: 'mixed', tideStation: '9410580', coast: 230, shelter: 'low', buoys: ['46242','46225'], lat: 33.4756, lon: -117.7218, depth: '35-70 ft', kelpDensity: 'heavy', nwsGrid: 'SGX/42,51' },
-  laguna:      { name: 'Laguna Beach (Shaw\'s / Diver\'s Cove)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5450, lon: -117.7987, depth: '15-50 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'Laguna Beach State Marine Reserve', nwsGrid: 'LOX/167,20' },
-  brooksstreet:{ name: 'Brooks Street (Laguna)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5368, lon: -117.7886, depth: '10-40 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'South Laguna Beach State Marine Conservation Area', nwsGrid: 'LOX/167,20' },
+  laguna:      { name: 'Laguna Beach (Shaw\'s / Diver\'s Cove)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5450, lon: -117.7987, depth: '15-50 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'Laguna Beach State Marine Reserve', nwsGrid: 'LOX/167,20', coveTrap: true },
+  brooksstreet:{ name: 'Brooks Street (Laguna)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5368, lon: -117.7886, depth: '10-40 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'South Laguna Beach State Marine Conservation Area', nwsGrid: 'LOX/167,20', coveTrap: true },
   crystalcove: { name: 'Crystal Cove', bottom: 'mixed', tideStation: '9410580', coast: 220, shelter: 'low', buoys: ['46242'], lat: 33.5571, lon: -117.8360, depth: '10-52 ft', kelpDensity: 'heavy', nwsGrid: 'LOX/166,21' },
   newport:     { name: 'Newport / Corona del Mar', bottom: 'rock', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.59, lon: -117.87, depth: '10-30 ft', kelpDensity: 'low', nwsGrid: 'SGX/35,58' },
   huntington:  { name: 'Huntington Cliffs', bottom: 'sand', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.65, lon: -117.98, depth: '8-20 ft', kelpDensity: 'none', nwsGrid: 'SGX/35,58' },
@@ -3324,33 +3324,18 @@ async function fetchSingleShoreStation(station, isFallback = false) {
           srcStatus.sass = 'ok';
         }
       }
-      // Chlorophyll — override satellite with live sensor
-      // SKIP for fallback stations — chlorophyll is regionally variable
+      // Chlorophyll — override satellite/climatology with live sensor.
+      // Live wins. Calibration pass 4/26/2026 against ~80 dive reports showed
+      // that hedging live readings against bloom-season climatology was the
+      // wrong call — same-day reports (San Carlos 20ft on 4/26 with peak
+      // bloom climatology) consistently track the live reading better.
+      // Trust the sensor; let climo be the FALLBACK only.
       if (!isFallback) {
         const chl = extract(station.chl);
         if (chl !== null) {
-          // Hedge against bloom-season climatology. A single fluorometer reading
-          // can be unrepresentative — sensor calibration drift, harbor effects
-          // (Monterey Wharf), micro-patchiness. During peak-bloom climatology
-          // (≥5 mg/m³) a "clean" live reading should be sanity-checked against
-          // the regional seasonal expectation.
-          // Ground truth 4/26/2026: Monterey Bay reports show plankton + 5-10ft
-          // viz, but Monterey Wharf live chl reads <1 → tool predicted 23-29ft.
-          // The bay IS bloomy; the harbor sensor is missing it.
-          const month = new Date().getMonth() + 1;
-          const region = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
-          const climoTable = (typeof CHL_CLIMATOLOGY_BY_REGION !== 'undefined') ? CHL_CLIMATOLOGY_BY_REGION[region] : null;
-          const climo = climoTable ? climoTable[month] : null;
-          let final = chl, isClimo = false, sourceLabel = station.name;
-          if (climo && climo >= 5 && chl < climo * 0.4) {
-            // Wild mismatch during peak-bloom season → blend toward climo
-            final = Math.max(chl, climo * 0.5);
-            isClimo = true;
-            sourceLabel = `${station.name} + climo hedge`;
-          }
-          D.chlorophyll = final;
-          D.chlSource = sourceLabel;
-          D.chlIsClimatology = isClimo;
+          D.chlorophyll = chl;
+          D.chlSource = station.name;
+          D.chlIsClimatology = false;
           srcStatus.chl = 'ok';
         }
       }
@@ -5177,6 +5162,21 @@ function updateDisplay() {
       if (effectiveWE > 80 && (loc.bottom === 'sand' || loc.bottom === 'mixed')) {
         bottomFactor = loc.bottom === 'sand' ? 1.45 : 1.20;
       }
+      // Cove-trap penalty for south-facing OC pocket coves (Laguna Crescent Bay,
+      // Deadman's, etc.). South swells (135-225°) wrap directly INTO these coves
+      // and can't escape — surge stacks up, sediment lingers. Calibration data
+      // (4/3/2026 Crescent Bay actual 10-15 ft vs tool 30-40, plus 4/8/2026 5ft
+      // on south swell) confirmed the standard "moderate shelter" treatment was
+      // wildly over-predicting these spots whenever the swell turns south.
+      if (loc.coveTrap && D.swellDir) {
+        const sdir = D.mwd; // mean wave direction in degrees, populated by buoy fetcher
+        const swellSouth = D.swellDir === 'south' || D.swellDir === 'sw' ||
+                           (sdir >= 135 && sdir <= 225);
+        if (swellSouth && effectiveWE > 30) {
+          // Acts like an inverse shelter — the cove geometry concentrates rather than dampens
+          effectiveWE = effectiveWE * 1.6;
+        }
+      }
       effectiveWE = effectiveWE * shelterFactor * kelpFactor * bottomFactor;
     }
     // Long-period swell correction — organized groundswell (>12s) produces less turbulent
@@ -5308,7 +5308,11 @@ function updateDisplay() {
       // at 70% strength (a regional average, not a same-day measurement).
       let suffix = '';
       const chlApplies = D.chlorophyll !== undefined && D.chlorophyll > 0;
-      const climoStrength = D.chlIsClimatology ? 0.7 : 1.0;
+      // Climatology applied at 30% strength — calibration pass 4/26/2026 against
+      // ~80 dive reports showed 0.7 was crushing the calm-tier baseline. Most April
+      // days in Monterey are 20-40 ft viz despite climatology saying peak bloom;
+      // the bloom is patchy and short-lived. Live sensor still applies at 100%.
+      const climoStrength = D.chlIsClimatology ? 0.3 : 1.0;
       if (chlApplies) {
         // Helper: blend a hardcoded multiplier toward 1.0 by (1 - climoStrength).
         // Live sensor (climoStrength=1.0) gets the raw mult; climatology
@@ -5388,23 +5392,27 @@ function updateDisplay() {
       // Climatology applied at 70% strength via blendMult: live ×0.4 → climo ×0.58.
       let suffix2 = '';
       const chlOk = D.chlorophyll !== undefined && D.chlorophyll > 0;
-      const cs2 = D.chlIsClimatology ? 0.7 : 1.0;
+      // Climatology at 30% strength (was 0.7) — see calibration note above.
+      const cs2 = D.chlIsClimatology ? 0.3 : 1.0;
       const blend2 = (m) => 1 - cs2 * (1 - m);  // blend toward 1.0 by (1-cs)
+      // Multipliers softened in calibration pass: 0.40→0.50 (bloom), 0.55→0.65
+      // (green water). Previous values were over-correcting Monterey/Laguna
+      // calm-tier predictions during peak bloom MONTH when the actual bloom
+      // wasn't continuously active.
       if(chlOk && D.chlorophyll>8) {
-        const m = blend2(0.40);
+        const m = blend2(0.50);
         lo = Math.max(2, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
         suffix2 = D.chlIsClimatology ? ' (bloom season)' : ' (bloom)';
       } else if(chlOk && D.chlorophyll>3) {
-        const m = blend2(0.55);
+        const m = blend2(0.65);
         lo = Math.max(2, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
         suffix2 = D.chlIsClimatology ? ' (bloom season)' : ' (green water)';
       } else if(chlOk && D.chlorophyll>1.5) {
-        const m = blend2(0.75);
+        const m = blend2(0.80);
         lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
         suffix2 = D.chlIsClimatology ? '' : ' (green tinge)';
       } else if(chlOk && D.chlorophyll>1) {
-        // Mild
-        const m = blend2(0.90);
+        const m = blend2(0.92);
         lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
       }
       // Cap range spread to 6ft max (widened from 5 — WE-only has genuine uncertainty)
