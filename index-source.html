@@ -5422,6 +5422,22 @@ function updateDisplay() {
         const m = blend2(0.92);
         lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
       }
+      // Post-storm runoff penalty — connects D.runoffAdvisory to the viz NUMBER,
+      // not just the banner. Ground truth 4/27/2026: Laguna under OC Health rain
+      // advisory + 1-3ft surf, divers reporting <10 ft viz. Tool was predicting
+      // 14-19 ft despite the runoff banner showing — the banner alone wasn't
+      // dropping the prediction. Now the same severity tier that drives the
+      // banner also crushes the viz number.
+      if (D.runoffAdvisory && !loc.bluewater && !loc.offshore) {
+        const tier = D.runoffAdvisory.severity;
+        let mult = 1.0;
+        if (tier === 'heavy')        mult = 0.30;  // ≥0.5 in past 24hr → ~70% off
+        else if (tier === 'moderate') mult = 0.50;
+        else if (tier === 'light')    mult = 0.65;  // ≥0.1 in past 72hr → ~35% off
+        lo = Math.max(2, Math.round(lo * mult));
+        hi = Math.max(lo+1, Math.round(hi * mult));
+        suffix2 = ' (post-rain)';
+      }
       // Cap range spread to 6ft max (widened from 5 — WE-only has genuine uncertainty)
       if (hi - lo > 6) hi = lo + 6;
       vizEst = `${lo}–${hi} ft${suffix2}`;
