@@ -2976,47 +2976,38 @@ function classifySwellDir(mwd) {
 }
 
 // --- NWS: Rainfall ---
-// Aggregates hourly precipitation into 24/48/72hr buckets and tracks the
-// most recent rain hour. The runoff advisory rule needs both total AND
-// recency: heavy rain 70hr ago is different from heavy rain 6hr ago.
-//
-// Bug discovered 4/26/2026: many NWS stations (KSNA / John Wayne is one)
-// don't always populate precipitationLastHour even when the station is
-// reporting rain. They DO populate precipitationLast3Hours and
-// precipitationLast6Hours instead. The original code only read LastHour
-// and missed today's 1:15 AM Laguna rain entirely → runoff banner never
-// fired. Fix: when LastHour is null at a given timestamp, fall back to
-// LastN-hour fields by deriving an hourly rate for that bucket. We
-// dedupe so we don't double-count overlapping windows.
+// Two-source strategy. NWS station observations are tried first (per-station
+// data is finest-grained when populated), but many ASOS stations (KSAN/KSNA
+// confirmed 4/28/2026) have null/Z values across precipitationLast{Hour,3,6}
+// fields. Open-Meteo is a CORS-friendly fallback that uses gridded
+// reanalysis + radar — gives accurate hourly precipitation at any lat/lon.
+// Confirmed 4/28: NWS missed Sunday's 0.5in Laguna rain entirely; Open-Meteo
+// captured it at 09:00 with a 12.6mm reading.
 async function fetchRainfall() {
+  const now = Date.now();
+  // Hour-binned rainfall (mm). Keyed by floor(hrsAgo) so multiple sources
+  // don't double-count the same hour — we take MAX across overlapping data.
+  const hourly = new Map();
+  function recordHour(hrsAgo, mm) {
+    const key = Math.floor(hrsAgo);
+    if (key < 0 || key > 72) return;
+    if (mm > (hourly.get(key) || 0)) hourly.set(key, mm);
+  }
+
+  // Source 1: NWS station observations (when populated)
   try {
     const station = getWeatherStation(currentLocation);
-    const r=await fetchWithTimeout(`https://api.weather.gov/stations/${station}/observations?limit=72`,{
-      headers:{'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
+    const r = await fetchWithTimeout(`https://api.weather.gov/stations/${station}/observations?limit=72`, {
+      headers: {'Accept':'application/geo+json','User-Agent':'FishDiveConditions/4.0'}
     });
-    const d=await r.json();
-    if(d.features&&d.features.length>0) {
-      const now = Date.now();
-      // Hour-binned rainfall buckets (mm). Keying by hour-since-now lets us
-      // dedupe overlapping precipitationLastN windows: if hour t is already
-      // recorded from precipitationLastHour, a later precipitationLast6Hours
-      // at t+5 won't double-count.
-      const hourly = new Map();  // floor(hrsAgo) → mm
-
-      function recordHour(hrsAgo, mm) {
-        const key = Math.floor(hrsAgo);
-        if (key < 0 || key > 72) return;
-        // Take MAX over the same hour to avoid bigger-window dilution
-        if (mm > (hourly.get(key) || 0)) hourly.set(key, mm);
-      }
-
+    const d = await r.json();
+    if (d.features && d.features.length > 0) {
       for (const obs of d.features) {
         const ts = obs.properties.timestamp ? new Date(obs.properties.timestamp).getTime() : now;
         const hrsAgo = (now - ts) / 3600000;
         const lastHour = obs.properties.precipitationLastHour;
         const last3    = obs.properties.precipitationLast3Hours;
         const last6    = obs.properties.precipitationLast6Hours;
-        // Best-available: hourly direct, else 3-hr rate spread across 3 hours, else 6-hr / 6
         if (lastHour && lastHour.value > 0) {
           recordHour(hrsAgo, lastHour.value);
         } else if (last3 && last3.value > 0) {
@@ -3027,27 +3018,52 @@ async function fetchRainfall() {
           for (let h = 0; h < 6; h++) recordHour(hrsAgo + h, perHr);
         }
       }
-
-      // Sum the buckets into windows + find most recent rain hour
-      let mm24 = 0, mm48 = 0, mmTotal = 0, lastRainHrs = null;
-      for (const [h, mm] of hourly) {
-        if (h <= 24) mm24 += mm;
-        if (h <= 48) mm48 += mm;
-        if (h <= 72) mmTotal += mm;
-        if (lastRainHrs === null || h < lastRainHrs) lastRainHrs = h;
-      }
-
-      const inches = mmTotal/25.4;
-      D.rainfallInches    = inches;
-      D.rainfallInches24  = mm24/25.4;
-      D.rainfallInches48  = mm48/25.4;
-      D.lastRainHrsAgo    = lastRainHrs;
-
-      if(inches<0.01) D.rainfall='none'; else if(inches<0.1) D.rainfall='trace';
-      else if(inches<0.5) D.rainfall='light'; else if(inches<1.0) D.rainfall='moderate'; else D.rainfall='heavy';
-      srcStatus.nws='ok';
     }
-  } catch(e) {}
+  } catch (e) { /* fall through to Open-Meteo */ }
+
+  // Source 2: Open-Meteo gridded precipitation (fallback when NWS gives null/Z)
+  // Always queried — if NWS already had good data, the MAX-merge in recordHour()
+  // means Open-Meteo can only ADD coverage, never remove it. Critical for
+  // closing the NWS station data gap that caused the Sunday-rain miss.
+  try {
+    const loc = LOCATIONS[currentLocation];
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&hourly=precipitation&past_days=3&forecast_days=1&timezone=UTC`;
+    const r = await fetchWithTimeout(url, null, 4000);
+    const d = await r.json();
+    if (d.hourly && d.hourly.time && d.hourly.precipitation) {
+      const times = d.hourly.time;
+      const precs = d.hourly.precipitation;
+      for (let i = 0; i < times.length; i++) {
+        const mm = precs[i];
+        if (!mm || mm <= 0) continue;
+        const ts = new Date(times[i] + 'Z').getTime();  // ISO without Z, force UTC
+        const hrsAgo = (now - ts) / 3600000;
+        if (hrsAgo < 0 || hrsAgo > 72) continue;
+        recordHour(hrsAgo, mm);
+      }
+    }
+  } catch (e) { /* if both sources fail, we just have empty buckets */ }
+
+  // Sum buckets into 24/48/72hr windows + find most recent rain hour
+  let mm24 = 0, mm48 = 0, mmTotal = 0, lastRainHrs = null;
+  for (const [h, mm] of hourly) {
+    if (h <= 24) mm24 += mm;
+    if (h <= 48) mm48 += mm;
+    if (h <= 72) mmTotal += mm;
+    if (lastRainHrs === null || h < lastRainHrs) lastRainHrs = h;
+  }
+  const inches = mmTotal / 25.4;
+  D.rainfallInches    = inches;
+  D.rainfallInches24  = mm24 / 25.4;
+  D.rainfallInches48  = mm48 / 25.4;
+  D.lastRainHrsAgo    = lastRainHrs;
+
+  if (inches < 0.01) D.rainfall = 'none';
+  else if (inches < 0.1) D.rainfall = 'trace';
+  else if (inches < 0.5) D.rainfall = 'light';
+  else if (inches < 1.0) D.rainfall = 'moderate';
+  else D.rainfall = 'heavy';
+  if (mmTotal > 0 || hourly.size > 0) srcStatus.nws = 'ok';
 }
 
 // --- NOAA PFEL Upwelling Index (JSONP) — region-specific latitude ---
@@ -4607,6 +4623,14 @@ function computeSiteTip() {
   if (currentLocation === 'ljshores' && D.tideState === 'outgoing'
       && D.waveEnergy !== undefined && D.waveEnergy > 60) {
     tips.push('Marine Room sand stirs up faster than the kelp beds on outgoing tides — try diving north toward the kelp paddies (Tower 23 area) for cleaner viz.');
+  }
+
+  // Pt Lobos / Carmel — outgoing tide degrades viz noticeably (4/27/2026
+  // ground truth: 40 ft → 25-30 ft when tide turned). Spatial gradient in
+  // the cove: middle stays clean, parking-lot-end gets murkier.
+  if (currentLocation === 'carmel' && D.tideState === 'outgoing'
+      && D.waveEnergy !== undefined && D.waveEnergy > 50) {
+    tips.push('Outgoing tide tends to drop Pt Lobos viz fast — middle of the cove stays cleaner than the parking-lot end. Dive deep features (HITW, Beto\'s) early on the slack rather than later.');
   }
 
   return tips.length > 0 ? tips.join(' ') : null;
