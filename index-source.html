@@ -7251,6 +7251,31 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     else { baseLo = 2; baseHi = 5; }
   }
 
+  // Calm-conditions boost — MUST match today inline-path's calmMult logic.
+  // Without this, today (which reads vizFeetHero text directly, post-calmMult)
+  // and tomorrow (raw table) diverge by 25-35% even with identical conditions.
+  // That divergence was the residual cliff after the 4/30 forecast sync.
+  if (D.turbidity !== undefined && D.waveEnergy !== undefined) {
+    const locShelter = loc.shelter || 'low';
+    const locKelp = loc.kelpDensity || 'none';
+    let sf = 1.0;
+    if (locShelter === 'high') sf = 0.15;
+    else if (locShelter === 'moderate') sf = 0.55;
+    let kf = 1.0;
+    if (locKelp === 'high' || locKelp === 'heavy') kf = 0.75;
+    else if (locKelp === 'moderate') kf = 0.90;
+    const effWE = (D.waveEnergy || 0) * sf * kf;
+    const chlLive = D.chlorophyll !== undefined && !D.chlIsClimatology;
+    const bloom = (D.chlorophyll || 0) > 0.5 && (chlLive || loc.scrippsProximity);
+    if (effWE < 10) {
+      const cm = bloom ? 1.10 : 1.35;
+      baseLo = Math.round(baseLo * cm); baseHi = Math.round(baseHi * cm);
+    } else if (effWE < 20) {
+      const cm = bloom ? 1.05 : 1.15;
+      baseLo = Math.round(baseLo * cm); baseHi = Math.round(baseHi * cm);
+    }
+  }
+
   // Location shelter/kelp multiplier — capped to avoid unrealistic numbers
   // Skip for scrippsProximity — SASS is the direct source
   // Trimmed 4/26/2026 (see calibration note in primary path).
