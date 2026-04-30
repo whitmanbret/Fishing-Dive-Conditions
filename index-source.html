@@ -7186,21 +7186,88 @@ function calcSlotForecastScores(slot, dayIdx) {
 }
 
 function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
-  // For today (dayIdx 0): use the ACTUAL current viz estimate so forecast matches real-time
-  if (dayIdx === 0) {
-    const heroEl = document.getElementById('vizFeetHero');
-    if (heroEl && heroEl.textContent && heroEl.textContent !== '--') {
-      const parts = heroEl.textContent.match(/(\d+)\D+(\d+)/);
-      if (parts) {
-        let lo = parseInt(parts[1]);
-        let hi = parseInt(parts[2]);
-        // Slight wind adjustment within today's slots
+  // ANCHOR PATH (today + future days). Read today's hero number — which is the
+  // calibrated, sensor-driven prediction for right now — and apply only the
+  // adjustments that actually change day-to-day (wind, precip, swell, bloom
+  // decay). This avoids the today-vs-forecast drift bug discovered 4/30/2026
+  // where today showed 20-26 ft EXCELLENT but every future day collapsed to
+  // 1-13 ft despite identical conditions text. The old future-day path
+  // re-derived from raw sensors with different multipliers than the today
+  // path. Anchoring eliminates that drift entirely.
+  const heroEl = document.getElementById('vizFeetHero');
+  if (heroEl && heroEl.textContent && heroEl.textContent !== '--') {
+    const parts = heroEl.textContent.match(/(\d+)\D+(\d+)/);
+    if (parts) {
+      let lo = parseInt(parts[1]);
+      let hi = parseInt(parts[2]);
+
+      if (dayIdx === 0) {
+        // Today: just slight wind adjustment within slots
         if (avgWind > 12) { lo = Math.max(1, Math.round(lo * 0.8)); hi = Math.max(lo + 1, Math.round(hi * 0.85)); }
         else if (avgWind > 8) { lo = Math.max(1, Math.round(lo * 0.9)); hi = Math.max(lo + 1, Math.round(hi * 0.92)); }
         return `${lo}–${hi} ft`;
       }
+
+      // Future days — apply only condition-driven changes
+      let mult = 1.0;
+
+      // Wind change
+      if (avgWind > 18)      mult *= 0.55;
+      else if (avgWind > 13) mult *= 0.75;
+      else if (avgWind > 9)  mult *= 0.90;
+      else if (avgWind < 4)  mult *= 1.05;
+
+      // Rain forecast probability (only meaningful drops kick in)
+      if (precipPct > 70)      mult *= 0.40;
+      else if (precipPct > 50) mult *= 0.65;
+      else if (precipPct > 30) mult *= 0.85;
+
+      // Future swell (WW3) vs today's swell
+      let futureWE = D.waveEnergy;
+      if (slotDate && typeof getWW3Swell === 'function') {
+        const ww3 = getWW3Swell(slotDate);
+        if (ww3) futureWE = ww3.ft * ww3.ft * ww3.per;
+      }
+      const todayWE = D.waveEnergy || 1;
+      if (futureWE !== undefined && todayWE > 0) {
+        const ratio = futureWE / todayWE;
+        if (ratio > 2.5)      mult *= 0.65;
+        else if (ratio > 1.5) mult *= 0.85;
+        else if (ratio < 0.5) mult *= 1.10;
+      }
+
+      // Bloom decay over future days (chl drops 15-25%/day in coastal CA)
+      if (D.chlorophyll !== undefined && D.chlorophyll > 0.5 && !D.chlIsClimatology) {
+        const chlRecover = [1.0, 1.05, 1.10, 1.15, 1.20][Math.min(dayIdx, 4)];
+        mult *= chlRecover;
+      }
+
+      // Day-out uncertainty (mild — separate from widening)
+      mult *= 1 - (dayIdx * 0.02);
+
+      lo = Math.max(1, Math.round(lo * mult));
+      hi = Math.max(lo + 1, Math.round(hi * mult));
+
+      // Future-day uncertainty widening — keep total spread <= 8 ft per user
+      // request 4/30/2026. Was 10 before.
+      let widenLo = Math.min(2 + dayIdx, 4);
+      let widenHi = Math.min(2 + dayIdx, 4);
+      if (precipPct > 40) widenLo += 1;
+      if (D.pressureTrend && D.pressureTrend.tendency === 'falling_rapid') widenLo += 2;
+      lo = Math.max(1, lo - widenLo);
+      hi = Math.min(35, hi + widenHi);
+      // Cap total spread at 8 ft (was 10) — keeps ranges readable, prevents
+      // 1-30 style wild ranges that erode trust.
+      if (hi - lo > 8) {
+        const mid = (lo + hi) / 2;
+        lo = Math.max(1, Math.round(mid - 4));
+        hi = Math.round(mid + 4);
+      }
+      if (hi - lo < 3) hi = lo + 3;
+      return `${lo}–${hi} ft`;
     }
   }
+  // If hero text isn't ready yet (very rare race), fall through to legacy path
 
   // Future days: calculate from sensor data with decay
   const loc = LOCATIONS[currentLocation];
