@@ -7245,6 +7245,18 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
       // Day-out uncertainty (mild — separate from widening)
       mult *= 1 - (dayIdx * 0.02);
 
+      // Floor on how far tomorrow can drop from today purely from compounding
+      // multipliers. Without this, big swell + rain probability + day decay
+      // can stack to ~0.30 (Monterey 4/30 case: today 15-21, tomorrow 1-7).
+      // The data may genuinely justify some drop, but compounding all the
+      // penalties at full force overstates the case. Tier by dayIdx so days
+      // further out have more room to actually drop:
+      //   Day 1: floor 0.55  (today 15-21 → at most 8-12 from mult alone)
+      //   Day 2: floor 0.45
+      //   Day 3+: floor 0.35
+      const minMult = [1.0, 0.55, 0.45, 0.35, 0.30][Math.min(dayIdx, 4)];
+      mult = Math.max(mult, minMult);
+
       lo = Math.max(1, Math.round(lo * mult));
       hi = Math.max(lo + 1, Math.round(hi * mult));
 
