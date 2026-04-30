@@ -7232,11 +7232,13 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     else if(ntu < 5.0)   { baseLo=2;  baseHi=4;  }
     else                  { baseLo=1;  baseHi=3;  }
   } else if (D.waveEnergy !== undefined) {
-    // No turbidity available — fall back to wave energy
+    // No turbidity available — fall back to wave energy.
+    // Tiers must match the inline today-path baselines (calibration 4/26/2026).
+    // Drift between the two paths was causing the today→tomorrow cliff bug.
     const we = D.waveEnergy;
-    if (we < 10)  { baseLo = 22; baseHi = 30; }  // glassy
-    else if (we <= 20) { baseLo = 18; baseHi = 25; }
-    else if (we <= 35) { baseLo = 14; baseHi = 22; }  // calm
+    if (we < 10)  { baseLo = 20; baseHi = 28; }  // glassy
+    else if (we <= 20) { baseLo = 16; baseHi = 24; }
+    else if (we <= 35) { baseLo = 13; baseHi = 20; }
     else if (we <= 50) { baseLo = 10; baseHi = 16; }
     else if (we <= 100) { baseLo = 7; baseHi = 12; }
     else if (we <= 200) { baseLo = 4; baseHi = 7; }
@@ -7294,30 +7296,35 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   baseLo = Math.max(1, Math.round(baseLo * windMult * rainMult * swellMult * dayDecay));
   baseHi = Math.max(baseLo + 1, Math.round(baseHi * windMult * rainMult * swellMult * dayDecay));
 
-  // Chlorophyll adjustment — blooms persist 3-7 days in CA coastal waters
-  // Only apply when we have live sensor data or location is near Scripps (where climatology was measured)
-  // Slow decay: Day 0 = full, Day 1 = 90%, Day 2 = 80%, Day 3 = 65%, Day 4 = 50%
-  const chlAppliesFcst = !D.chlIsClimatology || loc.scrippsProximity;
+  // Chlorophyll adjustment — blooms persist 3-7 days in CA coastal waters.
+  // Multipliers + climoStrength MUST match the inline today-path; otherwise
+  // we get a today-vs-tomorrow cliff like the user saw 4/30/2026 (today
+  // EXCELLENT 20-26 ft, every future day POOR 1-10 ft). Bug was the old
+  // forecast used 0.4 / 0.55 multipliers (full strength) while the today
+  // path used 0.50 / 0.80 with 30% climo blending. Synced here.
+  const chlAppliesFcst = D.chlorophyll !== undefined && D.chlorophyll > 0;
   if (chlAppliesFcst) {
     const chlDecay = [1.0, 0.9, 0.8, 0.65, 0.50][Math.min(dayIdx, 4)];
     const chlEff = (D.chlorophyll || 0) * chlDecay;
+    // Climatology applied at 30% strength (matches inline today path).
+    const csF = D.chlIsClimatology ? 0.3 : 1.0;
+    const blendF = (m) => 1 - csF * (1 - m);
     // Bloom-decay detection: particles settled (low NTU) but chl fluorescence persists.
-    // In decay phase, visible viz has recovered ahead of the sensor.
     const fcstBloomDecay = D.turbidity !== undefined && D.turbidity < 0.35 && chlEff >= 0.5 && chlEff < 3;
-    if (chlEff > 8) { baseLo = Math.max(1, Math.round(baseLo * 0.4)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.45)); }
-    else if (chlEff > 3) { baseLo = Math.max(1, Math.round(baseLo * 0.6)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.65)); }
-    else if (chlEff > 1.5) {
-      const m = fcstBloomDecay ? 0.90 : 0.55;
+    if (chlEff > 8) {
+      const m = blendF(0.50);
+      baseLo = Math.max(2, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
+    } else if (chlEff > 3) {
+      const m = blendF(0.65);
+      baseLo = Math.max(2, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
+    } else if (chlEff > 1.5) {
+      const m = blendF(fcstBloomDecay ? 0.92 : 0.80);
+      baseLo = Math.max(1, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
+    } else if (chlEff > 0.8) {
+      const m = blendF(fcstBloomDecay ? 0.95 : 0.85);
       baseLo = Math.max(1, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
     }
-    else if (chlEff > 0.8) {
-      const m = fcstBloomDecay ? 0.95 : 0.55;
-      baseLo = Math.max(1, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
-    }
-    else if (chlEff > 0.5) {
-      const m = fcstBloomDecay ? 1.00 : 0.75;
-      baseLo = Math.max(1, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
-    }
+    // chl < 0.8 — no penalty (matches inline path)
   }
 
   // HYCOM ocean model adjustment — SST evolution reveals upwelling/downwelling signals
