@@ -4610,11 +4610,19 @@ function computeSiteTip() {
   const loc = LOCATIONS[currentLocation];
   if (!loc) return null;
 
-  // LJ Cove — reef-pocket runoff trap on incoming tide. Storm drains feed
-  // the pocket between Cove and Marine Room; incoming current piles murk
-  // up rather than flushing it. North side flushes cleaner.
-  if (currentLocation === 'ljcove' && D.runoffAdvisory && D.tideState === 'incoming') {
-    tips.push("Reef pocket likely murky on this incoming tide — try the north side of the cove (toward Children's Pool) and the kelp paddies, which flush cleaner.");
+  // LJ Cove — spatial heterogeneity persists during bloom even without runoff.
+  // 5+ days of reports 4/27-4/30/2026 confirmed: Goldfish Point / Sea Caves /
+  // north side cleaner than the reef pocket between Cove and Marine Room.
+  // Original rule fired only on runoff + incoming tide; now broader.
+  if (currentLocation === 'ljcove') {
+    // Stronger trap warning on incoming tide + active runoff (rare but worst case)
+    if (D.runoffAdvisory && D.tideState === 'incoming') {
+      tips.push("Reef pocket likely murky on this incoming tide — try the north side of the cove (toward Children's Pool / Goldfish Point) and the kelp paddies, which flush cleaner.");
+    }
+    // Always-relevant bloom advisory: surface bloom is patchy across the cove
+    else if (D.chlorophyll !== undefined && D.chlorophyll > 0.5) {
+      tips.push("Bloom layering common in this cove — Goldfish Point and the Sea Caves typically clear better than the south reef pocket. If conditions are mixed, try below the thermocline (often 15-20 ft on bloom days) for cleaner water above the cold layer.");
+    }
   }
 
   // LJ Shores — Marine Room sand kicks up faster than the kelp beds when
@@ -5246,18 +5254,25 @@ function updateDisplay() {
         bottomFactor = loc.bottom === 'sand' ? 1.45 : 1.20;
       }
       // Cove-trap penalty for south-facing OC pocket coves (Laguna Crescent Bay,
-      // Deadman's, etc.). South swells (135-225°) wrap directly INTO these coves
-      // and can't escape — surge stacks up, sediment lingers. Calibration data
-      // (4/3/2026 Crescent Bay actual 10-15 ft vs tool 30-40, plus 4/8/2026 5ft
-      // on south swell) confirmed the standard "moderate shelter" treatment was
-      // wildly over-predicting these spots whenever the swell turns south.
-      if (loc.coveTrap && D.swellDir) {
-        const sdir = D.mwd; // mean wave direction in degrees, populated by buoy fetcher
+      // Deadman's, etc.). The original rule fired on any south swell, but
+      // calibration data 4/29-4/30/2026 (3 separate Laguna reports: Crescent
+      // 10-30, Goff ~10, area 10-15 — all on long-period south swell with no
+      // runoff) showed the rule was over-correcting on clean groundswell days.
+      // The actual trap mechanism requires either:
+      //   (a) post-storm runoff plume in the pocket, OR
+      //   (b) short-period chop that physically stirs sediment.
+      // Long-period clean groundswell flushes through without trapping.
+      if (loc.coveTrap && D.swellDir && effectiveWE > 30) {
+        const sdir = D.mwd;
         const swellSouth = D.swellDir === 'south' || D.swellDir === 'sw' ||
                            (sdir >= 135 && sdir <= 225);
-        if (swellSouth && effectiveWE > 30) {
-          // Acts like an inverse shelter — the cove geometry concentrates rather than dampens
-          effectiveWE = effectiveWE * 1.6;
+        // Trap requires south swell PLUS one of: active runoff OR short period (chop)
+        const hasRunoff = D.runoffAdvisory && D.runoffAdvisory.severity !== 'light';
+        const isShortPeriod = D.swellPeriod !== undefined && D.swellPeriod < 10;
+        if (swellSouth && (hasRunoff || isShortPeriod)) {
+          // Trap fires only when conditions actually concentrate murk
+          // Less aggressive multiplier (1.4 vs 1.6) since rule is now narrower
+          effectiveWE = effectiveWE * 1.4;
         }
       }
       effectiveWE = effectiveWE * shelterFactor * kelpFactor * bottomFactor;
@@ -5396,6 +5411,28 @@ function updateDisplay() {
       // days in Monterey are 20-40 ft viz despite climatology saying peak bloom;
       // the bloom is patchy and short-lived. Live sensor still applies at 100%.
       const climoStrength = D.chlIsClimatology ? 0.3 : 1.0;
+
+      // Surface-bloom floor for scrippsProximity spots — calibration update
+      // 4/30/2026. LJ Cove area was over-predicting 5-10 ft for 5 days
+      // straight (4/27-4/30) during active red tide. Root cause: the Scripps
+      // Pier fluorometer sits at depth and reads "clean" while a surface
+      // bloom layer (red-tide style) caps the top 15-20 ft. Boomer Beach
+      // 4/28 confirmed: actual 10 ft viz with cleaner water below thermocline.
+      // Fix: when location is scrippsProximity AND regional climatology says
+      // peak bloom (>=5 mg/m³ for current month) AND live reading is
+      // suspiciously low (<2 mg/m³), trust the season more — apply a 0.85
+      // floor multiplier to acknowledge the surface bloom the sensor can't see.
+      const _surfaceBloomCheck = (() => {
+        if (!loc.scrippsProximity) return null;
+        const liveChlLow = D.chlorophyll !== undefined && D.chlorophyll < 2;
+        if (!liveChlLow) return null;
+        const month = new Date().getMonth() + 1;
+        const region = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
+        const climoTable = (typeof CHL_CLIMATOLOGY_BY_REGION !== 'undefined') ? CHL_CLIMATOLOGY_BY_REGION[region] : null;
+        const climo = climoTable ? climoTable[month] : null;
+        if (climo === null || climo === undefined || climo < 5) return null;
+        return 0.85;  // ~15% reduction for unmeasured surface bloom
+      })();
       if (chlApplies) {
         // Helper: blend a hardcoded multiplier toward 1.0 by (1 - climoStrength).
         // Live sensor (climoStrength=1.0) gets the raw mult; climatology
@@ -5433,6 +5470,13 @@ function updateDisplay() {
           lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
           suffix = bloomDecay ? '' : (D.chlIsClimatology ? '' : ' (green tinge)');
         }
+      }
+      // Apply surface-bloom floor (computed earlier) — accounts for surface
+      // bloom layers the deep Scripps fluorometer can't see during peak season
+      if (_surfaceBloomCheck !== null) {
+        lo = Math.max(2, Math.round(lo * _surfaceBloomCheck));
+        hi = Math.max(lo+1, Math.round(hi * _surfaceBloomCheck));
+        if (!suffix) suffix = ' (bloom season)';
       }
       // Cap range spread — wider for clean water (low NTU has genuine variability)
       const maxSpread = ntu < 0.25 ? 8 : 5;
