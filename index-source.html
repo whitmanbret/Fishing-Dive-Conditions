@@ -4633,12 +4633,19 @@ function computeSiteTip() {
     tips.push('Marine Room sand stirs up faster than the kelp beds on outgoing tides — try diving north toward the kelp paddies (Tower 23 area) for cleaner viz.');
   }
 
-  // Pt Lobos / Carmel — outgoing tide degrades viz noticeably (4/27/2026
-  // ground truth: 40 ft → 25-30 ft when tide turned). Spatial gradient in
-  // the cove: middle stays clean, parking-lot-end gets murkier.
-  if (currentLocation === 'carmel' && D.tideState === 'outgoing'
+  // Pt Lobos / Carmel — inverse spatial gradient on surge days. Two converging
+  // ground truths 5/2 + 5/3/2026: cove (parking-lot end) <10 ft while Beto's,
+  // Rock Garden, and Lone Metridium were 30+ ft. Sediment concentrates in the
+  // sheltered cove pocket while deeper outer reefs flush. Counterintuitive —
+  // divers default to "find the most sheltered spot" but that's wrong here.
+  // Original rule fired only on outgoing tide; broadened to any surge day.
+  if (currentLocation === 'carmel'
       && D.waveEnergy !== undefined && D.waveEnergy > 50) {
-    tips.push('Outgoing tide tends to drop Pt Lobos viz fast — middle of the cove stays cleaner than the parking-lot end. Dive deep features (HITW, Beto\'s) early on the slack rather than later.');
+    if (D.tideState === 'outgoing') {
+      tips.push('Surge + outgoing tide is the worst combo for Pt Lobos viz. The cove (parking-lot end) holds sediment while Beto\'s, Rock Garden, and Lone Metridium clear faster. Head to the deeper outer reefs early on the slack rather than the cove.');
+    } else {
+      tips.push('On surge days the Pt Lobos cove (parking-lot end) tends to hold sediment while Beto\'s, Rock Garden, and Lone Metridium clear faster. Head to the deeper outer reefs for cleaner viz, or save the cove for genuinely flat days.');
+    }
   }
 
   return tips.length > 0 ? tips.join(' ') : null;
