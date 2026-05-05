@@ -6065,6 +6065,9 @@ function setVal(id, text, source, badgeClass) {
 }
 
 function updateDataWarning() {
+    if (D.redTideWarning) {
+    warnings.unshift('🚨 ' + D.redTideWarning);
+  }  
   const el = document.getElementById('dataWarning');
   if (!el) return;
   const warnings = [];
