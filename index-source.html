@@ -3168,7 +3168,14 @@ const CHL_CLIMATOLOGY_BY_REGION = {
 };
 // Legacy alias — some downstream code still references CHL_CLIMATOLOGY
 const CHL_CLIMATOLOGY = CHL_CLIMATOLOGY_BY_REGION.sd;
-
+const RED_TIDE_EVENTS = [
+  {
+    start: new Date('2026-05-01'), end: new Date('2026-05-14'),
+    regions: ['sd'],
+    chl: 80,
+    label: 'Red tide active (confirmed 5/3) — milky/hazy in shallows, visibility improves below ~40 FSW'
+  }
+];
 async function fetchChlorophyll() {
   // Pick the climatology for the user's region. Falls back to SD if unmapped.
   const month = new Date().getMonth() + 1;
@@ -3178,7 +3185,19 @@ async function fetchChlorophyll() {
     D.chlorophyll = climo[month];
     D.chlSource = `Climo (${region})`;
     D.chlIsClimatology = true;  // Flag so viz model can skip penalty for distant locations
-    srcStatus.chl='ok';
+        srcStatus.chl='ok';
+  }
+  const now = new Date();
+  const region2 = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
+  for (const evt of RED_TIDE_EVENTS) {
+    if (now >= evt.start && now <= evt.end && evt.regions.includes(region2)) {
+      D.chlorophyll = evt.chl;
+      D.chlSource = 'Red tide alert';
+      D.chlIsClimatology = false;
+      D.redTideWarning = evt.label;
+      srcStatus.chl = 'ok';
+      break;
+    }
   }
 }
 
