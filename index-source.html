@@ -8468,7 +8468,9 @@ function onLocationChange() {
   const _siteTip = document.getElementById('siteTip');
   if (_siteTip) { _siteTip.style.display = 'none'; _siteTip.textContent = ''; }
   document.getElementById('forecastDays').innerHTML = '<div class="forecast-loading">Loading forecast data...</div>';
-  // Reset collapsible sections to collapsed state on location switch
+  document.getElementById('briefAM').textContent = '';
+  document.getElementById('briefPM').textContent = '';
+  document.getElementById('conditionsBrief').style.display = 'none';  // Reset collapsible sections to collapsed state on location switch
   document.getElementById('forecastSection').style.display = 'none';
   document.getElementById('forecastToggleBtn').textContent = '5-Day Forecast ▼';
   document.getElementById('boatReportsSection').style.display = 'none';
