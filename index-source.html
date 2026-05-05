@@ -5673,7 +5673,7 @@ function updateDisplay() {
     const hasLiveNTU = D.turbidity !== undefined && D.turbSource;
     const hasLiveChl = D.chlorophyll !== undefined && !D.chlIsClimatology;
     const hasWaveE = D.waveEnergy !== undefined;
-    const hasBuoy = hasWaveE || D.swellHt !== undefined;  // WE comes from buoy
+    const hasBuoy = hasWaveE || D.swellFt !== undefined;  // WE comes from buoy
     const isOffshore = loc.bluewater || loc.offshore;
     const isCalm = hasWaveE && effectiveWE < 20;  // use shelter-dampened WE
 
