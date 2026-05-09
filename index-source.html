@@ -5460,24 +5460,10 @@ function updateDisplay() {
         return 0.85;  // ~15% reduction for unmeasured surface bloom
       })();
       if (chlApplies) {
-        // Bloom-signal double-counting dampener — calibration 5/8/2026.
-        // High NTU and high chl during a bloom event are reading the SAME
-        // surface phenomenon (organic particle scattering + pigment
-        // fluorescence from the same phytoplankton/decomposing biomass).
-        // When NTU has already collapsed the baseline to a poor tier, applying
-        // the full chl penalty on top double-counts. Ground truth: LJ Shores
-        // 5/8/2026 — tool predicting 3-6 ft "(green water)" while divers at
-        // 30-60 fsw reported 25+ ft. NTU and chl are correlated indicators of
-        // the same surface bloom event — independent multiplication overstates
-        // the penalty. Reduce chl strength to 25% when NTU is already in a
-        // poor-tier baseline (hi <= 10).
-        const ntuAlreadyLow = hi <= 10;
-        const ntuDampener = ntuAlreadyLow ? 0.25 : 1.0;
         // Helper: blend a hardcoded multiplier toward 1.0 by (1 - climoStrength).
-        // climoStrength=1.0 (live sensor) + ntuDampener=1.0 = full penalty
-        // climoStrength=1.0 + ntuDampener=0.25 = light penalty (NTU caught it)
-        // climoStrength=0.3 (climo) = already softened
-        const blendMult = (m) => 1 - (climoStrength * ntuDampener) * (1 - m);
+        // Live sensor (climoStrength=1.0) gets the raw mult; climatology
+        // (climoStrength=0.7) gets a softened version.
+        const blendMult = (m) => 1 - climoStrength * (1 - m);
 
         // Recalibrated 4/16: 0.94 chl + 0.32 NTU = camera "really green", actual 5-10ft
         // 3/22: 0.65 chl + 0.27 NTU = 8-10ft actual
@@ -5517,24 +5503,6 @@ function updateDisplay() {
         lo = Math.max(2, Math.round(lo * _surfaceBloomCheck));
         hi = Math.max(lo+1, Math.round(hi * _surfaceBloomCheck));
         if (!suffix) suffix = ' (bloom season)';
-      }
-
-      // Thermocline-aware deep-water boost — calibration 5/8/2026.
-      // When the surface is bloomy (sensors triggering) but HYCOM detects
-      // a strong thermocline in the typical dive depth range (15-35 ft),
-      // divers can drop below the mixed layer to find significantly cleaner
-      // water. The single-number prediction should reflect the typical
-      // dive-depth average, not just the surface sensor reading.
-      // Ground truth 5/1, 5/3, 5/6, 5/8/2026: LJ Shores below 40-60 ft
-      // = 20-25+ ft viz while surface = 5-10 ft. Same dive site, same day.
-      const tcline = D.thermocline;
-      if (tcline && tcline.status === 'active' && tcline.depth >= 15 && tcline.depth <= 35) {
-        // Only boost if the prediction is currently low (surface sensors
-        // dominating). Don't lift already-good predictions.
-        if (hi <= 12) {
-          lo = Math.round(lo * 1.10);  // gentle lo bump
-          hi = Math.round(hi * 1.30);  // bigger hi bump (deep diver experience)
-        }
       }
       // Cap range spread — wider for clean water (low NTU has genuine variability)
       const maxSpread = ntu < 0.25 ? 8 : 5;
