@@ -5387,18 +5387,6 @@ function updateDisplay() {
       else if(ntu < 3.5)   { lo=3;  hi=6;  }  // poor
       else if(ntu < 5.0)   { lo=2;  hi=4;  }
       else                  { lo=1;  hi=3;  }
-      // Bloom-coloration NTU bias (5/9/2026): when NTU is elevated AND chl is
-      // high from a live sensor, the suspended material is more pigment than
-      // sediment. Pigment colors the water green but doesn't always reduce viz
-      // as severely as equivalent-NTU sediment from a sand-stir event. Bump lo
-      // by 1 ft when these conditions co-occur — bloom-source NTU is slightly
-      // less viz-reducing than sediment-source NTU at the same reading.
-      // Ground truth 5/8/2026: LJ Shores actual surface 5-10 ft during bloom
-      // when NTU table alone predicts 4-8 ft.
-      if (ntu >= 1.0 && ntu <= 2.5 && D.chlorophyll !== undefined &&
-          D.chlorophyll > 3 && !D.chlIsClimatology) {
-        lo = Math.min(hi - 1, lo + 1);
-      }
       // Mild shelter adjustment — turbidity is direct measurement, so only small boost
       const turbShelter = Math.min(1.15, shelterMult);
       lo = Math.max(1, Math.round(lo * turbShelter));
