@@ -5461,12 +5461,9 @@ function updateDisplay() {
       })();
       if (chlApplies) {
         // Helper: blend a hardcoded multiplier toward 1.0 by (1 - climoStrength).
-        // 5/9/2026: when NTU has already collapsed baseline to a poor tier
-        // (hi <= 10), reduce climoStrength inline by 75% — NTU and chl during
-        // bloom events read the same surface phenomenon, so independent
-        // multiplicative penalties double-count. Inlined to avoid new variable
-        // declarations that caused obfuscator-related runtime failures 5/8.
-        const blendMult = (m) => 1 - (hi <= 10 ? climoStrength * 0.25 : climoStrength) * (1 - m);
+        // Live sensor (climoStrength=1.0) gets the raw mult; climatology
+        // (climoStrength=0.7) gets a softened version.
+        const blendMult = (m) => 1 - climoStrength * (1 - m);
 
         // Recalibrated 4/16: 0.94 chl + 0.32 NTU = camera "really green", actual 5-10ft
         // 3/22: 0.65 chl + 0.27 NTU = 8-10ft actual
