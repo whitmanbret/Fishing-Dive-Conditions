@@ -1,11 +1,16 @@
 // SpearFactor Conditions — Service Worker
 // Version is bumped on every deploy to bust cache
-const CACHE_VERSION = 'sf-v20260509b';
+const CACHE_VERSION = 'sf-v20260509c';
 const CACHE_FILES = [
   '/',
-  '/dive-conditions-v2.html',
   '/manifest.json'
 ];
+// NOTE 5/9/2026: Removed /dive-conditions-v2.html from CACHE_FILES because
+// Cloudflare on conditions.spearfactor.com strips .html extensions via a
+// 308 redirect to /dive-conditions-v2 (no extension). cache.addAll() rejects
+// redirected responses, which was causing the entire SW install to fail
+// silently — users got stuck with the previous SW. Pre-caching only the
+// root path which doesn't redirect.
 
 // Install: cache current version
 self.addEventListener('install', event => {
