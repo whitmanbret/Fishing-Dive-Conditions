@@ -1,6 +1,6 @@
 // SpearFactor Conditions — Service Worker
 // Version is bumped on every deploy to bust cache
-const CACHE_VERSION = 'sf-v20260509a';
+const CACHE_VERSION = 'sf-v20260509b';
 const CACHE_FILES = [
   '/',
   '/dive-conditions-v2.html',
@@ -47,8 +47,13 @@ self.addEventListener('fetch', event => {
         const cached = await cache.match(event.request);
         // Kick off the network fetch in the background regardless
         const networkPromise = fetch(event.request).then(response => {
-          // Only cache 2xx
-          if (response && response.status >= 200 && response.status < 300) {
+          // Only cache 2xx AND non-redirected responses. Safari refuses to
+          // serve cached responses that were originally created via a redirect
+          // chain (e.g., github.io → conditions.spearfactor.com 301), throwing
+          // "Response served by service worker has redirections" errors on
+          // navigation. Skip caching those — the next request will fetch
+          // fresh and (usually) hit the canonical URL directly.
+          if (response && response.status >= 200 && response.status < 300 && !response.redirected) {
             cache.put(event.request, response.clone());
           }
           return response;
