@@ -5460,10 +5460,19 @@ function updateDisplay() {
         return 0.85;  // ~15% reduction for unmeasured surface bloom
       })();
       if (chlApplies) {
-        // Helper: blend a hardcoded multiplier toward 1.0 by (1 - climoStrength).
-        // Live sensor (climoStrength=1.0) gets the raw mult; climatology
-        // (climoStrength=0.7) gets a softened version.
-        const blendMult = (m) => 1 - climoStrength * (1 - m);
+        // NTU dampener: when NTU has already collapsed the baseline to a
+        // poor tier (hi <= 10), the chl penalty is double-counting the
+        // SAME bloom signal (high NTU + high chl = same surface bloom).
+        // Reduce chl strength to 25% in that case.
+        // Calibration 5/8/2026: LJ Shores predicting 3-6 ft surface-only
+        // while divers at 30-60 fsw reported 25+ ft — surface sensors
+        // overstating the dive-experience penalty.
+        var ntuDampener = (typeof hi === 'number' && hi <= 10) ? 0.25 : 1.0;
+        // Helper: blend a hardcoded multiplier toward 1.0.
+        // climoStrength=1.0 (live sensor) + ntuDampener=1.0 = full penalty
+        // climoStrength=1.0 + ntuDampener=0.25 = light penalty (NTU caught it)
+        // climoStrength=0.3 (climo) = already softened
+        const blendMult = (m) => 1 - (climoStrength * ntuDampener) * (1 - m);
 
         // Recalibrated 4/16: 0.94 chl + 0.32 NTU = camera "really green", actual 5-10ft
         // 3/22: 0.65 chl + 0.27 NTU = 8-10ft actual
