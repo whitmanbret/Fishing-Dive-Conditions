@@ -7284,58 +7284,29 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
       // Future days — apply only condition-driven changes
       let mult = 1.0;
 
-      // Wind change — smooth interpolation instead of step tiers.
-      // Calibration insight 5/8/2026: step tiers (>13 mph triggers ×0.75)
-      // produced unrealistic Mon-vs-Tue cliffs in the Monterey forecast
-      // (Mon 8mph = no penalty, Tue 14mph = full ×0.75 = 25% swing on a 6mph
-      // wind difference). Smooth interp from 5 to 18 mph captures real-world
-      // gradient: 5mph → 1.05x, 10mph → 0.95x, 14mph → 0.78x, 18mph → 0.55x.
-      if (avgWind <= 5)       mult *= 1.05;
-      else if (avgWind >= 18) mult *= 0.55;
-      else {
-        // Linear-ish interpolation between 5 → 1.05 and 18 → 0.55
-        const t = (avgWind - 5) / 13;       // 0..1
-        const windM = 1.05 - 0.50 * t;       // 1.05 → 0.55
-        mult *= windM;
-      }
+      // Wind change
+      if (avgWind > 18)      mult *= 0.55;
+      else if (avgWind > 13) mult *= 0.75;
+      else if (avgWind > 9)  mult *= 0.90;
+      else if (avgWind < 4)  mult *= 1.05;
 
       // Rain forecast probability (only meaningful drops kick in)
       if (precipPct > 70)      mult *= 0.40;
       else if (precipPct > 50) mult *= 0.65;
       else if (precipPct > 30) mult *= 0.85;
 
-      // Future swell (WW3) vs today's swell — with period-based correction.
-      // Calibration insight 5/8/2026: wave energy ratio alone (futureWE / todayWE)
-      // doesn't differentiate clean long-period groundswell (>11s) from
-      // short-period chop. The same WE ratio of 1.7x can mean very different
-      // viz outcomes — long groundswell flushes nearshore reefs while short
-      // chop stirs them up. Local Monterey guide called Tue-Wed "calmer" with
-      // 10-12s period; tool was predicting same as Sat (8s) at similar WE.
+      // Future swell (WW3) vs today's swell
       let futureWE = D.waveEnergy;
-      let futurePeriod = D.swellPeriod;
       if (slotDate && typeof getWW3Swell === 'function') {
         const ww3 = getWW3Swell(slotDate);
-        if (ww3) {
-          futureWE = ww3.ft * ww3.ft * ww3.per;
-          futurePeriod = ww3.per;
-        }
+        if (ww3) futureWE = ww3.ft * ww3.ft * ww3.per;
       }
       const todayWE = D.waveEnergy || 1;
       if (futureWE !== undefined && todayWE > 0) {
         const ratio = futureWE / todayWE;
-        let swellMult = 1.0;
-        if (ratio > 2.5)      swellMult = 0.65;
-        else if (ratio > 1.5) swellMult = 0.85;
-        else if (ratio < 0.5) swellMult = 1.10;
-        // Period correction: long-period groundswell partially redeems even
-        // when WE is high — the swell flushes rather than stirs. Short-period
-        // chop intensifies the penalty.
-        if (futurePeriod !== undefined && swellMult < 1.0) {
-          if (futurePeriod >= 12)      swellMult = Math.min(1.0, swellMult * 1.20);
-          else if (futurePeriod >= 10) swellMult = Math.min(1.0, swellMult * 1.10);
-          else if (futurePeriod <= 6)  swellMult *= 0.90;
-        }
-        mult *= swellMult;
+        if (ratio > 2.5)      mult *= 0.65;
+        else if (ratio > 1.5) mult *= 0.85;
+        else if (ratio < 0.5) mult *= 1.10;
       }
 
       // Bloom decay over future days (chl drops 15-25%/day in coastal CA)
