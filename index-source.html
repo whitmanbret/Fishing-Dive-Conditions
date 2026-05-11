@@ -6063,12 +6063,16 @@ function setVal(id, text, source, badgeClass) {
 }
 
 function updateDataWarning() {
-    if (D.redTideWarning) {
-    warnings.unshift('🚨 ' + D.redTideWarning);
-  }  
+  // FIX 2026-05-11: the original code referenced `warnings` before declaring
+  // it — a latent temporal-dead-zone bug that only fired when D.redTideWarning
+  // was truthy. The active SD red tide window (May 1-14) made it fire today,
+  // crashing fetchAllData mid-cycle and leaving SD spots stuck on "Loading...".
   const el = document.getElementById('dataWarning');
   if (!el) return;
   const warnings = [];
+  if (D.redTideWarning) {
+    warnings.unshift('🚨 ' + D.redTideWarning);
+  }
   // (Shore-station offline notice removed per user request — kept algorithm logic,
   //  just hide the UI warning. Confidence badge on viz already conveys uncertainty.)
   // CDIP buoy down = no swell data
