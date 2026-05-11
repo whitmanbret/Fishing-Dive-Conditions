@@ -3433,74 +3433,72 @@ async function fetchNOAAWaterTemp() {
 // Provides real ocean-measured wind and water temperature from nearest buoy
 // =========================================================================
 async function fetchNDBCBuoy() {
+  // 2026-05-11: Switched from CoastWatch ERDDAP JSONP to NDBC realtime2 text
+  // via worker proxy. The ERDDAP JSONP endpoint was getting blocked by Chrome
+  // ORB (Opaque Response Blocking) intermittently, and the cwwcNDBCMet dataset
+  // has been stale since 2026-04-22 anyway. Realtime2 text via worker proxy
+  // has proper CORS and current data.
   const loc = LOCATIONS[currentLocation];
   const buoyIds = loc.buoys || [];
-  // Try each buoy in order until one returns data
   for (const buoyId of buoyIds) {
     try {
-      const cbName = '_ndbc_' + Date.now() + '_' + buoyId.replace(/[^a-zA-Z0-9]/g, '');
-      const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station%2Ctime%2Cwtmp%2Cwspd%2Cgst%2Cwd%2Catmp%2Cbar&station=%22${buoyId}%22&time%3E=now-2hours&orderBy(%22time%22)&.jsonp=${cbName}`;
-      const data = await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => { delete window[cbName]; reject('timeout'); }, 4000);
-        window[cbName] = d => { clearTimeout(timeout); delete window[cbName]; resolve(d); };
-        const s = document.createElement('script');
-        s.src = url;
-        s.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject('load error'); };
-        document.head.appendChild(s);
-        setTimeout(() => { try { document.head.removeChild(s); } catch(e){} }, 5000);
-      });
-      if (data.table && data.table.rows && data.table.rows.length > 0) {
-        const cols = data.table.columnNames;
-        const wi = cols.indexOf('wtmp');
-        const wsi = cols.indexOf('wspd');
-        const wdi = cols.indexOf('wd');
-        const gi = cols.indexOf('gst');
-        const ai = cols.indexOf('atmp');
-        const bi = cols.indexOf('bar');
-        // Get most recent non-null values (buoys may have gaps)
-        let wtmp = null, wspd = null, wdir = null, gust = null, atmp = null, bar = null;
-        for (let r = data.table.rows.length - 1; r >= 0; r--) {
-          const row = data.table.rows[r];
-          if (wtmp === null && row[wi] !== null) wtmp = row[wi];
-          if (wspd === null && row[wsi] !== null) wspd = row[wsi];
-          if (wdir === null && row[wdi] !== null) wdir = row[wdi];
-          if (gust === null && row[gi] !== null) gust = row[gi];
-          if (atmp === null && row[ai] !== null) atmp = row[ai];
-          if (bar === null && row[bi] !== null) bar = row[bi];
-          if (wtmp !== null && wspd !== null) break; // got the key values
-        }
-        // Buoy water temp overrides satellite SST (more accurate for local conditions)
-        if (wtmp !== null) {
-          const wtmpF = (wtmp * 9/5 + 32).toFixed(1);
-          D.buoyWaterTemp = parseFloat(wtmpF);
-          D.buoyWaterTempC = wtmp;
-          D.buoyStation = buoyId;
-          // Only override waterTemp if we don't already have a CDIP or shore station reading
-          // Shore station pier temp is more accurate than offshore buoy for shore dives
-          const loc = LOCATIONS[currentLocation];
-          const hasShoreTemp = D.shoreStation && !loc.offshore;
-          if (!D.waterTemp || (D.waterTempSource !== 'CDIP' && !hasShoreTemp)) {
-            D.waterTemp = parseFloat(wtmpF);
-            D.waterTempSource = 'NDBC Buoy';
-          }
-        }
-        // Buoy wind (m/s → mph) — more accurate than NWS land stations for ocean conditions
-        if (wspd !== null) {
-          D.buoyWindSpeed = Math.round(wspd * 2.237); // m/s to mph
-          D.buoyWindDir = wdir;
-          D.buoyGust = gust ? Math.round(gust * 2.237) : null;
-        }
-        if (atmp !== null) D.buoyAirTemp = (atmp * 9/5 + 32).toFixed(1);
-        if (bar !== null) D.buoyPressure = bar;
-        srcStatus.ndbc = 'ok';
-        return; // Success — stop trying other buoys
+      const ndbcUrl = 'https://www.ndbc.noaa.gov/data/realtime2/' + buoyId + '.txt';
+      const r = await fetchWithTimeout(sfProxyUrl(ndbcUrl), null, 6000);
+      if (!r.ok) continue;
+      const text = await r.text();
+      const lines = text.split('\n').filter(l => l.trim().length > 0);
+      if (lines.length < 3) continue;
+      // Line 0: '#YY MM DD hh mm WDIR WSPD GST WVHT DPD APD MWD PRES ATMP WTMP DEWP VIS PTDY TIDE'
+      const headers = lines[0].replace(/^#/, '').trim().split(/\s+/);
+      const wsi = headers.indexOf('WSPD');
+      const wdi = headers.indexOf('WDIR');
+      const gi  = headers.indexOf('GST');
+      const wi  = headers.indexOf('WTMP');
+      const ai  = headers.indexOf('ATMP');
+      const bi  = headers.indexOf('PRES');
+      let wtmp = null, wspd = null, wdir = null, gust = null, atmp = null, bar = null;
+      // Walk most-recent-first rows looking for first non-MM value per field
+      for (let i = 2; i < lines.length && i < 12; i++) {
+        const cols = lines[i].trim().split(/\s+/);
+        const pick = idx => {
+          if (idx < 0) return null;
+          const v = cols[idx];
+          return (v && v !== 'MM' && !isNaN(parseFloat(v))) ? parseFloat(v) : null;
+        };
+        if (wtmp === null) wtmp = pick(wi);
+        if (wspd === null) wspd = pick(wsi);
+        if (wdir === null) wdir = pick(wdi);
+        if (gust === null) gust = pick(gi);
+        if (atmp === null) atmp = pick(ai);
+        if (bar === null)  bar  = pick(bi);
+        if (wtmp !== null && wspd !== null) break;
       }
+      if (wtmp !== null) {
+        const wtmpF = parseFloat((wtmp * 9/5 + 32).toFixed(1));
+        D.buoyWaterTemp = wtmpF;
+        D.buoyWaterTempC = wtmp;
+        D.buoyStation = buoyId;
+        const loc2 = LOCATIONS[currentLocation];
+        const hasShoreTemp = D.shoreStation && !loc2.offshore;
+        if (!D.waterTemp || (D.waterTempSource !== 'CDIP' && !hasShoreTemp)) {
+          D.waterTemp = wtmpF;
+          D.waterTempSource = 'NDBC Buoy';
+        }
+      }
+      if (wspd !== null) {
+        D.buoyWindSpeed = Math.round(wspd * 2.237);
+        D.buoyWindDir = wdir;
+        D.buoyGust = gust !== null ? Math.round(gust * 2.237) : null;
+      }
+      if (atmp !== null) D.buoyAirTemp = (atmp * 9/5 + 32).toFixed(1);
+      if (bar !== null) D.buoyPressure = bar;
+      srcStatus.ndbc = 'ok';
+      return;
     } catch(e) {
-      // This buoy failed, try next one
       continue;
     }
   }
-  srcStatus.ndbc = 'err'; // All buoys failed
+  srcStatus.ndbc = 'err';
 }
 
 // =========================================================================
