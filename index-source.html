@@ -5520,7 +5520,11 @@ function updateDisplay() {
         // 3/22: 0.65 chl + 0.27 NTU = 8-10ft actual
         // 4/21: 1.0 chl + 0.25 NTU = 25-30ft actual (bloom-DECAY phase — cells settled
         //       but fluorometer still reads pigment. Detect via clean NTU + moderate chl.)
-        const bloomDecay = ntu !== undefined && ntu < 0.35 && D.chlorophyll >= 0.5 && D.chlorophyll < 3;
+        // 5/11/2026 widened bloomDecay NTU threshold from 0.35 to 0.6 — today's
+        // LJ Shores/Marine Room report: NTU 0.54 + chl 1.25, actual 12+ ft surface.
+        // The narrower threshold missed mid-decay cases where chl pigment lingers
+        // but NTU has cleared somewhat (not all the way to 0.35).
+        const bloomDecay = ntu !== undefined && ntu < 0.6 && D.chlorophyll >= 0.5 && D.chlorophyll < 3;
         const climoLabel = D.chlIsClimatology ? ' (bloom season)' : '';
         if (D.chlorophyll > 8)       {
           const m = blendMult(0.35);
