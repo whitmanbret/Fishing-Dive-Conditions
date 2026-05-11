@@ -1414,34 +1414,34 @@
 const LOCATIONS = {
   // ── San Diego County (south → north) ──
   coronado:    { name: 'Coronado Islands (MX)', bottom: 'rock', tideStation: '9410170', coast: 300, shelter: 'low', buoys: ['46225','46235'], lat: 32.42, lon: -117.25, depth: '30-150 ft', kelpDensity: 'moderate', offshore: true, nwsGrid: 'SGX/54,20' },
-  imperial:    { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low', buoys: ['46225','46235'], lat: 32.58, lon: -117.14, depth: '10-40 ft', kelpDensity: 'none', riverInfluence: true, nwsGrid: 'SGX/56,8' },
-  pointloma:   { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.67, lon: -117.26, depth: '20-100 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20' },
-  mission:     { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low', riverInfluence: true, nwsGrid: 'SGX/54,20' },
-  ljshores:    { name: 'La Jolla Shores', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8586, lon: -117.2572, depth: '10-60 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20' },
-  lajolla:     { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20' },
-  ljcove:      { name: 'La Jolla Cove', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.8505, lon: -117.2728, depth: '5-80 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20' },
-  birdrock:    { name: 'Bird Rock / Windansea', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225','46254'], lat: 32.81, lon: -117.27, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20' },
-  delmar:      { name: 'Del Mar Reefs', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.95, lon: -117.28, depth: '10-25 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20' },
-  encinitas:   { name: 'Encinitas / Swamis', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.03, lon: -117.30, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20' },
-  carlsbad:    { name: 'Carlsbad Reef', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.12, lon: -117.35, depth: '25-45 ft', kelpDensity: 'low', nwsGrid: 'SGX/54,20' },
-  oceanside:   { name: 'Oceanside', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225'], lat: 33.19, lon: -117.40, depth: '15-60 ft', kelpDensity: 'low', nwsGrid: 'SGX/54,20' },
+  imperial: { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low', buoys: ['46225','46235'], lat: 32.58, lon: -117.14, depth: '10-40 ft', kelpDensity: 'none', riverInfluence: true, nwsGrid: 'SGX/56,8', mopStation: 'D0053' },
+  pointloma: { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.67, lon: -117.26, depth: '20-100 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20', mopStation: 'D0259' },
+  mission: { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low', riverInfluence: true, nwsGrid: 'SGX/54,20', mopStation: 'D0366' },
+  ljshores: { name: 'La Jolla Shores', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8586, lon: -117.2572, depth: '10-60 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20', mopStation: 'D0504' },
+  lajolla: { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20', mopStation: 'D0475' },
+  ljcove: { name: 'La Jolla Cove', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.8505, lon: -117.2728, depth: '5-80 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20', mopStation: 'D0481' },
+  birdrock: { name: 'Bird Rock / Windansea', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225','46254'], lat: 32.81, lon: -117.27, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20', mopStation: 'D0423' },
+  delmar: { name: 'Del Mar Reefs', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.95, lon: -117.28, depth: '10-25 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20', mopStation: 'D0612' },
+  encinitas: { name: 'Encinitas / Swamis', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.03, lon: -117.30, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20', mopStation: 'D0708' },
+  carlsbad: { name: 'Carlsbad Reef', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.12, lon: -117.35, depth: '25-45 ft', kelpDensity: 'low', nwsGrid: 'SGX/54,20', mopStation: 'D0819' },
+  oceanside: { name: 'Oceanside', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225'], lat: 33.19, lon: -117.40, depth: '15-60 ft', kelpDensity: 'low', nwsGrid: 'SGX/54,20', mopStation: 'D0911' },
   // ── Orange County ──
-  danapoint:   { name: 'Dana Point / Salt Creek', bottom: 'mixed', tideStation: '9410580', coast: 230, shelter: 'low', buoys: ['46242','46225'], lat: 33.4756, lon: -117.7218, depth: '35-70 ft', kelpDensity: 'heavy', nwsGrid: 'SGX/42,51' },
-  laguna:      { name: 'Laguna Beach (Shaw\'s / Diver\'s Cove)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5450, lon: -117.7987, depth: '15-50 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'Laguna Beach State Marine Reserve', nwsGrid: 'LOX/167,20', coveTrap: true },
-  brooksstreet:{ name: 'Brooks Street (Laguna)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5368, lon: -117.7886, depth: '10-40 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'South Laguna Beach State Marine Conservation Area', nwsGrid: 'LOX/167,20', coveTrap: true },
-  crystalcove: { name: 'Crystal Cove', bottom: 'mixed', tideStation: '9410580', coast: 220, shelter: 'low', buoys: ['46242'], lat: 33.5571, lon: -117.8360, depth: '10-52 ft', kelpDensity: 'heavy', nwsGrid: 'LOX/166,21' },
-  newport:     { name: 'Newport / Corona del Mar', bottom: 'rock', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.59, lon: -117.87, depth: '10-30 ft', kelpDensity: 'low', nwsGrid: 'SGX/35,58' },
-  huntington:  { name: 'Huntington Cliffs', bottom: 'sand', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.65, lon: -117.98, depth: '8-20 ft', kelpDensity: 'none', nwsGrid: 'SGX/35,58' },
+  danapoint: { name: 'Dana Point / Salt Creek', bottom: 'mixed', tideStation: '9410580', coast: 230, shelter: 'low', buoys: ['46242','46225'], lat: 33.4756, lon: -117.7218, depth: '35-70 ft', kelpDensity: 'heavy', nwsGrid: 'SGX/42,51', mopStation: 'OC171' },
+  laguna: { name: 'Laguna Beach (Shaw\'s / Diver\'s Cove)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5450, lon: -117.7987, depth: '15-50 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'Laguna Beach State Marine Reserve', nwsGrid: 'LOX/167,20', coveTrap: true, mopStation: 'OC281' },
+  brooksstreet: { name: 'Brooks Street (Laguna)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5368, lon: -117.7886, depth: '10-40 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'South Laguna Beach State Marine Conservation Area', nwsGrid: 'LOX/167,20', coveTrap: true, mopStation: 'OC270' },
+  crystalcove: { name: 'Crystal Cove', bottom: 'mixed', tideStation: '9410580', coast: 220, shelter: 'low', buoys: ['46242'], lat: 33.5571, lon: -117.8360, depth: '10-52 ft', kelpDensity: 'heavy', nwsGrid: 'LOX/166,21', mopStation: 'OC322' },
+  newport: { name: 'Newport / Corona del Mar', bottom: 'rock', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.59, lon: -117.87, depth: '10-30 ft', kelpDensity: 'low', nwsGrid: 'SGX/35,58', mopStation: 'OC368' },
+  huntington: { name: 'Huntington Cliffs', bottom: 'sand', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.65, lon: -117.98, depth: '8-20 ft', kelpDensity: 'none', nwsGrid: 'SGX/35,58', mopStation: 'OC495' },
   // ── Los Angeles County ──
-  pv:          { name: 'Palos Verdes', bottom: 'rock', tideStation: '9410660', coast: 225, shelter: 'moderate', buoys: ['46222'], lat: 33.74, lon: -118.41, depth: '10-55 ft', kelpDensity: 'high', nwsGrid: 'LOX/147,32' },
-  horseshoe:   { name: 'Horseshoe Kelp (LA)', bottom: 'kelp', tideStation: '9410660', coast: 270, shelter: 'low', buoys: ['46222'], lat: 33.70, lon: -118.35, depth: '20-60 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/147,32' },
-  malibu:      { name: 'Malibu / Point Dume', bottom: 'rock', tideStation: '9410660', coast: 200, shelter: 'moderate', buoys: ['46222'], lat: 34.00, lon: -118.80, depth: '8-50 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/135,46' },
-  leocarrillo: { name: 'Leo Carrillo', bottom: 'rock', tideStation: '9410660', coast: 210, shelter: 'low', buoys: ['46222'], lat: 34.04, lon: -118.93, depth: '8-30 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/135,46' },
+  pv: { name: 'Palos Verdes', bottom: 'rock', tideStation: '9410660', coast: 225, shelter: 'moderate', buoys: ['46222'], lat: 33.74, lon: -118.41, depth: '10-55 ft', kelpDensity: 'high', nwsGrid: 'LOX/147,32', mopStation: 'L0357' },
+  horseshoe: { name: 'Horseshoe Kelp (LA)', bottom: 'kelp', tideStation: '9410660', coast: 270, shelter: 'low', buoys: ['46222'], lat: 33.70, lon: -118.35, depth: '20-60 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/147,32', mopStation: 'L0272' },
+  malibu: { name: 'Malibu / Point Dume', bottom: 'rock', tideStation: '9410660', coast: 200, shelter: 'moderate', buoys: ['46222'], lat: 34.00, lon: -118.80, depth: '8-50 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/135,46', mopStation: 'L1037' },
+  leocarrillo: { name: 'Leo Carrillo', bottom: 'rock', tideStation: '9410660', coast: 210, shelter: 'low', buoys: ['46222'], lat: 34.04, lon: -118.93, depth: '8-30 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/135,46', mopStation: 'L1173' },
   // ── Ventura County ──
-  ventura:     { name: 'Ventura / Pt Mugu', bottom: 'rock', tideStation: '9411270', coast: 210, shelter: 'moderate', buoys: ['46217'], lat: 34.25, lon: -119.26, depth: '8-45 ft', kelpDensity: 'low', nwsGrid: 'LOX/119,62' },
+  ventura: { name: 'Ventura / Pt Mugu', bottom: 'rock', tideStation: '9411270', coast: 210, shelter: 'moderate', buoys: ['46217'], lat: 34.25, lon: -119.26, depth: '8-45 ft', kelpDensity: 'low', nwsGrid: 'LOX/119,62', mopStation: 'VE415' },
   // ── Santa Barbara County ──
-  sb:          { name: 'Santa Barbara (Hendry\'s)', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46054','46217'], lat: 34.40, lon: -119.74, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/105,70' },
-  refugio:     { name: 'Refugio / Gaviota', bottom: 'rock', tideStation: '9411340', coast: 210, shelter: 'low', buoys: ['46054'], lat: 34.47, lon: -120.07, depth: '8-50 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/105,70' },
+  sb: { name: 'Santa Barbara (Hendry\'s)', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46054','46217'], lat: 34.40, lon: -119.74, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/105,70', mopStation: 'B0274' },
+  refugio: { name: 'Refugio / Gaviota', bottom: 'rock', tideStation: '9411340', coast: 210, shelter: 'low', buoys: ['46054'], lat: 34.47, lon: -120.07, depth: '8-50 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/105,70', mopStation: 'B0616' },
   // ── Channel Islands ──
   anacapa:     { name: 'Anacapa Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46217'], lat: 34.01, lon: -119.36, depth: '10-60 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/119,62' },
   santacruz:   { name: 'Santa Cruz Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46054'], lat: 34.00, lon: -119.73, depth: '10-80 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/105,70' },
@@ -1454,15 +1454,15 @@ const LOCATIONS = {
   fortythree:  { name: '43 Fathom Spot', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46225'], lat: 32.78, lon: -118.10, depth: '80-260 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
   hiddenbank:  { name: 'Hidden Bank / 302 Spot', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46225'], lat: 32.28, lon: -117.85, depth: '100-400 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20' },
   // ── Central Coast (San Luis Obispo / Monterey) ──
-  morro:       { name: 'Morro Bay / Montana de Oro', bottom: 'rock', tideStation: '9412110', coast: 250, shelter: 'moderate', buoys: ['46028'], lat: 35.37, lon: -120.87, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/72,120' },
-  monterey:    { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236','46042'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },  // most dive sites (Breakwater, San Carlos, McAbee) are harbor-sheltered
-  loverspoint: { name: 'Lovers Point (Pacific Grove)', bottom: 'rock', tideStation: '9413450', coast: 0, shelter: 'high', buoys: ['46236','46042'], lat: 36.6267, lon: -121.9166, depth: '10-40 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'Lovers Point-Julia Platt State Marine Reserve', nwsGrid: 'MTR/93,51' },
-  carmel:      { name: 'Carmel / Point Lobos', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46236','46042'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51' },
+  morro: { name: 'Morro Bay / Montana de Oro', bottom: 'rock', tideStation: '9412110', coast: 250, shelter: 'moderate', buoys: ['46028'], lat: 35.37, lon: -120.87, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/72,120', mopStation: 'SL348' },
+  monterey: { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236','46042'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO752' },  // most dive sites (Breakwater, San Carlos, McAbee) are harbor-sheltered
+  loverspoint: { name: 'Lovers Point (Pacific Grove)', bottom: 'rock', tideStation: '9413450', coast: 0, shelter: 'high', buoys: ['46236','46042'], lat: 36.6267, lon: -121.9166, depth: '10-40 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'Lovers Point-Julia Platt State Marine Reserve', nwsGrid: 'MTR/93,51', mopStation: 'MO741' },
+  carmel: { name: 'Carmel / Point Lobos', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46236','46042'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO610' },
   // ── Northern California ──
-  halfmoon:    { name: 'Half Moon Bay', bottom: 'rock', tideStation: '9414290', coast: 270, shelter: 'low', buoys: ['46012'], lat: 37.50, lon: -122.47, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/80,93' },
-  bodega:      { name: 'Bodega Bay / Sonoma', bottom: 'rock', tideStation: '9415020', coast: 270, shelter: 'moderate', buoys: ['46013'], lat: 38.33, lon: -123.06, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/68,134' },
-  fortbragg:   { name: 'Fort Bragg / Mendocino', bottom: 'rock', tideStation: '9416841', coast: 270, shelter: 'low', buoys: ['46014'], lat: 39.45, lon: -123.81, depth: '10-55 ft', kelpDensity: 'moderate', nwsGrid: 'EKA/61,45' },
-  trinidad:    { name: 'Trinidad / Humboldt', bottom: 'rock', tideStation: '9418767', coast: 270, shelter: 'moderate', buoys: ['46022'], lat: 40.77, lon: -124.20, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'EKA/61,107' },
+  halfmoon: { name: 'Half Moon Bay', bottom: 'rock', tideStation: '9414290', coast: 270, shelter: 'low', buoys: ['46012'], lat: 37.50, lon: -122.47, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/80,93', mopStation: 'SM297' },
+  bodega: { name: 'Bodega Bay / Sonoma', bottom: 'rock', tideStation: '9415020', coast: 270, shelter: 'moderate', buoys: ['46013'], lat: 38.33, lon: -123.06, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/68,134', mopStation: 'SN069' },
+  fortbragg: { name: 'Fort Bragg / Mendocino', bottom: 'rock', tideStation: '9416841', coast: 270, shelter: 'low', buoys: ['46014'], lat: 39.45, lon: -123.81, depth: '10-55 ft', kelpDensity: 'moderate', nwsGrid: 'EKA/61,45', mopStation: 'M0656' },
+  trinidad: { name: 'Trinidad / Humboldt', bottom: 'rock', tideStation: '9418767', coast: 270, shelter: 'moderate', buoys: ['46022'], lat: 40.77, lon: -124.20, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'EKA/61,107', mopStation: 'HU556' },
 };
 
 const WEATHER_STATION = 'KSAN'; // legacy fallback — most lookups now go through getWeatherStation()
@@ -2856,8 +2856,56 @@ const CDIP_STATIONS = {
   trinidad:    { id: '162p1', name: 'Point Reyes' },
 };
 
+// --- CDIP MOP: spot-specific nearshore wave prediction ---
+// Added 2026-05-11. For coastal LOCATIONS with mopStation set, fetch the CDIP
+// MOP (Monitoring and Prediction) nearshore-propagated wave prediction at
+// that exact spot. MOP outputs already account for shoaling, refraction, and
+// shelter — much more accurate than offshore-buoy + manual shelter math.
+// Falls through silently on failure so the existing fetchBuoyData runs as
+// fallback. Uses the same OPeNDAP DDS+ASCII pattern as fetchBuoyData for
+// CDIP buoys — has CORS headers, no proxy needed.
+async function fetchMopWaves() {
+  const loc = LOCATIONS[currentLocation];
+  if (!loc || !loc.mopStation) return;
+  const stn = loc.mopStation;
+  try {
+    const ddsUrl = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/model/MOP_alongshore/${stn}_nowcast.nc.dds`;
+    const ddsR = await fetchWithTimeout(ddsUrl, null, 6000);
+    if (!ddsR.ok) return;
+    const ddsText = await ddsR.text();
+    const match = ddsText.match(/waveTime\[waveTime\s*=\s*(\d+)\]/);
+    if (!match) return;
+    const lastIdx = parseInt(match[1]) - 1;
+    const dataUrl = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/model/MOP_alongshore/${stn}_nowcast.nc.ascii?waveTime%5B${lastIdx}%5D,waveHs%5B${lastIdx}%5D,waveTp%5B${lastIdx}%5D,waveDp%5B${lastIdx}%5D,waveTa%5B${lastIdx}%5D`;
+    const dataR = await fetchWithTimeout(dataUrl, null, 6000);
+    if (!dataR.ok) return;
+    const text = await dataR.text();
+    const getVal = name => { const m = text.match(new RegExp(name + '\\[1\\]\\n([\\d.\\-]+)')); return m ? parseFloat(m[1]) : null; };
+    const hs = getVal('waveHs');
+    const tp = getVal('waveTp');
+    const dp = getVal('waveDp');
+    const ta = getVal('waveTa');
+    if (hs === null || isNaN(hs)) return;
+    // Populate the same D.* fields fetchBuoyData writes — so the rest of the
+    // model uses MOP transparently. fetchBuoyData runs after and sees D.swellFt
+    // is already set so its short-circuit on success path keeps it from
+    // overwriting MOP with offshore data.
+    D.swellFt = parseFloat((hs * 3.28084).toFixed(1));
+    if (tp !== null && !isNaN(tp)) D.swellPeriod = Math.round(tp);
+    if (ta !== null && !isNaN(ta)) D.avgPeriod = Math.round(ta);
+    if (dp !== null && !isNaN(dp)) classifySwellDir(dp);
+    srcStatus.ndbc = 'ok';
+    D.buoyId = stn;
+    D.buoyName = 'CDIP MOP ' + stn;
+    D.buoySource = 'CDIP MOP';
+  } catch (e) { /* silent — fetchBuoyData will run as fallback */ }
+}
+
 // --- Buoy Data: CDIP primary ---
 async function fetchBuoyData() {
+  // Skip if MOP (spot-specific nearshore prediction) has already populated swell data.
+  // Added 2026-05-11 alongside fetchMopWaves — MOP is preferred when available.
+  if (D.swellFt && D.buoySource === 'CDIP MOP') return;
   const cdipStation = CDIP_STATIONS[currentLocation] || CDIP_STATIONS.delmar;
   try {
     const ddsUrl = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/realtime/${cdipStation.id}_rt.nc.dds`;
@@ -4973,6 +5021,11 @@ async function fetchAllData() {
   D.reportsScore=getReportsScore(currentSpecies, now.getMonth());
   D.pressure=calcPressure(now);
   D.bottom=LOCATIONS[currentLocation].bottom;
+
+  // MOP runs FIRST (await before the rest) so that fetchBuoyData can see if
+  // MOP succeeded and skip overwriting the spot-specific data. Added 2026-05-11.
+  await fetchMopWaves();
+  if (thisGen !== _fetchGen) return;
 
   await Promise.allSettled([
     fetchWaterTemp(), fetchTempTrend(), fetchTideState(),
