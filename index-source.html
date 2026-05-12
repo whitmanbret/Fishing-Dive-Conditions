@@ -3351,10 +3351,10 @@ const CHL_CLIMATOLOGY_BY_REGION = {
 const CHL_CLIMATOLOGY = CHL_CLIMATOLOGY_BY_REGION.sd;
 const RED_TIDE_EVENTS = [
   {
-    start: new Date('2026-05-01'), end: new Date('2026-05-14'),
-    regions: ['sd'],
+    start: new Date('2026-05-01'), end: new Date('2026-05-11'),
+    spots: ['ljshores','lajolla','birdrock','delmar','mission'],
     chl: 80,
-    label: 'Red tide active (confirmed 5/3) — milky/hazy in shallows, visibility improves below ~40 FSW'
+    label: 'Red tide clearing (confirmed 5/11) — La Jolla area only, Point Loma unaffected'
   }
 ];
 async function fetchChlorophyll() {
@@ -3371,7 +3371,7 @@ async function fetchChlorophyll() {
   const now = new Date();
   const region2 = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
   for (const evt of RED_TIDE_EVENTS) {
-    if (now >= evt.start && now <= evt.end && evt.regions.includes(region2)) {
+    if (now >= evt.start && now <= evt.end && evt.spots && evt.spots.includes(currentLocation)) {
       D.chlorophyll = evt.chl;
       D.chlSource = 'Red tide alert';
       D.chlIsClimatology = false;
