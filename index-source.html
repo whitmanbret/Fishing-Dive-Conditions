@@ -1550,8 +1550,8 @@ const LOCATIONS = {
   imperial: { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low', buoys: ['46225','46235'], lat: 32.58, lon: -117.14, depth: '10-40 ft', kelpDensity: 'none', riverInfluence: true, nwsGrid: 'SGX/56,8', mopStation: 'D0053' },
   pointloma: { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.67, lon: -117.26, depth: '20-100 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20', mopStation: 'D0259' },
   mission: { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low', riverInfluence: true, nwsGrid: 'SGX/54,20', mopStation: 'D0366' },
-  ljshores: { name: 'La Jolla Shores', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8586, lon: -117.2572, depth: '10-60 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20', mopStation: 'D0504' },
-  lajolla: { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20', mopStation: 'D0475', headlandClearing: true },
+  ljshores: { name: 'La Jolla Shores', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8586, lon: -117.2572, depth: '10-60 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20', canyonInfluence: true, mopStation: 'D0504' },
+  lajolla: { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20', canyonInfluence: true, mopStation: 'D0475', headlandClearing: true },
   ljcove: { name: 'La Jolla Cove', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.8505, lon: -117.2728, depth: '5-80 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20', mopStation: 'D0481', headlandClearing: true },
   birdrock: { name: 'Bird Rock / Windansea', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225','46254'], lat: 32.81, lon: -117.27, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20', mopStation: 'D0423' },
   delmar: { name: 'Del Mar Reefs', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.95, lon: -117.28, depth: '10-25 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20', mopStation: 'D0612' },
@@ -7158,8 +7158,8 @@ function updateConditionsBrief() {
   // Current data points
   const vizText = document.getElementById('vizFeetHero')?.textContent || '--';
   const waterTemp = D.waterTemp ? Math.round(D.waterTemp) + '°F' : null;
-  const swellHt = D.swellHt ? D.swellHt.toFixed(1) : null;
-  const swellPer = D.swellPer ? Math.round(D.swellPer) : null;
+  const swellHt = D.swellFt ? D.swellFt.toFixed(1) : null;
+  const swellPer = D.swellPer ? Math.round(D.swellPeriod) : null;
   const swellDir = D.swellDir || null;
 
   // Tide info for today
