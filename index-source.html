@@ -6560,6 +6560,7 @@ function updateDataWarning() {
   // was truthy. The active SD red tide window (May 1-14) made it fire today,
   // crashing fetchAllData mid-cycle and leaving SD spots stuck on "Loading...".
   const el = document.getElementById('dataWarning');
+  if (!D.redTideWarning){el.classList.remove("show");return;}
   if (!el) return;
   const warnings = [];
   if (D.redTideWarning) {
@@ -6852,7 +6853,7 @@ function recalculate() {
   scoreW('swellPeriodScore', D.swellPeriod, getScorer('swellPeriod'), 'swellPeriod', vizEntries);
   scoreW('waveEnergyScore', D.waveEnergy, getScorer('waveEnergy'), 'waveEnergy', vizEntries);
   scoreW('rainfallScore', D.rainfall, getScorer('rainfall'), 'rainfall', vizEntries);
-  scoreW('chlVizScore', (loc.bloomSheltered&&D.chlorophyll&&\!D.redTideWarning)?Math.min(D.chlorophyll,2):D.chlorophyll, getScorer('chlViz'), 'chlViz', vizEntries);
+  scoreW('chlVizScore', (loc.bloomSheltered&&D.chlorophyll&&!D.redTideWarning)?Math.min(D.chlorophyll,2):D.chlorophyll, getScorer('chlViz'), 'chlViz', vizEntries);
   // Turbidity from SASS (only contributes when sensor is online)
   if (D.turbidity !== undefined) {
     const ts = turbScore(D.turbidity);
