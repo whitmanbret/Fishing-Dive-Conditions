@@ -986,6 +986,60 @@
     }
     .install-banner-close:hover { color: var(--text-primary); }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    /* ===== CONDITION CARDS (Tide / Wind / Wave) — 2026-05-11 redesign ===== */
+    .cond-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+    .cc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .cc-head-left { display: flex; align-items: center; gap: 6px; }
+    .cc-icon { color: var(--accent); font-size: 13px; }
+    .cc-title { text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: var(--text-secondary); }
+    .cc-meta-right { font-size: 11px; color: var(--text-secondary); text-align: right; line-height: 1.4; }
+    .cc-meta-right .state-good { color: var(--accent); font-weight: 600; }
+    .cc-meta-right .state-falling { color: var(--fair); font-weight: 600; }
+    .cc-big { font-size: 28px; font-weight: 700; color: var(--text-primary); margin-top: 2px; line-height: 1.1; }
+    .cc-big .unit { font-size: 13px; color: var(--text-muted); font-weight: 500; margin-left: 2px; }
+    .cc-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .cc-svg { width: 100%; height: 130px; display: block; margin-top: 6px; overflow: visible; }
+    .cc-svg .axis-text { font-size: 9px; fill: var(--text-muted); }
+    .cc-svg .curve-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+    .cc-svg .curve-fill { fill: var(--accent); opacity: 0.12; }
+    .cc-svg .now-line { stroke: var(--fair); stroke-width: 1.5; stroke-dasharray: 3,3; }
+    .cc-svg .extreme-dot { fill: var(--text-secondary); }
+    .cc-svg .extreme-label { font-size: 10px; fill: var(--text-secondary); text-anchor: middle; }
+    .cc-svg .now-dot { fill: var(--accent); }
+    .cc-extremes { display: flex; justify-content: space-around; margin-top: 6px; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 8px; }
+    .cc-extremes b { color: var(--text-secondary); font-weight: 600; letter-spacing: 0.5px; margin-right: 4px; }
+
+    /* Wind card specifics */
+    .wind-row { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+    .wind-compass { width: 90px; height: 90px; flex-shrink: 0; }
+    .wind-compass .ring { fill: var(--bg-input); stroke: var(--border); stroke-width: 1; }
+    .wind-compass .tick { stroke: var(--text-muted); stroke-width: 0.5; }
+    .wind-compass .nesw { font-size: 9px; fill: var(--text-secondary); text-anchor: middle; dominant-baseline: middle; font-weight: 600; }
+    .wind-compass .arrow { fill: var(--text-primary); }
+    .wind-readout { flex: 1; }
+    .wind-readout .big { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1.1; }
+    .wind-readout .big .unit { font-size: 11px; color: var(--text-muted); margin-left: 2px; font-weight: 500; }
+    .wind-readout .sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .wind24-title { font-size: 9px; font-weight: 700; letter-spacing: 1.2px; color: var(--text-muted); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; }
+
+    /* Wave card */
+    .wave-surf { padding-bottom: 10px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+    .wave-surf-label { font-size: 9px; font-weight: 700; letter-spacing: 1.2px; color: var(--text-muted); }
+    .wave-surf-val { font-size: 28px; font-weight: 700; color: var(--text-primary); line-height: 1.15; }
+    .wave-surf-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .swell-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .swell-table th { text-align: right; padding: 6px 4px 8px; font-size: 9px; letter-spacing: 1.2px; color: var(--text-muted); font-weight: 700; border-bottom: 1px solid var(--border); text-transform: uppercase; }
+    .swell-table th:first-child { text-align: left; }
+    .swell-table td { padding: 6px 4px; color: var(--text-primary); text-align: right; }
+    .swell-table td:first-child { text-align: left; color: var(--text-secondary); font-size: 11px; }
+    /* Visibility card */
+    .viz-card .cc-big { font-size: 38px; font-weight: 800; }
+
+    /* 2026-05-11: Hide these factor-rows from the UI (data still flows through
+       scoring; we just don't display them per user request). */
+    #thermoclineEvoRow, #currentProfileRow, #targetDepthRow,
+    #salinityRow, #baroTrendRow, #riverFlowRow { display: none !important; }
   </style>
 </head>
 <body>
@@ -1201,18 +1255,94 @@
       </div>
       <div class="brief-am" id="briefAM"></div>
       <div class="brief-pm" id="briefPM"></div>
-      <div class="brief-fishing" id="briefFishing" style="display:none"></div>
     </div>
 
-    <!-- ===== CONDITION DETAILS (above Chlorophyll Map and 5-Day Forecast) ===== -->
-    <div style="text-align:center;margin-bottom:12px">
-      <button id="detailsToggleBtn" class="section-toggle-btn" onclick="toggleAllDetails()" style="
-        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
-        border-radius: 8px; padding: 10px 20px; font-size: 12px; font-weight: 600;
-        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
-      ">Condition Details ▼</button>
+    <!-- ===== CONDITION CARDS (Tide / Wind / Wave) — 2026-05-11 redesign ===== -->
+    <div id="conditionCards">
+
+      <!-- TIDE CARD -->
+      <div class="cond-card" id="tideCard">
+        <div class="cc-head">
+          <div class="cc-head-left">
+            <span class="cc-icon">≈</span>
+            <span class="cc-title">Tide · PDT</span>
+          </div>
+          <div class="cc-meta-right">
+            <div>State: <span id="tideStateChip" class="state-good">--</span></div>
+            <div id="tideNextEventLine" style="font-size:10px;color:var(--text-muted);">--</div>
+          </div>
+        </div>
+        <div class="cc-big"><span id="tideCurrentFt">--</span> <span class="unit">ft</span></div>
+        <div class="cc-sub" id="tideNowAt">at --</div>
+        <svg id="tideCurveSvg" class="cc-svg" viewBox="0 0 400 130" preserveAspectRatio="none"></svg>
+        <div class="cc-extremes">
+          <div><b>LOW</b><span id="tideLowExtreme">--</span></div>
+          <div><b>HIGH</b><span id="tideHighExtreme">--</span></div>
+        </div>
+      </div>
+
+      <!-- WIND CARD -->
+      <div class="cond-card" id="windCard">
+        <div class="cc-head">
+          <div class="cc-head-left">
+            <span class="cc-icon">💨</span>
+            <span class="cc-title">Wind</span>
+          </div>
+        </div>
+        <div class="wind-row">
+          <svg class="wind-compass" viewBox="0 0 100 100">
+            <circle class="ring" cx="50" cy="50" r="38"/>
+            <line class="tick" x1="50" y1="12" x2="50" y2="18"/>
+            <line class="tick" x1="50" y1="82" x2="50" y2="88"/>
+            <line class="tick" x1="12" y1="50" x2="18" y2="50"/>
+            <line class="tick" x1="82" y1="50" x2="88" y2="50"/>
+            <text class="nesw" x="50" y="9">N</text>
+            <text class="nesw" x="50" y="93">S</text>
+            <text class="nesw" x="9" y="51">W</text>
+            <text class="nesw" x="91" y="51">E</text>
+            <g id="windArrowG" transform="rotate(0 50 50)">
+              <path class="arrow" d="M50 22 L56 42 L50 36 L44 42 Z"/>
+              <line x1="50" y1="36" x2="50" y2="78" stroke="var(--text-primary)" stroke-width="2"/>
+            </g>
+          </svg>
+          <div class="wind-readout">
+            <div class="big"><span id="windCardDir">--</span> <span id="windCardSpeed">--</span> <span class="unit">mph</span></div>
+            <div class="sub" id="windCardOnshore">--</div>
+          </div>
+        </div>
+        <div class="wind24-title">
+          <span>24-HOUR WIND</span>
+          <span id="wind24Now" style="font-weight:400;letter-spacing:0;text-transform:none;">Now · --</span>
+        </div>
+        <svg id="wind24Svg" class="cc-svg" viewBox="0 0 400 90" preserveAspectRatio="none" style="height:90px"></svg>
+      </div>
+
+      <!-- WAVE / SWELL CARD -->
+      <div class="cond-card" id="waveCard">
+        <div class="cc-head">
+          <div class="cc-head-left">
+            <span class="cc-icon">≈</span>
+            <span class="cc-title">Wave Height &amp; Swell</span>
+          </div>
+        </div>
+        <div class="wave-surf">
+          <div class="wave-surf-label">SURF</div>
+          <div class="wave-surf-val" id="waveSurfVal">--</div>
+          <div class="wave-surf-sub">Estimated breaking wave height</div>
+        </div>
+        <table class="swell-table">
+          <thead><tr><th></th><th>Swell</th><th>Period</th><th>Dir</th></tr></thead>
+          <tbody>
+            <tr><td>Primary</td><td id="swPriHt">--</td><td id="swPriPer">--</td><td id="swPriDir">--</td></tr>
+            <tr id="swSecRow"><td>Secondary</td><td id="swSecHt">--</td><td id="swSecPer">--</td><td id="swSecDir">--</td></tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
-    <div id="detailsSections" style="display:none">
+
+    <!-- ===== CONDITION DETAILS — other data listed as before, always visible ===== -->
+    <div id="detailsSections">
 
     <!-- KEY CONDITIONS — Fish Bite (scores hidden to protect algorithm) -->
     <section class="factors-section">
@@ -1228,7 +1358,7 @@
       <div class="factor-row" id="eddyRow" style="display:none"><div class="factor-label">Eddy Feature</div><div class="factor-value" id="eddyVal">--</div></div>
       <div class="factor-row" id="frontRow" style="display:none"><div class="factor-label">Temp Break (front)</div><div class="factor-value" id="frontVal">--</div></div>
       <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstScore" style="display:none">-</div></div>
-      <div class="factor-row"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tideStateScore" style="display:none">-</div></div>
+      <div class="factor-row" style="display:none"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tideStateScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="moonPhaseScore" style="display:none">-</div></div>
       <div class="factor-row" id="baroTrendRow" style="display:none"><div class="factor-label">Barometric Trend</div><div class="factor-value" id="baroTrendVal">--</div></div>
       <div class="factor-row" id="riverFlowRow" style="display:none"><div class="factor-label">River Runoff</div><div class="factor-value" id="riverFlowVal">--</div></div>
@@ -1238,10 +1368,10 @@
     <!-- DIVE VISIBILITY CONDITIONS (scores hidden to protect algorithm) -->
     <section class="factors-section">
       <div class="category-header">Dive Visibility Conditions</div>
-      <div class="factor-row"><div class="factor-label">Wind</div><div class="factor-value" id="windVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="windScore" style="display:none">-</div></div>
-      <div class="factor-row"><div class="factor-label">Swell</div><div class="factor-value" id="swellVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellScore" style="display:none">-</div></div>
-      <div class="factor-row"><div class="factor-label">Swell Dir</div><div class="factor-value" id="swellDirVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellDirScore" style="display:none">-</div></div>
-      <div class="factor-row"><div class="factor-label">Swell Period</div><div class="factor-value" id="swellPeriodVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellPeriodScore" style="display:none">-</div></div>
+      <div class="factor-row" style="display:none"><div class="factor-label">Wind</div><div class="factor-value" id="windVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="windScore" style="display:none">-</div></div>
+      <div class="factor-row" style="display:none"><div class="factor-label">Swell</div><div class="factor-value" id="swellVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellScore" style="display:none">-</div></div>
+      <div class="factor-row" style="display:none"><div class="factor-label">Swell Dir</div><div class="factor-value" id="swellDirVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellDirScore" style="display:none">-</div></div>
+      <div class="factor-row" style="display:none"><div class="factor-label">Swell Period</div><div class="factor-value" id="swellPeriodVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellPeriodScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Wave Energy</div><div class="factor-value" id="waveEnergyVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waveEnergyScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Chlorophyll</div><div class="factor-value" id="chlVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="chlVizScore" style="display:none">-</div></div>
       <div class="factor-row"><div class="factor-label">Rainfall (72h)</div><div class="factor-value" id="rainfallVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="rainfallScore" style="display:none">-</div></div>
@@ -1263,6 +1393,9 @@
     <div id="grunionRow" style="display:none"></div>
 
     </div><!-- end #detailsSections -->
+
+    <!-- 2026-05-11: Yesterday's Fishing section removed per user request — redundant with the Latest Boat Reports toggle below. The hidden element below preserves the ID for any JS that still references it. -->
+    <div class="brief-fishing" id="briefFishing" style="display:none !important"></div>
 
     <!-- ===== REGIONAL OCEAN TEMPERATURE MAP ===== -->
     <div style="text-align:center;margin-bottom:12px">
@@ -4153,6 +4286,73 @@ async function fetchHycomProfile() {
 // OPEN-METEO MARINE FORECAST — 7-day SST + surface currents
 // Direct CORS support; JSON response; fast and reliable
 // =========================================================================
+// --- Hourly wind history (24h past + 12h forecast) for the 24h wind chart ---
+// Added 2026-05-11 for the new wind card. Uses Open-Meteo's free forecast API
+// which supports past_hours — no auth, has CORS.
+async function fetchWindHistory() {
+  try {
+    const loc = LOCATIONS[currentLocation];
+    if (!loc) return;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&hourly=wind_speed_10m,wind_direction_10m&past_hours=24&forecast_hours=12&timezone=America%2FLos_Angeles&wind_speed_unit=mph`;
+    const r = await fetchWithTimeout(url, null, 8000);
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d.hourly || !d.hourly.time) return;
+    const times = d.hourly.time;
+    const speeds = d.hourly.wind_speed_10m || [];
+    const dirs = d.hourly.wind_direction_10m || [];
+    const out = [];
+    for (let i = 0; i < times.length; i++) {
+      const sp = speeds[i];
+      if (sp === null || sp === undefined) continue;
+      out.push({ time: new Date(times[i]), mph: sp, dir: dirs[i] });
+    }
+    if (out.length) {
+      D.windHistory = out;
+      // Existing code stores only D.windDir as a string ('onshore'/'offshore'/etc.)
+      // — populate D.windDirDeg from the most-recent hourly reading so the wind
+      // compass on the card has a real bearing to render.
+      const nowMs = Date.now();
+      const closest = out.reduce((b, p) => Math.abs(p.time - nowMs) < Math.abs(b.time - nowMs) ? p : b, out[0]);
+      if (closest && typeof closest.dir === 'number' && !isNaN(closest.dir) && D.windDirDeg === undefined) {
+        D.windDirDeg = closest.dir;
+      }
+    }
+  } catch(e) {}
+}
+
+// --- Primary + secondary swell from Open-Meteo Marine ---
+// Added 2026-05-11 for the new wave card. MOP gives one combined swell;
+// Open-Meteo Marine separates ground swell (`swell_wave_*`) from wind-wave
+// chop (`wind_wave_*`) — perfect for the primary/secondary breakdown.
+async function fetchMarineWaves() {
+  try {
+    const loc = LOCATIONS[currentLocation];
+    if (!loc) return;
+    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}&current=swell_wave_height,swell_wave_period,swell_wave_direction,wind_wave_height,wind_wave_period,wind_wave_direction&timezone=America%2FLos_Angeles`;
+    const r = await fetchWithTimeout(url, null, 8000);
+    if (!r.ok) return;
+    const d = await r.json();
+    const c = d.current;
+    if (!c) return;
+    // Store in meters; UI converts to feet
+    if (c.swell_wave_height !== undefined && c.swell_wave_height !== null) {
+      D.swellPrimary = {
+        ht_m: c.swell_wave_height,
+        period: c.swell_wave_period,
+        dirDeg: c.swell_wave_direction
+      };
+    }
+    if (c.wind_wave_height !== undefined && c.wind_wave_height !== null && c.wind_wave_height > 0.1) {
+      D.swellSecondary = {
+        ht_m: c.wind_wave_height,
+        period: c.wind_wave_period,
+        dirDeg: c.wind_wave_direction
+      };
+    }
+  } catch(e) {}
+}
+
 async function fetchOceanForecast() {
   try {
     const loc = LOCATIONS[currentLocation];
@@ -4690,13 +4890,7 @@ function computeSiteTip() {
     }
   }
 
-  // LJ Shores — Marine Room sand kicks up faster than the kelp beds when
-  // there's any swell + outgoing tide. Worth steering toward the kelp
-  // (north along the beach toward Tower 23) on those days.
-  if (currentLocation === 'ljshores' && D.tideState === 'outgoing'
-      && D.waveEnergy !== undefined && D.waveEnergy > 60) {
-    tips.push('Marine Room sand stirs up faster than the kelp beds on outgoing tides — try diving north toward the kelp paddies (Tower 23 area) for cleaner viz.');
-  }
+  // 2026-05-11: Marine Room/Tower 23 site tip removed per user request — not useful.
 
   // Pt Lobos / Carmel — inverse spatial gradient on surge days. Two converging
   // ground truths 5/2 + 5/3/2026: cove (parking-lot end) <10 ft while Beto's,
@@ -5042,6 +5236,8 @@ async function fetchAllData() {
     fetchBeachAdvisory(),   // SD County DEH water quality advisories
     fetchHycomProfile(),    // HYCOM 3D temperature profile — modeled thermocline depth
     fetchOceanForecast(),   // Open-Meteo Marine — 7-day SST forecast + surface currents
+    fetchWindHistory(),     // Open-Meteo — 24h past + 12h forecast wind for the wind card 24h chart
+    fetchMarineWaves(),     // Open-Meteo Marine — primary (groundswell) + secondary (wind-wave) breakdown for wave card
   ]);
 
   // If location changed while we were fetching, discard these stale results
@@ -5120,6 +5316,201 @@ async function fetchAllData() {
 // =========================================================================
 // DISPLAY UPDATE
 // =========================================================================
+// =========================================================================
+// CARD RENDERERS — Tide / Wind / Wave (added 2026-05-11 redesign)
+// =========================================================================
+function _degToCardinal(deg) {
+  if (deg === undefined || deg === null || isNaN(deg)) return '--';
+  const d = ((deg % 360) + 360) % 360;
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(d / 22.5) % 16];
+}
+function _fmtTime(date) {
+  if (!date) return '--';
+  let h = date.getHours(), m = date.getMinutes();
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if (h === 0) h = 12;
+  return `${h}:${String(m).padStart(2,'0')} ${ap}`;
+}
+
+function renderTideCard() {
+  const hourly = D.multiDayTideHourly || [];
+  const hilo = D.multiDayTideHiLo || [];
+  if (hourly.length < 4) return;
+  const now = new Date();
+  // 24-hour window: 6h past + 18h forecast
+  const start = new Date(now.getTime() - 6 * 3600000);
+  const end = new Date(now.getTime() + 18 * 3600000);
+  const range = hourly.filter(p => p.time >= start && p.time <= end);
+  if (range.length < 4) return;
+  const W = 400, H = 130, padL = 20, padR = 20, padT = 24, padB = 22;
+  const ys = range.map(p => p.value);
+  let ymin = Math.min(...ys), ymax = Math.max(...ys);
+  // Pad y range so curve isn't flush to top/bottom
+  const yPad = Math.max(0.3, (ymax - ymin) * 0.15);
+  ymin -= yPad; ymax += yPad;
+  const xScale = t => padL + ((t.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * (W - padL - padR);
+  const yScale = v => H - padB - ((v - ymin) / (ymax - ymin)) * (H - padT - padB);
+  let path = '';
+  range.forEach((p, i) => {
+    const x = xScale(p.time), y = yScale(p.value);
+    path += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  });
+  const fillPath = path + `L${xScale(range[range.length-1].time).toFixed(1)},${(H-padB).toFixed(1)} L${padL},${(H-padB).toFixed(1)} Z`;
+  // Now marker
+  const nowX = xScale(now);
+  const nowY = yScale(range.reduce((best, p) => Math.abs(p.time - now) < Math.abs(best.time - now) ? p : best, range[0]).value);
+  // Highs and lows in window
+  const extremes = hilo.filter(p => p.time >= start && p.time <= end);
+  let dotsAndLabels = '';
+  extremes.forEach(e => {
+    const x = xScale(e.time), y = yScale(e.value);
+    dotsAndLabels += `<circle class="extreme-dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3"/>`;
+    const labelY = e.type === 'H' ? y - 8 : y + 14;
+    dotsAndLabels += `<text class="extreme-label" x="${x.toFixed(1)}" y="${labelY.toFixed(1)}">${e.value.toFixed(1)}ft</text>`;
+  });
+  // X-axis hour labels (every 6h)
+  let xAxis = '';
+  for (let h = 0; h <= 24; h += 6) {
+    const t = new Date(start.getTime() + h * 3600000);
+    const x = xScale(t);
+    if (x >= padL && x <= W - padR) {
+      let lbl = t.getHours();
+      lbl = lbl === 0 ? '12a' : lbl === 12 ? '12p' : (lbl > 12 ? (lbl - 12) + 'p' : lbl + 'a');
+      xAxis += `<text class="axis-text" x="${x.toFixed(1)}" y="${H - 4}" text-anchor="middle">${lbl}</text>`;
+    }
+  }
+  const svg = `<path class="curve-fill" d="${fillPath}"/><path class="curve-line" d="${path}"/><line class="now-line" x1="${nowX.toFixed(1)}" y1="${padT}" x2="${nowX.toFixed(1)}" y2="${H-padB}"/><circle class="now-dot" cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="4"/>${dotsAndLabels}${xAxis}`;
+  const el = document.getElementById('tideCurveSvg');
+  if (el) el.innerHTML = svg;
+  // Current tide value (interpolate)
+  const closest = range.reduce((best, p) => Math.abs(p.time - now) < Math.abs(best.time - now) ? p : best, range[0]);
+  document.getElementById('tideCurrentFt').textContent = closest.value.toFixed(1);
+  document.getElementById('tideNowAt').textContent = `at ${_fmtTime(now)}`;
+  // State chip
+  const stateMap = { incoming: ['Rising', 'state-good'], outgoing: ['Falling', 'state-falling'], high: ['High', 'state-good'], low: ['Low', 'state-falling'] };
+  const chip = document.getElementById('tideStateChip');
+  if (D.tideState && stateMap[D.tideState]) {
+    chip.textContent = stateMap[D.tideState][0];
+    chip.className = stateMap[D.tideState][1];
+  } else { chip.textContent = '--'; chip.className = ''; }
+  // Next extreme line
+  const futureExt = hilo.filter(p => p.time > now);
+  if (futureExt.length) {
+    const nx = futureExt[0];
+    document.getElementById('tideNextEventLine').textContent = `Next ${nx.type === 'H' ? 'high' : 'low'} at ${_fmtTime(nx.time)}`;
+  }
+  // Today's low/high extremes
+  const todayStart = new Date(now); todayStart.setHours(0,0,0,0);
+  const todayEnd = new Date(todayStart.getTime() + 86400000);
+  const today = hilo.filter(p => p.time >= todayStart && p.time < todayEnd);
+  const lows = today.filter(p => p.type === 'L');
+  const highs = today.filter(p => p.type === 'H');
+  if (lows.length) document.getElementById('tideLowExtreme').textContent = ` ${lows[0].value.toFixed(1)} ft @ ${_fmtTime(lows[0].time)}`;
+  if (highs.length) document.getElementById('tideHighExtreme').textContent = ` ${highs[0].value.toFixed(1)} ft @ ${_fmtTime(highs[0].time)}`;
+}
+
+function renderWindCard() {
+  // Compass arrow rotation
+  const dirDeg = D.windDirDeg !== undefined && D.windDirDeg !== null ? D.windDirDeg
+                : (D.buoyWindDir !== undefined && D.buoyWindDir !== null ? D.buoyWindDir : null);
+  if (dirDeg !== null) {
+    document.getElementById('windArrowG').setAttribute('transform', `rotate(${dirDeg} 50 50)`);
+  }
+  const mph = D.windSpeedMph ?? D.buoyWindSpeed ?? null;
+  document.getElementById('windCardDir').textContent = dirDeg !== null ? _degToCardinal(dirDeg) : '--';
+  document.getElementById('windCardSpeed').textContent = mph !== null ? Math.round(mph) : '--';
+  // Onshore / offshore / sideshore for SoCal-coast-facing spots
+  const loc = LOCATIONS[currentLocation];
+  let onshoreLabel = '--';
+  if (dirDeg !== null && loc && loc.coast !== undefined) {
+    const rel = ((dirDeg - loc.coast + 540) % 360) - 180;
+    if (Math.abs(rel) < 45) onshoreLabel = 'Offshore';
+    else if (Math.abs(rel) > 135) onshoreLabel = 'Onshore';
+    else onshoreLabel = 'Sideshore';
+  }
+  document.getElementById('windCardOnshore').textContent = onshoreLabel;
+  // 24-hour wind chart
+  const hist = D.windHistory || [];
+  const wEl = document.getElementById('wind24Svg');
+  if (!wEl) return;
+  if (hist.length < 4) { wEl.innerHTML = ''; return; }
+  const W = 400, H = 90, padL = 14, padR = 14, padT = 6, padB = 16;
+  const now = new Date();
+  const start = hist[0].time, end = hist[hist.length - 1].time;
+  const ymax = Math.max(8, Math.ceil(Math.max(...hist.map(h => h.mph)) * 1.1));
+  const xScale = t => padL + ((t.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * (W - padL - padR);
+  const yScale = v => H - padB - (v / ymax) * (H - padT - padB);
+  let path = '';
+  hist.forEach((p, i) => {
+    path += (i === 0 ? 'M' : 'L') + xScale(p.time).toFixed(1) + ',' + yScale(p.mph).toFixed(1) + ' ';
+  });
+  const fillPath = path + `L${xScale(end).toFixed(1)},${(H-padB).toFixed(1)} L${padL},${(H-padB).toFixed(1)} Z`;
+  const nowX = xScale(now);
+  // X-axis labels
+  let xAxis = '';
+  for (let h = 0; h <= (end - start) / 3600000; h += 6) {
+    const t = new Date(start.getTime() + h * 3600000);
+    if (t > end) break;
+    const x = xScale(t);
+    let lbl = t.getHours();
+    lbl = lbl === 0 ? '12a' : lbl === 12 ? '12p' : (lbl > 12 ? (lbl - 12) + 'p' : lbl + 'a');
+    xAxis += `<text class="axis-text" x="${x.toFixed(1)}" y="${H - 4}" text-anchor="middle">${lbl}</text>`;
+  }
+  wEl.innerHTML = `<path class="curve-fill" d="${fillPath}"/><path class="curve-line" d="${path}"/><line class="now-line" x1="${nowX.toFixed(1)}" y1="${padT}" x2="${nowX.toFixed(1)}" y2="${H-padB}"/>${xAxis}`;
+  document.getElementById('wind24Now').textContent = `Now · ${_fmtTime(now)}`;
+}
+
+function renderWaveCard() {
+  // Surf height label — derive from primary swell + period (simple breaking-wave heuristic)
+  const hsFt = D.swellFt;
+  const tp = D.swellPeriod;
+  let surfLabel = '--';
+  if (hsFt !== undefined && hsFt !== null) {
+    // Rough breaking-wave height ≈ Hs × period-factor (longer period = bigger break)
+    const factor = tp >= 14 ? 1.4 : tp >= 11 ? 1.2 : tp >= 8 ? 1.0 : 0.85;
+    const breakFt = hsFt * factor;
+    if (breakFt < 1) surfLabel = 'Flat';
+    else if (breakFt < 2) surfLabel = '1 ft';
+    else if (breakFt < 3) surfLabel = '1-2 ft';
+    else if (breakFt < 4) surfLabel = '2-3 ft';
+    else if (breakFt < 5) surfLabel = '3-4 ft';
+    else if (breakFt < 6) surfLabel = '4-5 ft';
+    else if (breakFt < 8) surfLabel = '5-7 ft';
+    else if (breakFt < 10) surfLabel = '7-9 ft';
+    else surfLabel = Math.round(breakFt - 1) + '-' + Math.round(breakFt + 1) + ' ft';
+  }
+  document.getElementById('waveSurfVal').textContent = surfLabel;
+  // Primary swell — prefer Open-Meteo Marine breakdown if available, fall back to combined buoy/MOP
+  let pri = D.swellPrimary;
+  if (pri && pri.ht_m !== undefined && pri.ht_m !== null) {
+    document.getElementById('swPriHt').textContent = (pri.ht_m * 3.28084).toFixed(1) + ' ft';
+    document.getElementById('swPriPer').textContent = pri.period ? Math.round(pri.period) + 's' : '--';
+    document.getElementById('swPriDir').textContent = pri.dirDeg !== undefined ? `${_degToCardinal(pri.dirDeg)} ${Math.round(pri.dirDeg)}°` : '--';
+  } else if (hsFt !== undefined) {
+    document.getElementById('swPriHt').textContent = hsFt.toFixed(1) + ' ft';
+    document.getElementById('swPriPer').textContent = tp ? tp + 's' : '--';
+    document.getElementById('swPriDir').textContent = D.swellDirDeg !== undefined ? `${_degToCardinal(D.swellDirDeg)} ${Math.round(D.swellDirDeg)}°` : '--';
+  }
+  // Secondary swell (wind wave) — only show if material (>0.1m, already filtered in fetch)
+  const sec = D.swellSecondary;
+  const secRow = document.getElementById('swSecRow');
+  if (sec && sec.ht_m !== undefined && sec.ht_m !== null && sec.ht_m > 0.15) {
+    document.getElementById('swSecHt').textContent = (sec.ht_m * 3.28084).toFixed(1) + ' ft';
+    document.getElementById('swSecPer').textContent = sec.period ? Math.round(sec.period) + 's' : '--';
+    document.getElementById('swSecDir').textContent = sec.dirDeg !== undefined ? `${_degToCardinal(sec.dirDeg)} ${Math.round(sec.dirDeg)}°` : '--';
+    secRow.style.display = '';
+  } else {
+    secRow.style.display = 'none';
+  }
+}
+
+function renderConditionCards() {
+  try { renderTideCard(); } catch(e) { console.warn('tide card:', e); }
+  try { renderWindCard(); } catch(e) { console.warn('wind card:', e); }
+  try { renderWaveCard(); } catch(e) { console.warn('wave card:', e); }
+}
+
 function updateDisplay() {
   const now=new Date();
   const loc=LOCATIONS[currentLocation];
@@ -5829,6 +6220,9 @@ function updateDisplay() {
   } else if (confEl) {
     confEl.innerHTML = '';
   }
+
+  // Render the new tide/wind/wave condition cards (added 2026-05-11 redesign)
+  renderConditionCards();
 }
 
 function chlProductivity(c) {
@@ -6874,7 +7268,14 @@ function updateConditionsBrief() {
 // FISHING ACTIVITY SUMMARY — "What's biting" inside Today's Conditions
 // =========================================================================
 function updateBriefFishing() {
+  // 2026-05-11: Yesterday's Fishing section is redundant with the Latest Boat
+  // Reports toggle. Hide it permanently; scoring still consumes boatReportsData
+  // through applyBoatReportBoost — only the UI render is suppressed.
   const el = document.getElementById('briefFishing');
+  if (el) { el.style.display = 'none'; el.innerHTML = ''; }
+  return;
+  // (Original render logic kept below intentionally unreachable in case we want
+  // to re-enable it later — dead code under the early return.)
   if (!el || !boatReportsData || !boatReportsData.boats || boatReportsData.boats.length === 0) {
     if (el) el.style.display = 'none';
     return;
@@ -8568,8 +8969,8 @@ function onLocationChange() {
   document.getElementById('boatReportsSection').style.display = 'none';
   document.getElementById('boatReportsToggleBtn').textContent = 'Latest Boat Reports ▼';
   document.getElementById('boatReportsToggleWrap').style.display = 'none';
-  document.getElementById('detailsSections').style.display = 'none';
-  document.getElementById('detailsToggleBtn').textContent = 'Condition Details ▼';
+  // 2026-05-11 redesign: Condition Details is now always visible (no dropdown).
+  // The toggle button was removed; these lines are no-ops kept for safety.
   updateReportLinks();
   updateWebcams();
   updateFavoriteStar();
