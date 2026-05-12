@@ -7178,7 +7178,7 @@ function updateConditionsBrief() {
 
   // Water clarity description
   let clarityDesc = '';
-  if (!D.chlIsClimatology && D.chlorophyll > 3) clarityDesc = 'Green water from a phytoplankton bloom is limiting visibility';
+  if (D.redTideWarning) clarityDesc = 'Red tide: milky above 40 ft, clearer below'; else if (!D.chlIsClimatology && D.chlorophyll > 3) clarityDesc = 'Green water from a phytoplankton bloom is limiting visibility';
   else if (!D.chlIsClimatology && D.chlorophyll > 1.5) clarityDesc = 'Slightly green water with elevated chlorophyll';
   else if (D.turbidity > 1.5) clarityDesc = 'Stirred-up water from recent swell is reducing clarity';
   else if (D.turbidity !== undefined && D.turbidity < 0.3) clarityDesc = 'Water clarity is good with low turbidity';
