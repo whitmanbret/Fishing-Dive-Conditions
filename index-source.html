@@ -1551,8 +1551,8 @@ const LOCATIONS = {
   pointloma: { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.67, lon: -117.26, depth: '20-100 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20', mopStation: 'D0259' },
   mission: { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low', riverInfluence: true, nwsGrid: 'SGX/54,20', mopStation: 'D0366' },
   ljshores: { name: 'La Jolla Shores', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8586, lon: -117.2572, depth: '10-60 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20', mopStation: 'D0504' },
-  lajolla: { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20', mopStation: 'D0475' },
-  ljcove: { name: 'La Jolla Cove', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.8505, lon: -117.2728, depth: '5-80 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20', mopStation: 'D0481' },
+  lajolla: { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20', mopStation: 'D0475', headlandClearing: true },
+  ljcove: { name: 'La Jolla Cove', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.8505, lon: -117.2728, depth: '5-80 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20', mopStation: 'D0481', headlandClearing: true },
   birdrock: { name: 'Bird Rock / Windansea', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225','46254'], lat: 32.81, lon: -117.27, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20', mopStation: 'D0423' },
   delmar: { name: 'Del Mar Reefs', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 32.95, lon: -117.28, depth: '10-25 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20', mopStation: 'D0612' },
   encinitas: { name: 'Encinitas / Swamis', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225'], lat: 33.03, lon: -117.30, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20', mopStation: 'D0708' },
@@ -5975,6 +5975,14 @@ function updateDisplay() {
         hi = Math.max(lo+1, Math.round(hi * _surfaceBloomCheck));
         if (!suffix) suffix = ' (bloom season)';
       }
+      // La Jolla headland clearing — added 2026-05-11. Pt La Jolla projects into
+      // deeper water and the Scripps submarine canyon brings offshore exchange
+      // right to shore. Per local dive knowledge, LJ Cove + LJ Kelp Beds run
+      // ~5-10 ft cleaner than Pt Loma kelp on comparable Scripps SASS readings.
+      if (loc.headlandClearing) {
+        lo += 5;
+        hi += 5;
+      }
       // Cap range spread — wider for clean water (low NTU has genuine variability)
       const maxSpread = ntu < 0.25 ? 8 : 5;
       if (hi - lo > maxSpread) hi = lo + maxSpread;
@@ -6071,6 +6079,14 @@ function updateDisplay() {
         hi = Math.max(lo+1, Math.round(hi * 0.65));
         // Mark suffix as a stacked penalty when both apply
         suffix2 = ' (post-rain, reef pocket)';
+      }
+      // La Jolla headland clearing — see today inline path NTU branch comment.
+      // Pt La Jolla projects into deeper water + Scripps submarine canyon brings
+      // offshore exchange close to shore, so LJ Cove + LJ Kelp Beds run ~5 ft
+      // cleaner than equivalent Pt Loma conditions.
+      if (loc.headlandClearing) {
+        lo += 5;
+        hi += 5;
       }
       // Cap range spread to 6ft max (widened from 5 — WE-only has genuine uncertainty)
       if (hi - lo > 6) hi = lo + 6;
@@ -7876,6 +7892,11 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
       const kelpBedMultFc = ntu > 1.2 ? 1.8 : (ntu > 0.8 ? 1.5 : 1.25);
       baseLo = Math.round(baseLo * kelpBedMultFc);
       baseHi = Math.max(baseLo + 1, Math.round(baseHi * kelpBedMultFc));
+    }
+    // La Jolla headland clearing (mirrors today inline path).
+    if (loc.headlandClearing) {
+      baseLo += 5;
+      baseHi += 5;
     }
   } else if (D.waveEnergy !== undefined) {
     // No turbidity available — fall back to wave energy.
