@@ -390,6 +390,32 @@
     .rating-poor { background: rgba(231,76,60,0.15); color: var(--poor); border: 1px solid var(--poor); }
     .rating-none { background: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border); }
 
+    /* Fish gauge — clickable for explanation panel */
+    .fish-gauge-clickable { cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; -webkit-tap-highlight-color: transparent; }
+    .fish-gauge-clickable:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.25); }
+    .fish-gauge-clickable:active { transform: translateY(0); }
+    .fish-gauge-clickable:focus-visible { outline: 2px solid var(--fish-color); outline-offset: 2px; }
+    .fish-gauge-tap-hint { font-size: 9px; color: var(--text-muted); margin-top: 5px; letter-spacing: 0.5px; opacity: 0.85; }
+    .fish-gauge-tap-hint.open { color: var(--fish-color); }
+
+    /* Fish score explanation panel */
+    .fish-explain {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 12px 12px; margin-bottom: 12px;
+      animation: fishExplainSlide 0.25s ease-out;
+    }
+    @keyframes fishExplainSlide { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .fish-explain-header { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .fish-explain-rows { display: flex; flex-direction: column; gap: 7px; }
+    .fish-explain-row { display: grid; grid-template-columns: 92px 1fr 30px; align-items: center; gap: 10px; font-size: 12px; }
+    .fish-explain-row-label { color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fish-explain-bar { background: var(--bg-card); height: 6px; border-radius: 3px; position: relative; overflow: hidden; }
+    .fish-explain-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; transition: width 0.4s ease; }
+    .fish-explain-row-score { font-weight: 700; text-align: right; font-size: 11px; font-variant-numeric: tabular-nums; }
+    .fish-explain-row-missing .fish-explain-row-label { opacity: 0.55; font-style: italic; }
+    .fish-explain-row-missing .fish-explain-row-score { color: var(--text-muted); font-weight: 600; font-style: italic; }
+    .fish-explain-footnote { font-size: 10px; color: var(--text-muted); margin-top: 9px; font-style: italic; line-height: 1.4; }
+
     .insight-text {
       text-align: center; font-size: 12px; color: var(--text-secondary);
       margin-bottom: 10px; padding: 8px 12px;
@@ -1218,13 +1244,14 @@
 
     <!-- TWO SCORE GAUGES -->
     <div class="scores-grid">
-      <div class="score-gauge">
+      <div class="score-gauge fish-gauge-clickable" id="fishGauge" onclick="toggleFishExplain()" role="button" tabindex="0" aria-expanded="false" aria-controls="fishExplain">
         <div class="gauge-label" id="fishGaugeLabel" style="color:var(--fish-color)">Fish Forecast</div>
         <div class="gauge-ring-wrap">
           <svg viewBox="0 0 120 70"><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="fishArc" style="stroke:var(--fish-color)"/></svg>
           <div class="gauge-ring-score" id="fishScore" style="color:var(--text-muted)">--</div>
         </div>
         <div class="gauge-rating rating-none" id="fishRating">--</div>
+        <div class="fish-gauge-tap-hint" id="fishGaugeTapHint">Why this score? ▾</div>
       </div>
       <div class="score-gauge">
         <div class="gauge-label" style="color:var(--viz-color)">Dive Visibility</div>
@@ -1236,6 +1263,13 @@
         <!-- Hidden gauge for score calc -->
         <div style="display:none"><svg viewBox="0 0 120 70"><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="vizArc" style="stroke:var(--viz-color)"/></svg><div id="vizScore">--</div></div>
       </div>
+    </div>
+
+    <!-- Fish score explanation panel (collapsed by default) -->
+    <div class="fish-explain" id="fishExplain" style="display:none" aria-hidden="true">
+      <div class="fish-explain-header">Why this fish score?</div>
+      <div class="fish-explain-rows" id="fishExplainRows"></div>
+      <div class="fish-explain-footnote">Each factor scored 0–10. Higher = better fishing conditions today.</div>
     </div>
 
     <div class="data-status" id="dataStatus">Fetching live oceanographic data...</div>
@@ -6868,6 +6902,13 @@ function recalculate() {
   let fishAvg = weightedAvg(fishEntries, FISH_WEIGHTS);
   const vizAvg = weightedAvg(vizEntries, VIZ_WEIGHTS);
 
+  // Capture factor scores for the tap-to-expand fish score explanation panel
+  D._fishExplain = { entries: fishEntries.slice() };
+  if (typeof renderFishExplain === 'function') {
+    const panel = document.getElementById('fishExplain');
+    if (panel && panel.style.display !== 'none') renderFishExplain();
+  }
+
   // Geographic range cap — species that don't exist in a region get capped
   const availability = getSpeciesAvailability(currentSpecies, currentLocation);
   if (fishAvg !== null) {
@@ -8630,6 +8671,72 @@ function initMap() {
     marker.addTo(diveMap);
     mapMarkers[key] = marker;
   });
+}
+
+// --- Fish Score Explanation Panel (tap-to-expand) ---
+// Shows the 5 most important factors used to compute today's fish score for this spot.
+function toggleFishExplain() {
+  const panel = document.getElementById('fishExplain');
+  const hint = document.getElementById('fishGaugeTapHint');
+  const gauge = document.getElementById('fishGauge');
+  if (!panel) return;
+  const opening = (panel.style.display === 'none' || !panel.style.display);
+  if (opening) {
+    renderFishExplain();
+    panel.style.display = 'block';
+    panel.setAttribute('aria-hidden', 'false');
+    if (gauge) gauge.setAttribute('aria-expanded', 'true');
+    if (hint) { hint.textContent = 'Hide details ▴'; hint.classList.add('open'); }
+  } else {
+    panel.style.display = 'none';
+    panel.setAttribute('aria-hidden', 'true');
+    if (gauge) gauge.setAttribute('aria-expanded', 'false');
+    if (hint) { hint.textContent = 'Why this score? ▾'; hint.classList.remove('open'); }
+  }
+}
+
+function renderFishExplain() {
+  const rowsEl = document.getElementById('fishExplainRows');
+  if (!rowsEl) return;
+  const labels = {
+    waterTemp:  'Water temp',
+    tideState:  'Tide state',
+    moonPhase:  'Moon phase',
+    reports:    'Boat reports',
+    upwelling:  'Upwelling'
+  };
+  const order = ['waterTemp', 'tideState', 'moonPhase', 'reports', 'upwelling'];
+  const byKey = {};
+  if (D._fishExplain && Array.isArray(D._fishExplain.entries)) {
+    D._fishExplain.entries.forEach(e => {
+      if (e && e.key && typeof e.score === 'number') byKey[e.key] = e.score;
+    });
+  }
+  let html = '';
+  order.forEach(key => {
+    const score = byKey[key];
+    if (score === undefined || score === null || isNaN(score)) {
+      html += `
+        <div class="fish-explain-row fish-explain-row-missing">
+          <div class="fish-explain-row-label">${labels[key]}</div>
+          <div class="fish-explain-bar"></div>
+          <div class="fish-explain-row-score">—</div>
+        </div>`;
+      return;
+    }
+    const pct = Math.max(0, Math.min(100, score * 10));
+    let color = '#e74c3c';
+    if (score >= 7) color = '#2ecc71';
+    else if (score >= 5) color = '#f39c12';
+    else if (score >= 3) color = '#e67e22';
+    html += `
+      <div class="fish-explain-row">
+        <div class="fish-explain-row-label">${labels[key]}</div>
+        <div class="fish-explain-bar"><div class="fish-explain-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <div class="fish-explain-row-score" style="color:${color}">${score.toFixed(1)}</div>
+      </div>`;
+  });
+  rowsEl.innerHTML = html;
 }
 
 function createSpotMarker(key, loc, isCurrent) {
