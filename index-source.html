@@ -5501,6 +5501,16 @@ function updateDisplay() {
       // floor multiplier to acknowledge the surface bloom the sensor can't see.
       const _surfaceBloomCheck = (() => {
         if (!loc.scrippsProximity) return null;
+        // 2026-05-11: skip surface-bloom floor when in bloom-DECAY phase. The
+        // floor assumes the live sensor under-reads peak-season surface bloom,
+        // but during decay the OPPOSITE is true — sensor over-reads (chl
+        // pigment lingers in fluorometer while cells have settled). Applying
+        // the floor on top of the chl-decay multiplier was double-discounting.
+        // Paired 5/11 reports: LJ Shores 12+ ft / Pt Loma 15-25 ft actual vs
+        // tool 6-9 / 8-13 (under by 3-12 ft). Same sensor inputs.
+        const ntu = D.turbidity;
+        const inBloomDecay = ntu !== undefined && ntu < 0.6 && D.chlorophyll >= 0.5 && D.chlorophyll < 3;
+        if (inBloomDecay) return null;
         const liveChlLow = D.chlorophyll !== undefined && D.chlorophyll < 2;
         if (!liveChlLow) return null;
         const month = new Date().getMonth() + 1;
