@@ -1007,6 +1007,33 @@
     .cc-svg .extreme-dot { fill: var(--text-secondary); }
     .cc-svg .extreme-label { font-size: 10px; fill: var(--text-secondary); text-anchor: middle; }
     .cc-svg .now-dot { fill: var(--accent); }
+    .cc-svg .grid-line { stroke: var(--border); stroke-width: 0.5; stroke-dasharray: 2,3; }
+    .cc-svg .y-label { font-size: 9px; fill: var(--text-muted); }
+    .cc-svg .peak-label { font-size: 10px; font-weight: 700; fill: var(--text-secondary); }
+    .cc-svg .peak-dot { fill: var(--text-secondary); }
+    .cc-svg .hover-line { stroke: var(--text-secondary); stroke-width: 1; pointer-events: none; opacity: 0; }
+    .cc-svg .hover-dot { fill: var(--accent); stroke: var(--text-primary); stroke-width: 1.5; pointer-events: none; opacity: 0; }
+    .chart-wrap { position: relative; }
+    .chart-tooltip {
+      position: absolute; pointer-events: none;
+      background: var(--bg-card, #14223a); border: 1px solid var(--accent);
+      border-radius: 6px; padding: 6px 9px; font-size: 11px; line-height: 1.4;
+      color: var(--text-primary); white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transform: translate(-50%, -110%);
+      opacity: 0; transition: opacity 0.12s;
+      z-index: 10;
+    }
+    .chart-tooltip.show { opacity: 1; }
+    .chart-tooltip .tt-time { color: var(--text-secondary); font-size: 10px; }
+    .chart-tooltip .tt-val { font-weight: 700; font-size: 13px; margin-top: 1px; }
+    .chart-tooltip .tt-sub { color: var(--text-secondary); font-size: 10px; margin-top: 1px; }
+    .hourly-arrows { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; margin-top: 6px; padding: 0 4px; }
+    .hourly-arrow-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .hourly-arrow-cell .ha-time { font-size: 9px; color: var(--text-muted); }
+    .hourly-arrow-cell .ha-arrow { display: inline-block; font-size: 14px; line-height: 1; color: var(--text-secondary); }
+    .hourly-arrow-cell .ha-speed { font-size: 11px; font-weight: 700; color: var(--text-primary); }
+    .hourly-arrow-cell.now .ha-time { color: var(--fair); font-weight: 700; }
     .cc-extremes { display: flex; justify-content: space-around; margin-top: 6px; font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 8px; }
     .cc-extremes b { color: var(--text-secondary); font-weight: 600; letter-spacing: 0.5px; margin-right: 4px; }
 
@@ -1274,7 +1301,12 @@
         </div>
         <div class="cc-big"><span id="tideCurrentFt">--</span> <span class="unit">ft</span></div>
         <div class="cc-sub" id="tideNowAt">at --</div>
-        <svg id="tideCurveSvg" class="cc-svg" viewBox="0 0 400 130" preserveAspectRatio="none"></svg>
+        <div class="chart-wrap">
+          <svg id="tideCurveSvg" class="cc-svg" viewBox="0 0 400 130" preserveAspectRatio="none"></svg>
+          <div class="chart-tooltip" id="tideTooltip">
+            <div class="tt-time"></div><div class="tt-val"></div><div class="tt-sub"></div>
+          </div>
+        </div>
         <div class="cc-extremes">
           <div><b>LOW</b><span id="tideLowExtreme">--</span></div>
           <div><b>HIGH</b><span id="tideHighExtreme">--</span></div>
@@ -1314,7 +1346,13 @@
           <span>24-HOUR WIND</span>
           <span id="wind24Now" style="font-weight:400;letter-spacing:0;text-transform:none;">Now · --</span>
         </div>
-        <svg id="wind24Svg" class="cc-svg" viewBox="0 0 400 90" preserveAspectRatio="none" style="height:90px"></svg>
+        <div class="chart-wrap">
+          <svg id="wind24Svg" class="cc-svg" viewBox="0 0 400 90" preserveAspectRatio="none" style="height:90px"></svg>
+          <div class="chart-tooltip" id="windTooltip">
+            <div class="tt-time"></div><div class="tt-val"></div><div class="tt-sub"></div>
+          </div>
+        </div>
+        <div class="hourly-arrows" id="windHourlyArrows"></div>
       </div>
 
       <!-- WAVE / SWELL CARD -->
@@ -1337,6 +1375,16 @@
             <tr id="swSecRow"><td>Secondary</td><td id="swSecHt">--</td><td id="swSecPer">--</td><td id="swSecDir">--</td></tr>
           </tbody>
         </table>
+        <div class="wind24-title">
+          <span>24-HOUR WAVE HEIGHT</span>
+          <span id="wave24Now" style="font-weight:400;letter-spacing:0;text-transform:none;">Now · --</span>
+        </div>
+        <div class="chart-wrap">
+          <svg id="wave24Svg" class="cc-svg" viewBox="0 0 400 90" preserveAspectRatio="none" style="height:90px"></svg>
+          <div class="chart-tooltip" id="waveTooltip">
+            <div class="tt-time"></div><div class="tt-val"></div><div class="tt-sub"></div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -4329,26 +4377,36 @@ async function fetchMarineWaves() {
   try {
     const loc = LOCATIONS[currentLocation];
     if (!loc) return;
-    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}&current=swell_wave_height,swell_wave_period,swell_wave_direction,wind_wave_height,wind_wave_period,wind_wave_direction&timezone=America%2FLos_Angeles`;
+    // One call: current (for primary/secondary swell breakdown) + hourly (for the 24h wave-height chart).
+    // 24h back + 18h forecast keeps the window aligned with the wind chart.
+    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}` +
+                `&current=swell_wave_height,swell_wave_period,swell_wave_direction,wind_wave_height,wind_wave_period,wind_wave_direction` +
+                `&hourly=wave_height,wave_period&past_hours=24&forecast_hours=18` +
+                `&timezone=America%2FLos_Angeles`;
     const r = await fetchWithTimeout(url, null, 8000);
     if (!r.ok) return;
     const d = await r.json();
     const c = d.current;
-    if (!c) return;
-    // Store in meters; UI converts to feet
-    if (c.swell_wave_height !== undefined && c.swell_wave_height !== null) {
-      D.swellPrimary = {
-        ht_m: c.swell_wave_height,
-        period: c.swell_wave_period,
-        dirDeg: c.swell_wave_direction
-      };
+    if (c) {
+      if (c.swell_wave_height !== undefined && c.swell_wave_height !== null) {
+        D.swellPrimary = { ht_m: c.swell_wave_height, period: c.swell_wave_period, dirDeg: c.swell_wave_direction };
+      }
+      if (c.wind_wave_height !== undefined && c.wind_wave_height !== null && c.wind_wave_height > 0.1) {
+        D.swellSecondary = { ht_m: c.wind_wave_height, period: c.wind_wave_period, dirDeg: c.wind_wave_direction };
+      }
     }
-    if (c.wind_wave_height !== undefined && c.wind_wave_height !== null && c.wind_wave_height > 0.1) {
-      D.swellSecondary = {
-        ht_m: c.wind_wave_height,
-        period: c.wind_wave_period,
-        dirDeg: c.wind_wave_direction
-      };
+    // Hourly wave-height history (combined sea — what the chart shows)
+    if (d.hourly && d.hourly.time && d.hourly.wave_height) {
+      const times = d.hourly.time;
+      const heights = d.hourly.wave_height;
+      const periods = d.hourly.wave_period || [];
+      const hist = [];
+      for (let i = 0; i < times.length; i++) {
+        const m = heights[i];
+        if (m === null || m === undefined) continue;
+        hist.push({ time: new Date(times[i]), ft: m * 3.28084, period: periods[i] });
+      }
+      if (hist.length >= 4) D.waveHistory = hist;
     }
   } catch(e) {}
 }
@@ -5333,6 +5391,170 @@ function _fmtTime(date) {
   return `${h}:${String(m).padStart(2,'0')} ${ap}`;
 }
 
+// =========================================================================
+// CHART HELPERS — shared by tide / wind / wave so all three behave the same:
+// Y-axis labels, peak marker, now-line, and tap/click tooltip.
+// =========================================================================
+function _niceMax(m) {
+  if (m <= 5) return Math.ceil(m);
+  if (m <= 20) return Math.ceil(m / 2) * 2;
+  if (m <= 50) return Math.ceil(m / 5) * 5;
+  return Math.ceil(m / 10) * 10;
+}
+function _niceMin(m) {
+  if (m >= 0) return 0;
+  if (m >= -5) return Math.floor(m);
+  return Math.floor(m / 2) * 2;
+}
+function _buildChartSvg(opts) {
+  // opts: { data, getVal, getLabel, getSub, unit, height, padL, padR, padT, padB,
+  //         showPeak, extras } -> { svgHtml, xScale, yScale, padL, padR, padT, padB, W, H }
+  const data = opts.data;
+  const getVal = opts.getVal;
+  const H = opts.height || 90;
+  const W = 400;
+  const padL = opts.padL ?? 28, padR = opts.padR ?? 14, padT = opts.padT ?? 10, padB = opts.padB ?? 16;
+  const now = new Date();
+  const start = data[0].time, end = data[data.length - 1].time;
+  const rawMax = Math.max(...data.map(getVal));
+  const rawMin = Math.min(...data.map(getVal));
+  const ymax = Math.max(opts.minYmax ?? 1, _niceMax(rawMax * 1.1));
+  const ymin = _niceMin(rawMin);
+  const ymid = +((ymax + ymin) / 2).toFixed(1);
+  const xScale = t => padL + ((t.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * (W - padL - padR);
+  const yScale = v => H - padB - ((v - ymin) / (ymax - ymin)) * (H - padT - padB);
+  let path = '';
+  data.forEach((p, i) => { path += (i === 0 ? 'M' : 'L') + xScale(p.time).toFixed(1) + ',' + yScale(getVal(p)).toFixed(1) + ' '; });
+  const fillPath = path + `L${xScale(end).toFixed(1)},${(H-padB).toFixed(1)} L${padL},${(H-padB).toFixed(1)} Z`;
+  // Y-axis labels + grid lines (3 ticks: max / mid / min)
+  const unit = opts.unit ? ' ' + opts.unit : '';
+  let yAxis = '';
+  [ymax, ymid, ymin].forEach(v => {
+    const y = yScale(v);
+    yAxis += `<line class="grid-line" x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}"/>`;
+    yAxis += `<text class="y-label" x="${padL-4}" y="${(y+3).toFixed(1)}" text-anchor="end">${v}${unit}</text>`;
+  });
+  // X-axis hour labels (every 6h)
+  let xAxis = '';
+  for (let h = 0; h <= (end - start) / 3600000; h += 6) {
+    const t = new Date(start.getTime() + h * 3600000);
+    if (t > end) break;
+    const x = xScale(t);
+    if (x < padL || x > W - padR) continue;
+    let lbl = t.getHours();
+    lbl = lbl === 0 ? '12a' : lbl === 12 ? '12p' : (lbl > 12 ? (lbl - 12) + 'p' : lbl + 'a');
+    xAxis += `<text class="axis-text" x="${x.toFixed(1)}" y="${H - 4}" text-anchor="middle">${lbl}</text>`;
+  }
+  // Peak marker (highest point of curve). Anchor flips at edges so the label
+  // doesn't overlap the Y-axis tick labels on the left or get clipped on the right.
+  let peak = '';
+  if (opts.showPeak !== false) {
+    const peakIdx = data.reduce((bi, p, i, a) => getVal(p) > getVal(a[bi]) ? i : bi, 0);
+    const pp = data[peakIdx];
+    const pX = xScale(pp.time), pY = yScale(getVal(pp));
+    let anchor = 'middle', labelX = pX;
+    if (pX - padL < 24) { anchor = 'start'; labelX = pX + 5; }
+    else if (W - padR - pX < 24) { anchor = 'end'; labelX = pX - 5; }
+    peak = `<circle class="peak-dot" cx="${pX.toFixed(1)}" cy="${pY.toFixed(1)}" r="3"/>` +
+           `<text class="peak-label" x="${labelX.toFixed(1)}" y="${(pY-5).toFixed(1)}" text-anchor="${anchor}">${opts.getLabel(pp)}</text>`;
+  }
+  // Now line + now dot
+  const nowX = xScale(now);
+  const closestNow = data.reduce((b, p) => Math.abs(p.time - now) < Math.abs(b.time - now) ? p : b, data[0]);
+  const nowY = yScale(getVal(closestNow));
+  const nowMarker = `<line class="now-line" x1="${nowX.toFixed(1)}" y1="${padT}" x2="${nowX.toFixed(1)}" y2="${H-padB}"/>` +
+                    `<circle class="now-dot" cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="4"/>`;
+  // Hover (set later by tap handler)
+  const hover = `<line class="hover-line" id="${opts.svgId}-hov" x1="0" y1="${padT}" x2="0" y2="${H-padB}"/>` +
+                `<circle class="hover-dot" id="${opts.svgId}-dot" cx="0" cy="0" r="4"/>`;
+  const extras = opts.extras || '';
+  const svgHtml = yAxis + `<path class="curve-fill" d="${fillPath}"/><path class="curve-line" d="${path}"/>` +
+                  extras + peak + nowMarker + hover + xAxis;
+  return { svgHtml, xScale, yScale, padL, padR, padT, padB, W, H };
+}
+function _attachChartTap(opts) {
+  // opts: { svgId, tooltipId, data, getVal, getLabel, getSub, scale: {xScale, yScale, W, H} }
+  const svg = document.getElementById(opts.svgId);
+  const tt  = document.getElementById(opts.tooltipId);
+  if (!svg || !tt) return;
+  // Replace listeners by cloning — avoids stacking handlers across re-renders
+  const fresh = svg.cloneNode(true);
+  svg.parentNode.replaceChild(fresh, svg);
+  const target = document.getElementById(opts.svgId);
+  const { xScale, yScale, W, H } = opts.scale;
+  function pointFromEvent(e) {
+    const rect = target.getBoundingClientRect();
+    const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const px = cx / rect.width * W;
+    let best = opts.data[0], bestDist = Infinity;
+    for (const p of opts.data) {
+      const dx = Math.abs(xScale(p.time) - px);
+      if (dx < bestDist) { bestDist = dx; best = p; }
+    }
+    return best;
+  }
+  function show(e) {
+    e.preventDefault && e.preventDefault();
+    const p = pointFromEvent(e);
+    const cx = xScale(p.time), cy = yScale(opts.getVal(p));
+    const hov = document.getElementById(opts.svgId + '-hov');
+    const dot = document.getElementById(opts.svgId + '-dot');
+    if (hov) { hov.setAttribute('x1', cx); hov.setAttribute('x2', cx); hov.style.opacity = 1; }
+    if (dot) { dot.setAttribute('cx', cx); dot.setAttribute('cy', cy); dot.style.opacity = 1; }
+    const wrap = target.parentElement;
+    const wrapRect = wrap.getBoundingClientRect();
+    const svgRect = target.getBoundingClientRect();
+    // Convert SVG coords → page pixels relative to chart-wrap
+    let leftPx = svgRect.left - wrapRect.left + (cx / W) * svgRect.width;
+    const topPx  = svgRect.top  - wrapRect.top  + (cy / H) * svgRect.height;
+    // Clamp tooltip horizontally so it doesn't clip off the chart edges
+    const padPx = 60;
+    leftPx = Math.min(Math.max(leftPx, padPx), wrapRect.width - padPx);
+    tt.style.left = leftPx + 'px';
+    tt.style.top  = topPx + 'px';
+    tt.querySelector('.tt-time').textContent = _fmtTime(p.time);
+    tt.querySelector('.tt-val').textContent = opts.getLabel(p);
+    const sub = opts.getSub ? opts.getSub(p) : '';
+    tt.querySelector('.tt-sub').textContent = sub;
+    tt.querySelector('.tt-sub').style.display = sub ? '' : 'none';
+    tt.classList.add('show');
+  }
+  function hide() {
+    tt.classList.remove('show');
+    const hov = document.getElementById(opts.svgId + '-hov');
+    const dot = document.getElementById(opts.svgId + '-dot');
+    if (hov) hov.style.opacity = 0;
+    if (dot) dot.style.opacity = 0;
+  }
+  target.addEventListener('mousedown', show);
+  target.addEventListener('mousemove', e => { if (e.buttons) show(e); });
+  target.addEventListener('touchstart', show, { passive: false });
+  target.addEventListener('touchmove',  show, { passive: false });
+  target.addEventListener('click', show);
+  document.addEventListener('click', e => { if (!target.contains(e.target)) hide(); });
+}
+function _renderHourlyArrows(containerId, data) {
+  const el = document.getElementById(containerId);
+  if (!el || !data || data.length < 4) return;
+  const now = new Date();
+  let startIdx = data.findIndex(p => p.time >= now) - 1;
+  if (startIdx < 0) startIdx = 0;
+  if (startIdx + 8 > data.length) startIdx = Math.max(0, data.length - 8);
+  const slice = data.slice(startIdx, startIdx + 8);
+  el.innerHTML = slice.map(p => {
+    const isNow = Math.abs(p.time - now) < 30 * 60000;
+    const dir = (p.dir ?? p.dirDeg ?? 0);
+    const rot = ((dir + 180) % 360);
+    let h = p.time.getHours();
+    const hourLbl = h === 0 ? '12a' : h === 12 ? '12p' : (h > 12 ? (h - 12) + 'p' : h + 'a');
+    return `<div class="hourly-arrow-cell${isNow ? ' now' : ''}">` +
+           `<div class="ha-time">${hourLbl}</div>` +
+           `<div class="ha-arrow" style="transform: rotate(${rot.toFixed(0)}deg)">↑</div>` +
+           `<div class="ha-speed">${Math.round(p.mph)}</div>` +
+           `</div>`;
+  }).join('');
+}
+
 function renderTideCard() {
   const hourly = D.multiDayTideHourly || [];
   const hilo = D.multiDayTideHiLo || [];
@@ -5343,46 +5565,38 @@ function renderTideCard() {
   const end = new Date(now.getTime() + 18 * 3600000);
   const range = hourly.filter(p => p.time >= start && p.time <= end);
   if (range.length < 4) return;
-  const W = 400, H = 130, padL = 20, padR = 20, padT = 24, padB = 22;
-  const ys = range.map(p => p.value);
-  let ymin = Math.min(...ys), ymax = Math.max(...ys);
-  // Pad y range so curve isn't flush to top/bottom
-  const yPad = Math.max(0.3, (ymax - ymin) * 0.15);
-  ymin -= yPad; ymax += yPad;
-  const xScale = t => padL + ((t.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * (W - padL - padR);
-  const yScale = v => H - padB - ((v - ymin) / (ymax - ymin)) * (H - padT - padB);
-  let path = '';
-  range.forEach((p, i) => {
-    const x = xScale(p.time), y = yScale(p.value);
-    path += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  // Build chart via shared helper. High/low markers go in `extras` so they
+  // render between the line/fill and the now-line.
+  const built = _buildChartSvg({
+    svgId: 'tideCurveSvg',
+    data: range,
+    getVal: p => p.value,
+    getLabel: p => `${p.value.toFixed(1)} ft`,
+    unit: 'ft',
+    height: 130,
+    showPeak: false,  // tide already has labeled high/low markers
   });
-  const fillPath = path + `L${xScale(range[range.length-1].time).toFixed(1)},${(H-padB).toFixed(1)} L${padL},${(H-padB).toFixed(1)} Z`;
-  // Now marker
-  const nowX = xScale(now);
-  const nowY = yScale(range.reduce((best, p) => Math.abs(p.time - now) < Math.abs(best.time - now) ? p : best, range[0]).value);
-  // Highs and lows in window
+  // High/low markers in the visible window
   const extremes = hilo.filter(p => p.time >= start && p.time <= end);
   let dotsAndLabels = '';
   extremes.forEach(e => {
-    const x = xScale(e.time), y = yScale(e.value);
+    const x = built.xScale(e.time), y = built.yScale(e.value);
     dotsAndLabels += `<circle class="extreme-dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3"/>`;
     const labelY = e.type === 'H' ? y - 8 : y + 14;
     dotsAndLabels += `<text class="extreme-label" x="${x.toFixed(1)}" y="${labelY.toFixed(1)}">${e.value.toFixed(1)}ft</text>`;
   });
-  // X-axis hour labels (every 6h)
-  let xAxis = '';
-  for (let h = 0; h <= 24; h += 6) {
-    const t = new Date(start.getTime() + h * 3600000);
-    const x = xScale(t);
-    if (x >= padL && x <= W - padR) {
-      let lbl = t.getHours();
-      lbl = lbl === 0 ? '12a' : lbl === 12 ? '12p' : (lbl > 12 ? (lbl - 12) + 'p' : lbl + 'a');
-      xAxis += `<text class="axis-text" x="${x.toFixed(1)}" y="${H - 4}" text-anchor="middle">${lbl}</text>`;
-    }
-  }
-  const svg = `<path class="curve-fill" d="${fillPath}"/><path class="curve-line" d="${path}"/><line class="now-line" x1="${nowX.toFixed(1)}" y1="${padT}" x2="${nowX.toFixed(1)}" y2="${H-padB}"/><circle class="now-dot" cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="4"/>${dotsAndLabels}${xAxis}`;
   const el = document.getElementById('tideCurveSvg');
-  if (el) el.innerHTML = svg;
+  if (el) {
+    el.innerHTML = built.svgHtml + dotsAndLabels;
+    _attachChartTap({
+      svgId: 'tideCurveSvg', tooltipId: 'tideTooltip',
+      data: range,
+      getVal: p => p.value,
+      getLabel: p => `${p.value.toFixed(1)} ft`,
+      getSub: () => '',
+      scale: { xScale: built.xScale, yScale: built.yScale, W: built.W, H: built.H },
+    });
+  }
   // Current tide value (interpolate)
   const closest = range.reduce((best, p) => Math.abs(p.time - now) < Math.abs(best.time - now) ? p : best, range[0]);
   document.getElementById('tideCurrentFt').textContent = closest.value.toFixed(1);
@@ -5430,35 +5644,31 @@ function renderWindCard() {
     else onshoreLabel = 'Sideshore';
   }
   document.getElementById('windCardOnshore').textContent = onshoreLabel;
-  // 24-hour wind chart
+  // 24-hour wind chart — uses the shared helper for Y-axis, peak marker, now-line, and tap tooltip
   const hist = D.windHistory || [];
   const wEl = document.getElementById('wind24Svg');
   if (!wEl) return;
   if (hist.length < 4) { wEl.innerHTML = ''; return; }
-  const W = 400, H = 90, padL = 14, padR = 14, padT = 6, padB = 16;
-  const now = new Date();
-  const start = hist[0].time, end = hist[hist.length - 1].time;
-  const ymax = Math.max(8, Math.ceil(Math.max(...hist.map(h => h.mph)) * 1.1));
-  const xScale = t => padL + ((t.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * (W - padL - padR);
-  const yScale = v => H - padB - (v / ymax) * (H - padT - padB);
-  let path = '';
-  hist.forEach((p, i) => {
-    path += (i === 0 ? 'M' : 'L') + xScale(p.time).toFixed(1) + ',' + yScale(p.mph).toFixed(1) + ' ';
+  const built = _buildChartSvg({
+    svgId: 'wind24Svg',
+    data: hist,
+    getVal: p => p.mph,
+    getLabel: p => `${Math.round(p.mph)} mph`,
+    unit: 'mph',
+    height: 90,
+    minYmax: 8,
   });
-  const fillPath = path + `L${xScale(end).toFixed(1)},${(H-padB).toFixed(1)} L${padL},${(H-padB).toFixed(1)} Z`;
-  const nowX = xScale(now);
-  // X-axis labels
-  let xAxis = '';
-  for (let h = 0; h <= (end - start) / 3600000; h += 6) {
-    const t = new Date(start.getTime() + h * 3600000);
-    if (t > end) break;
-    const x = xScale(t);
-    let lbl = t.getHours();
-    lbl = lbl === 0 ? '12a' : lbl === 12 ? '12p' : (lbl > 12 ? (lbl - 12) + 'p' : lbl + 'a');
-    xAxis += `<text class="axis-text" x="${x.toFixed(1)}" y="${H - 4}" text-anchor="middle">${lbl}</text>`;
-  }
-  wEl.innerHTML = `<path class="curve-fill" d="${fillPath}"/><path class="curve-line" d="${path}"/><line class="now-line" x1="${nowX.toFixed(1)}" y1="${padT}" x2="${nowX.toFixed(1)}" y2="${H-padB}"/>${xAxis}`;
-  document.getElementById('wind24Now').textContent = `Now · ${_fmtTime(now)}`;
+  wEl.innerHTML = built.svgHtml;
+  _attachChartTap({
+    svgId: 'wind24Svg', tooltipId: 'windTooltip',
+    data: hist,
+    getVal: p => p.mph,
+    getLabel: p => `${Math.round(p.mph)} mph`,
+    getSub: p => (p.dir !== undefined && p.dir !== null) ? `${_degToCardinal(p.dir)} (${Math.round(p.dir)}°)` : '',
+    scale: { xScale: built.xScale, yScale: built.yScale, W: built.W, H: built.H },
+  });
+  _renderHourlyArrows('windHourlyArrows', hist);
+  document.getElementById('wind24Now').textContent = `Now · ${_fmtTime(new Date())}`;
 }
 
 function renderWaveCard() {
@@ -5503,6 +5713,34 @@ function renderWaveCard() {
   } else {
     secRow.style.display = 'none';
   }
+  // 24-hour wave-height chart
+  renderWaveChart();
+}
+
+function renderWaveChart() {
+  const hist = D.waveHistory || [];
+  const wEl = document.getElementById('wave24Svg');
+  if (!wEl) return;
+  if (hist.length < 4) { wEl.innerHTML = ''; return; }
+  const built = _buildChartSvg({
+    svgId: 'wave24Svg',
+    data: hist,
+    getVal: p => p.ft,
+    getLabel: p => `${p.ft.toFixed(1)} ft`,
+    unit: 'ft',
+    height: 90,
+    minYmax: 2,
+  });
+  wEl.innerHTML = built.svgHtml;
+  _attachChartTap({
+    svgId: 'wave24Svg', tooltipId: 'waveTooltip',
+    data: hist,
+    getVal: p => p.ft,
+    getLabel: p => `${p.ft.toFixed(1)} ft`,
+    getSub: p => p.period ? `${Math.round(p.period)}s period` : '',
+    scale: { xScale: built.xScale, yScale: built.yScale, W: built.W, H: built.H },
+  });
+  document.getElementById('wave24Now').textContent = `Now · ${_fmtTime(new Date())}`;
 }
 
 function renderConditionCards() {
