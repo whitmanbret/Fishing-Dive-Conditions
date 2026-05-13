@@ -5736,6 +5736,10 @@ function updateDisplay() {
 
     // Wave energy dampening — combines shelter geometry, kelp filtering, and bottom type.
     // Ground truth: Monterey Breakwater 4/2 — buoy WE 461, actual viz 40 ft (calm inside harbor)
+    // Ground truth 5/12/2026: Monterey Breakwater 9am — 5-10 ft viz down to 30 ft, improves
+    // to 10-15 ft at 35 ft. Heavy particulate matter in water column and inside kelp forest.
+    // No surge, slight current. 53°F surface → 50°F at 45 ft. Whitecaps outside bay south
+    // to Half Moon Bay. Shelter still preserves the bottom layer; bloom/debris dominates upper 30 ft.
     // Ground truth 4/25/2026: LJ Cove (high shelter + high kelp) "decent in shallows"
     // while LJ Shores (moderate shelter + sand bottom) "hazy + big surf" same swell event.
     // The cove must not get the same penalty as a sand-bottom open beach.
@@ -5876,6 +5880,11 @@ function updateDisplay() {
       // Conservative: only kicks in when NTU > 0.5 (pier is reading bloom signal).
       // Ground truth 5/11: Pt Loma Kelp actual 15-25 ft, NTU 0.51 + chl 1.27;
       // tool was 10-15 without the boost (under by 5-10 ft).
+      // Ground truth 5/12/2026 (SoCal spring-bloom snapshot):
+      //   • PV Cove — 5 ft viz (LA County, exposed cove, no kelp shelter)
+      //   • Laguna Beach — 8-13 ft viz, May Gray, mixed NW/SW swell 1-3 ft, low tide, lower 60s
+      //   • (Monterey Breakwater logged separately above — stratified 5-10 ft / 10-15 ft @ 35 ft)
+      //   Pattern: north-county/LA spots hit hard, OC moderate, SD red-tide stratified.
       const isOffshoreKelpBed = loc.bottom === 'kelp' && loc.kelpDensity === 'high' && !loc.scrippsProximity && !loc.offshore;
       if (isOffshoreKelpBed && ntu > 0.5) {
         const kelpBedMult = ntu > 1.2 ? 1.8 : (ntu > 0.8 ? 1.5 : 1.25);
