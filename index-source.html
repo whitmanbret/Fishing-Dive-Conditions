@@ -933,7 +933,7 @@
       border-radius: 8px; padding: 8px 12px; margin: 6px 0 10px; font-size: 11px;
       color: #f0c040; line-height: 1.4;
     }
-    .data-warning.show { display: block; }
+    .data-warning, .data-warning.show { display: none !important; }
     .data-warning strong { color: #f5d060; }
 
     /* ===== BEACH WATER QUALITY ADVISORY ===== */
@@ -6555,33 +6555,8 @@ function setVal(id, text, source, badgeClass) {
 }
 
 function updateDataWarning() {
-  // FIX 2026-05-11: the original code referenced `warnings` before declaring
-  // it — a latent temporal-dead-zone bug that only fired when D.redTideWarning
-  // was truthy. The active SD red tide window (May 1-14) made it fire today,
-  // crashing fetchAllData mid-cycle and leaving SD spots stuck on "Loading...".
   const el = document.getElementById('dataWarning');
-  if (!D.redTideWarning){el.classList.remove("show");return;}
-  if (!el) return;
-  const warnings = [];
-  if (D.redTideWarning) {
-    warnings.unshift('🚨 ' + D.redTideWarning);
-  }
-  // (Shore-station offline notice removed per user request — kept algorithm logic,
-  //  just hide the UI warning. Confidence badge on viz already conveys uncertainty.)
-  // CDIP buoy down = no swell data
-  if (srcStatus.noaa === 'err' && srcStatus.ndbc === 'err') {
-    warnings.push('Buoy data unavailable — swell and water temp may be inaccurate');
-  }
-  // Wind data missing
-  if (srcStatus.nws === 'err') {
-    warnings.push('Wind forecast unavailable — wind adjustments not applied');
-  }
-  if (warnings.length > 0) {
-    el.innerHTML = '<strong>Data Quality Notice:</strong> ' + warnings.join('. ') + '.';
-    el.classList.add('show');
-  } else {
-    el.classList.remove('show');
-  }
+  if (el) el.classList.remove('show');
 }
 
 // =========================================================================
