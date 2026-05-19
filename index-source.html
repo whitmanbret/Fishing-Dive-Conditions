@@ -6239,7 +6239,10 @@ function updateDisplay() {
       // deeper water and the Scripps submarine canyon brings offshore exchange
       // right to shore. Per local dive knowledge, LJ Cove + LJ Kelp Beds run
       // ~5-10 ft cleaner than Pt Loma kelp on comparable Scripps SASS readings.
-      if (loc.headlandClearing) {
+      // 2026-05-19: gated on wave energy. When swell is up, the headland
+      // concentrates surge and stirs sediment instead of bringing in clean
+      // exchange — boost only applies on calm-to-moderate days.
+      if (loc.headlandClearing && (D.waveEnergy || 0) < 50) {
         lo += 5;
         hi += 5;
       }
@@ -6343,8 +6346,9 @@ function updateDisplay() {
       // La Jolla headland clearing — see today inline path NTU branch comment.
       // Pt La Jolla projects into deeper water + Scripps submarine canyon brings
       // offshore exchange close to shore, so LJ Cove + LJ Kelp Beds run ~5 ft
-      // cleaner than equivalent Pt Loma conditions.
-      if (loc.headlandClearing) {
+      // cleaner than equivalent Pt Loma conditions. Gated on wave energy
+      // (2026-05-19) — surge wraps the headland on swell days.
+      if (loc.headlandClearing && (D.waveEnergy || 0) < 50) {
         lo += 5;
         hi += 5;
       }
@@ -8140,7 +8144,8 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
       baseHi = Math.max(baseLo + 1, Math.round(baseHi * kelpBedMultFc));
     }
     // La Jolla headland clearing (mirrors today inline path).
-    if (loc.headlandClearing) {
+    // Gated on wave energy (2026-05-19) — surge wraps the headland on swell days.
+    if (loc.headlandClearing && (D.waveEnergy || 0) < 50) {
       baseLo += 5;
       baseHi += 5;
     }
