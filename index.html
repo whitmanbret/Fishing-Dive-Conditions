@@ -2261,6 +2261,30 @@ function sfProxyUrl(targetUrl) {
 }
 
 // =========================================================================
+// SERVER-SIDE PREDICT (Phase 2A — dual-track POC)
+// Calls the worker for one calibrated primitive (wave-energy score) and
+// compares against the local result. Console-logs the delta so we can
+// verify parity before flipping the algorithm fully server-side in Phase 2B.
+// Times out at 4s; never throws — local result is always authoritative for now.
+// =========================================================================
+async function sfPredict(action, inputs) {
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 4000);
+    const r = await fetch(`${SF_PROXY_BASE}/predict`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...inputs }),
+      signal: ctl.signal,
+    });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    const data = await r.json();
+    return data && data.ok ? data.result : null;
+  } catch (e) { return null; }
+}
+
+// =========================================================================
 // REPORT DIVE — user-submitted viz/temp/notes pushed to the worker's KV
 // =========================================================================
 function openReportModal() {
@@ -7063,6 +7087,16 @@ function recalculate() {
   scoreW('swellDirScore', D.swellDir, getScorer('swellDir'), 'swellDir', vizEntries);
   scoreW('swellPeriodScore', D.swellPeriod, getScorer('swellPeriod'), 'swellPeriod', vizEntries);
   scoreW('waveEnergyScore', D.waveEnergy, getScorer('waveEnergy'), 'waveEnergy', vizEntries);
+  // Phase 2A POC: side-by-side worker call, log delta. Local result authoritative.
+  if (D.waveEnergy !== undefined && D.waveEnergy !== null) {
+    const localWE = getScorer('waveEnergy')(D.waveEnergy);
+    sfPredict('waveEnergyScore', { waveEnergy: D.waveEnergy }).then(serverWE => {
+      if (serverWE === null) { console.log('[sfPredict] waveEnergyScore: worker unreachable (local=' + localWE + ')'); return; }
+      const delta = Math.abs(serverWE - localWE);
+      const tag = delta < 0.01 ? '✓ match' : '✗ DELTA';
+      console.log(`[sfPredict] waveEnergyScore: local=${localWE} worker=${serverWE} ${tag}`);
+    });
+  }
   scoreW('rainfallScore', D.rainfall, getScorer('rainfall'), 'rainfall', vizEntries);
   scoreW('chlVizScore', (loc.bloomSheltered&&D.chlorophyll&&!D.redTideWarning)?Math.min(D.chlorophyll,2):D.chlorophyll, getScorer('chlViz'), 'chlViz', vizEntries);
   // Turbidity from SASS (only contributes when sensor is online)
