@@ -3133,7 +3133,7 @@ async function fetchBuoyData() {
     try {
       const ago = new Date(Date.now() - 12*3600000);
       const url = `https://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.json?station%2Ctime%2Cwd%2Cwspd%2Cwvht%2Cdpd%2Capd%2Cmwd%2Cwtmp%2Catmp&station=%22${buoyId}%22&time%3E=${encodeURIComponent(ago.toISOString())}&orderByMax(%22time%22)`;
-      const r = await fetchWithTimeout(url);
+      const r = await fetchWithTimeout(sfProxyUrl(url));
       if (r.ok) {
         const d = await r.json();
         if(d.table&&d.table.rows&&d.table.rows.length>0) {
@@ -3146,7 +3146,7 @@ async function fetchBuoyData() {
       }
     } catch(e) {}
     try {
-      const r = await fetchWithTimeout(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`);
+      const r = await fetchWithTimeout(sfProxyUrl(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`));
       if (r.ok) {
         const text = await r.text(), lines = text.trim().split('\n');
         if(lines.length>=3) {
@@ -4493,10 +4493,10 @@ async function fetchBuoySST() {
     srcStatus.ndbc = 'ok';
   }
 
-  // Strategy 1: Direct NDBC realtime2 text file (most authoritative)
+  // Strategy 1: NDBC realtime2 text file via worker proxy (most authoritative)
   try {
     const url = `https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`;
-    const r = await fetchWithTimeout(url, null, 6000);
+    const r = await fetchWithTimeout(sfProxyUrl(url), null, 6000);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const text = await r.text();
     const lines = text.split('\n').filter(l => l.trim().length > 0);
@@ -4798,11 +4798,9 @@ async function fetchBeachAdvisory() {
     // Only SD County stations available (lat ~32.5–33.4)
     if (loc.lat < 32.4 || loc.lat > 33.45) { D.beachAdvisory = null; return; }
 
-    const resp = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://www.sdbeachinfo.com/Home/GetTargetByID'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: ''
-    });
+    // Route through our worker (GET) — corsproxy.io was returning 403; the
+    // sdbeachinfo endpoint accepts GET just fine and the worker handles CORS.
+    const resp = await fetch(sfProxyUrl('https://www.sdbeachinfo.com/Home/GetTargetByID'));
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const stations = await resp.json();
 
