@@ -7170,6 +7170,45 @@ function recalculate() {
     }
   }
 
+  // Phase 2B.3 dual-track: side-by-side worker calls for the auxiliary scorers.
+  // Local results stay authoritative; deltas log to console for parity verification.
+  {
+    const _now = new Date();
+    const _localGrunion = (D.grunion && D.grunion.score !== undefined) ? D.grunion.score : null;
+    sfPredict('grunionStatus', { dateIso: _now.toISOString() }).then(server => {
+      if (!server) { console.log('[sfPredict] grunionStatus: worker unreachable'); return; }
+      const ok = _localGrunion === null || server.score === _localGrunion;
+      console.log(`[sfPredict] grunionStatus: local=${_localGrunion} worker=${server.score} ${ok ? '✓ match' : '✗ DELTA'}`);
+    });
+    if ((currentSpecies === 'wsb' || currentSpecies === 'yellowtail') && D.squidProxy !== undefined) {
+      const _hasSquid = !!(boatReportsData && boatReportsData.boats &&
+        boatReportsData.boats.some(b => b.catches.some(c => c.species === 'squid' && c.count > 0)));
+      sfPredict('squidProxy', {
+        month: _now.getMonth(),
+        moonCategory: D.moon && D.moon.category,
+        waterTempF: D.waterTemp || D.sstF,
+        region: REGION_MAP[currentLocation] || 'sd',
+        squidObserved: _hasSquid,
+      }).then(server => {
+        if (server === null) { console.log('[sfPredict] squidProxy: worker unreachable'); return; }
+        const ok = Math.abs(server - D.squidProxy) < 0.05;
+        console.log(`[sfPredict] squidProxy: local=${D.squidProxy} worker=${server} ${ok ? '✓ match' : '✗ DELTA'}`);
+      });
+    }
+    if (currentSpecies === 'dorado' && D.sstAnomaly !== undefined && D.sstAnomalyScore !== undefined) {
+      sfPredict('sstAnomaly', {
+        month: _now.getMonth(),
+        waterTempF: D.waterTemp || D.sstF,
+      }).then(server => {
+        if (!server) { console.log('[sfPredict] sstAnomaly: worker unreachable'); return; }
+        const okAnomaly = Math.abs(server.anomaly - D.sstAnomaly) < 0.05;
+        const okScore = server.score === D.sstAnomalyScore;
+        const tag = okAnomaly && okScore ? '✓ match' : '✗ DELTA';
+        console.log(`[sfPredict] sstAnomaly: local={a:${D.sstAnomaly},s:${D.sstAnomalyScore}} worker={a:${server.anomaly},s:${server.score}} ${tag}`);
+      });
+    }
+  }
+
   // Satellite water color + temp break — boosts/penalizes bluefin & yellowtail at offshore spots
   if (LOCATIONS[currentLocation].bluewater) {
     // Water color scoring (from VIIRS chlorophyll)
