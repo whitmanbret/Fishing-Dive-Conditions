@@ -7251,15 +7251,15 @@ function recalculate() {
   if(D.waveEnergy) { const s=getScorer('waveEnergy')(D.waveEnergy); setScore('estVizScore',s); }
   else setScore('estVizScore',null);
 
-  // Phase 2B.1: batch dual-track. Send all 17 general-species inputs to the
-  // worker's scoreAllGeneral action and compare to the local SCORE.general
-  // values. Local stays authoritative; deltas log to console. Gated on the
-  // general species since the worker only has SCORE.general ported so far —
-  // Phase 2B.2 will add per-species scoring tables.
-  if (currentSpecies === 'general') {
+  // Phase 2B.1/2B.2: batch dual-track. Send all inputs to the worker's
+  // scoreAll action with the current species selection; compare per-key to
+  // the local SCORE[species] (falling through to SCORE.general for null
+  // entries, matching getScorer). Local stays authoritative; deltas log to
+  // console.
+  {
     const G = SCORE.general;
     const localScores = {};
-    const inputs = {};
+    const inputs = { species: currentSpecies };
     const numericIn = {
       waterTemp: D.waterTemp, sst: D.sstF, current: D.currentStrength,
       chlorophyll: D.chlorophyll, reports: D.reportsScore, swellFt: D.swellFt,
@@ -7279,30 +7279,33 @@ function recalculate() {
       inputs.windSpeed = Number(effectiveWindSpd);
       inputs.windDir = effectiveWindDir;
     }
-    // Local scores for comparison
-    if (Number.isFinite(Number(inputs.waterTemp))) localScores.waterTemp = G.waterTemp(inputs.waterTemp);
-    if (Number.isFinite(Number(inputs.sst))) localScores.sst = G.sst(inputs.sst);
-    if (inputs.tempTrend) localScores.tempTrend = G.tempTrend(inputs.tempTrend);
-    if (inputs.tideState) localScores.tideState = G.tideState(inputs.tideState);
-    if (Number.isFinite(Number(inputs.current))) localScores.current = G.current(inputs.current);
-    if (inputs.upwelling) localScores.upwelling = G.upwelling(inputs.upwelling);
+    // Local scores via getScorer (which respects species selection + falls
+    // through to general for null entries). This is the same function used
+    // to compute the live scores displayed in the UI.
+    const localScorer = (k) => (SCORE[currentSpecies] && SCORE[currentSpecies][k]) || G[k];
+    if (Number.isFinite(Number(inputs.waterTemp))) localScores.waterTemp = localScorer('waterTemp')(inputs.waterTemp);
+    if (Number.isFinite(Number(inputs.sst))) localScores.sst = localScorer('sst')(inputs.sst);
+    if (inputs.tempTrend) localScores.tempTrend = localScorer('tempTrend')(inputs.tempTrend);
+    if (inputs.tideState) localScores.tideState = localScorer('tideState')(inputs.tideState);
+    if (Number.isFinite(Number(inputs.current))) localScores.current = localScorer('current')(inputs.current);
+    if (inputs.upwelling) localScores.upwelling = localScorer('upwelling')(inputs.upwelling);
     if (Number.isFinite(Number(inputs.chlorophyll))) {
-      localScores.chlFish = G.chlFish(inputs.chlorophyll);
-      localScores.chlViz  = G.chlViz(inputs.chlorophyll);
+      localScores.chlFish = localScorer('chlFish')(inputs.chlorophyll);
+      localScores.chlViz  = localScorer('chlViz')(inputs.chlorophyll);
     }
-    if (inputs.moonPhase) localScores.moonPhase = G.moonPhase(inputs.moonPhase);
-    if (Number.isFinite(Number(inputs.reports))) localScores.reports = G.reports(inputs.reports);
-    if (inputs.pressure) localScores.pressure = G.pressure(inputs.pressure);
-    if (inputs.windSpeed !== undefined && inputs.windDir) localScores.wind = G.wind(inputs.windSpeed, inputs.windDir);
-    if (Number.isFinite(Number(inputs.swellFt))) localScores.swellSize = G.swellSize(inputs.swellFt);
-    if (inputs.swellDir) localScores.swellDir = G.swellDir(inputs.swellDir);
-    if (Number.isFinite(Number(inputs.swellPeriod))) localScores.swellPeriod = G.swellPeriod(inputs.swellPeriod);
-    if (Number.isFinite(Number(inputs.waveEnergy))) localScores.waveEnergy = G.waveEnergy(inputs.waveEnergy);
-    if (inputs.rainfall) localScores.rainfall = G.rainfall(inputs.rainfall);
-    if (inputs.bottom) localScores.bottom = G.bottom(inputs.bottom);
+    if (inputs.moonPhase) localScores.moonPhase = localScorer('moonPhase')(inputs.moonPhase);
+    if (Number.isFinite(Number(inputs.reports))) localScores.reports = localScorer('reports')(inputs.reports);
+    if (inputs.pressure) localScores.pressure = localScorer('pressure')(inputs.pressure);
+    if (inputs.windSpeed !== undefined && inputs.windDir) localScores.wind = localScorer('wind')(inputs.windSpeed, inputs.windDir);
+    if (Number.isFinite(Number(inputs.swellFt))) localScores.swellSize = localScorer('swellSize')(inputs.swellFt);
+    if (inputs.swellDir) localScores.swellDir = localScorer('swellDir')(inputs.swellDir);
+    if (Number.isFinite(Number(inputs.swellPeriod))) localScores.swellPeriod = localScorer('swellPeriod')(inputs.swellPeriod);
+    if (Number.isFinite(Number(inputs.waveEnergy))) localScores.waveEnergy = localScorer('waveEnergy')(inputs.waveEnergy);
+    if (inputs.rainfall) localScores.rainfall = localScorer('rainfall')(inputs.rainfall);
+    if (inputs.bottom) localScores.bottom = localScorer('bottom')(inputs.bottom);
 
-    sfPredict('scoreAllGeneral', inputs).then(server => {
-      if (!server) { console.log('[sfPredict] scoreAllGeneral: worker unreachable'); return; }
+    sfPredict('scoreAll', inputs).then(server => {
+      if (!server) { console.log('[sfPredict] scoreAll: worker unreachable'); return; }
       const keys = Object.keys(localScores);
       const deltas = [];
       keys.forEach(k => {
@@ -7310,8 +7313,8 @@ function recalculate() {
         if (s === undefined) deltas.push(`${k}=missing`);
         else if (Math.abs(s - l) > 0.01) deltas.push(`${k}: local=${l} worker=${s}`);
       });
-      if (deltas.length === 0) console.log(`[sfPredict] scoreAllGeneral: ✓ ${keys.length}/${keys.length} match`);
-      else console.log(`[sfPredict] scoreAllGeneral: ✗ ${deltas.length} DELTAS:`, deltas.join('  '));
+      if (deltas.length === 0) console.log(`[sfPredict] scoreAll[${currentSpecies}]: ✓ ${keys.length}/${keys.length} match`);
+      else console.log(`[sfPredict] scoreAll[${currentSpecies}]: ✗ ${deltas.length} DELTAS:`, deltas.join('  '));
     });
   }
 
