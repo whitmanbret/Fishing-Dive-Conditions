@@ -6410,6 +6410,29 @@ function updateDisplay() {
       if (hi - lo > maxSpread) hi = lo + maxSpread;
       vizEst = `${lo}–${hi} ft${suffix}`;
       vizSource = D.turbSource || 'Shore Station';
+      // Phase 2B.4b dual-track: same NTU-path inputs → worker, compare lo/hi/suffix.
+      // Local stays authoritative; deltas log to console.
+      sfPredict('vizNtuPath', {
+        ntu,
+        effectiveWE: effectiveWE === undefined ? null : effectiveWE,
+        shelterMult,
+        chlorophyll: D.chlorophyll,
+        chlIsClimatology: !!D.chlIsClimatology,
+        waveEnergy: D.waveEnergy,
+        surfaceBloomFactor: _surfaceBloomCheck,
+        loc: {
+          bottom: loc.bottom, kelpDensity: loc.kelpDensity,
+          scrippsProximity: !!loc.scrippsProximity, offshore: !!loc.offshore,
+          headlandClearing: !!loc.headlandClearing,
+        },
+      }).then(server => {
+        if (!server) { console.log('[sfPredict] vizNtuPath: worker unreachable'); return; }
+        const loOk = server.lo === lo;
+        const hiOk = server.hi === hi;
+        const sfxOk = (server.suffix || '') === (suffix || '');
+        const tag = (loOk && hiOk && sfxOk) ? '✓ match' : '✗ DELTA';
+        console.log(`[sfPredict] vizNtuPath: local={${lo}-${hi}${suffix}} worker={${server.lo}-${server.hi}${server.suffix}} ${tag}`);
+      });
     }
     // PRIORITY 2: Rain overrides swell-based estimate
     else if(D.rainfall==='heavy') {
