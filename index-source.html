@@ -5139,6 +5139,24 @@ function updateSiteTip() {
     el.style.display = 'none';
     el.textContent = '';
   }
+  // Phase 2B.5a dual-track: ask the worker to compute the same tip with the
+  // same inputs, log whether the strings match exactly. Local result stays
+  // authoritative — this is observation only.
+  sfPredict('siteTip', {
+    currentLocation,
+    runoffAdvisory: D.runoffAdvisory || null,
+    tideState: D.tideState,
+    chlorophyll: D.chlorophyll,
+    waveEnergy: D.waveEnergy,
+  }).then(server => {
+    if (server === undefined) { console.log('[sfPredict] siteTip: worker unreachable'); return; }
+    const localStr = tip || null;
+    const serverStr = server || null;
+    const ok = localStr === serverStr;
+    const tag = ok ? '✓ match' : '✗ DELTA';
+    const len = (s) => s === null ? 'null' : `${s.length}ch`;
+    console.log(`[sfPredict] siteTip[${currentLocation}]: local=${len(localStr)} worker=${len(serverStr)} ${tag}`);
+  });
 }
 
 function _formatRainAmount(inches, hrs) {
