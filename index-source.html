@@ -2197,9 +2197,13 @@ function getVizRatingFromFeet(vizFeetStr) {
   if (!single) return getRating(0);
   const lo = parseInt(single[1], 10);
   const mid = range ? (parseInt(range[1], 10) + parseInt(range[2], 10)) / 2 : lo;
-  if (mid >= 18) return {label:'Excellent',cls:'rating-excellent',color:'var(--excellent)'};
-  if (mid >= 12) return {label:'Good',cls:'rating-good',color:'var(--good)'};
-  if (mid >= 7)  return {label:'Fair',cls:'rating-fair',color:'var(--fair)'};
+  // Thresholds updated 2026-05-20 — tighter dive-quality bar:
+  //   Excellent ≥ 30 ft, Good 20-29, Fair 10-19, Poor < 10.
+  // Uses midpoint of the predicted range so wide forecasts don't auto-rate
+  // as "Poor" when only the low end falls under the threshold.
+  if (mid >= 30) return {label:'Excellent',cls:'rating-excellent',color:'var(--excellent)'};
+  if (mid >= 20) return {label:'Good',cls:'rating-good',color:'var(--good)'};
+  if (mid >= 10) return {label:'Fair',cls:'rating-fair',color:'var(--fair)'};
   return {label:'Poor',cls:'rating-poor',color:'var(--poor)'};
 }
 
