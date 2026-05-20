@@ -6226,6 +6226,24 @@ function updateDisplay() {
       }
       vizEst = `${lo}–${hi}${offshorePlus} ft${suffix}`;
       vizSource = 'Offshore Model';
+      // Phase 2B.4e dual-track: send the same inputs to worker, compare lo/hi/suffix/plus.
+      sfPredict('vizOffshorePath', {
+        waveEnergy: D.waveEnergy,
+        swellPeriod: D.swellPeriod,
+        upwelling: D.upwelling,
+        chlorophyll: D.chlorophyll,
+        chlIsClimatology: !!D.chlIsClimatology,
+        rainfall: D.rainfall,
+        loc: { offshore: !!loc.offshore, bluewater: !!loc.bluewater },
+      }).then(server => {
+        if (!server) { console.log('[sfPredict] vizOffshorePath: worker unreachable'); return; }
+        const loOk = server.lo === lo;
+        const hiOk = server.hi === hi;
+        const sfxOk = (server.suffix || '') === (suffix || '');
+        const plusOk = (server.plus || '') === (offshorePlus || '');
+        const tag = (loOk && hiOk && sfxOk && plusOk) ? '✓ match' : '✗ DELTA';
+        console.log(`[sfPredict] vizOffshorePath: local={${lo}-${hi}${offshorePlus}${suffix}} worker={${server.lo}-${server.hi}${server.plus}${server.suffix}} ${tag}`);
+      });
     }
     // PRIORITY 1: If we have real-time turbidity from shore station, use NTU-based estimate
     // Calibrated from Dec 2024 NTU data + Scripps Pier camera piling distances (4/11/14/30 ft)
