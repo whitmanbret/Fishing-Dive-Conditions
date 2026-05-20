@@ -7918,6 +7918,49 @@ function updateConditionsBrief() {
   el.style.display = 'block';
   // Also update fishing summary if boat data is available
   updateBriefFishing();
+
+  // Phase 2B.5b dual-track: ask the worker to compute the same AM/PM strings
+  // with pre-extracted Pacific-time hours (worker runs in UTC, must not do TZ math).
+  const _extractTide = t => ({
+    type: t.type,
+    value: t.value !== undefined ? t.value : t.height,
+    hour: t.time.getHours(),
+    timeStr: t.time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+  });
+  const _todayWW3 = (D.swellForecast || []).filter(s => {
+    const d = new Date(s.time);
+    return d.getDate() === now.getDate();
+  }).map(s => ({ time: typeof s.time === 'string' ? s.time : s.time.toISOString(), ht: s.ht }));
+  sfPredict('conditionsBrief', {
+    amPeriods: amPeriods.map(p => ({
+      startTime: typeof p.startTime === 'string' ? p.startTime : p.startTime.toISOString(),
+      windSpeed: p.windSpeed, windDirection: p.windDirection,
+      probabilityOfPrecipitation: p.probabilityOfPrecipitation,
+    })),
+    pmPeriods: pmPeriods.map(p => ({
+      startTime: typeof p.startTime === 'string' ? p.startTime : p.startTime.toISOString(),
+      windSpeed: p.windSpeed, windDirection: p.windDirection,
+      probabilityOfPrecipitation: p.probabilityOfPrecipitation,
+    })),
+    todayTides: todayTides.map(_extractTide),
+    swellForecastToday: _todayWW3,
+    vizText, waterTempF: D.waterTemp || null,
+    swellFt: D.swellFt || null, swellPeriod: D.swellPeriod || null, swellDir: D.swellDir || null,
+    redTideWarning: D.redTideWarning ? true : null,
+    chlorophyll: D.chlorophyll !== undefined ? D.chlorophyll : null,
+    chlIsClimatology: !!D.chlIsClimatology,
+    turbidity: D.turbidity !== undefined ? D.turbidity : null,
+    loc: { name: loc.name, offshore: !!loc.offshore, bottom: loc.bottom, kelpDensity: loc.kelpDensity, shelter: loc.shelter },
+  }).then(server => {
+    if (!server) { console.log('[sfPredict] conditionsBrief: worker unreachable'); return; }
+    const localAm = am.trim(), localPm = pm.trim();
+    const amOk = server.am === localAm;
+    const pmOk = server.pm === localPm;
+    const tag = (amOk && pmOk) ? '✓ match' : '✗ DELTA';
+    console.log(`[sfPredict] conditionsBrief: am=${amOk ? '✓' : '✗'} pm=${pmOk ? '✓' : '✗'} ${tag}`);
+    if (!amOk) console.log(`  AM local:  ${localAm}\n  AM worker: ${server.am}`);
+    if (!pmOk) console.log(`  PM local:  ${localPm}\n  PM worker: ${server.pm}`);
+  });
 }
 
 // =========================================================================
