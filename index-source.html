@@ -6155,6 +6155,27 @@ function updateDisplay() {
       else if (D.swellPeriod >= 12) effectiveWE *= 0.7;   // long period — organized swell
       else if (D.swellPeriod <= 6) effectiveWE *= 1.3;    // short period — choppy wind swell, more mixing
     }
+    // Phase 2B.4a dual-track: send the same inputs to worker, compare to local
+    // shelterMult + effectiveWE. Local stays authoritative; deltas log to console.
+    sfPredict('vizPreprocess', {
+      waveEnergy: D.waveEnergy,
+      swellPeriod: D.swellPeriod,
+      swellDir: D.swellDir,
+      mwd: D.mwd,
+      loc: { shelter: loc.shelter, kelpDensity: loc.kelpDensity, bottom: loc.bottom, coveTrap: loc.coveTrap },
+      runoffAdvisory: D.runoffAdvisory || null,
+    }).then(server => {
+      if (!server) { console.log('[sfPredict] vizPreprocess: worker unreachable'); return; }
+      const shM = Math.abs(server.shelterMult - shelterMult) < 0.001;
+      const localWE = effectiveWE === undefined ? null : effectiveWE;
+      const serverWE = server.effectiveWE;
+      let weOk;
+      if (localWE === null && serverWE === null) weOk = true;
+      else if (localWE === null || serverWE === null) weOk = false;
+      else weOk = Math.abs(serverWE - localWE) < 0.01;
+      const tag = (shM && weOk) ? '✓ match' : '✗ DELTA';
+      console.log(`[sfPredict] vizPreprocess: local={shM:${shelterMult.toFixed(2)},WE:${localWE === null ? 'null' : localWE.toFixed(2)}} worker={shM:${server.shelterMult.toFixed(2)},WE:${serverWE === null ? 'null' : serverWE.toFixed(2)}} ${tag}`);
+    });
 
     // PRIORITY 0: Offshore islands — nearshore turbidity doesn't apply
     // Coronado Islands sit in open ocean; vis driven by swell, current, and upwelling
