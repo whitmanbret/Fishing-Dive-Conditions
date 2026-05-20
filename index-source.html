@@ -6634,6 +6634,28 @@ function updateDisplay() {
         const suffixM = vizEst.match(/ft\s*(\(.+\))/);
         vizEst = `${sLo}–${sHi} ft` + (suffixM ? ' ' + suffixM[1] : '');
       }
+      // Phase 2B.4d dual-track: send pre-sanity-floor lo/hi to worker, compare.
+      // Captured the pre-sanity values from sanityMatch above. The worker returns
+      // post-floor lo/hi (which the local code stored in sLo/sHi).
+      const _preLo = parseInt(sanityMatch[1], 10);
+      const _preHi = sanityMatch2 ? parseInt(sanityMatch2[2], 10) : _preLo + 5;
+      const _preSuffixM = vizEst.match(/ft\s*(\(.+\))/);
+      const _preSuffix = _preSuffixM ? ' ' + _preSuffixM[1] : '';
+      sfPredict('vizSanityFloor', {
+        lo: _preLo, hi: _preHi, suffix: _preSuffix,
+        waveEnergy: D.waveEnergy,
+        swellPeriod: D.swellPeriod,
+        rainfall: D.rainfall,
+        chlorophyll: D.chlorophyll,
+        chlIsClimatology: !!D.chlIsClimatology,
+        loc: { shelter: loc.shelter, offshore: !!loc.offshore, bluewater: !!loc.bluewater, scrippsProximity: !!loc.scrippsProximity },
+      }).then(server => {
+        if (!server) { console.log('[sfPredict] vizSanityFloor: worker unreachable'); return; }
+        const loOk = server.lo === sLo;
+        const hiOk = server.hi === sHi;
+        const tag = (loOk && hiOk) ? '✓ match' : '✗ DELTA';
+        console.log(`[sfPredict] vizSanityFloor: local=${_preLo}-${_preHi}→${sLo}-${sHi}(adj=${adjusted}) worker=${server.lo}-${server.hi}(adj=${!!server.adjusted}) ${tag}`);
+      });
     }
   }
 
