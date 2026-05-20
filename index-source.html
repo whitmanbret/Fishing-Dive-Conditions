@@ -1411,11 +1411,7 @@
       <div class="factor-row" id="baroTrendRow" style="display:none"><div class="factor-label">Barometric Trend</div><div class="factor-value" id="baroTrendVal">--</div></div>
       <div class="factor-row" id="riverFlowRow" style="display:none"><div class="factor-label">River Runoff</div><div class="factor-value" id="riverFlowVal">--</div></div>
       <div class="factor-row" id="marineAlertRow" style="display:none"><div class="factor-label">Marine Advisory</div><div class="factor-value" id="marineAlertVal">--</div></div>
-    </section>
-
-    <!-- DIVE VISIBILITY CONDITIONS (scores hidden to protect algorithm) -->
-    <section class="factors-section">
-      <div class="category-header">Dive Visibility Conditions</div>
+      <!-- Merged into Key Conditions 2026-05-20 (was a separate Dive Visibility Conditions section) -->
       <div class="factor-row" style="display:none"><div class="factor-label">Wind</div><div class="factor-value" id="windVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="windScore" style="display:none">-</div></div>
       <div class="factor-row" style="display:none"><div class="factor-label">Swell</div><div class="factor-value" id="swellVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellScore" style="display:none">-</div></div>
       <div class="factor-row" style="display:none"><div class="factor-label">Swell Dir</div><div class="factor-value" id="swellDirVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellDirScore" style="display:none">-</div></div>
@@ -1447,7 +1443,7 @@
 
     <!-- ===== REGIONAL OCEAN TEMPERATURE MAP ===== -->
     <div style="text-align:center;margin-bottom:12px">
-      <button id="sstMapToggleBtn" class="section-toggle-btn" onclick="toggleSstMap()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:10px 20px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Ocean Temperature Map ▼</button>
+      <button id="sstMapToggleBtn" class="section-toggle-btn" onclick="toggleSstMap()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:16px 28px;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Ocean Temperature Map ▼</button>
     </div>
     <div id="sstMapSection" style="display:none;margin-bottom:16px;">
       <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;">
@@ -1476,7 +1472,7 @@
 
     <!-- ===== CHLOROPHYLL MAP ===== -->
     <div style="text-align:center;margin-bottom:12px">
-      <button id="chlMapToggleBtn" class="section-toggle-btn" onclick="toggleChlMap()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:10px 20px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Chlorophyll Map ▼</button>
+      <button id="chlMapToggleBtn" class="section-toggle-btn" onclick="toggleChlMap()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:16px 28px;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Chlorophyll Map ▼</button>
     </div>
     <div id="chlMapSection" style="display:none;margin-bottom:16px;">
       <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;">
@@ -1503,7 +1499,7 @@
     <div style="text-align:center;margin-bottom:12px">
       <button id="forecastToggleBtn" class="section-toggle-btn" onclick="toggleForecastSection()" style="
         background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
-        border-radius: 8px; padding: 10px 20px; font-size: 12px; font-weight: 600;
+        border-radius: 8px; padding: 16px 28px; font-size: 14px; font-weight: 600;
         cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
       ">5-Day Forecast ▼</button>
     </div>
@@ -1536,7 +1532,7 @@
     <div id="boatReportsToggleWrap" style="display:none;text-align:center;margin-bottom:12px">
       <button id="boatReportsToggleBtn" class="section-toggle-btn" onclick="toggleBoatReportsSection()" style="
         background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
-        border-radius: 8px; padding: 10px 20px; font-size: 12px; font-weight: 600;
+        border-radius: 8px; padding: 16px 28px; font-size: 14px; font-weight: 600;
         cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
       ">Latest Boat Reports ▼</button>
     </div>
@@ -8111,34 +8107,9 @@ function buildForecast() {
 
   const dayKeys = Object.keys(dayGroups).slice(0, 5);
 
-  // Pre-calculate scores for all days to find the best day
-  const dayScoreSummaries = dayKeys.map((key, idx) => {
-    const periods = dayGroups[key];
-    const slots = getTimeSlots(periods);
-    const scores = slots.map(s => calcSlotForecastScores(s, idx));
-    const avgSpear = scores.reduce((sum, s) => sum + s.spear, 0) / scores.length;
-    const avgFish = scores.reduce((sum, s) => sum + s.fish, 0) / scores.length;
-    const avgViz = scores.reduce((sum, s) => sum + s.viz, 0) / scores.length;
-    const d = periods[0].date;
-    const dayLabel = idx === 0 ? 'Today' : idx === 1 ? 'Tomorrow' :
-      d.toLocaleDateString('en-US', {weekday: 'short'});
-    return { idx, dayLabel, avgSpear, avgFish, avgViz, date: d };
-  });
-
-  const isReserve = LOCATIONS[currentLocation] && LOCATIONS[currentLocation].marineReserve;
-  const bestDay = dayScoreSummaries.reduce((best, d) =>
-    (isReserve ? d.avgViz : d.avgSpear) > (isReserve ? best.avgViz : best.avgSpear) ? d : best
-  );
-
-  // Best day banner
+  // Best Day banner removed 2026-05-20 — preferred to lead straight into the
+  // per-day rows. Dead-code calcs above also removed.
   let html = '';
-  const bestRating = getRating(isReserve ? bestDay.avgViz : bestDay.avgSpear);
-  const bestMetric = isReserve ? `Viz: ${bestDay.avgViz.toFixed(1)}/10` : `Score: ${bestDay.avgSpear.toFixed(1)}/10`;
-  html += `<div style="background:linear-gradient(135deg,rgba(46,204,113,0.12),rgba(52,152,219,0.12));border:1px solid rgba(46,204,113,0.3);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px">`;
-  html += `<span style="font-size:22px">🏆</span>`;
-  html += `<div><div style="font-size:12px;font-weight:700;color:${bestRating.color}">Best Day: ${bestDay.dayLabel} (${bestDay.date.getMonth()+1}/${bestDay.date.getDate()})</div>`;
-  html += `<div style="font-size:10px;color:var(--text-secondary)">${bestRating.label} · ${bestMetric} · Fish: ${bestDay.avgFish.toFixed(1)} · Viz: ${bestDay.avgViz.toFixed(1)}</div></div>`;
-  html += `</div>`;
 
   dayKeys.forEach((key, idx) => {
     const periods = dayGroups[key];
