@@ -6701,6 +6701,79 @@ function updateDisplay() {
   // Update the hero feet display
   const vizHeroEl = document.getElementById('vizFeetHero');
   if (vizHeroEl) vizHeroEl.textContent = vizEst !== '--' ? vizEst : '--';
+
+  // Phase 2B.6a — worker-on-critical-path. After local computes + renders,
+  // fire the worker viz orchestrator in parallel. If it returns within timeout,
+  // silently replace the displayed vizEst with the worker's output (after
+  // applying the local-only adjustments: applyVizCalibration + tide bias).
+  // Local stays as immediate fallback if worker is slow/down. This is the
+  // pipeline; 2B.6b will delete local + make worker authoritative.
+  const _capturedLocation = currentLocation;
+  // Compute the surface-bloom factor here (mirrors the inline _surfaceBloomCheck
+  // IIFE inside the NTU path — kept here so it's in scope for non-NTU paths too).
+  const _surfaceBloomFactor = (() => {
+    if (!loc.scrippsProximity) return null;
+    const _ntu = D.turbidity;
+    const inBloomDecay = _ntu !== undefined && _ntu < 0.6 && D.chlorophyll >= 0.5 && D.chlorophyll < 3;
+    if (inBloomDecay) return null;
+    const liveChlLow = D.chlorophyll !== undefined && D.chlorophyll < 2;
+    if (!liveChlLow) return null;
+    const _m = new Date().getMonth() + 1;
+    const _region = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
+    const _climoTable = (typeof CHL_CLIMATOLOGY_BY_REGION !== 'undefined') ? CHL_CLIMATOLOGY_BY_REGION[_region] : null;
+    const _climo = _climoTable ? _climoTable[_m] : null;
+    if (_climo === null || _climo === undefined || _climo < 5) return null;
+    return 0.85;
+  })();
+  sfPredict('viz', {
+    ntu: D.turbidity,
+    chlorophyll: D.chlorophyll,
+    chlIsClimatology: !!D.chlIsClimatology,
+    waveEnergy: D.waveEnergy,
+    swellPeriod: D.swellPeriod,
+    swellDir: D.swellDir,
+    mwd: D.mwd,
+    rainfall: D.rainfall,
+    upwelling: D.upwelling,
+    runoffAdvisory: D.runoffAdvisory || null,
+    tideState: D.tideState,
+    currentLocation,
+    surfaceBloomFactor: _surfaceBloomFactor,
+    turbSource: D.turbSource,
+    loc: {
+      shelter: loc.shelter, kelpDensity: loc.kelpDensity, bottom: loc.bottom,
+      coveTrap: !!loc.coveTrap, offshore: !!loc.offshore, bluewater: !!loc.bluewater,
+      scrippsProximity: !!loc.scrippsProximity, headlandClearing: !!loc.headlandClearing,
+    },
+  }).then(worker => {
+    if (!worker || !worker.vizEst) return;
+    // Guard: skip update if user has navigated to a different spot during the roundtrip
+    if (currentLocation !== _capturedLocation) return;
+    // Apply local-only adjustments (per-user calibration + tide bias). These stay
+    // frontend-side because they read from localStorage.
+    let adjusted = applyVizCalibration(worker.vizEst);
+    const tideAdj = getTideAdjustment();
+    if (tideAdj !== 0) {
+      const m = adjusted.match(/(\d+)–(\d+)\s*ft/);
+      if (m) {
+        const lo = Math.max(1, parseInt(m[1]) + tideAdj);
+        const hi = Math.max(lo + 1, parseInt(m[2]) + tideAdj);
+        const sfx = adjusted.includes('(') ? adjusted.slice(adjusted.indexOf('(') - 1) : ' ft';
+        adjusted = `${lo}–${hi}${sfx.startsWith(' ft') ? ' ft' : sfx}`;
+      }
+    }
+    if (adjusted === vizEst) return;  // no change — silent
+    // Worker-driven update. Mirror the same DOM writes the local path did.
+    D.vizFeetStr = adjusted;
+    setVal('estVizVal', adjusted, worker.vizSource || vizSource);
+    if (vizFeetEl) vizFeetEl.textContent = adjusted !== '--' ? `Est. ${adjusted}` : '--';
+    if (vizHeroEl) vizHeroEl.textContent = adjusted;
+    // Re-sync the rating badge to the new feet value
+    const newRating = getVizRatingFromFeet(adjusted);
+    const badge = document.querySelector('#vizFeetHero ~ .viz-rating, .viz-rating');
+    if (badge) { badge.textContent = newRating.label; badge.style.color = newRating.color; }
+    console.log(`[sfPredict] viz: local→worker swap (${vizEst} → ${adjusted})`);
+  });
   // Store for rating sync — the viz gauge rating should match the feet estimate
   D.vizFeetStr = vizEst;
 
