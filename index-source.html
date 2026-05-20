@@ -1589,6 +1589,144 @@
   </div>
 
 <script>
+// Chlorophyll Map — outside obfuscated block so onclick handlers resolve
+var CHL_MAP_URLS = {
+  '8day': 'https://coastwatch.noaa.gov/erddap/griddap/noaacwNPPVIIRSchlaWeekly.png?chlor_a[(last)][(0)][(32):(35.5)][(-121.5):(-116.5)]',
+  'daily': 'https://coastwatch.noaa.gov/erddap/griddap/noaacwNPPVIIRSchlaDaily.png?chlor_a[(last)][(0)][(32):(35.5)][(-121.5):(-116.5)]'
+};
+var CHL_MAP_LABELS = {
+  '8day': 'VIIRS S-NPP · Weekly composite · 4km',
+  'daily': 'VIIRS S-NPP · Daily · 4km (may have cloud gaps)'
+};
+var chlMapCurrentView = '8day';
+var chlMapLoaded = false;
+function toggleChlMap() {
+  var section = document.getElementById('chlMapSection');
+  var btn = document.getElementById('chlMapToggleBtn');
+  if (!section || !btn) return;
+  var hidden = section.style.display === 'none';
+  section.style.display = hidden ? '' : 'none';
+  btn.textContent = hidden ? 'Chlorophyll Map ▲' : 'Chlorophyll Map ▼';
+  if (hidden && !chlMapLoaded) loadChlMap();
+}
+function setChlMapView(view) {
+  chlMapCurrentView = view;
+  var btn8 = document.getElementById('chlMap8dayBtn');
+  var btnD = document.getElementById('chlMapDailyBtn');
+  if (view === '8day') {
+    btn8.style.background = 'var(--accent)'; btn8.style.color = '#fff'; btn8.style.borderColor = 'var(--accent)';
+    btnD.style.background = 'transparent'; btnD.style.color = 'var(--text-muted)'; btnD.style.borderColor = 'var(--border)';
+  } else {
+    btnD.style.background = 'var(--accent)'; btnD.style.color = '#fff'; btnD.style.borderColor = 'var(--accent)';
+    btn8.style.background = 'transparent'; btn8.style.color = 'var(--text-muted)'; btn8.style.borderColor = 'var(--border)';
+  }
+  document.getElementById('chlMapSourceLabel').textContent = CHL_MAP_LABELS[view];
+  loadChlMap();
+}
+function loadChlMap() {
+  var img = document.getElementById('chlMapImg');
+  var errDiv = document.getElementById('chlMapError');
+  var loadDiv = document.getElementById('chlMapLoading');
+  if (!img) return;
+  errDiv.style.display = 'none';
+  img.style.display = 'none';
+  loadDiv.style.display = '';
+  var url = CHL_MAP_URLS[chlMapCurrentView] + '&.timestamp=' + Date.now();
+  img.onload = function() { loadDiv.style.display = 'none'; img.style.display = 'block'; chlMapLoaded = true; };
+  img.onerror = function() { loadDiv.style.display = 'none'; img.style.display = 'none'; errDiv.style.display = 'block'; };
+  img.src = url;
+}
+window.toggleChlMap = toggleChlMap;
+window.setChlMapView = setChlMapView;
+window.loadChlMap = loadChlMap;
+
+// ===== Regional Ocean Temperature Map =====
+// NOAA Blended SST daily, rendered as PNG from ERDDAP. Three regional presets.
+var SST_MAP_REGIONS = {
+  'socal': { bbox: '%5B(32.0):(35.5)%5D%5B(-121.5):(-116.5)%5D', label: 'Southern California' },
+  'cencal': { bbox: '%5B(35.0):(38.0)%5D%5B(-124.0):(-120.5)%5D', label: 'Central California' },
+  'norcal': { bbox: '%5B(37.5):(41.5)%5D%5B(-125.5):(-122.5)%5D', label: 'Northern California' }
+};
+var sstMapCurrentRegion = 'socal';
+var sstMapCurrentType = 'sst';
+var sstMapLoaded = false;
+function setSstMapType(type) {
+  sstMapCurrentType = type;
+  var btnSst = document.getElementById('sstMapTypeSstBtn');
+  var btnAnom = document.getElementById('sstMapTypeAnomBtn');
+  if (type === 'sst') {
+    btnSst.style.background = 'var(--accent)'; btnSst.style.color = '#fff'; btnSst.style.borderColor = 'var(--accent)';
+    btnAnom.style.background = 'transparent'; btnAnom.style.color = 'var(--text-muted)'; btnAnom.style.borderColor = 'var(--border)';
+  } else {
+    btnAnom.style.background = 'var(--accent)'; btnAnom.style.color = '#fff'; btnAnom.style.borderColor = 'var(--accent)';
+    btnSst.style.background = 'transparent'; btnSst.style.color = 'var(--text-muted)'; btnSst.style.borderColor = 'var(--border)';
+  }
+  loadSstMap();
+}
+function toggleSstMap() {
+  var section = document.getElementById('sstMapSection');
+  var btn = document.getElementById('sstMapToggleBtn');
+  if (!section || !btn) return;
+  var hidden = section.style.display === 'none';
+  section.style.display = hidden ? '' : 'none';
+  btn.textContent = hidden ? 'Ocean Temperature Map \u25B2' : 'Ocean Temperature Map \u25BC';
+  if (hidden && !sstMapLoaded) loadSstMap();
+}
+function setSstMapRegion(region) {
+  sstMapCurrentRegion = region;
+  var btns = {
+    'socal': document.getElementById('sstMapSoCalBtn'),
+    'cencal': document.getElementById('sstMapCenCalBtn'),
+    'norcal': document.getElementById('sstMapNorCalBtn')
+  };
+  for (var k in btns) {
+    if (!btns[k]) continue;
+    if (k === region) {
+      btns[k].style.background = 'var(--accent)';
+      btns[k].style.color = '#fff';
+      btns[k].style.borderColor = 'var(--accent)';
+    } else {
+      btns[k].style.background = 'transparent';
+      btns[k].style.color = 'var(--text-muted)';
+      btns[k].style.borderColor = 'var(--border)';
+    }
+  }
+  var labelEl = document.getElementById('sstMapSourceLabel');
+  if (labelEl && SST_MAP_REGIONS[region]) {
+    labelEl.textContent = 'NOAA/NCEI Blended SST \u00B7 ' + SST_MAP_REGIONS[region].label + ' \u00B7 Daily \u00B7 ~5km';
+  }
+  loadSstMap();
+}
+function loadSstMap() {
+  var img = document.getElementById('sstMapImg');
+  var errDiv = document.getElementById('sstMapError');
+  var loadDiv = document.getElementById('sstMapLoading');
+  if (!img) return;
+  errDiv.style.display = 'none';
+  img.style.display = 'none';
+  loadDiv.style.display = '';
+  var bbox = SST_MAP_REGIONS[sstMapCurrentRegion].bbox;
+  var url, labelText;
+  if (sstMapCurrentType === 'anomaly') {
+    // Coral Reef Watch daily anomaly — difference from long-term climatology (°C)
+    url = 'https://coastwatch.noaa.gov/erddap/griddap/noaacrwsstanomalyDaily.png?sea_surface_temperature_anomaly%5B(last)%5D' + bbox + '&.colorBar=BlueWhiteRed%7C%7CLinear%7C-3%7C3%7C&.size=400%7C340&.timestamp=' + Date.now();
+    labelText = 'NOAA Coral Reef Watch \u00B7 SST Anomaly (\u00B0C vs climatology) \u00B7 ' + SST_MAP_REGIONS[sstMapCurrentRegion].label + ' \u00B7 Daily \u00B7 ~5km';
+  } else {
+    url = 'https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDsstDaily.png?analysed_sst%5B(last)%5D' + bbox + '&.colorBar=Rainbow2%7C%7CLinear%7C285%7C293%7C&.size=400%7C340&.timestamp=' + Date.now();
+    labelText = 'NOAA/NCEI Blended SST \u00B7 ' + SST_MAP_REGIONS[sstMapCurrentRegion].label + ' \u00B7 Daily \u00B7 ~5km';
+  }
+  var labelEl = document.getElementById('sstMapSourceLabel');
+  if (labelEl) labelEl.textContent = labelText;
+  img.onload = function() { loadDiv.style.display = 'none'; img.style.display = 'block'; sstMapLoaded = true; };
+  img.onerror = function() { loadDiv.style.display = 'none'; img.style.display = 'none'; errDiv.style.display = 'block'; };
+  img.src = url;
+}
+window.toggleSstMap = toggleSstMap;
+window.setSstMapRegion = setSstMapRegion;
+window.setSstMapType = setSstMapType;
+window.loadSstMap = loadSstMap;
+</script>
+<script>
 // =========================================================================
 // CONFIGURATION
 // =========================================================================
@@ -9980,144 +10118,6 @@ function showToast(title, body) {
 updateFavoriteStar();
 renderFavoritesBar();
 loadAlertSettings();
-</script>
-<script>
-// Chlorophyll Map — outside obfuscated block so onclick handlers resolve
-var CHL_MAP_URLS = {
-  '8day': 'https://coastwatch.noaa.gov/erddap/griddap/noaacwNPPVIIRSchlaWeekly.png?chlor_a[(last)][(0)][(32):(35.5)][(-121.5):(-116.5)]',
-  'daily': 'https://coastwatch.noaa.gov/erddap/griddap/noaacwNPPVIIRSchlaDaily.png?chlor_a[(last)][(0)][(32):(35.5)][(-121.5):(-116.5)]'
-};
-var CHL_MAP_LABELS = {
-  '8day': 'VIIRS S-NPP · Weekly composite · 4km',
-  'daily': 'VIIRS S-NPP · Daily · 4km (may have cloud gaps)'
-};
-var chlMapCurrentView = '8day';
-var chlMapLoaded = false;
-function toggleChlMap() {
-  var section = document.getElementById('chlMapSection');
-  var btn = document.getElementById('chlMapToggleBtn');
-  if (!section || !btn) return;
-  var hidden = section.style.display === 'none';
-  section.style.display = hidden ? '' : 'none';
-  btn.textContent = hidden ? 'Chlorophyll Map ▲' : 'Chlorophyll Map ▼';
-  if (hidden && !chlMapLoaded) loadChlMap();
-}
-function setChlMapView(view) {
-  chlMapCurrentView = view;
-  var btn8 = document.getElementById('chlMap8dayBtn');
-  var btnD = document.getElementById('chlMapDailyBtn');
-  if (view === '8day') {
-    btn8.style.background = 'var(--accent)'; btn8.style.color = '#fff'; btn8.style.borderColor = 'var(--accent)';
-    btnD.style.background = 'transparent'; btnD.style.color = 'var(--text-muted)'; btnD.style.borderColor = 'var(--border)';
-  } else {
-    btnD.style.background = 'var(--accent)'; btnD.style.color = '#fff'; btnD.style.borderColor = 'var(--accent)';
-    btn8.style.background = 'transparent'; btn8.style.color = 'var(--text-muted)'; btn8.style.borderColor = 'var(--border)';
-  }
-  document.getElementById('chlMapSourceLabel').textContent = CHL_MAP_LABELS[view];
-  loadChlMap();
-}
-function loadChlMap() {
-  var img = document.getElementById('chlMapImg');
-  var errDiv = document.getElementById('chlMapError');
-  var loadDiv = document.getElementById('chlMapLoading');
-  if (!img) return;
-  errDiv.style.display = 'none';
-  img.style.display = 'none';
-  loadDiv.style.display = '';
-  var url = CHL_MAP_URLS[chlMapCurrentView] + '&.timestamp=' + Date.now();
-  img.onload = function() { loadDiv.style.display = 'none'; img.style.display = 'block'; chlMapLoaded = true; };
-  img.onerror = function() { loadDiv.style.display = 'none'; img.style.display = 'none'; errDiv.style.display = 'block'; };
-  img.src = url;
-}
-window.toggleChlMap = toggleChlMap;
-window.setChlMapView = setChlMapView;
-window.loadChlMap = loadChlMap;
-
-// ===== Regional Ocean Temperature Map =====
-// NOAA Blended SST daily, rendered as PNG from ERDDAP. Three regional presets.
-var SST_MAP_REGIONS = {
-  'socal': { bbox: '%5B(32.0):(35.5)%5D%5B(-121.5):(-116.5)%5D', label: 'Southern California' },
-  'cencal': { bbox: '%5B(35.0):(38.0)%5D%5B(-124.0):(-120.5)%5D', label: 'Central California' },
-  'norcal': { bbox: '%5B(37.5):(41.5)%5D%5B(-125.5):(-122.5)%5D', label: 'Northern California' }
-};
-var sstMapCurrentRegion = 'socal';
-var sstMapCurrentType = 'sst';
-var sstMapLoaded = false;
-function setSstMapType(type) {
-  sstMapCurrentType = type;
-  var btnSst = document.getElementById('sstMapTypeSstBtn');
-  var btnAnom = document.getElementById('sstMapTypeAnomBtn');
-  if (type === 'sst') {
-    btnSst.style.background = 'var(--accent)'; btnSst.style.color = '#fff'; btnSst.style.borderColor = 'var(--accent)';
-    btnAnom.style.background = 'transparent'; btnAnom.style.color = 'var(--text-muted)'; btnAnom.style.borderColor = 'var(--border)';
-  } else {
-    btnAnom.style.background = 'var(--accent)'; btnAnom.style.color = '#fff'; btnAnom.style.borderColor = 'var(--accent)';
-    btnSst.style.background = 'transparent'; btnSst.style.color = 'var(--text-muted)'; btnSst.style.borderColor = 'var(--border)';
-  }
-  loadSstMap();
-}
-function toggleSstMap() {
-  var section = document.getElementById('sstMapSection');
-  var btn = document.getElementById('sstMapToggleBtn');
-  if (!section || !btn) return;
-  var hidden = section.style.display === 'none';
-  section.style.display = hidden ? '' : 'none';
-  btn.textContent = hidden ? 'Ocean Temperature Map \u25B2' : 'Ocean Temperature Map \u25BC';
-  if (hidden && !sstMapLoaded) loadSstMap();
-}
-function setSstMapRegion(region) {
-  sstMapCurrentRegion = region;
-  var btns = {
-    'socal': document.getElementById('sstMapSoCalBtn'),
-    'cencal': document.getElementById('sstMapCenCalBtn'),
-    'norcal': document.getElementById('sstMapNorCalBtn')
-  };
-  for (var k in btns) {
-    if (!btns[k]) continue;
-    if (k === region) {
-      btns[k].style.background = 'var(--accent)';
-      btns[k].style.color = '#fff';
-      btns[k].style.borderColor = 'var(--accent)';
-    } else {
-      btns[k].style.background = 'transparent';
-      btns[k].style.color = 'var(--text-muted)';
-      btns[k].style.borderColor = 'var(--border)';
-    }
-  }
-  var labelEl = document.getElementById('sstMapSourceLabel');
-  if (labelEl && SST_MAP_REGIONS[region]) {
-    labelEl.textContent = 'NOAA/NCEI Blended SST \u00B7 ' + SST_MAP_REGIONS[region].label + ' \u00B7 Daily \u00B7 ~5km';
-  }
-  loadSstMap();
-}
-function loadSstMap() {
-  var img = document.getElementById('sstMapImg');
-  var errDiv = document.getElementById('sstMapError');
-  var loadDiv = document.getElementById('sstMapLoading');
-  if (!img) return;
-  errDiv.style.display = 'none';
-  img.style.display = 'none';
-  loadDiv.style.display = '';
-  var bbox = SST_MAP_REGIONS[sstMapCurrentRegion].bbox;
-  var url, labelText;
-  if (sstMapCurrentType === 'anomaly') {
-    // Coral Reef Watch daily anomaly — difference from long-term climatology (°C)
-    url = 'https://coastwatch.noaa.gov/erddap/griddap/noaacrwsstanomalyDaily.png?sea_surface_temperature_anomaly%5B(last)%5D' + bbox + '&.colorBar=BlueWhiteRed%7C%7CLinear%7C-3%7C3%7C&.size=400%7C340&.timestamp=' + Date.now();
-    labelText = 'NOAA Coral Reef Watch \u00B7 SST Anomaly (\u00B0C vs climatology) \u00B7 ' + SST_MAP_REGIONS[sstMapCurrentRegion].label + ' \u00B7 Daily \u00B7 ~5km';
-  } else {
-    url = 'https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDsstDaily.png?analysed_sst%5B(last)%5D' + bbox + '&.colorBar=Rainbow2%7C%7CLinear%7C285%7C293%7C&.size=400%7C340&.timestamp=' + Date.now();
-    labelText = 'NOAA/NCEI Blended SST \u00B7 ' + SST_MAP_REGIONS[sstMapCurrentRegion].label + ' \u00B7 Daily \u00B7 ~5km';
-  }
-  var labelEl = document.getElementById('sstMapSourceLabel');
-  if (labelEl) labelEl.textContent = labelText;
-  img.onload = function() { loadDiv.style.display = 'none'; img.style.display = 'block'; sstMapLoaded = true; };
-  img.onerror = function() { loadDiv.style.display = 'none'; img.style.display = 'none'; errDiv.style.display = 'block'; };
-  img.src = url;
-}
-window.toggleSstMap = toggleSstMap;
-window.setSstMapRegion = setSstMapRegion;
-window.setSstMapType = setSstMapType;
-window.loadSstMap = loadSstMap;
 </script>
 </body>
 </html>
