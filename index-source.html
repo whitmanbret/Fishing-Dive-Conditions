@@ -6439,10 +6439,12 @@ function updateDisplay() {
       const lo = Math.max(1, Math.round(2 * shelterMult));
       const hi = Math.min(lo + 4, Math.max(lo+1, Math.round(5 * shelterMult)));
       vizEst=`${lo}–${hi} ft`;
+      _wePathDualTrack(lo, hi, '', 'rain');
     } else if(D.rainfall==='moderate') {
       const lo = Math.max(2, Math.round(5 * shelterMult));
       const hi = Math.min(lo + 5, Math.max(lo+1, Math.round(9 * shelterMult)));
       vizEst=`${lo}–${hi} ft`;
+      _wePathDualTrack(lo, hi, '', 'rain');
     }
     // PRIORITY 3: Wave energy based estimate (uses effectiveWE — shelter-dampened)
     // Calibrated 2026-03-17: ground truth 20ft at Pt Loma on a clear/low-swell day
@@ -6537,11 +6539,38 @@ function updateDisplay() {
       // Cap range spread to 6ft max (widened from 5 — WE-only has genuine uncertainty)
       if (hi - lo > 6) hi = lo + 6;
       vizEst = `${lo}–${hi} ft${suffix2}`;
+      _wePathDualTrack(lo, hi, suffix2, 'we');
     } else if(D.rainfall==='none'||D.rainfall==='trace') {
       const lo = Math.round(12 * shelterMult);
       const hi = Math.min(lo + 5, Math.round(17 * shelterMult));
       vizEst=`${lo}–${hi} ft (est.)`;
-    } else vizEst='6–10 ft (est.)';
+      _wePathDualTrack(lo, hi, ' (est.)', 'estimate');
+    } else { vizEst='6–10 ft (est.)'; _wePathDualTrack(6, 10, ' (est.)', 'estimate'); }
+  }
+
+  // Helper for Phase 2B.4c dual-track — declared as a local closure so it can
+  // capture the surrounding effectiveWE / shelterMult etc.
+  function _wePathDualTrack(localLo, localHi, localSuffix, localPath) {
+    sfPredict('vizWeFallbackPath', {
+      effectiveWE: effectiveWE === undefined ? null : effectiveWE,
+      shelterMult,
+      rainfall: D.rainfall,
+      chlorophyll: D.chlorophyll,
+      chlIsClimatology: !!D.chlIsClimatology,
+      waveEnergy: D.waveEnergy,
+      runoffAdvisory: D.runoffAdvisory || null,
+      currentLocation,
+      tideState: D.tideState,
+      loc: { bottom: loc.bottom, kelpDensity: loc.kelpDensity, offshore: !!loc.offshore, bluewater: !!loc.bluewater, headlandClearing: !!loc.headlandClearing },
+    }).then(server => {
+      if (!server) { console.log('[sfPredict] vizWeFallbackPath: worker unreachable'); return; }
+      const loOk = server.lo === localLo;
+      const hiOk = server.hi === localHi;
+      const sfxOk = (server.suffix || '') === (localSuffix || '');
+      const pathOk = server.path === localPath;
+      const tag = (loOk && hiOk && sfxOk && pathOk) ? '✓ match' : '✗ DELTA';
+      console.log(`[sfPredict] vizWeFallbackPath[${localPath}]: local={${localLo}-${localHi}${localSuffix}} worker={${server.lo}-${server.hi}${server.suffix}[${server.path}]} ${tag}`);
+    });
   }
   // Auto-calibrate from diver reports — adjust estimate based on crowd feedback
   vizEst = applyVizCalibration(vizEst);
