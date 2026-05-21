@@ -6102,12 +6102,17 @@ function updateDisplay() {
   let vizEst='--';
   let vizSource = 'EST';
   let effectiveWE = D.waveEnergy; // hoisted so confidence section can access it
+  // 2026-05-21: hoisted out of the if-block so the Phase 2B.6a worker-swap
+  // callback (which runs outside the block) can read it. Was throwing
+  // 'shelterMult is not defined' for spots where the if-block didn't enter
+  // OR for OC/non-Scripps spots whose first render had no SASS data yet —
+  // which then cascaded to skip buildForecast(), breaking the 5-day forecast.
+  let shelterMult = 1.0;
   if(D.waveEnergy!==undefined||D.rainfall||D.turbidity!==undefined) {
     // Location-aware visibility: kelp and shelter improve viz, but capped to stay realistic
     const locShelter = loc.shelter || 'low';
     const locKelp = loc.kelpDensity || 'none';
-    // Shelter multiplier — capped at 1.25 to avoid unrealistic 70+ ft estimates
-    let shelterMult = 1.0;
+    // (shelterMult declared at outer scope above; reassign inside the block.)
     // Shelter+kelp bonuses trimmed in calibration pass 4/26/2026 — Monterey Bay
     // (high shelter + high kelp = 1.25× boost) was producing 23-29 ft when actual
     // was ~20 ft for similar conditions. Stacking high+high too generously.
