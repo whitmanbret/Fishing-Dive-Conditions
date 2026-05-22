@@ -5928,7 +5928,7 @@ function renderConditionCards() {
   try { renderWaveCard(); } catch(e) { console.warn('wave card:', e); }
 }
 
-function updateDisplay() {
+async function updateDisplay() {
   const now=new Date();
   const loc=LOCATIONS[currentLocation];
   const dateStr = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
@@ -6126,525 +6126,78 @@ function updateDisplay() {
   const kelpInfo = loc.kelpDensity && loc.kelpDensity !== 'none' ? ` · Kelp: ${loc.kelpDensity}` : '';
   setVal('bottomVal', (bottomLabels[D.bottom]||D.bottom) + depthInfo + kelpInfo, loc.name);
 
-  let vizEst='--';
+  // Phase 2B.6b — the prediction algorithm now lives ONLY in the worker.
+  // Frontend awaits the worker's viz result and renders it. Local-only
+  // adjustments (applyVizCalibration + tide bias) stay here because they
+  // depend on per-user localStorage. If the worker is unreachable, show a
+  // graceful "Service unavailable" state rather than fall back to local
+  // (that would defeat the algorithm protection).
+  let vizEst = '--';
   let vizSource = 'EST';
-  let effectiveWE = D.waveEnergy; // hoisted so confidence section can access it
-  // 2026-05-21: hoisted out of the if-block so the Phase 2B.6a worker-swap
-  // callback (which runs outside the block) can read it. Was throwing
-  // 'shelterMult is not defined' for spots where the if-block didn't enter
-  // OR for OC/non-Scripps spots whose first render had no SASS data yet —
-  // which then cascaded to skip buildForecast(), breaking the 5-day forecast.
-  let shelterMult = 1.0;
-  if(D.waveEnergy!==undefined||D.rainfall||D.turbidity!==undefined) {
-    // Location-aware visibility: kelp and shelter improve viz, but capped to stay realistic
-    const locShelter = loc.shelter || 'low';
-    const locKelp = loc.kelpDensity || 'none';
-    // (shelterMult declared at outer scope above; reassign inside the block.)
-    // Shelter+kelp bonuses trimmed in calibration pass 4/26/2026 — Monterey Bay
-    // (high shelter + high kelp = 1.25× boost) was producing 23-29 ft when actual
-    // was ~20 ft for similar conditions. Stacking high+high too generously.
-    if (locKelp === 'high') shelterMult += 0.10;       // was 0.15
-    else if (locKelp === 'moderate') shelterMult += 0.07;
-    if (locShelter === 'high') shelterMult += 0.07;     // was 0.10
-    else if (locShelter === 'moderate') shelterMult += 0.04;
+  let effectiveWE = D.waveEnergy;  // raw fallback for the confidence indicator below
+  try {
+    // Surface-bloom factor is the only piece that stays frontend-side at the
+    // call site, because it depends on REGION_MAP + CHL_CLIMATOLOGY_BY_REGION
+    // tables (static config, not algorithm) which are easier to keep local.
+    const _surfaceBloomFactor = (() => {
+      if (!loc.scrippsProximity) return null;
+      const _ntu = D.turbidity;
+      const inBloomDecay = _ntu !== undefined && _ntu < 0.6 && D.chlorophyll >= 0.5 && D.chlorophyll < 3;
+      if (inBloomDecay) return null;
+      const liveChlLow = D.chlorophyll !== undefined && D.chlorophyll < 2;
+      if (!liveChlLow) return null;
+      const _m = new Date().getMonth() + 1;
+      const _region = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
+      const _climoTable = (typeof CHL_CLIMATOLOGY_BY_REGION !== 'undefined') ? CHL_CLIMATOLOGY_BY_REGION[_region] : null;
+      const _climo = _climoTable ? _climoTable[_m] : null;
+      if (_climo === null || _climo === undefined || _climo < 5) return null;
+      return 0.85;
+    })();
 
-    // Wave energy dampening — combines shelter geometry, kelp filtering, and bottom type.
-    // Ground truth: Monterey Breakwater 4/2 — buoy WE 461, actual viz 40 ft (calm inside harbor)
-    // Ground truth 4/25/2026: LJ Cove (high shelter + high kelp) "decent in shallows"
-    // while LJ Shores (moderate shelter + sand bottom) "hazy + big surf" same swell event.
-    // The cove must not get the same penalty as a sand-bottom open beach.
-    effectiveWE = D.waveEnergy;
-    if (effectiveWE !== undefined) {
-      // Shelter geometry: how protected is the spot from swell?
-      let shelterFactor = 1.0;  // 'low' / undefined
-      if (locShelter === 'high')         shelterFactor = 0.15;  // breakwater/cove — 85% attenuation
-      else if (locShelter === 'moderate') shelterFactor = 0.55; // headlands, partial coves — was 0.7, tightened
-      // Kelp canopy filters wave-driven turbidity — additional knock-down on top of shelter
-      let kelpFactor = 1.0;
-      if (locKelp === 'high' || locKelp === 'heavy') kelpFactor = 0.75;  // dense canopy = ~25% reduction
-      else if (locKelp === 'moderate')              kelpFactor = 0.90;
-      // Sand bottom is hyper-sensitive to surge — sediment kicks up at much lower WE
-      // than rock/reef/kelp. Penalty only kicks in when there's actual swell energy.
-      let bottomFactor = 1.0;
-      if (effectiveWE > 80 && (loc.bottom === 'sand' || loc.bottom === 'mixed')) {
-        bottomFactor = loc.bottom === 'sand' ? 1.45 : 1.20;
-      }
-      // Cove-trap penalty for south-facing OC pocket coves (Laguna Crescent Bay,
-      // Deadman's, etc.). The original rule fired on any south swell, but
-      // calibration data 4/29-4/30/2026 (3 separate Laguna reports: Crescent
-      // 10-30, Goff ~10, area 10-15 — all on long-period south swell with no
-      // runoff) showed the rule was over-correcting on clean groundswell days.
-      // The actual trap mechanism requires either:
-      //   (a) post-storm runoff plume in the pocket, OR
-      //   (b) short-period chop that physically stirs sediment.
-      // Long-period clean groundswell flushes through without trapping.
-      if (loc.coveTrap && D.swellDir && effectiveWE > 30) {
-        const sdir = D.mwd;
-        const swellSouth = D.swellDir === 'south' || D.swellDir === 'sw' ||
-                           (sdir >= 135 && sdir <= 225);
-        // Trap requires south swell PLUS one of: active runoff OR short period (chop)
-        const hasRunoff = D.runoffAdvisory && D.runoffAdvisory.severity !== 'light';
-        const isShortPeriod = D.swellPeriod !== undefined && D.swellPeriod < 10;
-        if (swellSouth && (hasRunoff || isShortPeriod)) {
-          // Trap fires only when conditions actually concentrate murk
-          // Less aggressive multiplier (1.4 vs 1.6) since rule is now narrower
-          effectiveWE = effectiveWE * 1.4;
-        }
-      }
-      effectiveWE = effectiveWE * shelterFactor * kelpFactor * bottomFactor;
-    }
-    // Long-period swell correction — organized groundswell (>12s) produces less turbulent
-    // mixing than short-period wind chop at same WE. Physics: long-period orbital velocities
-    // are deeper & smoother; short chop creates chaotic near-surface stirring that suspends sediment.
-    // Ground truth: Pt Loma 4/2 — 3.5ft @ 14s south swell (WE 172) but clean organized swell,
-    // viz should be 10-15+ ft, not 5-8 ft. Same day LJ Shores 25+ ft with WE 32.
-    if (effectiveWE !== undefined && D.swellPeriod && effectiveWE > 30) {
-      // Only apply period correction when there's meaningful swell energy
-      // Below WE 30 it's calm regardless of period
-      if (D.swellPeriod >= 15) effectiveWE *= 0.55;       // very long period — clean groundswell
-      else if (D.swellPeriod >= 12) effectiveWE *= 0.7;   // long period — organized swell
-      else if (D.swellPeriod <= 6) effectiveWE *= 1.3;    // short period — choppy wind swell, more mixing
-    }
-    // Phase 2B.4a dual-track: send the same inputs to worker, compare to local
-    // shelterMult + effectiveWE. Local stays authoritative; deltas log to console.
-    sfPredict('vizPreprocess', {
+    const _capturedLocation = currentLocation;
+    const worker = await sfPredict('viz', {
+      ntu: D.turbidity,
+      chlorophyll: D.chlorophyll,
+      chlIsClimatology: !!D.chlIsClimatology,
       waveEnergy: D.waveEnergy,
       swellPeriod: D.swellPeriod,
       swellDir: D.swellDir,
       mwd: D.mwd,
-      loc: { shelter: loc.shelter, kelpDensity: loc.kelpDensity, bottom: loc.bottom, coveTrap: loc.coveTrap },
-      runoffAdvisory: D.runoffAdvisory || null,
-    }).then(server => {
-      if (!server) { console.log('[sfPredict] vizPreprocess: worker unreachable'); return; }
-      const shM = Math.abs(server.shelterMult - shelterMult) < 0.001;
-      const localWE = effectiveWE === undefined ? null : effectiveWE;
-      const serverWE = server.effectiveWE;
-      let weOk;
-      if (localWE === null && serverWE === null) weOk = true;
-      else if (localWE === null || serverWE === null) weOk = false;
-      else weOk = Math.abs(serverWE - localWE) < 0.01;
-      const tag = (shM && weOk) ? '✓ match' : '✗ DELTA';
-      console.log(`[sfPredict] vizPreprocess: local={shM:${shelterMult.toFixed(2)},WE:${localWE === null ? 'null' : localWE.toFixed(2)}} worker={shM:${server.shelterMult.toFixed(2)},WE:${serverWE === null ? 'null' : serverWE.toFixed(2)}} ${tag}`);
-    });
-
-    // PRIORITY 0: Offshore islands — nearshore turbidity doesn't apply
-    // Coronado Islands sit in open ocean; vis driven by swell, current, and upwelling
-    // Ground truth: 40-50ft typical on good days (Mar 2026 report), 20-30ft average
-    if (loc.offshore) {
-      let lo, hi;
-      // Dampen nearshore CDIP wave energy to represent open-ocean conditions.
-      // Swell shoals (builds) as it approaches shore — open-ocean WE is ~40-60% of nearshore.
-      // Further dampen for long-period groundswell (clean, doesn't disturb water column)
-      // and amplify for short-period wind swell (messy, stirs everything up).
-      // Ground truth: nearshore WE 271 + 14s period = 70ft vis at Coronado Islands (4/24/2026)
-      const rawWe = D.waveEnergy || 0;
-      const shoalingMult = loc.bluewater ? 0.4 : 0.55;
-      // Period-based dampening — clean groundswell preserves viz even at high energy
-      let periodMult = 1.0;
-      if (D.swellPeriod !== undefined) {
-        if (D.swellPeriod >= 15)      periodMult = 0.40;  // very clean groundswell
-        else if (D.swellPeriod >= 13) periodMult = 0.50;  // clean groundswell
-        else if (D.swellPeriod >= 11) periodMult = 0.70;  // mild groundswell
-        else if (D.swellPeriod <= 6)  periodMult = 1.35;  // short-period wind swell
-      }
-      const we = rawWe * shoalingMult * periodMult;
-      // Offshore baseline is much higher — no runoff, no surf zone turbidity
-      if (we <= 30) { lo = 50; hi = 70; }        // glassy = exceptional offshore clarity
-      else if (we <= 80) { lo = 40; hi = 60; }    // light swell — still excellent
-      else if (we <= 150) { lo = 30; hi = 50; }   // moderate nearshore = mild offshore, great vis
-      else if (we <= 300) { lo = 15; hi = 30; }   // significant swell — still decent offshore
-      else { lo = 8; hi = 20; }                    // major swell — even offshore gets stirred up
-      // Upwelling can bring cold, nutrient-rich (greenish) water up
-      if (D.upwelling === 'active_now' || D.upwelling === 'strong_recent') {
-        lo = Math.max(8, lo - 8); hi = Math.max(lo + 5, hi - 8);
-      }
-      // Chlorophyll bloom penalty (rare offshore but possible) — only with live data
-      let suffix = '';
-      if (!D.chlIsClimatology) {
-        if (D.chlorophyll > 8) { lo = Math.max(5, lo - 10); hi = Math.max(lo + 5, hi - 10); suffix = ' (bloom)'; }
-        else if (D.chlorophyll > 3) { lo = Math.max(8, lo - 5); hi = Math.max(lo + 5, hi - 5); suffix = ' (green water)'; }
-      }
-      // Rain doesn't directly affect offshore, but heavy coastal runoff can spread
-      if (D.rainfall === 'heavy') { lo = Math.max(5, lo - 5); hi = Math.max(lo + 5, hi - 5); }
-      // Cap spread to 10ft max — wider ranges look imprecise
-      // If the natural range exceeds 10ft, show "lo–hi+" to indicate upside
-      const maxSpreadOffshore = 10;
-      let offshorePlus = '';
-      if (hi - lo > maxSpreadOffshore) {
-        hi = lo + maxSpreadOffshore;
-        offshorePlus = '+';
-      }
-      vizEst = `${lo}–${hi}${offshorePlus} ft${suffix}`;
-      vizSource = 'Offshore Model';
-      // Phase 2B.4e dual-track: send the same inputs to worker, compare lo/hi/suffix/plus.
-      sfPredict('vizOffshorePath', {
-        waveEnergy: D.waveEnergy,
-        swellPeriod: D.swellPeriod,
-        upwelling: D.upwelling,
-        chlorophyll: D.chlorophyll,
-        chlIsClimatology: !!D.chlIsClimatology,
-        rainfall: D.rainfall,
-        loc: { offshore: !!loc.offshore, bluewater: !!loc.bluewater },
-      }).then(server => {
-        if (!server) { console.log('[sfPredict] vizOffshorePath: worker unreachable'); return; }
-        const loOk = server.lo === lo;
-        const hiOk = server.hi === hi;
-        const sfxOk = (server.suffix || '') === (suffix || '');
-        const plusOk = (server.plus || '') === (offshorePlus || '');
-        const tag = (loOk && hiOk && sfxOk && plusOk) ? '✓ match' : '✗ DELTA';
-        console.log(`[sfPredict] vizOffshorePath: local={${lo}-${hi}${offshorePlus}${suffix}} worker={${server.lo}-${server.hi}${server.plus}${server.suffix}} ${tag}`);
-      });
-    }
-    // PRIORITY 1: If we have real-time turbidity from shore station, use NTU-based estimate
-    // Calibrated from Dec 2024 NTU data + Scripps Pier camera piling distances (4/11/14/30 ft)
-    // NOTE: Pier sensor is under-pier at 5m; it measures particle scattering (NTU) but NOT
-    // biological factors like phytoplankton that make water green and reduce viz.
-    // Ground truth: 2026-03-17 Pt Loma 0.25 NTU = 14-18 ft; 2026-03-22 LJ Shores 0.27 NTU + green water = 8-10 ft
-    else if (D.turbidity !== undefined) {
-      let lo, hi;
-      const ntu = D.turbidity;
-      // NTU→viz mapping — recalibrated 2026-04-01 from 16 paired diver reports
-      // Key ground truths: NTU 0.21 + calm = 20-35ft (4/1 LJ), NTU 0.25 = 14-18ft (3/19 PL)
-      // NTU 0.27 + chl 0.65 = 8-10ft (3/22 LJ green water — chl penalty handles this)
-      if(ntu < 0.15)      { lo=22; hi=30; }  // crystal clear — rare
-      else if(ntu < 0.25)  { lo=17; hi=25; }  // very clean
-      else if(ntu < 0.35)  { lo=13; hi=19; }  // clean
-      else if(ntu < 0.5)   { lo=10; hi=15; }  // good conditions
-      else if(ntu < 0.8)   { lo=7;  hi=12; }  // moderate
-      else if(ntu < 1.2)   { lo=5;  hi=10; }  // elevated
-      else if(ntu < 2.0)   { lo=4;  hi=8;  }  // murky
-      else if(ntu < 3.5)   { lo=3;  hi=6;  }  // poor
-      else if(ntu < 5.0)   { lo=2;  hi=4;  }
-      else                  { lo=1;  hi=3;  }
-      // Mild shelter adjustment — turbidity is direct measurement, so only small boost
-      const turbShelter = Math.min(1.15, shelterMult);
-      lo = Math.max(1, Math.round(lo * turbShelter));
-      hi = Math.max(lo+1, Math.round(hi * turbShelter));
-      // Offshore-kelp-bed bloom-filtering boost — re-applied 2026-05-11 evening.
-      // The Scripps Pier sensor reads the sediment+plume that the kelp canopy
-      // 1 mi offshore filters before it reaches the kelp beds, so the pier NTU
-      // over-states what the actual kelp-bed water column is seeing. Only fires
-      // for spots that match: bottom=kelp + kelpDensity=high + !scrippsProximity
-      // + !offshore — that's Pt Loma Kelp + LJ Kelp Beds in current location set.
-      // Conservative: only kicks in when NTU > 0.5 (pier is reading bloom signal).
-      // Ground truth 5/11: Pt Loma Kelp actual 15-25 ft, NTU 0.51 + chl 1.27;
-      // tool was 10-15 without the boost (under by 5-10 ft).
-      const isOffshoreKelpBed = loc.bottom === 'kelp' && loc.kelpDensity === 'high' && !loc.scrippsProximity && !loc.offshore;
-      if (isOffshoreKelpBed && ntu > 0.5) {
-        const kelpBedMult = ntu > 1.2 ? 1.8 : (ntu > 0.8 ? 1.5 : 1.25);
-        lo = Math.round(lo * kelpBedMult);
-        hi = Math.max(lo + 1, Math.round(hi * kelpBedMult));
-      }
-      // Calm conditions bonus — very low wave energy = less stirring, viz improves
-      // Ground truth: 4/1 LJ glassy (WE 5-9) = 25-35ft; 3/23 LJ some swell (WE ~40) = 10-15ft
-      // Uses effectiveWE (shelter-dampened) so harbor sites get calm bonus even with big open-ocean swell
-      // IMPORTANT: Reduce calm bonus during phytoplankton blooms — green water limits viz
-      // regardless of surface conditions. Ground truth: 4/15-16 Scripps cam "really green",
-      // ocean flat (WE ~9), but viz only 5-10ft at LJ Shores. NTU 0.32 (clean particles)
-      // but chl 0.94 = bloom absorbing light. Calm bonus was inflating estimate to 16-21ft.
-      const chlLiveSensor = D.chlorophyll !== undefined && !D.chlIsClimatology;
-      const chlRelevant = chlLiveSensor || (D.chlorophyll !== undefined && D.chlIsClimatology && loc.scrippsProximity);
-      const bloomActive = chlRelevant && D.chlorophyll > 0.5;
-      if (effectiveWE !== undefined && effectiveWE < 10) {
-        const calmMult = bloomActive ? 1.10 : 1.35;  // bloom = minimal calm bonus
-        lo = Math.round(lo * calmMult);
-        hi = Math.round(hi * calmMult);
-      } else if (effectiveWE !== undefined && effectiveWE < 20) {
-        const calmMult = bloomActive ? 1.05 : 1.15;
-        lo = Math.round(lo * calmMult);
-        hi = Math.round(hi * calmMult);
-      }
-      // If swell is high, blend downward (pier is sheltered, open water gets more surge)
-      if (effectiveWE !== undefined && effectiveWE > 100) {
-        lo = Math.max(1, Math.round(lo * 0.7));
-        hi = Math.max(lo+1, Math.round(hi * 0.7));
-      } else if (effectiveWE !== undefined && effectiveWE > 50) {
-        lo = Math.max(1, Math.round(lo * 0.85));
-        hi = Math.max(lo+1, Math.round(hi * 0.85));
-      }
-      // Chlorophyll reduction — phytoplankton makes water green, reduces viz independent of NTU
-      // NTU only measures particle scattering; chlorophyll absorbs light and cuts underwater visibility
-      // Ground truth: 2026-03-22 LJ Shores, 0.27 NTU + 0.65 chl = 8-10 ft (green water)
-      //
-      // Climatology now applies everywhere — we have per-region monthly curves
-      // (CHL_CLIMATOLOGY_BY_REGION) that ARE the regional bloom signal. A May
-      // climatology of 14 in Monterey or 8.5 in SoCal isn't "noise" — that's
-      // peak bloom season. Skipping the penalty there was systematically
-      // over-predicting viz at non-Scripps spots (Laguna 16-22ft 4/26, but
-      // SoCal April climatology is 8.5 mg/m³, plus rain → realistic 5-12ft).
-      // Live sensor data still applies at full strength; climatology applies
-      // at 70% strength (a regional average, not a same-day measurement).
-      let suffix = '';
-      const chlApplies = D.chlorophyll !== undefined && D.chlorophyll > 0;
-      // Climatology applied at 30% strength — calibration pass 4/26/2026 against
-      // ~80 dive reports showed 0.7 was crushing the calm-tier baseline. Most April
-      // days in Monterey are 20-40 ft viz despite climatology saying peak bloom;
-      // the bloom is patchy and short-lived. Live sensor still applies at 100%.
-      const climoStrength = D.chlIsClimatology ? 0.3 : 1.0;
-
-      // Surface-bloom floor for scrippsProximity spots — calibration update
-      // 4/30/2026. LJ Cove area was over-predicting 5-10 ft for 5 days
-      // straight (4/27-4/30) during active red tide. Root cause: the Scripps
-      // Pier fluorometer sits at depth and reads "clean" while a surface
-      // bloom layer (red-tide style) caps the top 15-20 ft. Boomer Beach
-      // 4/28 confirmed: actual 10 ft viz with cleaner water below thermocline.
-      // Fix: when location is scrippsProximity AND regional climatology says
-      // peak bloom (>=5 mg/m³ for current month) AND live reading is
-      // suspiciously low (<2 mg/m³), trust the season more — apply a 0.85
-      // floor multiplier to acknowledge the surface bloom the sensor can't see.
-      const _surfaceBloomCheck = (() => {
-        if (!loc.scrippsProximity) return null;
-        // 2026-05-11: skip surface-bloom floor when in bloom-DECAY phase. The
-        // floor assumes the live sensor under-reads peak-season surface bloom,
-        // but during decay the OPPOSITE is true — sensor over-reads (chl
-        // pigment lingers in fluorometer while cells have settled). Applying
-        // the floor on top of the chl-decay multiplier was double-discounting.
-        // Paired 5/11 reports: LJ Shores 12+ ft / Pt Loma 15-25 ft actual vs
-        // tool 6-9 / 8-13 (under by 3-12 ft). Same sensor inputs.
-        const ntu = D.turbidity;
-        const inBloomDecay = ntu !== undefined && ntu < 0.6 && D.chlorophyll >= 0.5 && D.chlorophyll < 3;
-        if (inBloomDecay) return null;
-        const liveChlLow = D.chlorophyll !== undefined && D.chlorophyll < 2;
-        if (!liveChlLow) return null;
-        const month = new Date().getMonth() + 1;
-        const region = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
-        const climoTable = (typeof CHL_CLIMATOLOGY_BY_REGION !== 'undefined') ? CHL_CLIMATOLOGY_BY_REGION[region] : null;
-        const climo = climoTable ? climoTable[month] : null;
-        if (climo === null || climo === undefined || climo < 5) return null;
-        return 0.85;  // ~15% reduction for unmeasured surface bloom
-      })();
-      if (chlApplies) {
-        // Helper: blend a hardcoded multiplier toward 1.0 by (1 - climoStrength).
-        // Live sensor (climoStrength=1.0) gets the raw mult; climatology
-        // (climoStrength=0.7) gets a softened version.
-        const blendMult = (m) => 1 - climoStrength * (1 - m);
-
-        // Recalibrated 4/16: 0.94 chl + 0.32 NTU = camera "really green", actual 5-10ft
-        // 3/22: 0.65 chl + 0.27 NTU = 8-10ft actual
-        // 4/21: 1.0 chl + 0.25 NTU = 25-30ft actual (bloom-DECAY phase — cells settled
-        //       but fluorometer still reads pigment. Detect via clean NTU + moderate chl.)
-        // 5/11/2026 widened bloomDecay NTU threshold from 0.35 to 0.6 — today's
-        // LJ Shores/Marine Room report: NTU 0.54 + chl 1.25, actual 12+ ft surface.
-        // The narrower threshold missed mid-decay cases where chl pigment lingers
-        // but NTU has cleared somewhat (not all the way to 0.35).
-        const bloomDecay = ntu !== undefined && ntu < 0.6 && D.chlorophyll >= 0.5 && D.chlorophyll < 3;
-        const climoLabel = D.chlIsClimatology ? ' (bloom season)' : '';
-        if (D.chlorophyll > 8)       {
-          const m = blendMult(0.35);
-          lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
-          suffix = D.chlIsClimatology ? ' (bloom season)' : ' (bloom)';
-        }
-        else if (D.chlorophyll > 3)  {
-          const m = blendMult(0.45);
-          lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
-          suffix = D.chlIsClimatology ? ' (bloom season)' : ' (green water)';
-        }
-        else if (D.chlorophyll > 1.5){
-          const m = blendMult(bloomDecay ? 0.90 : 0.50);
-          lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
-          suffix = bloomDecay ? ' (clearing)' : (D.chlIsClimatology ? ' (bloom season)' : ' (green water)');
-        }
-        else if (D.chlorophyll > 0.8){
-          const m = blendMult(bloomDecay ? 0.95 : 0.55);
-          lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
-          suffix = bloomDecay ? ' (clearing)' : (D.chlIsClimatology ? ' (bloom season)' : ' (green water)');
-        }
-        else if (D.chlorophyll > 0.4){
-          const m = blendMult(bloomDecay ? 1.00 : 0.75);
-          lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
-          suffix = bloomDecay ? '' : (D.chlIsClimatology ? '' : ' (green tinge)');
-        }
-      }
-      // Apply surface-bloom floor (computed earlier) — accounts for surface
-      // bloom layers the deep Scripps fluorometer can't see during peak season
-      if (_surfaceBloomCheck !== null) {
-        lo = Math.max(2, Math.round(lo * _surfaceBloomCheck));
-        hi = Math.max(lo+1, Math.round(hi * _surfaceBloomCheck));
-        if (!suffix) suffix = ' (bloom season)';
-      }
-      // La Jolla headland clearing — added 2026-05-11. Pt La Jolla projects into
-      // deeper water and the Scripps submarine canyon brings offshore exchange
-      // right to shore. Per local dive knowledge, LJ Cove + LJ Kelp Beds run
-      // ~5-10 ft cleaner than Pt Loma kelp on comparable Scripps SASS readings.
-      // 2026-05-19: gated on wave energy. When swell is up, the headland
-      // concentrates surge and stirs sediment instead of bringing in clean
-      // exchange — boost only applies on calm-to-moderate days.
-      if (loc.headlandClearing && (D.waveEnergy || 0) < 50) {
-        lo += 5;
-        hi += 5;
-      }
-      // Cap range spread — wider for clean water (low NTU has genuine variability)
-      const maxSpread = ntu < 0.25 ? 8 : 5;
-      if (hi - lo > maxSpread) hi = lo + maxSpread;
-      vizEst = `${lo}–${hi} ft${suffix}`;
-      vizSource = D.turbSource || 'Shore Station';
-      // Phase 2B.4b dual-track: same NTU-path inputs → worker, compare lo/hi/suffix.
-      // Local stays authoritative; deltas log to console.
-      sfPredict('vizNtuPath', {
-        ntu,
-        effectiveWE: effectiveWE === undefined ? null : effectiveWE,
-        shelterMult,
-        chlorophyll: D.chlorophyll,
-        chlIsClimatology: !!D.chlIsClimatology,
-        waveEnergy: D.waveEnergy,
-        surfaceBloomFactor: _surfaceBloomCheck,
-        loc: {
-          bottom: loc.bottom, kelpDensity: loc.kelpDensity,
-          scrippsProximity: !!loc.scrippsProximity, offshore: !!loc.offshore,
-          headlandClearing: !!loc.headlandClearing,
-        },
-      }).then(server => {
-        if (!server) { console.log('[sfPredict] vizNtuPath: worker unreachable'); return; }
-        const loOk = server.lo === lo;
-        const hiOk = server.hi === hi;
-        const sfxOk = (server.suffix || '') === (suffix || '');
-        const tag = (loOk && hiOk && sfxOk) ? '✓ match' : '✗ DELTA';
-        console.log(`[sfPredict] vizNtuPath: local={${lo}-${hi}${suffix}} worker={${server.lo}-${server.hi}${server.suffix}} ${tag}`);
-      });
-    }
-    // PRIORITY 2: Rain overrides swell-based estimate
-    else if(D.rainfall==='heavy') {
-      const lo = Math.max(1, Math.round(2 * shelterMult));
-      const hi = Math.min(lo + 4, Math.max(lo+1, Math.round(5 * shelterMult)));
-      vizEst=`${lo}–${hi} ft`;
-      _wePathDualTrack(lo, hi, '', 'rain');
-    } else if(D.rainfall==='moderate') {
-      const lo = Math.max(2, Math.round(5 * shelterMult));
-      const hi = Math.min(lo + 5, Math.max(lo+1, Math.round(9 * shelterMult)));
-      vizEst=`${lo}–${hi} ft`;
-      _wePathDualTrack(lo, hi, '', 'rain');
-    }
-    // PRIORITY 3: Wave energy based estimate (uses effectiveWE — shelter-dampened)
-    // Calibrated 2026-03-17: ground truth 20ft at Pt Loma on a clear/low-swell day
-    // 2026-04-02: Monterey Breakwater WE 461 actual viz 40ft — shelter dampening critical
-    // Recalibrated 2026-04-02: 3 consecutive days of 20-35ft viz at LJ Shores with WE 10-40
-    // WE 20-50 tier widened (was 12-17, now 14-22) — calm conditions produce better viz than modeled
-    else if(effectiveWE!==undefined) {
-      let lo, hi;
-      // Calm tiers tightened 4/26/2026 — Monterey Bay actual 20 ft on glassy
-      // day, tool predicted 23-29 (high+high shelter stack). Dropped 22-30 →
-      // 20-28 baseline so the prediction better matches "slightly over 20"
-      // ground truth on clean calm days. Surf tiers unchanged (already calibrated).
-      if(effectiveWE<10)  { lo=20; hi=28; }  // glassy
-      else if(effectiveWE<=20) { lo=16; hi=24; }
-      else if(effectiveWE<=35) { lo=13; hi=20; }
-      else if(effectiveWE<=50) { lo=10; hi=16; }
-      else if(effectiveWE<=100) { lo=7; hi=12; }
-      else if(effectiveWE<=200) { lo=4; hi=7; }
-      else { lo=1; hi=4; }
-      // Apply shelter multiplier
-      lo = Math.max(1, Math.round(lo * shelterMult));
-      hi = Math.max(lo+1, Math.round(hi * shelterMult));
-      // Chlorophyll penalty — multiplicative so it scales with baseline. The
-      // previous subtractive form (-4 ft for bloom) only docked 4 ft off the
-      // 22-30 calm tier, leaving 18-26 — way too high for actual bloom days.
-      // A multiplicative penalty (×0.4) brings 22-30 down to 9-12 which
-      // matches ground truth (Monterey 4/26/2026 bloom = 5-10 ft actual).
-      // Climatology applied at 70% strength via blendMult: live ×0.4 → climo ×0.58.
-      let suffix2 = '';
-      const chlOk = D.chlorophyll !== undefined && D.chlorophyll > 0;
-      // Climatology at 30% strength (was 0.7) — see calibration note above.
-      const cs2 = D.chlIsClimatology ? 0.3 : 1.0;
-      const blend2 = (m) => 1 - cs2 * (1 - m);  // blend toward 1.0 by (1-cs)
-      // Multipliers softened in calibration pass: 0.40→0.50 (bloom), 0.55→0.65
-      // (green water). Previous values were over-correcting Monterey/Laguna
-      // calm-tier predictions during peak bloom MONTH when the actual bloom
-      // wasn't continuously active.
-      if(chlOk && D.chlorophyll>8) {
-        const m = blend2(0.50);
-        lo = Math.max(2, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
-        suffix2 = D.chlIsClimatology ? ' (bloom season)' : ' (bloom)';
-      } else if(chlOk && D.chlorophyll>3) {
-        const m = blend2(0.65);
-        lo = Math.max(2, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
-        suffix2 = D.chlIsClimatology ? ' (bloom season)' : ' (green water)';
-      } else if(chlOk && D.chlorophyll>1.5) {
-        const m = blend2(0.80);
-        lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
-        suffix2 = D.chlIsClimatology ? '' : ' (green tinge)';
-      } else if(chlOk && D.chlorophyll>1) {
-        const m = blend2(0.92);
-        lo = Math.max(1, Math.round(lo * m)); hi = Math.max(lo+1, Math.round(hi * m));
-      }
-      // Post-storm runoff penalty — connects D.runoffAdvisory to the viz NUMBER,
-      // not just the banner. Ground truth 4/27/2026: Laguna under OC Health rain
-      // advisory + 1-3ft surf, divers reporting <10 ft viz. Tool was predicting
-      // 14-19 ft despite the runoff banner showing — the banner alone wasn't
-      // dropping the prediction. Now the same severity tier that drives the
-      // banner also crushes the viz number.
-      if (D.runoffAdvisory && !loc.bluewater && !loc.offshore) {
-        const tier = D.runoffAdvisory.severity;
-        let mult = 1.0;
-        if (tier === 'heavy')        mult = 0.30;  // ≥0.5 in past 24hr → ~70% off
-        else if (tier === 'moderate') mult = 0.50;
-        else if (tier === 'light')    mult = 0.65;  // ≥0.1 in past 72hr → ~35% off
-        lo = Math.max(2, Math.round(lo * mult));
-        hi = Math.max(lo+1, Math.round(hi * mult));
-        suffix2 = ' (post-rain)';
-      }
-
-      // Site-specific local-knowledge rule: LJ Cove reef-pocket runoff trap.
-      // Per Bret's geographic write-up 4/27/2026: storm runoff drains down the
-      // canyon between the Cove and Marine Room and PILES UP in the reef pocket
-      // when current is incoming. North side of cove flushes; south/east pocket
-      // gets the worst of it. Confirmed by 4/27 cove report (north clean, south
-      // murked).
-      if (currentLocation === 'ljcove' && D.runoffAdvisory && D.tideState === 'incoming') {
-        lo = Math.max(2, Math.round(lo * 0.65));
-        hi = Math.max(lo+1, Math.round(hi * 0.65));
-        // Mark suffix as a stacked penalty when both apply
-        suffix2 = ' (post-rain, reef pocket)';
-      }
-      // La Jolla headland clearing — see today inline path NTU branch comment.
-      // Pt La Jolla projects into deeper water + Scripps submarine canyon brings
-      // offshore exchange close to shore, so LJ Cove + LJ Kelp Beds run ~5 ft
-      // cleaner than equivalent Pt Loma conditions. Gated on wave energy
-      // (2026-05-19) — surge wraps the headland on swell days.
-      if (loc.headlandClearing && (D.waveEnergy || 0) < 50) {
-        lo += 5;
-        hi += 5;
-      }
-      // Cap range spread to 6ft max (widened from 5 — WE-only has genuine uncertainty)
-      if (hi - lo > 6) hi = lo + 6;
-      vizEst = `${lo}–${hi} ft${suffix2}`;
-      _wePathDualTrack(lo, hi, suffix2, 'we');
-    } else if(D.rainfall==='none'||D.rainfall==='trace') {
-      const lo = Math.round(12 * shelterMult);
-      const hi = Math.min(lo + 5, Math.round(17 * shelterMult));
-      vizEst=`${lo}–${hi} ft (est.)`;
-      _wePathDualTrack(lo, hi, ' (est.)', 'estimate');
-    } else { vizEst='6–10 ft (est.)'; _wePathDualTrack(6, 10, ' (est.)', 'estimate'); }
-  }
-
-  // Helper for Phase 2B.4c dual-track — declared as a local closure so it can
-  // capture the surrounding effectiveWE / shelterMult etc.
-  function _wePathDualTrack(localLo, localHi, localSuffix, localPath) {
-    sfPredict('vizWeFallbackPath', {
-      effectiveWE: effectiveWE === undefined ? null : effectiveWE,
-      shelterMult,
       rainfall: D.rainfall,
-      chlorophyll: D.chlorophyll,
-      chlIsClimatology: !!D.chlIsClimatology,
-      waveEnergy: D.waveEnergy,
+      upwelling: D.upwelling,
       runoffAdvisory: D.runoffAdvisory || null,
-      currentLocation,
       tideState: D.tideState,
-      loc: { bottom: loc.bottom, kelpDensity: loc.kelpDensity, offshore: !!loc.offshore, bluewater: !!loc.bluewater, headlandClearing: !!loc.headlandClearing },
-    }).then(server => {
-      if (!server) { console.log('[sfPredict] vizWeFallbackPath: worker unreachable'); return; }
-      const loOk = server.lo === localLo;
-      const hiOk = server.hi === localHi;
-      const sfxOk = (server.suffix || '') === (localSuffix || '');
-      const pathOk = server.path === localPath;
-      const tag = (loOk && hiOk && sfxOk && pathOk) ? '✓ match' : '✗ DELTA';
-      console.log(`[sfPredict] vizWeFallbackPath[${localPath}]: local={${localLo}-${localHi}${localSuffix}} worker={${server.lo}-${server.hi}${server.suffix}[${server.path}]} ${tag}`);
+      currentLocation,
+      surfaceBloomFactor: _surfaceBloomFactor,
+      turbSource: D.turbSource,
+      loc: {
+        shelter: loc.shelter, kelpDensity: loc.kelpDensity, bottom: loc.bottom,
+        coveTrap: !!loc.coveTrap, offshore: !!loc.offshore, bluewater: !!loc.bluewater,
+        scrippsProximity: !!loc.scrippsProximity, headlandClearing: !!loc.headlandClearing,
+      },
     });
+
+    // Guard: skip update if user has switched spots during the roundtrip
+    if (currentLocation !== _capturedLocation) return;
+
+    if (worker && worker.vizEst) {
+      vizEst = worker.vizEst;
+      vizSource = worker.vizSource || 'Worker';
+      if (worker.effectiveWE !== null && worker.effectiveWE !== undefined) {
+        effectiveWE = worker.effectiveWE;
+      }
+    } else {
+      vizSource = 'Service unavailable';
+    }
+  } catch (e) {
+    console.warn('Viz worker error:', e && e.message);
+    vizSource = 'Service unavailable';
   }
-  // Auto-calibrate from diver reports — adjust estimate based on crowd feedback
+
+  // Per-user adjustments (localStorage-backed, stay frontend-side).
   vizEst = applyVizCalibration(vizEst);
-  // Tide-dependent learning — some spots have persistent incoming/outgoing bias
   const tideAdj = getTideAdjustment();
-  if (tideAdj !== 0) {
+  if (tideAdj !== 0 && vizEst !== '--') {
     const m = vizEst.match(/(\d+)–(\d+)\s*ft/);
     if (m) {
       const lo = Math.max(1, parseInt(m[1]) + tideAdj);
@@ -6655,158 +6208,14 @@ function updateDisplay() {
     }
   }
 
-  // ── Sanity check — catch obviously wrong estimates ──
-  // When conditions are calm and clean, viz should never be absurdly low.
-  // This catches cases where a penalty (chl climatology, stale data, etc.)
-  // crushes the estimate below a physically reasonable floor.
-  // Uses D.waveEnergy since effectiveWE is block-scoped above
-  if (vizEst !== '--' && !loc.offshore && !loc.bluewater) {
-    const sanityMatch = vizEst.match(/(\d+)/);
-    const sanityMatch2 = vizEst.match(/(\d+)\D+(\d+)/);
-    if (sanityMatch) {
-      let sLo = parseInt(sanityMatch[1], 10);
-      let sHi = sanityMatch2 ? parseInt(sanityMatch2[2], 10) : sLo + 5;
-      const noRain = !D.rainfall || D.rainfall === 'none' || D.rainfall === 'trace';
-      // Compute effective WE for sanity check (same logic as above)
-      let sanityWE = D.waveEnergy;
-      if (sanityWE !== undefined) {
-        const ls = loc.shelter || 'low';
-        if (ls === 'high') sanityWE *= 0.15;
-        else if (ls === 'moderate') sanityWE *= 0.7;
-        if (D.swellPeriod && sanityWE > 30) {
-          if (D.swellPeriod >= 15) sanityWE *= 0.55;
-          else if (D.swellPeriod >= 12) sanityWE *= 0.7;
-          else if (D.swellPeriod <= 6) sanityWE *= 1.3;
-        }
-      }
-      let adjusted = false;
-      // Skip sanity floors during active blooms — green water limits viz even when calm
-      const chlBlocksSanity = D.chlorophyll !== undefined && D.chlorophyll > 0.5 &&
-        (!D.chlIsClimatology || loc.scrippsProximity);
-
-      // Rule 1: Calm conditions (WE < 50, no rain) — floor at 5 ft
-      if (!chlBlocksSanity && sanityWE !== undefined && sanityWE < 50 && noRain && sLo < 5) {
-        sLo = 5; sHi = Math.max(sHi, sLo + 4); adjusted = true;
-      }
-      // Rule 2: Very calm (WE < 20, no rain) — floor at 10 ft
-      if (!chlBlocksSanity && sanityWE !== undefined && sanityWE < 20 && noRain && sLo < 10) {
-        sLo = 10; sHi = Math.max(sHi, sLo + 5); adjusted = true;
-      }
-      // Rule 3: Glassy (WE < 10, no rain) — floor at 15 ft
-      if (!chlBlocksSanity && sanityWE !== undefined && sanityWE < 10 && noRain && sLo < 15) {
-        sLo = 15; sHi = Math.max(sHi, sLo + 5); adjusted = true;
-      }
-
-      if (adjusted) {
-        // Preserve any suffix like (bloom) or (green water)
-        const suffixM = vizEst.match(/ft\s*(\(.+\))/);
-        vizEst = `${sLo}–${sHi} ft` + (suffixM ? ' ' + suffixM[1] : '');
-      }
-      // Phase 2B.4d dual-track: send pre-sanity-floor lo/hi to worker, compare.
-      // Captured the pre-sanity values from sanityMatch above. The worker returns
-      // post-floor lo/hi (which the local code stored in sLo/sHi).
-      const _preLo = parseInt(sanityMatch[1], 10);
-      const _preHi = sanityMatch2 ? parseInt(sanityMatch2[2], 10) : _preLo + 5;
-      const _preSuffixM = vizEst.match(/ft\s*(\(.+\))/);
-      const _preSuffix = _preSuffixM ? ' ' + _preSuffixM[1] : '';
-      sfPredict('vizSanityFloor', {
-        lo: _preLo, hi: _preHi, suffix: _preSuffix,
-        waveEnergy: D.waveEnergy,
-        swellPeriod: D.swellPeriod,
-        rainfall: D.rainfall,
-        chlorophyll: D.chlorophyll,
-        chlIsClimatology: !!D.chlIsClimatology,
-        loc: { shelter: loc.shelter, offshore: !!loc.offshore, bluewater: !!loc.bluewater, scrippsProximity: !!loc.scrippsProximity },
-      }).then(server => {
-        if (!server) { console.log('[sfPredict] vizSanityFloor: worker unreachable'); return; }
-        const loOk = server.lo === sLo;
-        const hiOk = server.hi === sHi;
-        const tag = (loOk && hiOk) ? '✓ match' : '✗ DELTA';
-        console.log(`[sfPredict] vizSanityFloor: local=${_preLo}-${_preHi}→${sLo}-${sHi}(adj=${adjusted}) worker=${server.lo}-${server.hi}(adj=${!!server.adjusted}) ${tag}`);
-      });
-    }
-  }
-
   setVal('estVizVal', vizEst, vizSource);
   const vizFeetEl = document.getElementById('vizFeetLabel');
   if (vizFeetEl) vizFeetEl.textContent = vizEst !== '--' ? `Est. ${vizEst}` : '--';
-  // Update the hero feet display
   const vizHeroEl = document.getElementById('vizFeetHero');
-  if (vizHeroEl) vizHeroEl.textContent = vizEst !== '--' ? vizEst : '--';
+  if (vizHeroEl) {
+    vizHeroEl.textContent = vizEst !== '--' ? vizEst : (vizSource === 'Service unavailable' ? 'Service unavailable' : '--');
+  }
 
-  // Phase 2B.6a — worker-on-critical-path. After local computes + renders,
-  // fire the worker viz orchestrator in parallel. If it returns within timeout,
-  // silently replace the displayed vizEst with the worker's output (after
-  // applying the local-only adjustments: applyVizCalibration + tide bias).
-  // Local stays as immediate fallback if worker is slow/down. This is the
-  // pipeline; 2B.6b will delete local + make worker authoritative.
-  const _capturedLocation = currentLocation;
-  // Compute the surface-bloom factor here (mirrors the inline _surfaceBloomCheck
-  // IIFE inside the NTU path — kept here so it's in scope for non-NTU paths too).
-  const _surfaceBloomFactor = (() => {
-    if (!loc.scrippsProximity) return null;
-    const _ntu = D.turbidity;
-    const inBloomDecay = _ntu !== undefined && _ntu < 0.6 && D.chlorophyll >= 0.5 && D.chlorophyll < 3;
-    if (inBloomDecay) return null;
-    const liveChlLow = D.chlorophyll !== undefined && D.chlorophyll < 2;
-    if (!liveChlLow) return null;
-    const _m = new Date().getMonth() + 1;
-    const _region = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
-    const _climoTable = (typeof CHL_CLIMATOLOGY_BY_REGION !== 'undefined') ? CHL_CLIMATOLOGY_BY_REGION[_region] : null;
-    const _climo = _climoTable ? _climoTable[_m] : null;
-    if (_climo === null || _climo === undefined || _climo < 5) return null;
-    return 0.85;
-  })();
-  sfPredict('viz', {
-    ntu: D.turbidity,
-    chlorophyll: D.chlorophyll,
-    chlIsClimatology: !!D.chlIsClimatology,
-    waveEnergy: D.waveEnergy,
-    swellPeriod: D.swellPeriod,
-    swellDir: D.swellDir,
-    mwd: D.mwd,
-    rainfall: D.rainfall,
-    upwelling: D.upwelling,
-    runoffAdvisory: D.runoffAdvisory || null,
-    tideState: D.tideState,
-    currentLocation,
-    surfaceBloomFactor: _surfaceBloomFactor,
-    turbSource: D.turbSource,
-    loc: {
-      shelter: loc.shelter, kelpDensity: loc.kelpDensity, bottom: loc.bottom,
-      coveTrap: !!loc.coveTrap, offshore: !!loc.offshore, bluewater: !!loc.bluewater,
-      scrippsProximity: !!loc.scrippsProximity, headlandClearing: !!loc.headlandClearing,
-    },
-  }).then(worker => {
-    if (!worker || !worker.vizEst) return;
-    // Guard: skip update if user has navigated to a different spot during the roundtrip
-    if (currentLocation !== _capturedLocation) return;
-    // Apply local-only adjustments (per-user calibration + tide bias). These stay
-    // frontend-side because they read from localStorage.
-    let adjusted = applyVizCalibration(worker.vizEst);
-    const tideAdj = getTideAdjustment();
-    if (tideAdj !== 0) {
-      const m = adjusted.match(/(\d+)–(\d+)\s*ft/);
-      if (m) {
-        const lo = Math.max(1, parseInt(m[1]) + tideAdj);
-        const hi = Math.max(lo + 1, parseInt(m[2]) + tideAdj);
-        const sfx = adjusted.includes('(') ? adjusted.slice(adjusted.indexOf('(') - 1) : ' ft';
-        adjusted = `${lo}–${hi}${sfx.startsWith(' ft') ? ' ft' : sfx}`;
-      }
-    }
-    if (adjusted === vizEst) return;  // no change — silent
-    // Worker-driven update. Mirror the same DOM writes the local path did.
-    D.vizFeetStr = adjusted;
-    setVal('estVizVal', adjusted, worker.vizSource || vizSource);
-    if (vizFeetEl) vizFeetEl.textContent = adjusted !== '--' ? `Est. ${adjusted}` : '--';
-    if (vizHeroEl) vizHeroEl.textContent = adjusted;
-    // Re-sync the rating badge to the new feet value
-    const newRating = getVizRatingFromFeet(adjusted);
-    const badge = document.querySelector('#vizFeetHero ~ .viz-rating, .viz-rating');
-    if (badge) { badge.textContent = newRating.label; badge.style.color = newRating.color; }
-    console.log(`[sfPredict] viz: local→worker swap (${vizEst} → ${adjusted})`);
-  });
-  // Store for rating sync — the viz gauge rating should match the feet estimate
   D.vizFeetStr = vizEst;
 
   // ── Viz Confidence Indicator ──
