@@ -1751,7 +1751,15 @@ const LOCATIONS = {
   crescent: { name: 'Crescent Bay', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5454, lon: -117.7989, depth: '15-50 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'Laguna Beach State Marine Reserve', nwsGrid: 'LOX/167,20', coveTrap: true, mopStation: 'OC281' },
   emerald: { name: 'Emerald Bay', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5497, lon: -117.8030, depth: '15-50 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'Laguna Beach State Marine Reserve', nwsGrid: 'LOX/167,20', coveTrap: true, mopStation: 'OC281' },
   brooksstreet: { name: 'Brooks Street', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5368, lon: -117.7886, depth: '10-40 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'South Laguna Beach State Marine Conservation Area', nwsGrid: 'LOX/167,20', coveTrap: true, mopStation: 'OC270' },
-  crystalcove: { name: 'Crystal Cove', bottom: 'mixed', tideStation: '9410580', coast: 220, shelter: 'low', buoys: ['46242'], lat: 33.5571, lon: -117.8360, depth: '10-52 ft', kelpDensity: 'heavy', nwsGrid: 'LOX/166,21', mopStation: 'OC322' },
+  // Crystal Cove aligned with the Laguna group 2026-05-22 per user in-water
+  // observation: Shaw's/Diver's, Crescent, Emerald, and Crystal all dive
+  // similarly on the same day. Changes: shelter low → moderate (was
+  // producing ~2× the wave-energy of neighbors) and mopStation OC322 →
+  // OC281 (Shaw's MOP — was producing ~40% higher WE forecast than the
+  // adjacent stations). Bottom stays 'mixed' and kelp stays 'heavy' since
+  // those are genuine spot attributes that distinguish it modestly from
+  // the pure reef coves to the south.
+  crystalcove: { name: 'Crystal Cove', bottom: 'mixed', tideStation: '9410580', coast: 220, shelter: 'moderate', buoys: ['46242'], lat: 33.5571, lon: -117.8360, depth: '10-52 ft', kelpDensity: 'heavy', nwsGrid: 'LOX/166,21', mopStation: 'OC281' },
   newport: { name: 'Newport / Corona del Mar', bottom: 'rock', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.59, lon: -117.87, depth: '10-30 ft', kelpDensity: 'low', nwsGrid: 'SGX/35,58', mopStation: 'OC368' },
   huntington: { name: 'Huntington Cliffs', bottom: 'sand', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.65, lon: -117.98, depth: '8-20 ft', kelpDensity: 'none', nwsGrid: 'SGX/35,58', mopStation: 'OC495' },
   // ── Los Angeles County ──
