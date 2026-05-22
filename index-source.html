@@ -2003,179 +2003,10 @@ const CPFV = {
   },
 };
 
-// =========================================================================
-// SCORING — 1-10, 10=best
-// =========================================================================
-const SCORE = {
-  general: {
-    tip: 'Balanced scoring for all pelagic species in San Diego.',
-    waterTemp: f => { if(f>=66&&f<=72) return 10; if(f>=63&&f<66) return 8; if(f>72&&f<=75) return 7; if(f>=60&&f<63) return 5; if(f>75) return 4; if(f>=57&&f<60) return 3; return 2; },
-    sst: f => { if(f>=66&&f<=72) return 10; if(f>=63&&f<66) return 8; if(f>72&&f<=75) return 7; if(f>=60&&f<63) return 5; if(f>75) return 4; if(f>=57&&f<60) return 3; return 2; },
-    tempTrend: v => ({warming_fast:7,warming:9,stable:8,cooling:5,cooling_fast:3}[v]||5),
-    tideState: v => ({incoming:10,high:7,outgoing:4,low:5}[v]||5),
-    current: k => { if(k<=0.3) return 7; if(k<=0.6) return 9; if(k<=1.0) return 6; if(k<=1.5) return 3; return 1; },
-    upwelling: v => ({strong_recent:9,moderate_recent:7,active_now:4,weak:5}[v]||5),
-    chlFish: c => { if(c>=5) return 10; if(c>=2) return 8; if(c>=1) return 6; if(c>=0.5) return 4; return 2; },
-    moonPhase: v => ({new:8,full:9,quarter:5,between:4}[v]||5),
-    reports: (v) => v,
-    pressure: v => ({very_low:10,low:8,moderate:6,high:3,very_high:1}[v]||5),
-    wind: (spd,dir) => {
-      let ds = ({none:9,offshore:10,sideshore:6,onshore:2}[dir]||5);
-      let ss; if(spd<=5) ss=10; else if(spd<=8) ss=8; else if(spd<=12) ss=6; else if(spd<=16) ss=4; else if(spd<=20) ss=2; else ss=1;
-      return (ds+ss)/2;
-    },
-    swellSize: ft => { if(ft<=1.5) return 10; if(ft<=2.5) return 8; if(ft<=4) return 6; if(ft<=6) return 3; return 1; },
-    swellDir: v => ({south:9,sw:6,west:4,nw:3,north:7}[v]||5),
-    swellPeriod: s => { if(s>=18) return 10; if(s>=14) return 8; if(s>=11) return 6; if(s>=8) return 4; return 2; },
-    waveEnergy: e => { if(e<=20) return 10; if(e<=50) return 8; if(e<=100) return 5; if(e<=200) return 3; return 1; },
-    rainfall: v => ({none:10,trace:8,light:6,moderate:3,heavy:1}[v]||5),
-    chlViz: c => { if(c<0.5) return 10; if(c<1) return 9; if(c<2) return 7; if(c<4) return 6; if(c<8) return 4; if(c<15) return 2; return 1; }, // HABs 17yr: normal 2-3, bloom 10+, red tide 50+
-    bottom: v => ({rock:9,kelp:8,sand:6,mud:3,silt:2}[v]||5),
-  },
-  yellowtail: {
-    // 2024 CPFV data: 11,282 YT caught, 14,765 angler-trips
-    // Best SST: 73°F (1.23/angler), 69°F (0.97), 65°F (0.82) — warmer than expected
-    // Best months: Oct (1.04), Aug (1.03), Jul (0.93) — late summer/fall peak
-    // Moon: Full (0.85) > Quarter (0.83) > Between (0.76) > New (0.64)
-    // Weekday advantage: Tue (1.01) vs Sat (0.53) — 2x better with less pressure
-    // 4-year SST data: 65°F (1.19), 72°F (1.14), 63°F (1.10), 73°F (1.06), 75°F (1.05)
-    // YT bite across a WIDE temp range — 63-75°F all above 1.0 fish/angler
-    tip: 'Yellowtail: FishDope 2009-2026 (5,291 reports). 60-75°F broad range (bimodal: 60-62°F inshore kelp + 70-75°F offshore). Kelp-associated (90%). Current critical (74%). Aug peak but year-round. Not water-color picky (31% caught in dirty water).',
-    waterTemp: f => { if(f>=63&&f<=75) return 10; if(f>=60&&f<63) return 8; if(f>75&&f<=78) return 7; if(f>=58&&f<60) return 5; if(f>78) return 3; return 1; },
-    sst: f => { if(f>=63&&f<=75) return 10; if(f>=60&&f<63) return 8; if(f>75&&f<=78) return 7; if(f>=58&&f<60) return 5; if(f>78) return 3; return 1; },
-    tempTrend: v => ({warming_fast:8,warming:10,stable:6,cooling:3,cooling_fast:1}[v]||5),
-    tideState: v => ({incoming:10,high:7,outgoing:5,low:3}[v]||5),
-    current: k => { if(k>=0.3&&k<=0.8) return 10; if(k>=0.1&&k<0.3) return 7; if(k>0.8&&k<=1.2) return 6; if(k<0.1) return 2; return 2; }, // FishDope: "no current = no yellowtail" (74.3% mention current)
-    upwelling: v => ({strong_recent:10,moderate_recent:8,active_now:3,weak:4}[v]||5),
-    chlFish: c => { if(c>=3) return 10; if(c>=1.5) return 8; if(c>=0.8) return 6; if(c>=0.3) return 4; return 3; },
-    moonPhase: v => ({new:5,full:10,quarter:9,between:7}[v]||5), // 2024 data: full (0.85) > quarter (0.83) > between (0.76) > new (0.64)
-    // Squid proxy — FishDope: 94.2% of YT reports correlated with squid/bait presence
-    squidProxy: (squidScore) => squidScore,
-    reports: null, pressure: null,
-    wind: null, swellSize: null, swellDir: null, swellPeriod: null, waveEnergy: null, rainfall: null, chlViz: null,
-    bottom: v => ({rock:8,kelp:10,sand:5,mud:3,silt:2}[v]||5), // FishDope: 90.2% kelp-associated
-  },
-  wsb: {
-    // Aalbers & Sepulveda 2015: 173 DST-tagged WSB, core 13-16°C (55-61°F at depth)
-    // MacNamara et al. 2025: 161 WSB caught at Catalina, capture temps 62-71°F surface, mean 65°F
-    // CDFW ESR: catches increase at start of cool-water periods; WSB move north/west seeking preferred temps
-    // 4yr CPFV: new moon 5x better than full (0.152 vs 0.031); best SST 63-65°F surface
-    // Combined: surface sweet spot 60-66°F (Aalbers depth + offset, MacNamara surface, CPFV peak)
-    tip: 'WSB: Squid is the #1 factor (97% of catches at squid beds, FishDope 16yr). New moons 5x better than full (squid spawns on dark nights). Dawn/dusk feeders. 60–66°F optimal. CDFW: coast peaks Jul, islands Jun-Aug.',
-    waterTemp: f => { if(f>=60&&f<=66) return 10; if(f>=57&&f<60) return 8; if(f>66&&f<=68) return 7; if(f>=55&&f<57) return 5; if(f>68&&f<=71) return 4; if(f>=53&&f<55) return 3; return 2; },
-    sst: f => { if(f>=60&&f<=66) return 10; if(f>=57&&f<60) return 8; if(f>66&&f<=68) return 7; if(f>=55&&f<57) return 5; if(f>68&&f<=71) return 4; if(f>=53&&f<55) return 3; return 2; },
-    tempTrend: v => ({warming_fast:4,warming:6,stable:8,cooling:10,cooling_fast:5}[v]||5), // CDFW: catches best at start of cool-water period; cooling into the zone = prime
-    tideState: v => ({incoming:10,high:9,outgoing:5,low:4}[v]||5),
-    current: k => { if(k>=0.1&&k<=0.4) return 10; if(k<0.1) return 7; if(k<=0.7) return 6; if(k<=1.0) return 3; return 1; },
-    upwelling: v => ({strong_recent:7,moderate_recent:6,active_now:4,weak:8}[v]||5),
-    chlFish: c => { if(c>=1&&c<=3) return 10; if(c>=0.5&&c<1) return 7; if(c>3&&c<=5) return 6; if(c<0.5) return 4; return 3; },
-    moonPhase: v => ({new:10,full:3,quarter:5,between:5}[v]||5), // 4yr CPFV: new=0.152 >> quarter=0.059 > between=0.055 > full=0.031; darkness + spring tide = peak
-    // Squid proxy — FishDope 16yr: 97% of WSB catches had squid present (4,238/4,378)
-    // Squid spawns on dark nights in 55-68°F water, Apr-Oct peak. Binary gate for WSB.
-    squidProxy: (squidScore) => squidScore, // pass-through — computed externally from moon+temp+season+reports
-    reports: null, pressure: null,
-    wind: (spd,dir) => {
-      let ds = ({none:10,offshore:8,sideshore:5,onshore:2}[dir]||5);
-      let ss; if(spd<=3) ss=10; else if(spd<=6) ss=8; else if(spd<=10) ss=5; else if(spd<=14) ss=3; else ss=1;
-      return (ds+ss)/2;
-    },
-    swellSize: ft => { if(ft<=1.5) return 10; if(ft<=2.5) return 8; if(ft<=4) return 5; if(ft<=6) return 2; return 1; },
-    swellDir: v => ({south:9,sw:7,west:4,nw:3,north:6}[v]||5),
-    swellPeriod: s => { if(s>=18) return 10; if(s>=15) return 9; if(s>=12) return 7; if(s>=9) return 4; return 2; },
-    waveEnergy: null, rainfall: null, chlViz: null,
-    bottom: v => ({rock:7,kelp:10,sand:4,mud:3,silt:2}[v]||5),
-  },
-  halibut: {
-    // 2024 CPFV data: 208 halibut caught, 3,417 angler-trips
-    // Best SST: 61°F (0.38/angler) — cooler water than expected, Mar-Apr peak
-    // Best months: Apr (0.63), Mar (0.31) — spring peak, NOT grunion summer
-    // Moon: Quarter (0.10) > Between (0.06) > New/Full (0.04) — neap tides outperform spring
-    // Note: grunion hunting is still valid for spearfishing but CPFV data shows spring is king
-    // 4yr data: 505 halibut, 10,600 trips. 61°F = 0.24/angler (4-5x any other temp)
-    tip: 'Halibut peak May-Sep (CDFW: 80-98% of catches). Jun volume peak, Aug best CPUE. Population tripling since 2019. Best at 61°F (5x catch rate). Quarter moons best on CPFV. Grunion runs prime for spearfishing.',
-    waterTemp: f => { if(f>=60&&f<=63) return 10; if(f>=58&&f<60) return 8; if(f>63&&f<=66) return 7; if(f>=56&&f<58) return 5; if(f>66&&f<=70) return 6; if(f>70&&f<=74) return 4; if(f>=54) return 3; return 2; },
-    sst: f => { if(f>=60&&f<=63) return 10; if(f>=58&&f<60) return 8; if(f>63&&f<=66) return 7; if(f>=56&&f<58) return 5; if(f>66&&f<=70) return 6; if(f>70&&f<=74) return 4; if(f>=54) return 3; return 2; },
-    tempTrend: v => ({warming_fast:7,warming:8,stable:9,cooling:5,cooling_fast:3}[v]||5),
-    // Halibut key: incoming/high tide pushes grunion onto beach; outgoing = halibut ambush zone
-    tideState: v => ({incoming:9,high:10,outgoing:7,low:3}[v]||5),
-    current: k => { if(k<=0.2) return 9; if(k<=0.5) return 7; if(k<=0.8) return 5; if(k<=1.2) return 3; return 1; }, // halibut like calm water
-    upwelling: v => ({strong_recent:6,moderate_recent:7,active_now:5,weak:7}[v]||5), // less critical for halibut
-    chlFish: c => { if(c>=1&&c<=3) return 8; if(c>=0.5&&c<1) return 6; if(c>3) return 5; return 4; },
-    // Moon is THE trigger via grunion — but handled separately via grunion scorer
-    moonPhase: v => ({new:6,full:6,quarter:10,between:7}[v]||5), // 2024 data: quarter (0.10) >> new/full (0.04); grunion scorer handles spring tide bonus separately
-    reports: null, pressure: null,
-    wind: (spd,dir) => {
-      // Halibut: calm conditions for night diving, offshore wind cleans up surf zone
-      let ds = ({none:10,offshore:9,sideshore:5,onshore:3}[dir]||5);
-      let ss; if(spd<=4) ss=10; else if(spd<=7) ss=8; else if(spd<=10) ss=5; else if(spd<=14) ss=3; else ss=1;
-      return (ds+ss)/2;
-    },
-    swellSize: ft => { if(ft<=1.5) return 10; if(ft<=2.5) return 9; if(ft<=4) return 6; if(ft<=6) return 3; return 1; },
-    swellDir: v => ({south:8,sw:6,west:5,nw:4,north:7}[v]||5),
-    swellPeriod: s => { if(s>=16) return 10; if(s>=12) return 8; if(s>=9) return 6; if(s>=7) return 4; return 2; },
-    waveEnergy: null, rainfall: null, chlViz: null,
-    // SAND is #1 for halibut — they bury in sand to ambush
-    bottom: v => ({sand:10,mud:6,silt:4,rock:3,kelp:4}[v]||5),
-  },
-  bluefin: {
-    // CDFW 2019-2025: 185,319 caught, fishery 25x growth since 2019
-    // Optimal SST: 62-64°F (CPUE 1.93). Warmer = significantly worse (r=-0.29)
-    // Season: Jun-Nov (expanding to Apr-Dec in warm years)
-    // Moon: full moon months = higher CPUE (p=0.014) — surface visibility helps locate schools
-    // 93% caught offshore/islands — pelagic open-water species
-    tip: 'Bluefin: CDFW 2019-2025 (185k caught). Cooler water = better (62-64°F optimal, r=-0.29). Full moons help locate schools. Season Jun-Nov, expanding earlier in warm years. 93% caught offshore.',
-    waterTemp: f => { if(f>=60&&f<=66) return 10; if(f>66&&f<=70) return 8; if(f>=58&&f<60) return 7; if(f>70&&f<=72) return 6; if(f>=56&&f<58) return 5; if(f>72) return 3; return 2; }, // 6,028 reports: peak 60-66°F (44%), secondary 66-72°F (32%)
-    sst: f => { if(f>=60&&f<=66) return 10; if(f>66&&f<=70) return 8; if(f>=58&&f<60) return 7; if(f>70&&f<=72) return 6; if(f>=56&&f<58) return 5; if(f>72) return 3; return 2; },
-    tempTrend: v => ({warming_fast:3,warming:5,stable:7,cooling:10,cooling_fast:8}[v]||5), // cooler = better
-    tideState: v => ({incoming:8,high:7,outgoing:6,low:5}[v]||5), // less tide-dependent (offshore)
-    current: k => { if(k>=0.3&&k<=1.0) return 10; if(k>=0.1&&k<0.3) return 7; if(k>1.0&&k<=1.5) return 7; if(k<0.1) return 4; return 3; }, // current concentrates bait
-    upwelling: v => ({strong_recent:10,moderate_recent:8,active_now:6,weak:3}[v]||5), // upwelling = cooler + bait
-    chlFish: c => { if(c>=3) return 10; if(c>=1.5) return 8; if(c>=0.8) return 6; if(c>=0.3) return 4; return 2; }, // bait concentration
-    moonPhase: v => ({new:4,full:10,quarter:7,between:6}[v]||5), // CDFW: full moon months significantly better (p=0.014)
-    reports: null, pressure: null,
-    wind: (spd,dir) => {
-      // Bluefin: offshore, less wind-sensitive than inshore species but calm still helps
-      let ds = ({none:8,offshore:9,sideshore:6,onshore:4}[dir]||5);
-      let ss; if(spd<=8) ss=9; else if(spd<=12) ss=7; else if(spd<=16) ss=5; else if(spd<=20) ss=3; else ss=1;
-      return (ds+ss)/2;
-    },
-    swellSize: ft => { if(ft<=3) return 9; if(ft<=5) return 7; if(ft<=7) return 5; if(ft<=10) return 3; return 1; }, // more tolerant of swell (offshore)
-    swellDir: v => ({south:7,sw:6,west:5,nw:5,north:7}[v]||5), // less directional sensitivity offshore
-    swellPeriod: s => { if(s>=14) return 9; if(s>=10) return 7; if(s>=7) return 5; return 3; },
-    waveEnergy: null, rainfall: null, chlViz: null,
-    bottom: v => ({rock:7,kelp:6,sand:5,mud:4,silt:3}[v]||5), // less bottom-dependent (pelagic)
-  },
-  dorado: {
-    // FishDope 6,028 reports: 1,849 dorado mentions. Avg temp 68.2°F. 70% kelp paddy.
-    // NOT water-color picky (30% blue, 33% green — follow paddies regardless)
-    // Season: Jul-Oct only. Temp threshold: 67°F+ for reliable presence.
-    tip: 'Dorado: FishDope 2009-2026 (1,849 reports). Peak Aug-Sep. 68-72°F optimal. 70% caught on kelp paddies. Not water-color picky. Season Jul-Oct. 2022 was historically massive — PDO warm phase overrode La Niña.',
-    waterTemp: f => { if(f>=68&&f<=72) return 10; if(f>72&&f<=76) return 9; if(f>=66&&f<68) return 7; if(f>76) return 6; if(f>=64&&f<66) return 4; if(f>=62&&f<64) return 2; return 1; }, // 68-72°F peak (38%), avg 68.2°F
-    sst: f => { if(f>=68&&f<=72) return 10; if(f>72&&f<=76) return 9; if(f>=66&&f<68) return 7; if(f>76) return 6; if(f>=64&&f<66) return 4; return 1; },
-    tempTrend: v => ({warming_fast:10,warming:9,stable:6,cooling:3,cooling_fast:1}[v]||5), // warming brings dorado inshore
-    tideState: v => ({incoming:7,high:6,outgoing:6,low:5}[v]||5), // less tide-dependent (offshore/KP)
-    current: k => { if(k>=0.3&&k<=1.0) return 8; if(k>=0.1&&k<0.3) return 6; if(k>1.0&&k<=1.5) return 6; if(k<0.1) return 4; return 3; }, // current moves kelp paddies
-    upwelling: v => ({strong_recent:3,moderate_recent:5,active_now:4,weak:7}[v]||5), // upwelling = cold = bad for dorado
-    chlFish: c => { if(c>=3) return 8; if(c>=1.5) return 7; if(c>=0.8) return 6; if(c>=0.3) return 5; return 4; }, // bait helps but not critical
-    moonPhase: v => ({new:6,full:5,quarter:6,between:6}[v]||5), // minimal moon effect for dorado
-    sstAnomaly: (anomaly) => anomaly, // pass-through — computed externally (0-10 scale)
-    reports: null, pressure: null,
-    wind: (spd,dir) => {
-      let ds = ({none:8,offshore:8,sideshore:6,onshore:4}[dir]||5);
-      let ss; if(spd<=10) ss=9; else if(spd<=15) ss=7; else if(spd<=20) ss=4; else ss=2;
-      return (ds+ss)/2;
-    },
-    swellSize: ft => { if(ft<=4) return 9; if(ft<=6) return 7; if(ft<=8) return 5; if(ft<=10) return 3; return 1; },
-    swellDir: v => ({south:7,sw:6,west:5,nw:5,north:7}[v]||5),
-    swellPeriod: s => { if(s>=14) return 8; if(s>=10) return 7; if(s>=7) return 5; return 3; },
-    waveEnergy: null, rainfall: null, chlViz: null,
-    bottom: v => ({rock:6,kelp:8,sand:5,mud:4,silt:3}[v]||5), // kelp paddies are habitat
-  },
-};
-
-function getScorer(key) {
-  return SCORE[currentSpecies][key] || SCORE.general[key];
-}
+// Phase 2B.6b — Per-factor scoring (SCORE_BY_SPECIES tables + getScorer) and
+// the SPECIES_TIPS strings now live in the Cloudflare Worker. Frontend calls
+// sfPredict('scoreAll', {...}) from recalculate() and receives a {factor: 1-10}
+// map plus a `_tip` string. See worker src/index.js.
 
 function scoreClass(s) { return s>=8?'score-high':s>=5?'score-med':'score-low'; }
 function getRating(s) {
@@ -6718,22 +6549,42 @@ const VIZ_WEIGHTS = {
   swellSize:   0.03, // #9 — partially captured by waveEnergy already
 };
 
-function recalculate() {
+async function recalculate() {
   // Set species-specific weights
   FISH_WEIGHTS = FISH_WEIGHTS_BY_SPECIES[currentSpecies] || FISH_WEIGHTS_BY_SPECIES.general;
 
+  // Phase 2B.6b-2 — all per-factor scoring lives in the worker now. Batch
+  // call returns a map { factorKey: 1-10 score, _tip: speciesTip }. The
+  // calibrated SCORE_BY_SPECIES lookup tables are no longer in the frontend.
+  // If the worker is unreachable, scores are absent and badges show '--'.
+  const _scoreInputs = {
+    species: currentSpecies,
+    waterTemp: D.waterTemp, sst: D.sstF, current: D.currentStrength,
+    chlorophyll: D.chlorophyll, reports: D.reportsScore,
+    swellFt: D.swellFt, swellPeriod: D.swellPeriod, waveEnergy: D.waveEnergy,
+    tempTrend: D.tempTrend, tideState: D.tideState, upwelling: D.upwelling,
+    moonPhase: D.moon && D.moon.category, pressure: D.pressure,
+    swellDir: D.swellDir, rainfall: D.rainfall, bottom: D.bottom,
+  };
+  let workerScores = null;
+  try { workerScores = await sfPredict('scoreAll', _scoreInputs); } catch(e) { workerScores = null; }
+  const ws = workerScores || {};
+  // Stash species tip so updateInsight() (called downstream) can read it
+  // without needing the local SCORE_BY_SPECIES lookup table.
+  D._currentTip = ws._tip || '';
+
   // --- Fish Forecast (weighted) ---
   const fishEntries = [];
-  scoreW('waterTempScore', D.waterTemp, getScorer('waterTemp'), 'waterTemp', fishEntries);
-  scoreW('sstScore', D.sstF, getScorer('sst'), 'sst', fishEntries);
-  scoreW('tempTrendScore', D.tempTrend, getScorer('tempTrend'), 'tempTrend', fishEntries);
-  scoreW('tideStateScore', D.tideState, getScorer('tideState'), 'tideState', fishEntries);
-  scoreW('currentScore', D.currentStrength, getScorer('current'), 'current', fishEntries);
-  scoreW('upwellingScore', D.upwelling, getScorer('upwelling'), 'upwelling', fishEntries);
-  scoreW('chlFishScore', D.chlorophyll, getScorer('chlFish'), 'chlFish', fishEntries);
-  scoreW('moonPhaseScore', D.moon.category, getScorer('moonPhase'), 'moonPhase', fishEntries);
-  scoreW('reportsScore', D.reportsScore, getScorer('reports'), 'reports', fishEntries);
-  scoreW('pressureScore', D.pressure, getScorer('pressure'), 'pressure', fishEntries);
+  scoreW('waterTempScore', D.waterTemp, ws.waterTemp, 'waterTemp', fishEntries);
+  scoreW('sstScore', D.sstF, ws.sst, 'sst', fishEntries);
+  scoreW('tempTrendScore', D.tempTrend, ws.tempTrend, 'tempTrend', fishEntries);
+  scoreW('tideStateScore', D.tideState, ws.tideState, 'tideState', fishEntries);
+  scoreW('currentScore', D.currentStrength, ws.current, 'current', fishEntries);
+  scoreW('upwellingScore', D.upwelling, ws.upwelling, 'upwelling', fishEntries);
+  scoreW('chlFishScore', D.chlorophyll, ws.chlFish, 'chlFish', fishEntries);
+  scoreW('moonPhaseScore', D.moon.category, ws.moonPhase, 'moonPhase', fishEntries);
+  scoreW('reportsScore', D.reportsScore, ws.reports, 'reports', fishEntries);
+  scoreW('pressureScore', D.pressure, ws.pressure, 'pressure', fishEntries);
 
   // Grunion run factor — only affects halibut scoring (weight = 0 for other species)
   const grunion = getGrunionStatus(new Date());
@@ -6906,101 +6757,25 @@ function recalculate() {
     if (D.buoyWindSpeed < 3) effectiveWindDir = 'none';
   }
   if(effectiveWindSpd!==undefined&&effectiveWindDir) {
-    const ws=getScorer('wind')(effectiveWindSpd, effectiveWindDir);
-    setScore('windScore',ws); vizEntries.push({score:ws, key:'wind'});
+    const windScore = ws.wind;
+    setScore('windScore', windScore !== undefined ? windScore : null);
+    if (windScore !== undefined) vizEntries.push({ score: windScore, key: 'wind' });
   } else { setScore('windScore',null); }
-  scoreW('swellScore', D.swellFt, getScorer('swellSize'), 'swellSize', vizEntries);
-  scoreW('swellDirScore', D.swellDir, getScorer('swellDir'), 'swellDir', vizEntries);
-  scoreW('swellPeriodScore', D.swellPeriod, getScorer('swellPeriod'), 'swellPeriod', vizEntries);
-  scoreW('waveEnergyScore', D.waveEnergy, getScorer('waveEnergy'), 'waveEnergy', vizEntries);
-  // Phase 2A POC: side-by-side worker call, log delta. Local result authoritative.
-  if (D.waveEnergy !== undefined && D.waveEnergy !== null) {
-    const localWE = getScorer('waveEnergy')(D.waveEnergy);
-    sfPredict('waveEnergyScore', { waveEnergy: D.waveEnergy }).then(serverWE => {
-      if (serverWE === null) { console.log('[sfPredict] waveEnergyScore: worker unreachable (local=' + localWE + ')'); return; }
-      const delta = Math.abs(serverWE - localWE);
-      const tag = delta < 0.01 ? '✓ match' : '✗ DELTA';
-      console.log(`[sfPredict] waveEnergyScore: local=${localWE} worker=${serverWE} ${tag}`);
-    });
-  }
-  scoreW('rainfallScore', D.rainfall, getScorer('rainfall'), 'rainfall', vizEntries);
-  scoreW('chlVizScore', (loc.bloomSheltered&&D.chlorophyll&&!D.redTideWarning)?Math.min(D.chlorophyll,2):D.chlorophyll, getScorer('chlViz'), 'chlViz', vizEntries);
+  scoreW('swellScore', D.swellFt, ws.swellSize, 'swellSize', vizEntries);
+  scoreW('swellDirScore', D.swellDir, ws.swellDir, 'swellDir', vizEntries);
+  scoreW('swellPeriodScore', D.swellPeriod, ws.swellPeriod, 'swellPeriod', vizEntries);
+  scoreW('waveEnergyScore', D.waveEnergy, ws.waveEnergy, 'waveEnergy', vizEntries);
+  scoreW('rainfallScore', D.rainfall, ws.rainfall, 'rainfall', vizEntries);
+  scoreW('chlVizScore', (loc.bloomSheltered&&D.chlorophyll&&!D.redTideWarning)?Math.min(D.chlorophyll,2):D.chlorophyll, ws.chlViz, 'chlViz', vizEntries);
   // Turbidity from SASS (only contributes when sensor is online)
   if (D.turbidity !== undefined) {
     const ts = turbScore(D.turbidity);
     vizEntries.push({score: ts, key: 'turbidity'});
   }
-  scoreW('bottomScore', D.bottom, getScorer('bottom'), 'bottom', vizEntries);
+  scoreW('bottomScore', D.bottom, ws.bottom, 'bottom', vizEntries);
 
-  if(D.waveEnergy) { const s=getScorer('waveEnergy')(D.waveEnergy); setScore('estVizScore',s); }
-  else setScore('estVizScore',null);
-
-  // Phase 2B.1/2B.2: batch dual-track. Send all inputs to the worker's
-  // scoreAll action with the current species selection; compare per-key to
-  // the local SCORE[species] (falling through to SCORE.general for null
-  // entries, matching getScorer). Local stays authoritative; deltas log to
-  // console.
-  {
-    const G = SCORE.general;
-    const localScores = {};
-    const inputs = { species: currentSpecies };
-    const numericIn = {
-      waterTemp: D.waterTemp, sst: D.sstF, current: D.currentStrength,
-      chlorophyll: D.chlorophyll, reports: D.reportsScore, swellFt: D.swellFt,
-      swellPeriod: D.swellPeriod, waveEnergy: D.waveEnergy,
-    };
-    const enumIn = {
-      tempTrend: D.tempTrend, tideState: D.tideState, upwelling: D.upwelling,
-      moonPhase: D.moon && D.moon.category, pressure: D.pressure,
-      swellDir: D.swellDir, rainfall: D.rainfall, bottom: D.bottom,
-    };
-    Object.entries(numericIn).forEach(([k, v]) => {
-      if (Number.isFinite(Number(v))) inputs[k] = Number(v);
-    });
-    Object.entries(enumIn).forEach(([k, v]) => { if (v) inputs[k] = v; });
-    // Wind needs both speed + direction. Use the effective values computed above.
-    if (Number.isFinite(Number(effectiveWindSpd)) && effectiveWindDir) {
-      inputs.windSpeed = Number(effectiveWindSpd);
-      inputs.windDir = effectiveWindDir;
-    }
-    // Local scores via getScorer (which respects species selection + falls
-    // through to general for null entries). This is the same function used
-    // to compute the live scores displayed in the UI.
-    const localScorer = (k) => (SCORE[currentSpecies] && SCORE[currentSpecies][k]) || G[k];
-    if (Number.isFinite(Number(inputs.waterTemp))) localScores.waterTemp = localScorer('waterTemp')(inputs.waterTemp);
-    if (Number.isFinite(Number(inputs.sst))) localScores.sst = localScorer('sst')(inputs.sst);
-    if (inputs.tempTrend) localScores.tempTrend = localScorer('tempTrend')(inputs.tempTrend);
-    if (inputs.tideState) localScores.tideState = localScorer('tideState')(inputs.tideState);
-    if (Number.isFinite(Number(inputs.current))) localScores.current = localScorer('current')(inputs.current);
-    if (inputs.upwelling) localScores.upwelling = localScorer('upwelling')(inputs.upwelling);
-    if (Number.isFinite(Number(inputs.chlorophyll))) {
-      localScores.chlFish = localScorer('chlFish')(inputs.chlorophyll);
-      localScores.chlViz  = localScorer('chlViz')(inputs.chlorophyll);
-    }
-    if (inputs.moonPhase) localScores.moonPhase = localScorer('moonPhase')(inputs.moonPhase);
-    if (Number.isFinite(Number(inputs.reports))) localScores.reports = localScorer('reports')(inputs.reports);
-    if (inputs.pressure) localScores.pressure = localScorer('pressure')(inputs.pressure);
-    if (inputs.windSpeed !== undefined && inputs.windDir) localScores.wind = localScorer('wind')(inputs.windSpeed, inputs.windDir);
-    if (Number.isFinite(Number(inputs.swellFt))) localScores.swellSize = localScorer('swellSize')(inputs.swellFt);
-    if (inputs.swellDir) localScores.swellDir = localScorer('swellDir')(inputs.swellDir);
-    if (Number.isFinite(Number(inputs.swellPeriod))) localScores.swellPeriod = localScorer('swellPeriod')(inputs.swellPeriod);
-    if (Number.isFinite(Number(inputs.waveEnergy))) localScores.waveEnergy = localScorer('waveEnergy')(inputs.waveEnergy);
-    if (inputs.rainfall) localScores.rainfall = localScorer('rainfall')(inputs.rainfall);
-    if (inputs.bottom) localScores.bottom = localScorer('bottom')(inputs.bottom);
-
-    sfPredict('scoreAll', inputs).then(server => {
-      if (!server) { console.log('[sfPredict] scoreAll: worker unreachable'); return; }
-      const keys = Object.keys(localScores);
-      const deltas = [];
-      keys.forEach(k => {
-        const l = localScores[k], s = server[k];
-        if (s === undefined) deltas.push(`${k}=missing`);
-        else if (Math.abs(s - l) > 0.01) deltas.push(`${k}: local=${l} worker=${s}`);
-      });
-      if (deltas.length === 0) console.log(`[sfPredict] scoreAll[${currentSpecies}]: ✓ ${keys.length}/${keys.length} match`);
-      else console.log(`[sfPredict] scoreAll[${currentSpecies}]: ✗ ${deltas.length} DELTAS:`, deltas.join('  '));
-    });
-  }
+  if(D.waveEnergy && ws.waveEnergy !== undefined) setScore('estVizScore', ws.waveEnergy);
+  else setScore('estVizScore', null);
 
   // Compute weighted averages (re-normalize weights for available factors)
   let fishAvg = weightedAvg(fishEntries, FISH_WEIGHTS);
@@ -7094,13 +6869,22 @@ function weightedAvg(entries, weights) {
   return totalWeight > 0 ? totalScore / totalWeight : null;
 }
 
-function scoreW(elId, value, scorer, key, arr) {
-  if(value===undefined||value===null) { setScore(elId,null); return; }
-  const s = typeof scorer==='function' ? scorer(value) : (scorer||5);
-  setScore(elId,s);
-  if(s!==null) arr.push({score:s, key:key});
+// Phase 2B.6b-2: scoreW signature changed — third arg is now a precomputed
+// score value (from worker scoreAll), not a scorer function. Callers in
+// recalculate() pass `ws.factorName` (which is undefined if the worker is
+// unreachable or doesn't have a score for that factor).
+function scoreW(elId, value, score, key, arr) {
+  if (value === undefined || value === null || score === undefined || score === null) {
+    setScore(elId, null);
+    return;
+  }
+  setScore(elId, score);
+  arr.push({ score, key });
 }
 
+// Older score() helper (used by forecast/per-day calcs) — kept around because
+// those code paths still pass scorer functions from frontend-side species data.
+// Will migrate in a later cleanup.
 function score(elId, value, scorer, arr) {
   if(value===undefined||value===null) { setScore(elId,null); return; }
   const s = typeof scorer==='function' ? scorer(value) : (scorer||5);
@@ -7165,7 +6949,7 @@ function updateInsightReserve(fish, viz) {
 
 function updateInsight(fish,viz) {
   const el=document.getElementById('insightText');
-  if(fish===null&&viz===null) { el.textContent=SCORE[currentSpecies].tip; return; }
+  if(fish===null&&viz===null) { el.textContent=D._currentTip||''; return; }
 
   // Geographic range notice
   const avail = getSpeciesAvailability(currentSpecies, currentLocation);
@@ -7182,8 +6966,8 @@ function updateInsight(fish,viz) {
     else if(diff<-2) msg='Crystal clear water but fish activity is low. Great for reef exploring, less ideal for pelagic hunting.';
     else if(fish>=7&&viz>=7) msg='Both fish activity and visibility are strong. Prime spearfishing window — get in the water.';
     else if(fish<4&&viz<4) msg='Poor conditions across the board. Consider waiting for improvement.';
-    else msg=SCORE[currentSpecies].tip;
-  } else msg=SCORE[currentSpecies].tip;
+    else msg=D._currentTip||'';
+  } else msg=D._currentTip||'';
 
   // Rollover alert — high winds mixed the water column
   if (D.rollover) {
