@@ -1,6 +1,6 @@
 // SpearFactor Conditions — Service Worker
 // Version is bumped on every deploy to bust cache
-const CACHE_VERSION = 'sf-v20260521d';
+const CACHE_VERSION = 'sf-v20260521e';
 const CACHE_FILES = [
   '/',
   '/manifest.json'
@@ -30,11 +30,12 @@ self.addEventListener('activate', event => {
 });
 
 // Fetch strategy:
-//   HTML pages → STALE-WHILE-REVALIDATE: serve cached HTML instantly, fetch a
-//   fresh copy in the background and cache it for the NEXT visit. This makes
-//   page loads feel instant on every warm visit. New code lands on the visit
-//   after a deploy — the activate handler + skipWaiting() above keeps that gap
-//   to a single page load.
+//   HTML pages → NETWORK-WITH-CACHE-FALLBACK: race network and cache with a
+//   1.5s timeout. If network beats the timeout (typical), user gets fresh
+//   HTML this visit. If network is slow/offline, fall back to cached HTML
+//   and let the network update the cache for the next visit. Replaced the
+//   prior stale-while-revalidate strategy, which made deploys take a full
+//   extra visit to land for some users (especially Safari).
 //
 //   Static assets (manifest, icons) → CACHE-FIRST.
 //
@@ -45,12 +46,24 @@ self.addEventListener('fetch', event => {
   // API calls, ERDDAP, NOAA, etc — always network, never cache through SW
   if (url.origin !== self.location.origin) return;
 
-  // HTML pages — stale-while-revalidate
+  // HTML pages — NETWORK-WITH-CACHE-FALLBACK (race with 1.5s timeout).
+  //
+  // We used to do pure stale-while-revalidate, which serves cached HTML
+  // instantly + updates cache in background. The problem: on the first
+  // visit after a deploy, the user sees the OLD HTML (no new chart, old
+  // calibration text, etc.) and only sees fresh on visit 2. For an actively
+  // updated tool this was confusing — users on Safari especially saw stale
+  // text for hours because Safari is slow to activate new SW versions.
+  //
+  // New approach: race network and cache. If network responds within 1.5s
+  // we use it (fresh content this visit). If network is slow or offline we
+  // fall back to the cached copy. Cache is still updated for the next visit.
+  // Cold network = ~200-500ms typical, so most visits feel just as fast as
+  // stale-while-revalidate did, but now reflect the latest deploy.
   if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/') {
     event.respondWith(
       caches.open(CACHE_VERSION).then(async cache => {
         const cached = await cache.match(event.request);
-        // Kick off the network fetch in the background regardless
         const networkPromise = fetch(event.request).then(response => {
           // Only cache 2xx AND non-redirected responses. Safari refuses to
           // serve cached responses that were originally created via a redirect
@@ -64,15 +77,24 @@ self.addEventListener('fetch', event => {
           return response;
         }).catch(() => null);
 
-        // If we have something cached, return it immediately. Otherwise wait
-        // for the network (first-ever visit / cleared cache).
-        if (cached) {
-          // Don't await networkPromise — let it update cache in background.
-          event.waitUntil(networkPromise);
-          return cached;
+        // No cached copy yet (first-ever visit) — wait for network.
+        if (!cached) {
+          const fresh = await networkPromise;
+          return fresh || new Response('Offline', { status: 503 });
         }
-        const fresh = await networkPromise;
-        return fresh || new Response('Offline', { status: 503 });
+
+        // Have a cached copy. Race network with a 1.5s timeout. If network
+        // beats the timeout, serve fresh; otherwise serve cached and let
+        // the network finish updating the cache for the next visit.
+        const winner = await Promise.race([
+          networkPromise,
+          new Promise(r => setTimeout(() => r(null), 1500)),
+        ]);
+        if (winner) return winner;
+        // Network slow — fall back to cache, but keep the network fetch alive
+        // so it can populate the cache for next time.
+        event.waitUntil(networkPromise);
+        return cached;
       })
     );
     return;
