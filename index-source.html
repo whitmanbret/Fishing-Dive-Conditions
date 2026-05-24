@@ -3626,8 +3626,23 @@ async function fetchSingleShoreStation(station, isFallback = false) {
       // bloom climatology) consistently track the live reading better.
       // Trust the sensor; let climo be the FALLBACK only.
       if (!isFallback) {
-        const chl = extract(station.chl);
+        let chl = extract(station.chl);
         if (chl !== null) {
+          // Newport Pier sanity check (added 2026-05-23): the pier sensor
+          // routinely reads bloom-tier chl (>10 mg/m³) on days when divers
+          // report 15-20 ft viz at the open Laguna coast — 4 paired reports
+          // 5/20-5/22 all confirmed Newport over-reads a localized harbor/
+          // pier signal not present in the open bight. Cap effective chl at
+          // 5 mg/m³ when (a) source is Newport Pier, (b) chl > 5, and (c)
+          // turbidity is clean or unknown (a real bloom would have NTU > 0.6
+          // along with the chl signal). Keeps the moderate-productivity tag
+          // without firing the heavy bloom penalty.
+          if (station.name === 'Newport Pier'
+              && chl > 5
+              && (D.turbidity === undefined || D.turbidity < 0.6)) {
+            console.log('[chl-cap] Newport chl=' + chl.toFixed(1) + ' looks anomalous (NTU clean) — capped at 5');
+            chl = 5;
+          }
           D.chlorophyll = chl;
           D.chlSource = station.name;
           D.chlIsClimatology = false;
@@ -7895,9 +7910,15 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
       baseLo = Math.round(baseLo * kelpBedMultFc);
       baseHi = Math.max(baseLo + 1, Math.round(baseHi * kelpBedMultFc));
     }
-    // La Jolla headland clearing (mirrors today inline path).
-    // Gated on wave energy (2026-05-19) — surge wraps the headland on swell days.
-    if (loc.headlandClearing && (D.waveEnergy || 0) < 50) {
+    // La Jolla headland clearing.
+    // Gates: WE < 50 (added 2026-05-19, surge wraps the headland on swell
+    // days) AND NTU < 0.4 (added 2026-05-23, the +5 boost was over-shooting
+    // on calm-but-still-mixed days — 5/23 LJ Cove came in 8-12 actual vs
+    // tool 13-18, two paired reports confirmed the boost was firing when
+    // the water wasn't actually clear).
+    if (loc.headlandClearing
+        && (D.waveEnergy || 0) < 50
+        && D.turbidity !== undefined && D.turbidity < 0.4) {
       baseLo += 5;
       baseHi += 5;
     }
