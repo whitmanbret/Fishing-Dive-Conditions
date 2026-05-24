@@ -1709,13 +1709,16 @@ function loadSstMap() {
   var url, labelText;
   // Switched 2026-05-23 from coastwatch.noaa.gov (502 outage) to PFEG
   // (coastwatch.pfeg.noaa.gov), which has been stable. JPL MUR is 1km
-  // resolution (better than the old 5km blended product), in Kelvin.
+  // resolution (better than the old 5km blended product). NOTE: JPL MUR
+  // reports analysed_sst in DEGREES CELSIUS (the old blended product used
+  // Kelvin) so the colorBar range is 11–22 °C ≈ 52–72 °F to span typical
+  // CA water from cold upwelled to warm summer. Anomaly variable name on
+  // this dataset is `sstAnom`, not `sst_anomaly`.
   if (sstMapCurrentType === 'anomaly') {
-    // JPL MUR SST anomaly — daily, 1km, °C difference from climatology
-    url = 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41anom1day.png?sst_anomaly%5B(last)%5D' + bbox + '&.colorBar=BlueWhiteRed%7C%7CLinear%7C-3%7C3%7C&.size=400%7C340&.timestamp=' + Date.now();
+    url = 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41anom1day.png?sstAnom%5B(last)%5D' + bbox + '&.colorBar=BlueWhiteRed%7C%7CLinear%7C-3%7C3%7C&.size=400%7C340&.timestamp=' + Date.now();
     labelText = 'JPL MUR SST Anomaly (\u00B0C vs climatology) \u00B7 ' + SST_MAP_REGIONS[sstMapCurrentRegion].label + ' \u00B7 Daily \u00B7 1km';
   } else {
-    url = 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.png?analysed_sst%5B(last)%5D' + bbox + '&.colorBar=Rainbow2%7C%7CLinear%7C285%7C293%7C&.size=400%7C340&.timestamp=' + Date.now();
+    url = 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.png?analysed_sst%5B(last)%5D' + bbox + '&.colorBar=Rainbow2%7C%7CLinear%7C11%7C22%7C&.size=400%7C340&.timestamp=' + Date.now();
     labelText = 'JPL MUR SST \u00B7 ' + SST_MAP_REGIONS[sstMapCurrentRegion].label + ' \u00B7 Daily \u00B7 1km';
   }
   var labelEl = document.getElementById('sstMapSourceLabel');
