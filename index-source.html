@@ -1783,7 +1783,7 @@ const LOCATIONS = {
   refugio: { name: 'Refugio / Gaviota', bottom: 'rock', tideStation: '9411340', coast: 210, shelter: 'low', buoys: ['46054'], lat: 34.47, lon: -120.07, depth: '8-50 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/105,70', mopStation: 'B0616' },
   // ── Channel Islands ──
   anacapa:     { name: 'Anacapa Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46217'], lat: 34.01, lon: -119.36, depth: '10-60 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/119,62' },
-  santacruz:   { name: 'Santa Cruz Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46054'], lat: 34.00, lon: -119.73, depth: '10-80 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/105,70' },
+  scisland:    { name: 'Santa Cruz Island', bottom: 'rock', tideStation: '9411340', coast: 180, shelter: 'moderate', buoys: ['46053','46054'], lat: 34.00, lon: -119.73, depth: '10-80 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/105,70' },
   sannicolas:  { name: 'San Nicolas Island', bottom: 'rock', tideStation: '9411406', coast: 210, shelter: 'low', buoys: ['46086','46047'], lat: 33.24, lon: -119.49, depth: '20-100 ft', kelpDensity: 'high', offshore: true, bluewater: true, nwsGrid: 'LOX/147,32' },
   catalina:    { name: 'Catalina Island', bottom: 'kelp', tideStation: '9410660', coast: 90, shelter: 'moderate', buoys: ['46222'], lat: 33.34, lon: -118.33, depth: '10-100 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/147,32' },
   // ── Offshore / Bluewater ──
@@ -1795,6 +1795,11 @@ const LOCATIONS = {
   // ── Central Coast (San Luis Obispo / Monterey) ──
   morro: { name: 'Morro Bay / Montana de Oro', bottom: 'rock', tideStation: '9412110', coast: 250, shelter: 'moderate', buoys: ['46028'], lat: 35.37, lon: -120.87, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/72,120', mopStation: 'SL348' },
   monterey: { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236','46042'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO752' },  // most dive sites (Breakwater, San Carlos, McAbee) are harbor-sheltered
+  // Santa Cruz (city/north Monterey Bay) added 2026-05-24. Cowell's Beach,
+  // Natural Bridges, Steamer Lane, 26th Ave dive zones. ~50 mi north of
+  // Monterey but same Monterey Bay system. Renamed island spot to
+  // `scisland` since "Santa Cruz" colloquially means the city.
+  santacruz: { name: 'Santa Cruz', bottom: 'mixed', tideStation: '9413745', coast: 225, shelter: 'moderate', buoys: ['46042','46236'], lat: 36.962, lon: -122.022, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/91,67' },
   loverspoint: { name: 'Lovers Point (Pacific Grove)', bottom: 'rock', tideStation: '9413450', coast: 0, shelter: 'high', buoys: ['46236','46042'], lat: 36.6267, lon: -121.9166, depth: '10-40 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'Lovers Point-Julia Platt State Marine Reserve', nwsGrid: 'MTR/93,51', mopStation: 'MO741' },
   carmel: { name: 'Carmel / Point Lobos', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46236','46042'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO610' },
   // ── Northern California ──
@@ -1858,12 +1863,12 @@ const REGION_MAP = {
   // Santa Barbara
   sb: 'sb', refugio: 'sb',
   // Channel Islands
-  anacapa: 'islands', santacruz: 'islands', sannicolas: 'islands', catalina: 'socal',
+  anacapa: 'islands', scisland: 'islands', sannicolas: 'islands', catalina: 'socal',
   // Offshore / Bluewater
   ninemile: 'offshore', tannerbank: 'offshore', fortythree: 'offshore', hiddenbank: 'offshore',
   sanclemente: 'islands',
   // Central Coast (Monterey, Carmel, Pacific Grove, Morro Bay)
-  morro: 'central', monterey: 'central', loverspoint: 'central', carmel: 'central',
+  morro: 'central', monterey: 'central', loverspoint: 'central', carmel: 'central', santacruz: 'central',
   // NorCal
   halfmoon: 'norcal', bodega: 'norcal', fortbragg: 'norcal', trinidad: 'norcal',
 };
@@ -3042,13 +3047,14 @@ const CDIP_STATIONS = {
   refugio:     { id: '183p1', name: 'Santa Barbara Channel' },
   // Channel Islands
   anacapa:     { id: '183p1', name: 'Santa Barbara Channel' },
-  santacruz:   { id: '183p1', name: 'Santa Barbara Channel' },
+  scisland:    { id: '183p1', name: 'Santa Barbara Channel' },
   catalina:    { id: '092p1', name: 'San Pedro' },
   sanclemente: { id: '092p1', name: 'San Pedro' },
   // Central Coast
   morro:       { id: '076p1', name: 'Diablo Canyon' },
   monterey:    { id: '156p1', name: 'Monterey Bay' },
   carmel:      { id: '156p1', name: 'Monterey Bay' },
+  santacruz:   { id: '156p1', name: 'Monterey Bay' },
   // NorCal — CDIP coverage is sparse; fall back to NDBC buoys
   halfmoon:    { id: '162p1', name: 'Point Reyes' },
   bodega:      { id: '162p1', name: 'Point Reyes' },
@@ -3513,9 +3519,9 @@ const SHORE_STATION_MAP = {
   // Ventura / Santa Barbara — Stearns Wharf primary, fallback Cal Poly, Morro
   ventura: ['stearnswharf','calpoly','morro'], sb: ['stearnswharf','calpoly','morro'], refugio: ['stearnswharf','calpoly','morro'],
   // Channel Islands — Stearns Wharf for northern islands, Newport for Catalina
-  catalina: ['newport','scripps'], anacapa: ['stearnswharf','santamonica','newport'], santacruz: ['stearnswharf','santamonica','calpoly'],
+  catalina: ['newport','scripps'], anacapa: ['stearnswharf','santamonica','newport'], scisland: ['stearnswharf','santamonica','calpoly'],
   // Central Coast — Monterey Wharf + Moss Landing primary, Cal Poly / Morro fallback
-  morro: ['morro','calpoly'], monterey: ['montereywharf','mosslanding','montereyaq','calpoly'], carmel: ['montereywharf','mosslanding','montereyaq','calpoly'],
+  morro: ['morro','calpoly'], monterey: ['montereywharf','mosslanding','montereyaq','calpoly'], carmel: ['montereywharf','mosslanding','montereyaq','calpoly'], santacruz: ['montereywharf','mosslanding','montereyaq','calpoly'],
   // NorCal — Trinidad, Humboldt
   halfmoon: ['calpoly'], bodega: ['trinidad','humboldt'],
   fortbragg: ['trinidad','humboldt'], trinidad: ['trinidad','humboldt'],
@@ -8764,9 +8770,9 @@ const COUNTY_SPOTS = {
   la:           ['pv','horseshoe','malibu','leocarrillo'],
   ventura:      ['ventura'],
   santabarbara: ['sb','refugio'],
-  islands:      ['catalina','anacapa','santacruz','sanclemente','sannicolas'],
+  islands:      ['catalina','anacapa','scisland','sanclemente','sannicolas'],
   slo:          ['morro'],
-  monterey:     ['monterey','loverspoint','carmel'],
+  monterey:     ['santacruz','monterey','loverspoint','carmel'],
   sanmateo:     ['halfmoon'],
   sonoma:       ['bodega'],
   mendocino:    ['fortbragg'],
@@ -8909,7 +8915,7 @@ const WEBCAMS = {
     { name: 'Anacapa Island Cove', url: 'https://explore.org/livecams/oceans/channel-islands-national-park-anacapa-island-cove', type: 'Free Live' },
     { name: 'Ventura Coast', url: 'https://www.surfline.com/surf-report/c-st-/5842041f4e65fad6a7708828', type: 'Surfline' },
   ],
-  santacruz: [
+  scisland: [
     { name: 'Anacapa Landing Cove (NPS)', url: 'https://www.nps.gov/chis/photosmultimedia/anacapa-landing-cove-webcam.htm', type: 'Free Live' },
     { name: 'Channel Islands Kelp Forest', url: 'https://www.nps.gov/chis/photosmultimedia/ocean-webcam.htm', type: 'Free — Underwater' },
     { name: 'Ventura Coast', url: 'https://www.surfline.com/surf-report/ventura-point/584204204e65fad6a77096b1', type: 'Surfline' },
