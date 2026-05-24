@@ -3643,6 +3643,21 @@ async function fetchSingleShoreStation(station, isFallback = false) {
             console.log('[chl-cap] Newport chl=' + chl.toFixed(1) + ' looks anomalous (NTU clean) — capped at 5');
             chl = 5;
           }
+          // Monterey Wharf inverse sanity check (added 2026-05-24): the
+          // wharf sits INSIDE the harbor (already flagged harborOnly for
+          // NTU). Its chl sensor consistently under-reads during open-bay
+          // bloom events — 4 paired reports 5/22-5/23 had divers reporting
+          // pea-soup / 5-10 ft viz while the wharf read chl < 0.3 mg/m³.
+          // When sensor reads anomalously clean during bloom months (Mar-Jul,
+          // when central-CA climatology is > 5 mg/m³), floor at climatology.
+          if (station.name === 'Monterey Wharf' && chl < 1) {
+            const _mo = new Date().getMonth() + 1;
+            const _climo = (CHL_CLIMATOLOGY_BY_REGION.central || {})[_mo];
+            if (_climo !== undefined && _climo > 5) {
+              console.log('[chl-floor] Monterey Wharf chl=' + chl.toFixed(2) + ' anomalously clean during bloom season — floor to climo ' + _climo);
+              chl = _climo;
+            }
+          }
           D.chlorophyll = chl;
           D.chlSource = station.name;
           D.chlIsClimatology = false;
@@ -8027,7 +8042,15 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     const blendF = (m) => 1 - csF * (1 - m);
     // Bloom-decay detection: particles settled (low NTU) but chl fluorescence persists.
     const fcstBloomDecay = D.turbidity !== undefined && D.turbidity < 0.35 && chlEff >= 0.5 && chlEff < 3;
-    if (chlEff > 8) {
+    // Added 2026-05-24: pea-soup tier (chl > 15) — central CA bloom events
+    // like Lover's Point 5/23 (6 ft viz, "pea soup") were producing 20-26 ft
+    // tool predictions with the old > 8 → 0.50× multiplier. The reality is
+    // that chl > 15 = visibility floor in low single digits regardless of
+    // other conditions. Use 0.30× for that tier.
+    if (chlEff > 15) {
+      const m = blendF(0.30);
+      baseLo = Math.max(1, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
+    } else if (chlEff > 8) {
       const m = blendF(0.50);
       baseLo = Math.max(2, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
     } else if (chlEff > 3) {
