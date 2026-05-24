@@ -1490,7 +1490,7 @@
           <div id="chlMapLoading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-muted);font-size:12px;">Loading satellite imagery...</div>
         </div>
         <div style="margin-top:8px;font-size:10px;color:var(--text-muted);line-height:1.5;">
-          <span id="chlMapSourceLabel">VIIRS S-NPP · Weekly composite · 4km resolution</span><br>
+          <span id="chlMapSourceLabel">MODIS Aqua · 8-day composite · 4km</span><br>
           Source: NOAA CoastWatch / ERDDAP · Green = high chlorophyll (reduced viz) · Blue = clear water
         </div>
       </div>
@@ -1586,14 +1586,17 @@
   </div>
 
 <script>
-// Chlorophyll Map — outside obfuscated block so onclick handlers resolve
+// Chlorophyll Map — outside obfuscated block so onclick handlers resolve.
+// Switched 2026-05-23 from coastwatch.noaa.gov VIIRS (502 outage) to PFEG
+// MODIS Aqua (coastwatch.pfeg.noaa.gov), which has been stable. Note the
+// new endpoints have no altitude dim, so the URL is one bracket shorter.
 var CHL_MAP_URLS = {
-  '8day': 'https://coastwatch.noaa.gov/erddap/griddap/noaacwNPPVIIRSchlaWeekly.png?chlor_a[(last)][(0)][(32):(35.5)][(-121.5):(-116.5)]',
-  'daily': 'https://coastwatch.noaa.gov/erddap/griddap/noaacwNPPVIIRSchlaDaily.png?chlor_a[(last)][(0)][(32):(35.5)][(-121.5):(-116.5)]'
+  '8day': 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla8day.png?chlorophyll[(last)][(32):(35.5)][(-121.5):(-116.5)]',
+  'daily': 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla1day.png?chlorophyll[(last)][(32):(35.5)][(-121.5):(-116.5)]'
 };
 var CHL_MAP_LABELS = {
-  '8day': 'VIIRS S-NPP · Weekly composite · 4km',
-  'daily': 'VIIRS S-NPP · Daily · 4km (may have cloud gaps)'
+  '8day': 'MODIS Aqua · 8-day composite · 4km',
+  'daily': 'MODIS Aqua · Daily · 4km (may have cloud gaps)'
 };
 var chlMapCurrentView = '8day';
 var chlMapLoaded = false;
@@ -1704,13 +1707,16 @@ function loadSstMap() {
   loadDiv.style.display = '';
   var bbox = SST_MAP_REGIONS[sstMapCurrentRegion].bbox;
   var url, labelText;
+  // Switched 2026-05-23 from coastwatch.noaa.gov (502 outage) to PFEG
+  // (coastwatch.pfeg.noaa.gov), which has been stable. JPL MUR is 1km
+  // resolution (better than the old 5km blended product), in Kelvin.
   if (sstMapCurrentType === 'anomaly') {
-    // Coral Reef Watch daily anomaly — difference from long-term climatology (°C)
-    url = 'https://coastwatch.noaa.gov/erddap/griddap/noaacrwsstanomalyDaily.png?sea_surface_temperature_anomaly%5B(last)%5D' + bbox + '&.colorBar=BlueWhiteRed%7C%7CLinear%7C-3%7C3%7C&.size=400%7C340&.timestamp=' + Date.now();
-    labelText = 'NOAA Coral Reef Watch \u00B7 SST Anomaly (\u00B0C vs climatology) \u00B7 ' + SST_MAP_REGIONS[sstMapCurrentRegion].label + ' \u00B7 Daily \u00B7 ~5km';
+    // JPL MUR SST anomaly — daily, 1km, °C difference from climatology
+    url = 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41anom1day.png?sst_anomaly%5B(last)%5D' + bbox + '&.colorBar=BlueWhiteRed%7C%7CLinear%7C-3%7C3%7C&.size=400%7C340&.timestamp=' + Date.now();
+    labelText = 'JPL MUR SST Anomaly (\u00B0C vs climatology) \u00B7 ' + SST_MAP_REGIONS[sstMapCurrentRegion].label + ' \u00B7 Daily \u00B7 1km';
   } else {
-    url = 'https://coastwatch.noaa.gov/erddap/griddap/noaacwBLENDEDsstDaily.png?analysed_sst%5B(last)%5D' + bbox + '&.colorBar=Rainbow2%7C%7CLinear%7C285%7C293%7C&.size=400%7C340&.timestamp=' + Date.now();
-    labelText = 'NOAA/NCEI Blended SST \u00B7 ' + SST_MAP_REGIONS[sstMapCurrentRegion].label + ' \u00B7 Daily \u00B7 ~5km';
+    url = 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.png?analysed_sst%5B(last)%5D' + bbox + '&.colorBar=Rainbow2%7C%7CLinear%7C285%7C293%7C&.size=400%7C340&.timestamp=' + Date.now();
+    labelText = 'JPL MUR SST \u00B7 ' + SST_MAP_REGIONS[sstMapCurrentRegion].label + ' \u00B7 Daily \u00B7 1km';
   }
   var labelEl = document.getElementById('sstMapSourceLabel');
   if (labelEl) labelEl.textContent = labelText;
@@ -1730,7 +1736,7 @@ window.loadSstMap = loadSstMap;
 const LOCATIONS = {
   // ── San Diego County (south → north) ──
   coronado:    { name: 'Coronado Islands (MX)', bottom: 'rock', tideStation: '9410170', coast: 300, shelter: 'low', buoys: ['46225','46235'], lat: 32.42, lon: -117.25, depth: '30-150 ft', kelpDensity: 'moderate', offshore: true, nwsGrid: 'SGX/54,20' },
-  imperial: { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low', buoys: ['46225','46235'], lat: 32.58, lon: -117.14, depth: '10-40 ft', kelpDensity: 'none', riverInfluence: true, nwsGrid: 'SGX/56,8', mopStation: 'D0053' },
+  imperial: { name: 'Imperial Beach', bottom: 'sand', tideStation: '9410170', coast: 250, shelter: 'low', buoys: ['46225','46235'], lat: 32.58, lon: -117.14, depth: '10-40 ft', kelpDensity: 'none', riverInfluence: true, nwsGrid: 'SGX/57,8', mopStation: 'D0053' },
   pointloma: { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.67, lon: -117.26, depth: '20-100 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20', mopStation: 'D0259' },
   mission: { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low', riverInfluence: true, nwsGrid: 'SGX/54,20', mopStation: 'D0366' },
   ljshores: { name: 'La Jolla Shores', bottom: 'sand', tideStation: '9410230', coast: 290, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8586, lon: -117.2572, depth: '10-60 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20', canyonInfluence: true, mopStation: 'D0504' },
