@@ -8041,15 +8041,22 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
       baseLo = Math.round(baseLo * kelpBedMultFc);
       baseHi = Math.max(baseLo + 1, Math.round(baseHi * kelpBedMultFc));
     }
-    // La Jolla headland clearing.
-    // Gates: WE < 50 (added 2026-05-19, surge wraps the headland on swell
-    // days) AND NTU < 0.4 (added 2026-05-23, the +5 boost was over-shooting
-    // on calm-but-still-mixed days — 5/23 LJ Cove came in 8-12 actual vs
-    // tool 13-18, two paired reports confirmed the boost was firing when
-    // the water wasn't actually clear).
-    if (loc.headlandClearing
+    // LJ Cove proxy-mismatch dampener (added 2026-05-24, Option B).
+    // The Scripps NTU sensor sits on the LJ Shores pier ~1 mile N of the
+    // cove proper and samples canyon-flush water, not the trapped-sediment
+    // dynamics of the cove pocket. 3 paired reports (5/22-5/23) all show
+    // the cove tracking at ~60% of what Scripps NTU implies — e.g. 5/23 AM
+    // tool 22-30 ft vs actual 6-10 ft. Apply a 0.6× multiplier on the
+    // NTU-derived base for ljcove specifically. This also implicitly
+    // removes the headlandClearing +5 boost since we skip that gate too.
+    if (currentLocation === 'ljcove') {
+      baseLo = Math.max(1, Math.round(baseLo * 0.6));
+      baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.6));
+    } else if (loc.headlandClearing
         && (D.waveEnergy || 0) < 50
         && D.turbidity !== undefined && D.turbidity < 0.4) {
+      // Other headlandClearing spots (lajolla / LJ Kelp Beds — offshore,
+      // boost still applies). LJ Cove takes the dampener above instead.
       baseLo += 5;
       baseHi += 5;
     }
