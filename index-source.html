@@ -987,6 +987,15 @@
     .install-banner-close:hover { color: var(--text-primary); }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
+    /* ===== AT-A-GLANCE SUMMARY GRID (2026-05-24) ===== */
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .summary-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+    .sc-label { text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: var(--text-secondary); margin-bottom: 6px; }
+    .sc-main { font-size: 20px; font-weight: 700; color: var(--text-primary); line-height: 1.15; }
+    .sc-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.3; }
+    .sc-unit { font-size: 11px; font-weight: 500; color: var(--text-muted); margin-left: 2px; }
+    @media (max-width: 360px) { .summary-grid { grid-template-columns: 1fr; } }
+
     /* ===== CONDITION CARDS (Tide / Wind / Wave) — 2026-05-11 redesign ===== */
     .cond-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
     .cc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
@@ -1262,6 +1271,32 @@
         <div id="vizFeetLabel" style="display:none">--</div>
         <!-- Hidden gauge for score calc -->
         <div style="display:none"><svg viewBox="0 0 120 70"><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc-bg"/><path d="M 10 65 A 50 50 0 0 1 110 65" class="gauge-arc" id="vizArc" style="stroke:var(--viz-color)"/></svg><div id="vizScore">--</div></div>
+      </div>
+    </div>
+
+    <!-- ===== AT-A-GLANCE SUMMARY (2026-05-24 — Surfline-style 4-block grid) =====
+         Positioned directly under the Fish + Viz hero per user request,
+         above the conditions brief and detail chart cards. -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="sc-label">🌊 Temperature</div>
+        <div class="sc-main"><span id="sumWaterTemp">--</span> <span class="sc-unit">water</span></div>
+        <div class="sc-sub"><span id="sumAirTemp">--</span> <span class="sc-unit">air</span></div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-label">💨 Wind</div>
+        <div class="sc-main"><span id="sumWind">--</span></div>
+        <div class="sc-sub" id="sumWindRel">--</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-label">≈ Swell</div>
+        <div class="sc-main"><span id="sumSwell">--</span></div>
+        <div class="sc-sub" id="sumSwellDir">--</div>
+      </div>
+      <div class="summary-card">
+        <div class="sc-label">🔺 Tide</div>
+        <div class="sc-main"><span id="sumTide">--</span></div>
+        <div class="sc-sub" id="sumTideNext">--</div>
       </div>
     </div>
 
@@ -5822,9 +5857,84 @@ function renderWaveChart() {
 }
 
 function renderConditionCards() {
+  try { renderSummaryGrid(); } catch(e) { console.warn('summary grid:', e); }
   try { renderTideCard(); } catch(e) { console.warn('tide card:', e); }
   try { renderWindCard(); } catch(e) { console.warn('wind card:', e); }
   try { renderWaveCard(); } catch(e) { console.warn('wave card:', e); }
+}
+
+// At-a-glance 4-block summary (Temperature / Wind / Swell / Tide).
+// Pulls existing D fields — no new data fetches. Added 2026-05-24 per
+// user request for a Surfline-style summary above the detail chart cards.
+function renderSummaryGrid() {
+  const _set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+  // TEMPERATURE
+  _set('sumWaterTemp', (D.waterTemp !== undefined && D.waterTemp !== null) ? `${Math.round(D.waterTemp)}°F` : '--');
+  // Air temp populated by updateDisplay() into airTempVal element; mirror its value.
+  const _airEl = document.getElementById('airTempVal');
+  const _airTxt = _airEl ? (_airEl.textContent || '').match(/-?\d+/) : null;
+  _set('sumAirTemp', _airTxt ? `${_airTxt[0]}°F` : '--');
+
+  // WIND — D.windSpeedMph is the numeric speed; D.windDirDeg is the
+  // direction in degrees; D.windDir is the already-classified onshore/
+  // offshore/sideshore label.
+  const _ws = D.windSpeedMph;
+  const _wDeg = (D.windDirDeg !== undefined) ? D.windDirDeg : D.windDeg;
+  const _wCard = (typeof _degToCardinal === 'function' && _wDeg !== undefined) ? _degToCardinal(_wDeg) : '';
+  _set('sumWind', (_ws !== undefined && _ws !== null) ? `${Math.round(_ws)} mph${_wCard ? ' ' + _wCard : ''}` : '--');
+  // Onshore/offshore/sideshore label — capitalize for display
+  const _wRelRaw = (D.windDir || '').toString();
+  const _wRel = _wRelRaw ? _wRelRaw.charAt(0).toUpperCase() + _wRelRaw.slice(1) : '';
+  _set('sumWindRel', _wRel || '--');
+
+  // SWELL
+  const _sf = D.swellFt, _sp = D.swellPeriod, _sd = D.swellDirDeg;
+  if (_sf !== undefined && _sf !== null) {
+    _set('sumSwell', `${_sf.toFixed(1)} ft${_sp ? ` @ ${Math.round(_sp)}s` : ''}`);
+    if (_sd !== undefined && typeof _degToCardinal === 'function') {
+      _set('sumSwellDir', `${_degToCardinal(_sd)} ${Math.round(_sd)}°`);
+    } else { _set('sumSwellDir', '--'); }
+  } else {
+    _set('sumSwell', '--'); _set('sumSwellDir', '--');
+  }
+
+  // TIDE — derive current height from the hourly schedule (D.tideHeight
+  // isn't a field; D.multiDayTideHourly is). Find the closest hourly entry
+  // to the current time.
+  const _ts = D.tideState;
+  let _th = null;
+  if (D.multiDayTideHourly && D.multiDayTideHourly.length) {
+    const _nowMs = Date.now();
+    let _closest = D.multiDayTideHourly[0];
+    let _bestDelta = Math.abs((_closest.time && _closest.time.getTime ? _closest.time.getTime() : 0) - _nowMs);
+    for (const t of D.multiDayTideHourly) {
+      if (!t.time || !t.time.getTime) continue;
+      const d = Math.abs(t.time.getTime() - _nowMs);
+      if (d < _bestDelta) { _bestDelta = d; _closest = t; }
+    }
+    if (_closest && _closest.value !== undefined) _th = _closest.value;
+    else if (_closest && _closest.height !== undefined) _th = _closest.height;
+  }
+  const _arrow = (_ts === 'incoming' || _ts === 'low') ? '▲' : (_ts === 'outgoing' || _ts === 'high') ? '▼' : '';
+  _set('sumTide', (_th !== null) ? `${_th.toFixed(1)} ft ${_arrow}`.trim() : '--');
+  // Next high/low if we have the schedule
+  let _nextLabel = '';
+  if (D.multiDayTideHiLo && D.multiDayTideHiLo.length) {
+    const _now = Date.now();
+    const _next = D.multiDayTideHiLo.find(t => t.time && t.time.getTime() > _now);
+    if (_next) {
+      const _t = _next.time;
+      const _hr = _t.getHours();
+      const _min = _t.getMinutes().toString().padStart(2, '0');
+      const _ampm = _hr >= 12 ? 'pm' : 'am';
+      const _h12 = _hr % 12 || 12;
+      const _kind = _next.type === 'H' ? 'high' : 'low';
+      const _rising = _ts === 'incoming' || _ts === 'low';
+      _nextLabel = `${_rising ? 'rising' : 'falling'} → next ${_kind} ${_next.value !== undefined ? _next.value.toFixed(1) + ' ft ' : ''}@ ${_h12}:${_min}${_ampm}`;
+    }
+  }
+  _set('sumTideNext', _nextLabel || (_ts ? _ts : '--'));
 }
 
 async function updateDisplay() {
