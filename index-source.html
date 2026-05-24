@@ -936,13 +936,13 @@
     .data-warning, .data-warning.show { display: none !important; }
     .data-warning strong { color: #f5d060; }
 
-    /* ===== BEACH WATER QUALITY ADVISORY ===== */
-    .beach-advisory-banner {
-      display: none; background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.4);
-      border-radius: 8px; padding: 10px 12px; margin: 8px 0 10px; font-size: 12px;
-      color: #ff6b6b; line-height: 1.5;
-    }
-    .beach-advisory-banner.show { display: block; }
+    /* ===== BEACH WATER QUALITY ADVISORY =====
+       Hidden permanently per user request 2026-05-23. The fetch still runs
+       (data populates D.beachAdvisory) and the worker still proxies it, but
+       the banner never renders. To re-enable, drop the !important display:none
+       below — JS still toggles the .show class when an advisory is active. */
+    .beach-advisory-banner { display: none !important; }
+    .beach-advisory-banner.show { display: none !important; }
     .beach-advisory-banner.closure { background: rgba(231,76,60,0.22); border-color: rgba(231,76,60,0.6); }
     .beach-advisory-banner strong { color: #ff8a8a; }
     .beach-advisory-banner .advisory-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
@@ -4952,8 +4952,13 @@ function computeSiteTip() {
     if (D.runoffAdvisory && D.tideState === 'incoming') {
       tips.push("Reef pocket likely murky on this incoming tide — try the north side of the cove (toward Children's Pool / Goldfish Point) and the kelp paddies, which flush cleaner.");
     }
-    // Always-relevant bloom advisory: surface bloom is patchy across the cove
-    else if (D.chlorophyll !== undefined && D.chlorophyll > 0.5) {
+    // Bloom advisory — fires only when chl indicates a real productive water
+    // mass (was > 0.5, now > 2.0) AND turbidity isn't reading already-clean
+    // (which would mean residual chl fluorescence after particles settled).
+    // Old threshold was producing the tip on background-chl days like
+    // 5/23/2026 when chl=0.53 / NTU=0.2 — water was clear, tip was wrong.
+    else if (D.chlorophyll !== undefined && D.chlorophyll > 2.0
+             && !(D.turbidity !== undefined && D.turbidity < 0.4)) {
       tips.push("Bloom layering common in this cove — Goldfish Point and the Sea Caves typically clear better than the south reef pocket. If conditions are mixed, try below the thermocline (often 15-20 ft on bloom days) for cleaner water above the cold layer.");
     }
   }
