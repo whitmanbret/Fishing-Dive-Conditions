@@ -3687,11 +3687,16 @@ async function fetchSingleShoreStation(station, isFallback = false) {
           // Monterey Wharf inverse sanity check (added 2026-05-24): the
           // wharf sits INSIDE the harbor (already flagged harborOnly for
           // NTU). Its chl sensor consistently under-reads during open-bay
-          // bloom events — 4 paired reports 5/22-5/23 had divers reporting
+          // bloom events — paired reports 5/22-5/24 had divers reporting
           // pea-soup / 5-10 ft viz while the wharf read chl < 0.3 mg/m³.
-          // When sensor reads anomalously clean during bloom months (Mar-Jul,
-          // when central-CA climatology is > 5 mg/m³), floor at climatology.
-          if (station.name === 'Monterey Wharf' && chl < 1) {
+          // When sensor reads anomalously clean during bloom months, floor
+          // at climatology. **Skip for carmel** (added 2026-05-24 evening):
+          // Carmel/Pt Lobos has outer-reef Pacific exposure that flushes
+          // faster than inner Monterey Bay, so the inner-bay bloom climatology
+          // doesn't represent Carmel's open-coast conditions. The 5/24
+          // Carmel report of 10-15 ft confirmed the floor was too aggressive
+          // here, even though it helps Monterey + Lover's Point.
+          if (station.name === 'Monterey Wharf' && chl < 1 && currentLocation !== 'carmel') {
             const _mo = new Date().getMonth() + 1;
             const _climo = (CHL_CLIMATOLOGY_BY_REGION.central || {})[_mo];
             if (_climo !== undefined && _climo > 5) {
@@ -8160,17 +8165,16 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   if (chlAppliesFcst) {
     const chlDecay = [1.0, 0.9, 0.8, 0.65, 0.50][Math.min(dayIdx, 4)];
     const chlEff = (D.chlorophyll || 0) * chlDecay;
-    // Climatology applied at 30% strength (matches inline today path).
-    const csF = D.chlIsClimatology ? 0.3 : 1.0;
+    // Climatology applied at 30% strength by default, 80% when chl > 10
+    // (peak central CA bloom climatology is reliable — bumped 2026-05-24
+    // evening after Lover's Point 2 consecutive days at 6 ft pea soup).
+    const csF = D.chlIsClimatology ? (chlEff > 10 ? 0.8 : 0.3) : 1.0;
     const blendF = (m) => 1 - csF * (1 - m);
     // Bloom-decay detection: particles settled (low NTU) but chl fluorescence persists.
     const fcstBloomDecay = D.turbidity !== undefined && D.turbidity < 0.35 && chlEff >= 0.5 && chlEff < 3;
-    // Added 2026-05-24: pea-soup tier (chl > 15) — central CA bloom events
-    // like Lover's Point 5/23 (6 ft viz, "pea soup") were producing 20-26 ft
-    // tool predictions with the old > 8 → 0.50× multiplier. The reality is
-    // that chl > 15 = visibility floor in low single digits regardless of
-    // other conditions. Use 0.30× for that tier.
-    if (chlEff > 15) {
+    // Pea-soup tier (added 2026-05-24, threshold lowered from 15→12 on
+    // 2026-05-24 evening) — central CA May climo=14 IS pea-soup conditions.
+    if (chlEff > 12) {
       const m = blendF(0.30);
       baseLo = Math.max(1, Math.round(baseLo * m)); baseHi = Math.max(baseLo + 1, Math.round(baseHi * m));
     } else if (chlEff > 8) {
