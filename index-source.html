@@ -991,6 +991,22 @@
     .install-banner-close:hover { color: var(--text-primary); }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
+    /* ===== RECENT REPORTS (2026-05-25) ===== */
+    .recent-reports { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+    .rr-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+    .rr-title { text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: var(--text-secondary); }
+    .rr-spot { font-size: 10px; color: var(--text-muted); }
+    .rr-list { display: flex; flex-direction: column; gap: 8px; }
+    .rr-item { display: grid; grid-template-columns: 80px 70px 1fr; gap: 8px; align-items: baseline; font-size: 12px; line-height: 1.35; padding: 6px 0; border-top: 1px solid var(--border); }
+    .rr-item:first-child { border-top: none; padding-top: 0; }
+    .rr-when { color: var(--text-muted); font-size: 11px; font-weight: 500; }
+    .rr-viz { font-weight: 700; color: var(--text-primary); }
+    .rr-note { color: var(--text-secondary); font-style: italic; }
+    .rr-empty { font-size: 12px; color: var(--text-muted); padding: 8px 0; text-align: center; }
+    .rr-cta { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); }
+    .rr-report-btn { background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .rr-report-btn:hover { background: rgba(44,140,255,0.1); }
+
     /* ===== AT-A-GLANCE SUMMARY GRID (2026-05-24) ===== */
     .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
     .summary-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
@@ -1321,6 +1337,19 @@
       </div>
       <div class="brief-am" id="briefAM"></div>
       <div class="brief-pm" id="briefPM"></div>
+    </div>
+
+    <!-- ===== RECENT REPORTS — past 3 days of diver-reported viz for this spot ===== -->
+    <div class="recent-reports" id="recentReports">
+      <div class="rr-header">
+        <span class="rr-title">Recent Reports</span>
+        <span class="rr-spot" id="rrSpot"></span>
+      </div>
+      <div class="rr-list" id="rrList"></div>
+      <div class="rr-cta">
+        <span>Dove here recently?</span>
+        <button class="rr-report-btn" onclick="document.getElementById('reportBtn')?.click()">Add Report</button>
+      </div>
     </div>
 
     <!-- ===== CONDITION CARDS (Tide / Wind / Wave) — 2026-05-11 redesign ===== -->
@@ -5875,9 +5904,89 @@ function renderWaveChart() {
 
 function renderConditionCards() {
   try { renderSummaryGrid(); } catch(e) { console.warn('summary grid:', e); }
+  try { renderRecentReports(); } catch(e) { console.warn('recent reports:', e); }
   try { renderTideCard(); } catch(e) { console.warn('tide card:', e); }
   try { renderWindCard(); } catch(e) { console.warn('wind card:', e); }
   try { renderWaveCard(); } catch(e) { console.warn('wave card:', e); }
+}
+
+// Recent Reports section (2026-05-25).
+// Past 3 days of diver-submitted reports for the current spot, fetched from
+// the worker /reports/public endpoint. Sanitized (no email/IP) and cached at
+// the edge for ~2 min. Shows empty state if no reports exist for the spot.
+async function renderRecentReports() {
+  const listEl = document.getElementById('rrList');
+  const spotEl = document.getElementById('rrSpot');
+  if (!listEl) return;
+  spotEl.textContent = (LOCATIONS[currentLocation]?.name || '').toUpperCase();
+  listEl.innerHTML = '<div class="rr-empty">Loading recent reports…</div>';
+
+  let reports = [];
+  try {
+    const r = await fetchWithTimeout(
+      `${SF_PROXY_BASE}/reports/public?spot=${encodeURIComponent(currentLocation)}&days=3&limit=3`,
+      null, 5000
+    );
+    if (r && r.ok) {
+      const data = await r.json();
+      reports = (data.reports || []).map(report => ({
+        when: _formatReportWhen(report.ts),
+        viz: _formatReportViz(report.viz),
+        note: _formatReportNote(report.notes),
+      }));
+    }
+  } catch (e) {
+    // Quiet fail — show empty state if fetch fails
+  }
+
+  if (!reports.length) {
+    listEl.innerHTML = '<div class="rr-empty">No recent diver reports for this spot. Be the first — tap Add Report below.</div>';
+    return;
+  }
+
+  listEl.innerHTML = reports.map(r =>
+    `<div class="rr-item">
+      <span class="rr-when">${r.when}</span>
+      <span class="rr-viz">${r.viz}</span>
+      <span class="rr-note">${r.note}</span>
+    </div>`
+  ).join('');
+}
+
+// Format a report's ISO timestamp as "Today" / "Yesterday" / "N days ago"
+function _formatReportWhen(isoTs) {
+  if (!isoTs) return '';
+  const reportDate = new Date(isoTs);
+  if (isNaN(reportDate)) return '';
+  const now = new Date();
+  // Compare calendar days, not exact 24-hour windows
+  const reportDay = new Date(reportDate.getFullYear(), reportDate.getMonth(), reportDate.getDate());
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diff = Math.round((today - reportDay) / (24 * 60 * 60 * 1000));
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Yesterday';
+  if (diff < 0) return 'Today'; // future / clock skew — show as today
+  return `${diff} days ago`;
+}
+
+// Diver reports a single number; render as e.g. "~12 ft" so it's clear
+// this is one observation, not a range like the tool prediction.
+function _formatReportViz(viz) {
+  const n = Number(viz);
+  if (!Number.isFinite(n)) return '--';
+  return `~${Math.round(n)} ft`;
+}
+
+function _formatReportNote(notes) {
+  if (typeof notes !== 'string' || !notes.trim()) return '';
+  // Truncate to ~70 chars to fit one row visually
+  const trimmed = notes.trim();
+  if (trimmed.length <= 70) return _escapeHtml(trimmed);
+  return _escapeHtml(trimmed.slice(0, 67)) + '…';
+}
+
+function _escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 // At-a-glance 4-block summary (Temperature / Wind / Swell / Tide).
