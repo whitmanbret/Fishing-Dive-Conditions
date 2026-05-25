@@ -8079,8 +8079,8 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     // Pier sensor sits below/outside the surface bloom layer.
     if (currentLocation === 'ljshores' && D.chlorophyll !== undefined && !D.chlIsClimatology) {
       if (D.chlorophyll > 1.0 && D.turbidity !== undefined && D.turbidity < 0.3) {
-        baseLo = Math.max(1, Math.round(baseLo * 0.65));
-        baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.65));
+        baseLo = Math.max(1, Math.round(baseLo * 0.50));
+        baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.50));
       } else if (D.chlorophyll > 0.8 && D.turbidity !== undefined && D.turbidity < 0.4) {
         baseLo = Math.max(1, Math.round(baseLo * 0.85));
         baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.85));
