@@ -509,6 +509,10 @@
       border-bottom: 1px solid var(--border);
     }
     .forecast-day:last-child { border-bottom: none; }
+    /* Outlook days (6-7) — visually faded to signal lower confidence (wind/
+       swell trends only, past the reliable forecast horizon). */
+    .forecast-day.outlook-day { opacity: 0.7; }
+    .forecast-day.outlook-day .forecast-day-label { font-style: italic; }
     .forecast-day-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 6px 12px 2px; cursor: pointer; transition: background 0.15s;
@@ -7594,7 +7598,11 @@ function buildForecast() {
     dayGroups[key].push({...p, date: d});
   }
 
-  const dayKeys = Object.keys(dayGroups).slice(0, 5);
+  // Extended to 7 days 2026-05-25 per user request. Days 6-7 (idx 5-6) are
+  // tagged as "Outlook" and visually faded — wind/swell forecasts get less
+  // reliable past day 5 and chl/NTU don't forecast at all, so those days
+  // are educated guesses, not predictions.
+  const dayKeys = Object.keys(dayGroups).slice(0, 7);
 
   // Best Day banner removed 2026-05-20 — preferred to lead straight into the
   // per-day rows. Dead-code calcs above also removed.
@@ -7631,8 +7639,11 @@ function buildForecast() {
     slotScores.forEach((ss, i) => { if (ss.spear > slotScores[bestSlotIdx].spear) bestSlotIdx = i; });
 
     const openClass = idx === 0 ? ' open' : '';
+    // Outlook class for days 6-7 (idx 5, 6) — visually faded since wind/
+    // swell forecasts get unreliable past day 5 and chl/NTU don't forecast.
+    const outlookClass = idx >= 5 ? ' outlook-day' : '';
 
-    html += `<div class="forecast-day${openClass}" id="fDay${idx}">`;
+    html += `<div class="forecast-day${openClass}${outlookClass}" id="fDay${idx}">`;
 
     // Day header with label and best time
     html += `<div class="forecast-day-header" onclick="toggleForecastDay(${idx})">`;
@@ -7644,17 +7655,13 @@ function buildForecast() {
       html += `<div style="font-size:10px;font-weight:600;color:${bwColor};margin-top:1px">${bwIcon} ${bestWindow.range} <span style="font-weight:400;color:var(--text-muted)">${bestWindow.reason}</span></div>`;
     }
     // Confidence badge — bloom transitions and rapid pressure shifts can
-    // shift the prediction overnight. Show a small "low confidence" hint on
-    // days 2-5 so users don't trust the range verbatim. Today (idx=0) skips
-    // the badge because today reads live sensors.
+    // shift the prediction overnight. Days 6-7 (idx 5-6) ALWAYS show the
+    // outlook badge since they're past the reliable forecast horizon.
     const _chl = D.chlorophyll || 0;
     const _pr = D.pressureTrend && D.pressureTrend.tendency;
-    const _lowConf = idx > 0 && (
-      _chl > 5 ||
-      _pr === 'falling_rapid' ||
-      _pr === 'rising_rapid'
-    );
-    if (_lowConf) {
+    if (idx >= 5) {
+      html += `<div style="font-size:10px;color:var(--text-muted);margin-top:1px">📅 Outlook — wind/swell trends only</div>`;
+    } else if (idx > 0 && (_chl > 5 || _pr === 'falling_rapid' || _pr === 'rising_rapid')) {
       const reason = _chl > 5 ? 'bloom transitioning' : 'pressure shift';
       html += `<div style="font-size:10px;color:var(--text-muted);margin-top:1px">⚠ Low confidence — ${reason}</div>`;
     }
