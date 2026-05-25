@@ -8065,6 +8065,14 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
       baseLo += 5;
       baseHi += 5;
     }
+    // LJ Shores Scripps-NTU mismatch dampener (2026-05-25). 6 paired
+    // reports show fine bloom particles aren't reading on NTU but kill
+    // viz for divers. Gate on chl > 0.8 — when no bloom signal, the
+    // prediction is already accurate.
+    if (currentLocation === 'ljshores' && D.chlorophyll !== undefined && D.chlorophyll > 0.8) {
+      baseLo = Math.max(1, Math.round(baseLo * 0.75));
+      baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.75));
+    }
   } else if (D.waveEnergy !== undefined) {
     // No turbidity available — fall back to wave energy.
     // Tiers must match the inline today-path baselines (calibration 4/26/2026).
