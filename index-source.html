@@ -1778,6 +1778,12 @@ const LOCATIONS = {
   pointloma: { name: 'Point Loma Kelp', bottom: 'kelp', tideStation: '9410170', coast: 250, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.67, lon: -117.26, depth: '20-100 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20', mopStation: 'D0259' },
   mission: { name: 'Mission Bay / Jetties', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.76, lon: -117.25, depth: '10-30 ft', kelpDensity: 'low', riverInfluence: true, nwsGrid: 'SGX/54,20', mopStation: 'D0366' },
   ljshores: { name: 'La Jolla Shores', bottom: 'sand', tideStation: '9410230', coast: 290, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8586, lon: -117.2572, depth: '10-60 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20', canyonInfluence: true, mopStation: 'D0504' },
+  // LJ Marine Room added 2026-05-25 as sub-location of LJ Shores. Reef pocket
+  // at the south end consistently traps sediment and the bloom signal Scripps
+  // Pier sensor misses — paired reports this week showed Marine Room at 5-10 ft
+  // while LJ Shores Garden was 10-20 ft on the same day. Same upstream data
+  // sources as ljshores but with coveTrap flag + per-spot dampener.
+  ljmarineroom: { name: 'LJ Marine Room', bottom: 'reef', tideStation: '9410230', coast: 280, shelter: 'moderate', buoys: ['46225','46254'], lat: 32.8554, lon: -117.2547, depth: '15-50 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20', canyonInfluence: true, coveTrap: true, mopStation: 'D0498' },
   lajolla: { name: 'La Jolla Kelp Beds', bottom: 'kelp', tideStation: '9410230', coast: 305, shelter: 'low', buoys: ['46225','46254'], lat: 32.85, lon: -117.28, depth: '30-80 ft', kelpDensity: 'high', nwsGrid: 'SGX/54,20', canyonInfluence: true, mopStation: 'D0475', headlandClearing: true },
   ljcove: { name: 'La Jolla Cove', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'high', buoys: ['46225','46254'], lat: 32.8505, lon: -117.2728, depth: '5-80 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'San Diego-La Jolla Ecological Reserve', scrippsProximity: true, nwsGrid: 'SGX/54,20', bloomSheltered: true, canyonInfluence: true, mopStation: 'D0481', headlandClearing: true },
   birdrock: { name: 'Bird Rock / Windansea', bottom: 'rock', tideStation: '9410230', coast: 270, shelter: 'low', buoys: ['46225','46254'], lat: 32.81, lon: -117.27, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'SGX/54,20', mopStation: 'D0423' },
@@ -1891,7 +1897,7 @@ let srcStatus = {}; // track data source status
 const REGION_MAP = {
   // San Diego
   coronado: 'sd', imperial: 'sd', pointloma: 'sd', mission: 'sd', birdrock: 'sd',
-  ljshores: 'sd', ljcove: 'sd', lajolla: 'sd', delmar: 'sd', encinitas: 'sd', carlsbad: 'sd', oceanside: 'sd',
+  ljshores: 'sd', ljmarineroom: 'sd', ljcove: 'sd', lajolla: 'sd', delmar: 'sd', encinitas: 'sd', carlsbad: 'sd', oceanside: 'sd',
   // LA / Orange County / Ventura
   danapoint: 'socal', laguna: 'socal', crescent: 'socal', emerald: 'socal', brooksstreet: 'socal', crystalcove: 'socal', newport: 'socal', huntington: 'socal', pv: 'socal', horseshoe: 'socal',
   malibu: 'socal', leocarrillo: 'socal', ventura: 'socal',
@@ -3053,6 +3059,7 @@ async function fetchMultiDayTides() {
 const CDIP_STATIONS = {
   // San Diego
   ljshores:    { id: '201p1', name: 'Scripps Nearshore' },
+  ljmarineroom:{ id: '201p1', name: 'Scripps Nearshore' },
   lajolla:     { id: '201p1', name: 'Scripps Nearshore' },
   birdrock:    { id: '201p1', name: 'Scripps Nearshore' },
   pointloma:   { id: '191p1', name: 'Point Loma South' },
@@ -3544,7 +3551,7 @@ const SHORE_STATIONS = {
 const SHORE_STATION_MAP = {
   // San Diego — Scripps Pier, fallback Newport
   coronado: ['scripps','newport'], imperial: ['scripps','newport'], pointloma: ['scripps','newport'], mission: ['scripps','newport'],
-  ljshores: ['scripps','newport'], ljcove: ['scripps','newport'], lajolla: ['scripps','newport'], birdrock: ['scripps','newport'], delmar: ['scripps','newport'],
+  ljshores: ['scripps','newport'], ljmarineroom: ['scripps','newport'], ljcove: ['scripps','newport'], lajolla: ['scripps','newport'], birdrock: ['scripps','newport'], delmar: ['scripps','newport'],
   encinitas: ['scripps','newport'], carlsbad: ['scripps','newport'], oceanside: ['scripps','newport'],
   // Orange County — Newport Pier, fallback Scripps
   danapoint: ['newport','scripps'], laguna: ['newport','scripps'], crescent: ['newport','scripps'], emerald: ['newport','scripps'], crystalcove: ['newport','scripps'],
@@ -3981,6 +3988,7 @@ const RIVER_GAUGES_BY_SPOT = {
   mission:    [{site:'11022480', name:'San Diego R', baseline:10}],
   birdrock:   [{site:'11022480', name:'San Diego R', baseline:10}],
   ljshores:   [{site:'11022480', name:'San Diego R', baseline:10}],
+  ljmarineroom:[{site:'11022480', name:'San Diego R', baseline:10}],
   lajolla:    [{site:'11022480', name:'San Diego R', baseline:10}],
   delmar:     [{site:'11023000', name:'San Dieguito R', baseline:5}],
   encinitas:  [{site:'11023000', name:'San Dieguito R', baseline:5}],
@@ -8054,7 +8062,8 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     // tool 22-30 ft vs actual 6-10 ft. Apply a 0.6× multiplier on the
     // NTU-derived base for ljcove specifically. This also implicitly
     // removes the headlandClearing +5 boost since we skip that gate too.
-    if (currentLocation === 'ljcove') {
+    if (currentLocation === 'ljcove' || currentLocation === 'ljmarineroom') {
+      // LJ Cove + LJ Marine Room: reef-pocket sub-spots, same 0.6× dampener.
       baseLo = Math.max(1, Math.round(baseLo * 0.6));
       baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.6));
     } else if (loc.headlandClearing
@@ -8065,13 +8074,17 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
       baseLo += 5;
       baseHi += 5;
     }
-    // LJ Shores Scripps-NTU mismatch dampener (2026-05-25). 6 paired
-    // reports show fine bloom particles aren't reading on NTU but kill
-    // viz for divers. Gate on chl > 0.8 — when no bloom signal, the
-    // prediction is already accurate.
-    if (currentLocation === 'ljshores' && D.chlorophyll !== undefined && D.chlorophyll > 0.8) {
-      baseLo = Math.max(1, Math.round(baseLo * 0.75));
-      baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.75));
+    // LJ Shores stealth-bloom dampener (refactored 2026-05-25). Fires when
+    // chl + NTU DISAGREE (chl says bloom but NTU reads clean) — the Scripps
+    // Pier sensor sits below/outside the surface bloom layer.
+    if (currentLocation === 'ljshores' && D.chlorophyll !== undefined && !D.chlIsClimatology) {
+      if (D.chlorophyll > 1.0 && D.turbidity !== undefined && D.turbidity < 0.3) {
+        baseLo = Math.max(1, Math.round(baseLo * 0.65));
+        baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.65));
+      } else if (D.chlorophyll > 0.8 && D.turbidity !== undefined && D.turbidity < 0.4) {
+        baseLo = Math.max(1, Math.round(baseLo * 0.85));
+        baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.85));
+      }
     }
   } else if (D.waveEnergy !== undefined) {
     // No turbidity available — fall back to wave energy.
@@ -8894,7 +8907,7 @@ function selectSpotFromMap(key) {
 
 // County → Spots mapping (south to north within each county)
 const COUNTY_SPOTS = {
-  sandiego:     ['coronado','imperial','pointloma','mission','birdrock','ljshores','ljcove','lajolla','delmar','encinitas','carlsbad','oceanside'],
+  sandiego:     ['coronado','imperial','pointloma','mission','birdrock','ljshores','ljmarineroom','ljcove','lajolla','delmar','encinitas','carlsbad','oceanside'],
   orange:       ['danapoint','brooksstreet','laguna','crescent','emerald','crystalcove','newport','huntington'],
   la:           ['pv','horseshoe','malibu','leocarrillo'],
   ventura:      ['ventura'],
@@ -8940,6 +8953,11 @@ const WEBCAMS = {
     { name: 'La Jolla Shores', url: 'https://hdontap.com/stream/532541/la-jolla-shores-live-surf-cam/', type: 'Free HD' },
     { name: 'Scripps Pier Cam', url: 'https://scripps.ucsd.edu/piercam', type: 'Free Live' },
     { name: 'Scripps Pier (DeepSea)', url: 'https://www.deepsea.com/sio-piercam/', type: 'Free Backup' },
+  ],
+  ljmarineroom: [
+    { name: 'Scripps Underwater Viz', url: 'https://coollab.ucsd.edu/pierviz/', type: 'Free — Underwater' },
+    { name: 'La Jolla Shores', url: 'https://hdontap.com/stream/532541/la-jolla-shores-live-surf-cam/', type: 'Free HD' },
+    { name: 'Scripps Pier Cam', url: 'https://scripps.ucsd.edu/piercam', type: 'Free Live' },
   ],
   lajolla: [
     { name: 'Scripps Underwater Viz', url: 'https://coollab.ucsd.edu/pierviz/', type: 'Free — Underwater' },
