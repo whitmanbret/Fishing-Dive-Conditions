@@ -8205,16 +8205,28 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     }
   } else if (D.waveEnergy !== undefined) {
     // No turbidity available — fall back to wave energy.
-    // Tiers must match the inline today-path baselines (calibration 4/26/2026).
-    // Drift between the two paths was causing the today→tomorrow cliff bug.
+    // Bloom-aware baseline (2026-05-25 PM) mirrors worker logic: glassy
+    // water + bloom = surface trap (pea soup), NOT clean. Use compressed
+    // table when chl > 10. See worker calcVizWeFallbackPath for rationale.
     const we = D.waveEnergy;
-    if (we < 10)  { baseLo = 20; baseHi = 28; }  // glassy
-    else if (we <= 20) { baseLo = 16; baseHi = 24; }
-    else if (we <= 35) { baseLo = 13; baseHi = 20; }
-    else if (we <= 50) { baseLo = 10; baseHi = 16; }
-    else if (we <= 100) { baseLo = 7; baseHi = 12; }
-    else if (we <= 200) { baseLo = 4; baseHi = 7; }
-    else { baseLo = 1; baseHi = 4; }
+    const bloomy = (D.chlorophyll !== undefined && D.chlorophyll > 10);
+    if (bloomy) {
+      if (we < 10)       { baseLo = 8;  baseHi = 14; }
+      else if (we <= 20)  { baseLo = 8;  baseHi = 14; }
+      else if (we <= 35)  { baseLo = 7;  baseHi = 13; }
+      else if (we <= 50)  { baseLo = 7;  baseHi = 12; }
+      else if (we <= 100) { baseLo = 6;  baseHi = 11; }
+      else if (we <= 200) { baseLo = 4;  baseHi = 8;  }
+      else                 { baseLo = 1;  baseHi = 4;  }
+    } else {
+      if (we < 10)       { baseLo = 20; baseHi = 28; }  // glassy
+      else if (we <= 20)  { baseLo = 16; baseHi = 24; }
+      else if (we <= 35)  { baseLo = 13; baseHi = 20; }
+      else if (we <= 50)  { baseLo = 10; baseHi = 16; }
+      else if (we <= 100) { baseLo = 7;  baseHi = 12; }
+      else if (we <= 200) { baseLo = 4;  baseHi = 7;  }
+      else                 { baseLo = 1;  baseHi = 4;  }
+    }
   } else {
     // Fallback: estimate from viz score
     if (vizScore >= 8) { baseLo = 16; baseHi = 21; }
