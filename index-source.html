@@ -1007,6 +1007,31 @@
     .rr-report-btn { background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
     .rr-report-btn:hover { background: rgba(44,140,255,0.1); }
 
+    /* ===== AUTO-UPDATE BANNER (2026-05-26) ===== */
+    #sfUpdateBanner {
+      position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: #fff;
+      padding: 9px 14px 9px 16px; border-radius: 28px;
+      font-size: 13px; font-weight: 600;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      z-index: 100000;
+      display: flex; align-items: center; gap: 10px;
+      animation: sfBannerSlide 0.3s ease-out;
+    }
+    @keyframes sfBannerSlide {
+      from { transform: translate(-50%, calc(100% + 30px)); opacity: 0; }
+      to   { transform: translate(-50%, 0); opacity: 1; }
+    }
+    #sfUpdateBanner button {
+      background: rgba(255,255,255,0.22); color: #fff; border: 0;
+      padding: 5px 12px; border-radius: 14px;
+      font-weight: 700; font-size: 12px; cursor: pointer;
+    }
+    #sfUpdateBanner #sfBannerClose {
+      padding: 3px 9px; background: transparent;
+      font-size: 16px; font-weight: 400;
+    }
+
     /* ===== AT-A-GLANCE SUMMARY GRID (2026-05-24) ===== */
     .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
     .summary-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
@@ -9744,34 +9769,66 @@ if (!isStandalone && !deferredPrompt) {
   }
 }
 
-// Service Worker — network-first for HTML, cache for offline
-// Version string forces browser to re-fetch sw.js and detect changes
+// Service Worker — auto-update + auto-reload pattern (refactored 2026-05-26).
+// Three improvements over the prior implementation:
+//   1. Dynamic cache-bust query (today's date) — was hardcoded to 4/3, which
+//      could let Cloudflare/browser serve a stale sw.js for weeks.
+//   2. Re-check for SW updates whenever the tab returns to visible — catches
+//      the case where a user backgrounds the app for days and comes back.
+//   3. Idle-aware auto-reload — if the page just loaded (<5s), silent reload
+//      so users get fresh content on their first visit after a deploy. If
+//      they've been actively interacting, show a small "Update" banner so we
+//      don't interrupt them mid-action.
+window._sf_pageLoadedAt = Date.now();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then(registrations => {
-    // Clean up any non-sw.js workers from old deployments
     for (const reg of registrations) {
       if (reg.active && reg.active.scriptURL && !reg.active.scriptURL.includes('sw.js')) {
         reg.unregister();
       }
     }
-    // Register with cache-bust version — browser compares sw.js byte-for-byte
-    // When CACHE_VERSION inside sw.js changes, browser activates new worker
-    navigator.serviceWorker.register('/sw.js?v=20260403a').then(reg => {
-      reg.update(); // Force update check on every page load
-      // When a new SW activates, reload to get fresh code
+    // Dynamic cache-bust — changes daily so browser re-fetches sw.js
+    const ymd = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    navigator.serviceWorker.register('/sw.js?v=' + ymd).then(reg => {
+      reg.update().catch(()=>{});
+      // Re-check for updates when user returns to a backgrounded tab.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          reg.update().catch(()=>{});
+        }
+      });
+      // When a new SW activates: silent reload if user just arrived, banner
+      // if they've been actively using the page.
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
-              // New version active — reload once to get fresh HTML
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+            const pageAgeMs = Date.now() - window._sf_pageLoadedAt;
+            if (pageAgeMs < 5000) {
+              // Page just loaded — silent reload to fresh code.
               location.reload();
+            } else {
+              // User has been on the page — show non-blocking banner.
+              _sf_showUpdateBanner();
             }
-          });
-        }
+          }
+        });
       });
     }).catch(() => {});
   });
+}
+
+function _sf_showUpdateBanner() {
+  if (document.getElementById('sfUpdateBanner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'sfUpdateBanner';
+  banner.innerHTML = '<span>🔄 New version available</span>' +
+    '<button id="sfBannerReload">Update</button>' +
+    '<button id="sfBannerClose" aria-label="Dismiss">×</button>';
+  document.body.appendChild(banner);
+  document.getElementById('sfBannerReload').onclick = function() { location.reload(); };
+  document.getElementById('sfBannerClose').onclick = function() { banner.remove(); };
 }
 
 // =========================================================================
