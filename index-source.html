@@ -1724,7 +1724,12 @@ function loadChlMap() {
   errDiv.style.display = 'none';
   img.style.display = 'none';
   loadDiv.style.display = '';
-  var url = CHL_MAP_URLS[chlMapCurrentView] + '&.timestamp=' + Date.now();
+  var targetUrl = CHL_MAP_URLS[chlMapCurrentView] + '&.timestamp=' + Date.now();
+  // Route through worker proxy 2026-05-26: PFEG ERDDAP returns
+  // Content-Disposition: attachment which iOS Safari interprets as a
+  // download instead of rendering inline, leaving the img stuck on
+  // "Loading...". The proxy strips that header + adds CORS.
+  var url = 'https://spearfactor-api.whitmanbret.workers.dev/proxy?url=' + encodeURIComponent(targetUrl);
   img.onload = function() { loadDiv.style.display = 'none'; img.style.display = 'block'; chlMapLoaded = true; };
   img.onerror = function() { loadDiv.style.display = 'none'; img.style.display = 'none'; errDiv.style.display = 'block'; };
   img.src = url;
@@ -1816,9 +1821,11 @@ function loadSstMap() {
   }
   var labelEl = document.getElementById('sstMapSourceLabel');
   if (labelEl) labelEl.textContent = labelText;
+  // Route through worker proxy (see loadChlMap for rationale).
+  var proxiedUrl = 'https://spearfactor-api.whitmanbret.workers.dev/proxy?url=' + encodeURIComponent(url);
   img.onload = function() { loadDiv.style.display = 'none'; img.style.display = 'block'; sstMapLoaded = true; };
   img.onerror = function() { loadDiv.style.display = 'none'; img.style.display = 'none'; errDiv.style.display = 'block'; };
-  img.src = url;
+  img.src = proxiedUrl;
 }
 window.toggleSstMap = toggleSstMap;
 window.setSstMapRegion = setSstMapRegion;
