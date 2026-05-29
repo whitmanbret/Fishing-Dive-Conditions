@@ -1879,7 +1879,15 @@ const LOCATIONS = {
   huntington: { name: 'Huntington Cliffs', bottom: 'sand', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.65, lon: -117.98, depth: '8-20 ft', kelpDensity: 'none', nwsGrid: 'SGX/35,58', mopStation: 'OC495' },
   // ── Los Angeles County ──
   pv: { name: 'Palos Verdes', bottom: 'rock', tideStation: '9410660', coast: 225, shelter: 'moderate', buoys: ['46222'], lat: 33.74, lon: -118.41, depth: '10-55 ft', kelpDensity: 'high', nwsGrid: 'LOX/147,32', mopStation: 'L0357' },
-  horseshoe: { name: 'Horseshoe Kelp (LA)', bottom: 'kelp', tideStation: '9410660', coast: 270, shelter: 'low', buoys: ['46222'], lat: 33.70, lon: -118.35, depth: '20-60 ft', kelpDensity: 'high', offshore: true, nwsGrid: 'LOX/147,32', mopStation: 'L0272' },
+  // Horseshoe Kelp: 2026-05-28 removed `offshore: true`. While Horseshoe sits
+  // 3-4 mi offshore from San Pedro, it's a kelp reef in 20-60 ft of water —
+  // it behaves like a nearshore offshore-kelp-bed (LJ Kelp Beds analog), NOT
+  // bluewater. The offshore flag was routing it through the 40+ ft bluewater
+  // viz baseline, producing unrealistic 50-60+ ft predictions. Removing the
+  // flag also activates the offshore-kelp-bed boost (bottom=kelp + high
+  // kelp + !scrippsProximity + !offshore), which gives it appropriate
+  // bloom-resistance vs shore sites without going full bluewater.
+  horseshoe: { name: 'Horseshoe Kelp (LA)', bottom: 'kelp', tideStation: '9410660', coast: 270, shelter: 'low', buoys: ['46222'], lat: 33.70, lon: -118.35, depth: '20-60 ft', kelpDensity: 'high', nwsGrid: 'LOX/147,32', mopStation: 'L0272' },
   malibu: { name: 'Malibu / Point Dume', bottom: 'rock', tideStation: '9410660', coast: 200, shelter: 'moderate', buoys: ['46222'], lat: 34.00, lon: -118.80, depth: '8-50 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/135,46', mopStation: 'L1037' },
   leocarrillo: { name: 'Leo Carrillo', bottom: 'rock', tideStation: '9410660', coast: 210, shelter: 'low', buoys: ['46222'], lat: 34.04, lon: -118.93, depth: '8-30 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/135,46', mopStation: 'L1173' },
   // ── Ventura County ──
