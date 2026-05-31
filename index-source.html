@@ -6355,10 +6355,20 @@ async function updateDisplay() {
     })();
 
     const _capturedLocation = currentLocation;
+    // chlLiveExpected: true if this spot has a live shore station mapped
+    // (Scripps, Wharf, etc.) — used by the worker to detect sensor outages.
+    // When chlIsClimatology=true AND chlLiveExpected=true → outage scenario,
+    // climatology should be treated with default uncertainty (climoStrength
+    // 0.3) instead of the bumped 0.8 reserved for spots that ALWAYS use
+    // climatology (Lover's Point, no mapped station). Added 2026-05-30
+    // after Scripps + Monterey Wharf went down and tool over-stuck in
+    // peak-bloom predictions even though conditions were clearing.
+    const _hasLiveStation = !!(typeof SHORE_STATION_MAP !== 'undefined' && SHORE_STATION_MAP[_capturedLocation]);
     const worker = await sfPredict('viz', {
       ntu: D.turbidity,
       chlorophyll: D.chlorophyll,
       chlIsClimatology: !!D.chlIsClimatology,
+      chlLiveExpected: _hasLiveStation,
       waveEnergy: D.waveEnergy,
       swellPeriod: D.swellPeriod,
       swellDir: D.swellDir,
@@ -7616,6 +7626,7 @@ function updateConditionsBrief() {
     redTideWarning: D.redTideWarning ? true : null,
     chlorophyll: D.chlorophyll !== undefined ? D.chlorophyll : null,
     chlIsClimatology: !!D.chlIsClimatology,
+    chlLiveExpected: !!(typeof SHORE_STATION_MAP !== 'undefined' && SHORE_STATION_MAP[currentLocation]),
     turbidity: D.turbidity !== undefined ? D.turbidity : null,
     loc: { name: loc.name, offshore: !!loc.offshore, bottom: loc.bottom, kelpDensity: loc.kelpDensity, shelter: loc.shelter },
   }).then(server => {
@@ -8383,7 +8394,11 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     // Climatology applied at 30% strength by default, 80% when chl > 10
     // (peak central CA bloom climatology is reliable — bumped 2026-05-24
     // evening after Lover's Point 2 consecutive days at 6 ft pea soup).
-    const csF = D.chlIsClimatology ? (chlEff > 10 ? 0.8 : 0.3) : 1.0;
+    // Outage-aware climoStrength (matches worker — see calcVizNtuPath comment).
+    const _csF_liveExpected = !!(typeof SHORE_STATION_MAP !== 'undefined' && SHORE_STATION_MAP[currentLocation]);
+    const csF = D.chlIsClimatology
+      ? (_csF_liveExpected ? 0.3 : (chlEff > 10 ? 0.8 : 0.3))
+      : 1.0;
     const blendF = (m) => 1 - csF * (1 - m);
     // Bloom-decay detection: particles settled (low NTU) but chl fluorescence persists.
     const fcstBloomDecay = D.turbidity !== undefined && D.turbidity < 0.35 && chlEff >= 0.5 && chlEff < 3;
