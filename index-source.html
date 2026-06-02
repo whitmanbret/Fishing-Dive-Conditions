@@ -1879,6 +1879,15 @@ const LOCATIONS = {
   huntington: { name: 'Huntington Cliffs', bottom: 'sand', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.65, lon: -117.98, depth: '8-20 ft', kelpDensity: 'none', nwsGrid: 'SGX/35,58', mopStation: 'OC495' },
   // ── Los Angeles County ──
   pv: { name: 'Palos Verdes', bottom: 'rock', tideStation: '9410660', coast: 225, shelter: 'moderate', buoys: ['46222'], lat: 33.74, lon: -118.41, depth: '10-55 ft', kelpDensity: 'high', nwsGrid: 'LOX/147,32', mopStation: 'L0357' },
+  // Veterans Park (Redondo Beach) added 2026-06-02 per user request — sits on
+  // the Santa Monica Bay side N of the PV peninsula, different microclimate
+  // from PV proper (PV faces the open Pacific). User reports show classic
+  // SM Bay stratification: bad red-algae cloud in the top 30-40 ft, clear and
+  // cold (52°F) below 40 ft. Redondo Canyon brings deep water close to shore.
+  // mopStation L0357 is PV's — used as proxy until a Redondo-specific MOP is
+  // identified. Tide station 9410840 (Santa Monica) chosen over 9410660 (LA
+  // Outer Harbor) since Veterans Park is on the bay side, not the harbor side.
+  veteranspark: { name: 'Veterans Park (Redondo)', bottom: 'mixed', tideStation: '9410840', coast: 250, shelter: 'low', buoys: ['46221','46222'], lat: 33.8350, lon: -118.3895, depth: '10-90 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/148,36', mopStation: 'L0357' },
   // Horseshoe Kelp: 2026-05-28 removed `offshore: true`. While Horseshoe sits
   // 3-4 mi offshore from San Pedro, it's a kelp reef in 20-60 ft of water —
   // it behaves like a nearshore offshore-kelp-bed (LJ Kelp Beds analog), NOT
@@ -3153,6 +3162,7 @@ const CDIP_STATIONS = {
   huntington:  { id: '092p1', name: 'San Pedro' },
   // LA County
   pv:          { id: '092p1', name: 'San Pedro' },
+  veteranspark:{ id: '092p1', name: 'San Pedro' },
   horseshoe:   { id: '092p1', name: 'San Pedro' },
   malibu:      { id: '092p1', name: 'San Pedro' },
   leocarrillo: { id: '092p1', name: 'San Pedro' },
@@ -3630,7 +3640,7 @@ const SHORE_STATION_MAP = {
   danapoint: ['newport','scripps'], laguna: ['newport','scripps'], crescent: ['newport','scripps'], emerald: ['newport','scripps'], crystalcove: ['newport','scripps'],
   newport: ['newport','scripps'], huntington: ['newport','scripps'],
   // LA — Santa Monica Pier, fallback Newport
-  pv: ['santamonica','newport'], horseshoe: ['santamonica','newport'], malibu: ['santamonica','newport'], leocarrillo: ['santamonica','newport'],
+  pv: ['santamonica','newport'], veteranspark: ['santamonica','newport'], horseshoe: ['santamonica','newport'], malibu: ['santamonica','newport'], leocarrillo: ['santamonica','newport'],
   // Ventura / Santa Barbara — Stearns Wharf primary, fallback Cal Poly, Morro
   ventura: ['stearnswharf','calpoly','morro'], sb: ['stearnswharf','calpoly','morro'], refugio: ['stearnswharf','calpoly','morro'],
   // Channel Islands — Stearns Wharf for northern islands, Newport for Catalina
@@ -9118,7 +9128,7 @@ function selectSpotFromMap(key) {
 const COUNTY_SPOTS = {
   sandiego:     ['coronado','imperial','pointloma','mission','birdrock','ljshores','ljmarineroom','ljcove','lajolla','delmar','encinitas','carlsbad','oceanside'],
   orange:       ['danapoint','brooksstreet','laguna','crescent','emerald','crystalcove','newport','huntington'],
-  la:           ['pv','horseshoe','malibu','leocarrillo'],
+  la:           ['pv','horseshoe','veteranspark','malibu','leocarrillo'],
   ventura:      ['ventura'],
   santabarbara: ['sb','refugio'],
   islands:      ['catalina','anacapa','scisland','sanclemente','sannicolas'],
