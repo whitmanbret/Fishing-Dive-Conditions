@@ -6532,6 +6532,18 @@ async function updateDisplay() {
 
   // Render the new tide/wind/wave condition cards (added 2026-05-11 redesign)
   renderConditionCards();
+
+  // Re-render the 7-day forecast now that vizFeetHero is finalized. The forecast's
+  // estimateVizFeet() reads the hero text to anchor day-0 and forward days; if it
+  // runs before sfPredict resolves (which happens in fetchAllData where buildForecast
+  // is called immediately after updateDisplay without awaiting), it falls through
+  // to a legacy code path that's miscalibrated for offshore islands like Catalina —
+  // user reported 6/8 that Catalina forecast was stuck at 3-5 ft while the hero
+  // (correctly) showed 40-50+ ft. This second render-after-await fixes the race.
+  // Cheap: only re-renders the forecast DOM, no extra data fetches.
+  if (typeof buildForecast === 'function') {
+    try { buildForecast(); } catch (e) { console.warn('forecast re-render skipped:', e); }
+  }
 }
 
 function chlProductivity(c) {
