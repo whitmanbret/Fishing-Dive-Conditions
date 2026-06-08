@@ -8490,9 +8490,25 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   }
 
   // Cap range spread to 5ft max, and realistic max of 30ft (today's estimate)
-  if (baseHi - baseLo > 5) baseHi = baseLo + 5;
-  baseHi = Math.min(30, baseHi);
-  baseLo = Math.min(baseLo, baseHi - 1);
+  // — but skip BOTH caps for offshore islands and bluewater spots where 40-70+
+  // ft is the normal baseline. Pre-2026-06-08 this clamped Catalina (offshore
+  // tier 30-50 ft) down to a flat 25-30 ft regardless of conditions, and was
+  // why the legacy-fallback path showed 3-5 ft for Catalina forecasts when
+  // the anchor-path race fired (fixed in the same release). Shore-spot logic
+  // unchanged.
+  const isOffshoreLike = loc.offshore || loc.bluewater;
+  if (!isOffshoreLike) {
+    if (baseHi - baseLo > 5) baseHi = baseLo + 5;
+    baseHi = Math.min(30, baseHi);
+    baseLo = Math.min(baseLo, baseHi - 1);
+  } else {
+    // Offshore: keep ranges honest. Allow up to 8 ft spread to reflect the
+    // wider day-to-day variability at islands; cap upper bound at 70 ft which
+    // matches the best-tier baseline in the offshore branch above.
+    if (baseHi - baseLo > 8) baseHi = baseLo + 8;
+    baseHi = Math.min(70, baseHi);
+    baseLo = Math.min(baseLo, baseHi - 1);
+  }
 
   // Future-day uncertainty widening — forecasts genuinely don't know as much
   // as the live sensor data does. Widen the range to honestly represent what
