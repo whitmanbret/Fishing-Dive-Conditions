@@ -6028,7 +6028,11 @@ async function renderRecentReports() {
   ).join('');
 }
 
-// Format a report's ISO timestamp as "Today" / "Yesterday" / "N days ago"
+// Format a report's ISO timestamp as "Today" / "Yesterday" / "Mon Jun 6".
+// Per user request 2026-06-08: 2+ days back show the actual date instead of
+// "N days ago" — divers reading reports want to know which dive day it was,
+// not do mental math from "two days ago." Today/Yesterday stay as labels
+// since those are clearer than a date for very recent reports.
 function _formatReportWhen(isoTs) {
   if (!isoTs) return '';
   const reportDate = new Date(isoTs);
@@ -6041,7 +6045,14 @@ function _formatReportWhen(isoTs) {
   if (diff === 0) return 'Today';
   if (diff === 1) return 'Yesterday';
   if (diff < 0) return 'Today'; // future / clock skew — show as today
-  return `${diff} days ago`;
+  // 2+ days back: format as "Mon Jun 6" (day-of-week + month + day-of-month).
+  // Day-of-week helps divers connect to "the weekend dive" vs "Tuesday's dive."
+  try {
+    return reportDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  } catch (e) {
+    // Fallback for ancient browsers — bare ISO date.
+    return reportDate.toISOString().slice(0, 10);
+  }
 }
 
 // Diver reports a single number; render as e.g. "~12 ft" so it's clear
