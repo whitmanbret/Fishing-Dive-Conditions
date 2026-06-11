@@ -1009,6 +1009,7 @@
     .rr-toggle { background: transparent; border: none; color: var(--accent); font-size: 11px; font-weight: 600; cursor: pointer; padding: 8px 0 0; width: 100%; text-align: center; letter-spacing: 0.3px; }
     .rr-toggle:hover { text-decoration: underline; }
     .rr-toggle:disabled { color: var(--text-muted); cursor: default; opacity: 0.6; }
+    .rr-loc { color: var(--accent); font-style: normal; font-weight: 600; font-size: 11px; margin-right: 4px; }
 
     /* ===== AUTO-UPDATE BANNER (2026-05-26) ===== */
     #sfUpdateBanner {
@@ -1154,13 +1155,15 @@
       <div class="control-group">
         <div class="control-label">County / Region</div>
         <select id="countySelect" onchange="onCountyChange()">
-          <option value="offshore">Offshore / Bluewater</option>
           <option value="sandiego" selected>San Diego County</option>
+          <option value="coronado_islands">Coronado Islands (MX)</option>
           <option value="orange">Orange County</option>
           <option value="la">Los Angeles County</option>
+          <option value="catalina">Catalina Island</option>
           <option value="ventura">Ventura County</option>
           <option value="santabarbara">Santa Barbara County</option>
-          <option value="islands">Channel Islands</option>
+          <option value="channel_islands">Channel Islands</option>
+          <option value="offshore">Offshore Banks</option>
           <option value="slo">San Luis Obispo County</option>
           <option value="monterey">Monterey County</option>
           <option value="sanmateo">San Mateo County</option>
@@ -1367,14 +1370,13 @@
       <div class="brief-pm" id="briefPM"></div>
     </div>
 
-    <!-- ===== RECENT REPORTS — past 3 days of diver-reported viz for this spot ===== -->
+    <!-- ===== RECENT REPORTS — past 7 days of diver-reported viz across the current county/region ===== -->
     <div class="recent-reports" id="recentReports">
       <div class="rr-header">
-        <span class="rr-title">Recent Reports</span>
+        <span class="rr-title">Recent Reports · Past 7 days</span>
         <span class="rr-spot" id="rrSpot"></span>
       </div>
       <div class="rr-list" id="rrList"></div>
-      <button class="rr-toggle" id="rrToggle" onclick="toggleRecentReportsRange()" type="button">View past 7 days ▼</button>
       <div class="rr-cta">
         <span>Dove here recently?</span>
         <button class="rr-report-btn" onclick="document.getElementById('reportBtn')?.click()">Add Report</button>
@@ -5990,68 +5992,103 @@ function renderConditionCards() {
 }
 
 // Recent Reports section (2026-05-25).
-// Past 3 days of diver-submitted reports for the current spot, fetched from
-// the worker /reports/public endpoint. Sanitized (no email/IP) and cached at
-// the edge for ~2 min. Shows empty state if no reports exist for the spot.
-// 2026-06-11: added a "View past 7 days" toggle so divers can see last week.
-// State (_rrDays) persists across location switches within a session so the
-// expanded view doesn't snap shut every time the user changes spots.
-let _rrDays = 3;  // 3 or 7
+// Diver-submitted reports for the past 7 days, aggregated across the current
+// county/region, fetched from the worker /reports/public endpoint. Sanitized
+// (no email/IP) and edge-cached for ~5 min. Each row is labeled with its
+// spot of origin.
+// History: originally a 3-day spot-only view; 2026-06-11 added a 3/7 toggle
+// for either spot-history or region-aggregate; 2026-06-11 (later) per user
+// request: dropped the 3-day spot-only mode entirely in favor of always-on
+// 7-day region view. The "what's diving look like across SD this week" use
+// case dominated; per-spot 3-day history was rarely wanted.
+
+// Reverse lookup: spot key -> county key. Built lazily from COUNTY_SPOTS the
+// first time it's needed, cached for subsequent calls.
+let _spotToCountyMap = null;
+function _spotToCounty(spotKey) {
+  if (!_spotToCountyMap) {
+    _spotToCountyMap = {};
+    if (typeof COUNTY_SPOTS !== 'undefined') {
+      for (const [county, spots] of Object.entries(COUNTY_SPOTS)) {
+        for (const s of spots) _spotToCountyMap[s] = county;
+      }
+    }
+  }
+  return _spotToCountyMap[spotKey] || null;
+}
+
+// Human label for a region (used in the section header chip).
+const _REGION_LABELS = {
+  sandiego: 'San Diego County',
+  coronado_islands: 'Coronado Islands (MX)',
+  orange: 'Orange County',
+  la: 'Los Angeles County',
+  catalina: 'Catalina Island',
+  ventura: 'Ventura County',
+  santabarbara: 'Santa Barbara County',
+  channel_islands: 'Channel Islands',
+  offshore: 'Offshore Banks',
+  slo: 'San Luis Obispo',
+  monterey: 'Monterey Area',
+  sanmateo: 'San Mateo',
+  sonoma: 'Sonoma',
+  mendocino: 'Mendocino',
+  humboldt: 'Humboldt',
+};
+
 async function renderRecentReports() {
   const listEl = document.getElementById('rrList');
   const spotEl = document.getElementById('rrSpot');
-  const toggleEl = document.getElementById('rrToggle');
   if (!listEl) return;
-  spotEl.textContent = (LOCATIONS[currentLocation]?.name || '').toUpperCase();
-  listEl.innerHTML = '<div class="rr-empty">Loading recent reports…</div>';
-  if (toggleEl) { toggleEl.disabled = true; }
+  const county = _spotToCounty(currentLocation);
+  // Fallback: if currentLocation somehow isn't in any county (shouldn't happen
+  // for known spots, but defensive), drop to spot-only mode.
+  const useRegion = !!county;
 
-  // limit scales with range: 3 days asks for top 3 (UI consistency), 7 days
-  // asks for top 20 (gets all reports at popular spots — Scripps + Newport).
-  // Worker caps at 20 (raised from 10 on 2026-06-11 to support this view).
-  const limit = _rrDays === 7 ? 20 : 3;
+  // Header chip: in region mode show "<County label>", in spot mode show
+  // the spot name. Drops the "ALL ... SPOTS" wording per user feedback —
+  // the section header already says "Recent Reports · past 7 days" so the
+  // region label alone is enough context.
+  spotEl.textContent = useRegion
+    ? (_REGION_LABELS[county] || county).toUpperCase()
+    : (LOCATIONS[currentLocation]?.name || '').toUpperCase();
+  listEl.innerHTML = '<div class="rr-empty">Loading recent reports…</div>';
+
+  const fetchUrl = useRegion
+    ? `${SF_PROXY_BASE}/reports/public?region=${encodeURIComponent(county)}&days=7&limit=20`
+    : `${SF_PROXY_BASE}/reports/public?spot=${encodeURIComponent(currentLocation)}&days=7&limit=20`;
 
   let reports = [];
   try {
-    const r = await fetchWithTimeout(
-      `${SF_PROXY_BASE}/reports/public?spot=${encodeURIComponent(currentLocation)}&days=${_rrDays}&limit=${limit}`,
-      null, 5000
-    );
+    const r = await fetchWithTimeout(fetchUrl, null, 5000);
     if (r && r.ok) {
       const data = await r.json();
       reports = (data.reports || []).map(report => ({
         when: _formatReportWhen(report.ts),
         viz: _formatReportViz(report.viz),
         note: _formatReportNote(report.notes),
+        spotLabel: report.spotId ? (LOCATIONS[report.spotId]?.name || report.spotId) : '',
       }));
     }
   } catch (e) {
     // Quiet fail — show empty state if fetch fails
   }
 
-  if (toggleEl) {
-    toggleEl.disabled = false;
-    toggleEl.textContent = _rrDays === 7 ? 'Show last 3 days ▲' : 'View past 7 days ▼';
-  }
-
   if (!reports.length) {
-    listEl.innerHTML = `<div class="rr-empty">No diver reports in the past ${_rrDays} days for this spot. Be the first — tap Add Report below.</div>`;
+    const scopeWord = useRegion ? `${_REGION_LABELS[county] || county} spots` : 'this spot';
+    listEl.innerHTML = `<div class="rr-empty">No diver reports in the past 7 days for ${scopeWord}. Be the first — tap Add Report below.</div>`;
     return;
   }
 
-  listEl.innerHTML = reports.map(r =>
-    `<div class="rr-item">
+  // Each row shows: date | viz | (spot label inline) note text.
+  listEl.innerHTML = reports.map(r => {
+    const locChip = r.spotLabel ? `<span class="rr-loc">${r.spotLabel}</span> ` : '';
+    return `<div class="rr-item">
       <span class="rr-when">${r.when}</span>
       <span class="rr-viz">${r.viz}</span>
-      <span class="rr-note">${r.note}</span>
-    </div>`
-  ).join('');
-}
-
-// Toggle the Recent Reports range between 3 and 7 days.
-function toggleRecentReportsRange() {
-  _rrDays = (_rrDays === 7) ? 3 : 7;
-  renderRecentReports();
+      <span class="rr-note">${locChip}${r.note}</span>
+    </div>`;
+  }).join('');
 }
 
 // Format a report's ISO timestamp as "Today" / "Yesterday" / "Mon Jun 6".
@@ -9189,21 +9226,33 @@ function selectSpotFromMap(key) {
   if (diveMap) diveMap.closePopup();
 }
 
-// County → Spots mapping (south to north within each county)
+// County → Spots mapping. Mainland counties run south→north within each
+// county. Island/offshore regions are listed close-to-far from mainland.
+// Restructured 2026-06-11 per user request: Coronado Islands, Catalina, and
+// Channel Islands each get their own UI region so divers don't have to dig
+// through a merged "Islands" group. NOTE: this UI grouping is independent of
+// REGION_MAP (algorithm grouping) — Catalina stays in 'socal' climatology,
+// Channel Islands stay in 'islands' climatology, etc. This map only drives
+// the County/Region dropdown and the Recent Reports region filter.
 const COUNTY_SPOTS = {
-  sandiego:     ['coronado','imperial','pointloma','mission','birdrock','ljshores','ljmarineroom','ljcove','lajolla','delmar','encinitas','carlsbad','oceanside'],
-  orange:       ['danapoint','brooksstreet','laguna','crescent','emerald','crystalcove','newport','huntington'],
-  la:           ['pv','horseshoe','veteranspark','malibu','leocarrillo'],
-  ventura:      ['ventura'],
-  santabarbara: ['sb','refugio'],
-  islands:      ['catalina','anacapa','scisland','sanclemente','sannicolas'],
-  slo:          ['morro'],
-  monterey:     ['santacruz','monterey','loverspoint','carmel'],
-  sanmateo:     ['halfmoon'],
-  sonoma:       ['bodega'],
-  mendocino:    ['fortbragg'],
-  humboldt:     ['trinidad'],
-  offshore:     ['ninemile','fortythree','hiddenbank','tannerbank'],
+  sandiego:         ['imperial','pointloma','mission','birdrock','ljshores','ljmarineroom','ljcove','lajolla','delmar','encinitas','carlsbad','oceanside'],
+  coronado_islands: ['coronado'],
+  orange:           ['danapoint','brooksstreet','laguna','crescent','emerald','crystalcove','newport','huntington'],
+  la:               ['pv','horseshoe','veteranspark','malibu','leocarrillo'],
+  catalina:         ['catalina'],
+  ventura:          ['ventura'],
+  santabarbara:     ['sb','refugio'],
+  // Channel Islands listed close-to-far from mainland (Anacapa is closest
+  // ~14 mi off Ventura; San Clemente is the most distant southern island).
+  channel_islands:  ['anacapa','scisland','sannicolas','sanclemente'],
+  // Offshore banks listed close-to-far from SD coast.
+  offshore:         ['ninemile','fortythree','hiddenbank','tannerbank'],
+  slo:              ['morro'],
+  monterey:         ['santacruz','monterey','loverspoint','carmel'],
+  sanmateo:         ['halfmoon'],
+  sonoma:           ['bodega'],
+  mendocino:        ['fortbragg'],
+  humboldt:         ['trinidad'],
   // Hawaii/Baja spots deferred — the viz algorithm (NTU tiers, thermocline
   // climatology, chlorophyll thresholds) is tuned from CA diver reports and
   // would mis-predict outside the SoCal Bight. Re-enable once the algorithm
