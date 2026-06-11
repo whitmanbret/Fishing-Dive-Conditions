@@ -1006,6 +1006,9 @@
     .rr-cta { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); }
     .rr-report-btn { background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
     .rr-report-btn:hover { background: rgba(44,140,255,0.1); }
+    .rr-toggle { background: transparent; border: none; color: var(--accent); font-size: 11px; font-weight: 600; cursor: pointer; padding: 8px 0 0; width: 100%; text-align: center; letter-spacing: 0.3px; }
+    .rr-toggle:hover { text-decoration: underline; }
+    .rr-toggle:disabled { color: var(--text-muted); cursor: default; opacity: 0.6; }
 
     /* ===== AUTO-UPDATE BANNER (2026-05-26) ===== */
     #sfUpdateBanner {
@@ -1371,6 +1374,7 @@
         <span class="rr-spot" id="rrSpot"></span>
       </div>
       <div class="rr-list" id="rrList"></div>
+      <button class="rr-toggle" id="rrToggle" onclick="toggleRecentReportsRange()" type="button">View past 7 days ▼</button>
       <div class="rr-cta">
         <span>Dove here recently?</span>
         <button class="rr-report-btn" onclick="document.getElementById('reportBtn')?.click()">Add Report</button>
@@ -5989,17 +5993,28 @@ function renderConditionCards() {
 // Past 3 days of diver-submitted reports for the current spot, fetched from
 // the worker /reports/public endpoint. Sanitized (no email/IP) and cached at
 // the edge for ~2 min. Shows empty state if no reports exist for the spot.
+// 2026-06-11: added a "View past 7 days" toggle so divers can see last week.
+// State (_rrDays) persists across location switches within a session so the
+// expanded view doesn't snap shut every time the user changes spots.
+let _rrDays = 3;  // 3 or 7
 async function renderRecentReports() {
   const listEl = document.getElementById('rrList');
   const spotEl = document.getElementById('rrSpot');
+  const toggleEl = document.getElementById('rrToggle');
   if (!listEl) return;
   spotEl.textContent = (LOCATIONS[currentLocation]?.name || '').toUpperCase();
   listEl.innerHTML = '<div class="rr-empty">Loading recent reports…</div>';
+  if (toggleEl) { toggleEl.disabled = true; }
+
+  // limit scales with range: 3 days asks for top 3 (UI consistency), 7 days
+  // asks for top 20 (gets all reports at popular spots — Scripps + Newport).
+  // Worker caps at 20 (raised from 10 on 2026-06-11 to support this view).
+  const limit = _rrDays === 7 ? 20 : 3;
 
   let reports = [];
   try {
     const r = await fetchWithTimeout(
-      `${SF_PROXY_BASE}/reports/public?spot=${encodeURIComponent(currentLocation)}&days=3&limit=3`,
+      `${SF_PROXY_BASE}/reports/public?spot=${encodeURIComponent(currentLocation)}&days=${_rrDays}&limit=${limit}`,
       null, 5000
     );
     if (r && r.ok) {
@@ -6014,8 +6029,13 @@ async function renderRecentReports() {
     // Quiet fail — show empty state if fetch fails
   }
 
+  if (toggleEl) {
+    toggleEl.disabled = false;
+    toggleEl.textContent = _rrDays === 7 ? 'Show last 3 days ▲' : 'View past 7 days ▼';
+  }
+
   if (!reports.length) {
-    listEl.innerHTML = '<div class="rr-empty">No recent diver reports for this spot. Be the first — tap Add Report below.</div>';
+    listEl.innerHTML = `<div class="rr-empty">No diver reports in the past ${_rrDays} days for this spot. Be the first — tap Add Report below.</div>`;
     return;
   }
 
@@ -6026,6 +6046,12 @@ async function renderRecentReports() {
       <span class="rr-note">${r.note}</span>
     </div>`
   ).join('');
+}
+
+// Toggle the Recent Reports range between 3 and 7 days.
+function toggleRecentReportsRange() {
+  _rrDays = (_rrDays === 7) ? 3 : 7;
+  renderRecentReports();
 }
 
 // Format a report's ISO timestamp as "Today" / "Yesterday" / "Mon Jun 6".
