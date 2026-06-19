@@ -1011,9 +1011,9 @@
     .rr-toggle:disabled { color: var(--text-muted); cursor: default; opacity: 0.6; }
     .rr-loc { color: var(--accent); font-style: normal; font-weight: 600; font-size: 11px; margin-right: 4px; }
     /* Partner backlink (Just Get Wet, San Diego) — reciprocal link, shown only for SD region. 2026-06-18 */
-    .rr-partner { display: none; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); line-height: 1.4; }
-    .rr-partner a { color: var(--accent); font-weight: 600; text-decoration: none; }
-    .rr-partner a:hover { text-decoration: underline; }
+    /* Mirrors the Add Report CTA row: label on the left, button-styled link on the right. */
+    .rr-partner { display: none; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); }
+    .rr-partner a.rr-report-btn { text-decoration: none; }
 
     /* ===== AUTO-UPDATE BANNER (2026-05-26) ===== */
     #sfUpdateBanner {
@@ -1386,7 +1386,8 @@
         <button class="rr-report-btn" onclick="document.getElementById('reportBtn')?.click()">Add Report</button>
       </div>
       <div class="rr-partner" id="rrPartner">
-        More San Diego reports: <a href="https://justgetwet.com/blogs/dive-reports-and-conditions" target="_blank" rel="noopener">Just Get Wet dive reports ↗</a>
+        <span>More San Diego reports</span>
+        <a class="rr-report-btn" href="https://justgetwet.com/blogs/dive-reports-and-conditions" target="_blank" rel="noopener">Just Get Wet ↗</a>
       </div>
     </div>
 
@@ -6056,7 +6057,7 @@ async function renderRecentReports() {
   // They're a San Diego dive shop, so only surface their report link when the
   // user is viewing an SD spot. Shown regardless of whether we have reports.
   const partnerEl = document.getElementById('rrPartner');
-  if (partnerEl) partnerEl.style.display = (county === 'sandiego') ? 'block' : 'none';
+  if (partnerEl) partnerEl.style.display = (county === 'sandiego') ? 'flex' : 'none';
 
   // Header chip: in region mode show "<County label>", in spot mode show
   // the spot name. Drops the "ALL ... SPOTS" wording per user feedback —
