@@ -563,8 +563,8 @@
 
     /* Forecast data panels (surf, wind, tide) */
     .forecast-panel {
-      background: var(--bg-card); border-radius: 10px; padding: 10px 12px;
-      margin-bottom: 8px;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 10px;
     }
     .forecast-panel:last-child { margin-bottom: 0; }
     .forecast-panel-label {
@@ -577,6 +577,10 @@
     .forecast-panel-sub {
       font-size: 11px; color: var(--text-secondary); margin-top: 2px;
     }
+    /* Card-style headers inside forecast detail panels — match the daily
+       condition cards above (accent icon + uppercase title). 2026-06-19 */
+    .forecast-panel .cc-head, .forecast-tide-wrap .cc-head { margin-bottom: 8px; }
+    .fp-summary { font-size: 12px; font-weight: 600; color: var(--text-primary); text-align: right; }
 
     /* Forecast slots (Morning/Noon/Evening) */
     .forecast-slots {
@@ -632,7 +636,8 @@
 
     /* Tide chart */
     .forecast-tide-wrap {
-      background: var(--bg-card); border-radius: 10px; padding: 10px 12px;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 14px;
     }
     .tide-chart-label {
       font-size: 10px; font-weight: 700; text-transform: uppercase;
@@ -8951,9 +8956,9 @@ function buildSurfPanel(slots, dayIdx) {
   const maxSurf = Math.max(headerFt * 1.5, 6);
 
   let html = '<div class="forecast-panel">';
-  html += '<div class="forecast-panel-label" style="display:flex;justify-content:space-between;align-items:center">Surf & Swell';
   const srcTag = headerSwell.source === 'WW3' ? '' : ' est';
-  html += `<span style="font-size:12px;font-weight:600;color:var(--text-primary);text-transform:none;letter-spacing:0">${headerFt.toFixed(1)}ft · ${headerPer}s · ${dirLabel} ${Math.round(headerDirDeg)}°${srcTag}</span>`;
+  html += '<div class="cc-head"><div class="cc-head-left"><span class="cc-icon">≈</span><span class="cc-title">Surf &amp; Swell</span></div>';
+  html += `<span class="fp-summary">${headerFt.toFixed(1)}ft · ${headerPer}s · ${dirLabel} ${Math.round(headerDirDeg)}°${srcTag}</span>`;
   html += '</div>';
   html += '<div class="forecast-slots">';
 
@@ -9004,8 +9009,8 @@ function buildWindPanel(slots) {
   const primaryDir = slots.reduce((best, s) => s.windSpeed > best.windSpeed ? s : best, slots[0]);
 
   let html = '<div class="forecast-panel">';
-  html += '<div class="forecast-panel-label" style="display:flex;justify-content:space-between;align-items:center">Wind';
-  html += `<span style="font-size:12px;font-weight:600;color:var(--text-primary);text-transform:none;letter-spacing:0">${peakWind} mph${peakGust > peakWind ? ` · Gusts ${peakGust} mph` : ''} · ${primaryDir.windDir || 'Calm'}${primaryDir.windDir ? ', ' + getWindType(primaryDir.windDir) : ''}</span>`;
+  html += '<div class="cc-head"><div class="cc-head-left"><span class="cc-icon">💨</span><span class="cc-title">Wind</span></div>';
+  html += `<span class="fp-summary">${peakWind} mph${peakGust > peakWind ? ` · Gusts ${peakGust} mph` : ''} · ${primaryDir.windDir || 'Calm'}${primaryDir.windDir ? ', ' + getWindType(primaryDir.windDir) : ''}</span>`;
   html += '</div>';
   html += '<div class="forecast-slots">';
 
@@ -9040,7 +9045,7 @@ function buildWindPanel(slots) {
 
 function buildTidePanel(dayTides, dayTideHourly, date) {
   let html = '<div class="forecast-tide-wrap">';
-  html += '<div class="tide-chart-label">Tide</div>';
+  html += '<div class="cc-head"><div class="cc-head-left"><span class="cc-icon">≈</span><span class="cc-title">Tide</span></div></div>';
 
   if (dayTideHourly.length >= 4) {
     // Build SVG tide curve
