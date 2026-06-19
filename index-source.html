@@ -5718,12 +5718,16 @@ function _buildChartSvg(opts) {
     peak = `<circle class="peak-dot" cx="${pX.toFixed(1)}" cy="${pY.toFixed(1)}" r="3"/>` +
            `<text class="peak-label" x="${labelX.toFixed(1)}" y="${(pY-5).toFixed(1)}" text-anchor="${anchor}">${opts.getLabel(pp)}</text>`;
   }
-  // Now line + now dot
-  const nowX = xScale(now);
-  const closestNow = data.reduce((b, p) => Math.abs(p.time - now) < Math.abs(b.time - now) ? p : b, data[0]);
-  const nowY = yScale(getVal(closestNow));
-  const nowMarker = `<line class="now-line" x1="${nowX.toFixed(1)}" y1="${padT}" x2="${nowX.toFixed(1)}" y2="${H-padB}"/>` +
-                    `<circle class="now-dot" cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="4"/>`;
+  // Now line + now dot. Gated by showNow (default true) — forecast charts for
+  // future days set it false since "now" falls outside that day's window.
+  let nowMarker = '';
+  if (opts.showNow !== false) {
+    const nowX = xScale(now);
+    const closestNow = data.reduce((b, p) => Math.abs(p.time - now) < Math.abs(b.time - now) ? p : b, data[0]);
+    const nowY = yScale(getVal(closestNow));
+    nowMarker = `<line class="now-line" x1="${nowX.toFixed(1)}" y1="${padT}" x2="${nowX.toFixed(1)}" y2="${H-padB}"/>` +
+                `<circle class="now-dot" cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="4"/>`;
+  }
   // Hover (set later by tap handler)
   const hover = `<line class="hover-line" id="${opts.svgId}-hov" x1="0" y1="${padT}" x2="0" y2="${H-padB}"/>` +
                 `<circle class="hover-dot" id="${opts.svgId}-dot" cx="0" cy="0" r="4"/>`;
@@ -8049,13 +8053,13 @@ function buildForecast() {
     }
 
     // Surf/Swell slots
-    html += buildSurfPanel(slots, idx);
+    html += buildSurfPanel(slots, idx, periods);
 
     // Wind panel
-    html += buildWindPanel(slots);
+    html += buildWindPanel(slots, idx, periods);
 
     // Tide chart
-    html += buildTidePanel(dayTides, dayTideHourly, d);
+    html += buildTidePanel(dayTides, dayTideHourly, d, idx);
 
     html += `</div></div>`;
   });
@@ -8921,7 +8925,7 @@ function getWindType(dir) {
   return '';
 }
 
-function buildSurfPanel(slots, dayIdx) {
+function buildSurfPanel(slots, dayIdx, periods) {
   const swellDirLabels={south:'SSW',sw:'SW',west:'W',nw:'NW',north:'N'};
 
   // Get swell data for each slot — prefer WW3 model forecast, fall back to decayed buoy
@@ -8960,6 +8964,22 @@ function buildSurfPanel(slots, dayIdx) {
   html += '<div class="cc-head"><div class="cc-head-left"><span class="cc-icon">≈</span><span class="cc-title">Surf &amp; Swell</span></div>';
   html += `<span class="fp-summary">${headerFt.toFixed(1)}ft · ${headerPer}s · ${dirLabel} ${Math.round(headerDirDeg)}°${srcTag}</span>`;
   html += '</div>';
+
+  // Day-long surf-height curve — same cc-svg area-chart style as the daily
+  // report's 24-hour wave chart. Built from the day's hourly NWS periods.
+  const surfSeries = (periods || []).map(p => {
+    const ww3 = p.date ? getWW3Swell(p.date) : null;
+    let ft = ww3 ? ww3.ft : (D.swellFt || 2.5);
+    const wm = (p.windSpeed || '').match(/(\d+)/);
+    const ws = wm ? +wm[1] : 0;
+    if (ws > 15) ft *= 1.3; else if (ws > 10) ft *= 1.15; else if (ws <= 4) ft *= 0.9;
+    return { time: p.date, value: ft };
+  }).filter(p => p.time && Number.isFinite(p.value));
+  if (surfSeries.length >= 2) {
+    const built = _buildChartSvg({ svgId: `fcSurf${dayIdx}`, data: surfSeries, getVal: p => p.value, getLabel: p => `${p.value.toFixed(1)} ft`, unit: 'ft', height: 90, showNow: dayIdx === 0, minYmax: 3 });
+    html += `<div class="chart-wrap"><svg class="cc-svg" viewBox="0 0 400 90" preserveAspectRatio="none" style="height:90px">${built.svgHtml}</svg></div>`;
+  }
+
   html += '<div class="forecast-slots">';
 
   // Header row
@@ -8981,17 +9001,10 @@ function buildSurfPanel(slots, dayIdx) {
 
     const surfLo = Math.max(1, Math.round(surfEst - 0.5));
     const surfHi = Math.round(surfEst + 0.5);
-    const barPct = Math.min(95, (surfEst / maxSurf) * 100);
-
-    let barColor;
-    if (surfEst <= 2) barColor = 'linear-gradient(to top, #1a8a4a, #2ecc71)';
-    else if (surfEst <= 3.5) barColor = 'linear-gradient(to top, #1a8a4a, #2ecc71, #f0a030)';
-    else if (surfEst <= 5) barColor = 'linear-gradient(to top, #f0a030, #e67e22)';
-    else barColor = 'linear-gradient(to top, #e74c3c, #c0392b)';
 
     html += '<div class="forecast-slot-row">';
     html += `<div><span class="slot-time">${slot.timeLabel}</span></div>`;
-    html += `<div class="slot-surf-wrap"><div class="slot-surf-bar-container"><div class="slot-surf-bar" style="height:${barPct}%;background:${barColor}"></div></div><div class="slot-surf-val">${surfLo}-${surfHi}</div></div>`;
+    html += `<div class="slot-surf-wrap"><div class="slot-surf-val">${surfLo}-${surfHi}</div></div>`;
     html += `<div><div class="slot-swell-info">${sw.ft.toFixed(1)}ft</div><div class="slot-swell-info">${sw.per}s</div><div class="slot-swell-info"><span class="swell-arrow" style="transform:rotate(${sw.dirDeg}deg)">↓</span> ${Math.round(sw.dirDeg)}°</div></div>`;
     html += `<div><div class="slot-swell-info">${slot.shortForecast}</div></div>`;
     html += '</div>';
@@ -9001,7 +9014,7 @@ function buildSurfPanel(slots, dayIdx) {
   return html;
 }
 
-function buildWindPanel(slots) {
+function buildWindPanel(slots, dayIdx, periods) {
   const maxWind = Math.max(20, ...slots.map(s => s.windGust || s.windSpeed));
   // Summary: peak wind for the day
   const peakWind = Math.max(...slots.map(s => s.windSpeed));
@@ -9012,6 +9025,18 @@ function buildWindPanel(slots) {
   html += '<div class="cc-head"><div class="cc-head-left"><span class="cc-icon">💨</span><span class="cc-title">Wind</span></div>';
   html += `<span class="fp-summary">${peakWind} mph${peakGust > peakWind ? ` · Gusts ${peakGust} mph` : ''} · ${primaryDir.windDir || 'Calm'}${primaryDir.windDir ? ', ' + getWindType(primaryDir.windDir) : ''}</span>`;
   html += '</div>';
+
+  // Day-long wind-speed curve — same cc-svg area-chart style as the daily
+  // report's 24-hour wind chart. Built from the day's hourly NWS periods.
+  const windSeries = (periods || []).map(p => {
+    const wm = (p.windSpeed || '').match(/(\d+)/);
+    return { time: p.date, value: wm ? +wm[1] : 0 };
+  }).filter(p => p.time && Number.isFinite(p.value));
+  if (windSeries.length >= 2) {
+    const built = _buildChartSvg({ svgId: `fcWind${dayIdx}`, data: windSeries, getVal: p => p.value, getLabel: p => `${Math.round(p.value)} mph`, unit: '', height: 90, showNow: dayIdx === 0, minYmax: 10 });
+    html += `<div class="chart-wrap"><svg class="cc-svg" viewBox="0 0 400 90" preserveAspectRatio="none" style="height:90px">${built.svgHtml}</svg></div>`;
+  }
+
   html += '<div class="forecast-slots">';
 
   html += '<div class="forecast-slot-header">';
@@ -9019,20 +9044,10 @@ function buildWindPanel(slots) {
   html += '</div>';
 
   for (const slot of slots) {
-    const barPct = Math.min(95, (slot.windSpeed / maxWind) * 100);
-    const gustPct = slot.windGust ? Math.min(95, (slot.windGust / maxWind) * 100) : 0;
-
-    // Wind bar color: lower = calmer = better for diving
-    let windColor;
-    if (slot.windSpeed <= 5) windColor = 'linear-gradient(to top, #1a5a8a, #2c8cff)';
-    else if (slot.windSpeed <= 10) windColor = 'linear-gradient(to top, #1a5a8a, #2c8cff, #5ac8fa)';
-    else if (slot.windSpeed <= 15) windColor = 'linear-gradient(to top, #f0a030, #e67e22)';
-    else windColor = 'linear-gradient(to top, #e74c3c, #c0392b)';
-
     html += '<div class="forecast-slot-row">';
     html += `<div><span class="slot-time">${slot.timeLabel}</span></div>`;
-    html += `<div class="slot-wind-wrap"><div class="slot-wind-bar-container"><div class="slot-wind-bar" style="height:${barPct}%;background:${windColor}"></div></div><div class="slot-wind-val">${slot.windSpeed}<span style="font-size:10px;color:var(--text-muted)">mph</span></div></div>`;
-    html += `<div class="slot-wind-wrap">${slot.windGust ? `<div class="slot-wind-bar-container"><div class="slot-wind-bar" style="height:${gustPct}%;background:${windColor};opacity:0.6"></div></div><div class="slot-wind-val">${slot.windGust}<span style="font-size:10px;color:var(--text-muted)">mph</span></div>` : '<div style="color:var(--text-muted);font-size:11px">None</div>'}</div>`;
+    html += `<div class="slot-wind-wrap"><div class="slot-wind-val">${slot.windSpeed}<span style="font-size:10px;color:var(--text-muted)">mph</span></div></div>`;
+    html += `<div class="slot-wind-wrap">${slot.windGust ? `<div class="slot-wind-val">${slot.windGust}<span style="font-size:10px;color:var(--text-muted)">mph</span></div>` : '<div style="color:var(--text-muted);font-size:11px">None</div>'}</div>`;
     const windType = getWindType(slot.windDir);
     const windTypeColor = windType === 'offshore' ? 'var(--excellent)' : windType === 'onshore' ? 'var(--poor)' : 'var(--text-secondary)';
     html += `<div><div class="slot-wind-dir-label" style="font-size:13px;font-weight:700">${slot.windDir || 'Calm'}</div><div style="font-size:9px;color:${windTypeColor};font-weight:600">${windType || ''}</div></div>`;
@@ -9043,47 +9058,18 @@ function buildWindPanel(slots) {
   return html;
 }
 
-function buildTidePanel(dayTides, dayTideHourly, date) {
+function buildTidePanel(dayTides, dayTideHourly, date, dayIdx) {
   let html = '<div class="forecast-tide-wrap">';
   html += '<div class="cc-head"><div class="cc-head-left"><span class="cc-icon">≈</span><span class="cc-title">Tide</span></div></div>';
 
   if (dayTideHourly.length >= 4) {
-    // Build SVG tide curve
-    const vals = dayTideHourly.map(t => t.value);
-    const minV = Math.min(...vals, 0);
-    const maxV = Math.max(...vals);
-    const range = maxV - minV || 1;
-    const w = 300, h = 50, pad = 4;
-
-    let points = '';
-    let fillPoints = '';
-    const step = w / (vals.length - 1);
-
-    for (let i = 0; i < vals.length; i++) {
-      const x = pad + i * ((w - 2*pad) / (vals.length - 1));
-      const y = pad + (1 - (vals[i] - minV) / range) * (h - 2*pad);
-      points += `${x},${y} `;
-      fillPoints += `${x},${y} `;
+    // Same cc-svg area-curve style as the daily report's tide chart.
+    const tideData = dayTideHourly.map(t => ({ time: t.time, value: t.value }))
+      .filter(p => p.time && Number.isFinite(p.value));
+    if (tideData.length >= 2) {
+      const built = _buildChartSvg({ svgId: `fcTide${dayIdx}`, data: tideData, getVal: p => p.value, getLabel: p => `${p.value.toFixed(1)} ft`, unit: 'ft', height: 90, showPeak: false, showNow: dayIdx === 0 });
+      html += `<div class="chart-wrap"><svg class="cc-svg" viewBox="0 0 400 90" preserveAspectRatio="none" style="height:90px">${built.svgHtml}</svg></div>`;
     }
-
-    // Close fill path
-    const firstX = pad;
-    const lastX = pad + (vals.length - 1) * ((w - 2*pad) / (vals.length - 1));
-    fillPoints = `${firstX},${h} ` + fillPoints + `${lastX},${h}`;
-
-    // Zero line
-    const zeroY = pad + (1 - (0 - minV) / range) * (h - 2*pad);
-
-    html += `<svg class="tide-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">`;
-    html += `<line x1="${pad}" y1="${zeroY}" x2="${w-pad}" y2="${zeroY}" class="tide-zero"/>`;
-    html += `<polygon points="${fillPoints}" class="tide-fill"/>`;
-    html += `<polyline points="${points}" class="tide-line"/>`;
-    html += '</svg>';
-
-    // Time axis labels
-    html += '<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);padding:0 4px">';
-    html += '<span>12am</span><span>6am</span><span>Noon</span><span>6pm</span>';
-    html += '</div>';
   }
 
   // Hi/Lo events
