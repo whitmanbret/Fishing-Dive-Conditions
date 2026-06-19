@@ -9947,7 +9947,7 @@ installBtn.addEventListener('click', async () => {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isMac = /Macintosh/.test(navigator.userAgent);
     if (isIOS) {
-      alert('To install:\n\n1. Tap the Share button (square with arrow) at the bottom of Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add"');
+      alert('To add SpearFactor to your Home Screen:\n\n1. In Safari, tap the ••• button to the right of the address bar, then tap Share\n   (On older iPhones: tap the Share icon — a square with an up arrow — in the bottom toolbar)\n2. Scroll down and tap "Add to Home Screen"\n3. Keep "Open as Web App" turned on, then tap "Add"');
     } else if (isMac) {
       alert('To install:\n\n1. In Safari: File → Add to Dock\n2. In Chrome: Click the install icon (⊕) in the address bar\n3. Or bookmark this page for quick access');
     } else {
@@ -9971,7 +9971,7 @@ if (!isStandalone && !deferredPrompt) {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (isIOS) {
       const desc = document.querySelector('.install-banner-desc');
-      desc.textContent = 'Tap the Share button ↑ then "Add to Home Screen" for the app experience';
+      desc.textContent = 'Tap ••• (or Share) then "Add to Home Screen" for the app experience';
     }
     setTimeout(() => { installBanner.classList.add('show'); }, 3000);
     // Auto-dismiss when user scrolls past 300px
