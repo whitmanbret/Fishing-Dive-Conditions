@@ -1968,14 +1968,14 @@ const LOCATIONS = {
   hiddenbank:  { name: 'Hidden Bank / 302 Spot', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46225'], lat: 32.28, lon: -117.85, depth: '100-400 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20', typicalDiveDepth: { min: 80, max: 200 } },
   // ── Central Coast (San Luis Obispo / Monterey) ──
   morro: { name: 'Morro Bay / Montana de Oro', bottom: 'rock', tideStation: '9412110', coast: 250, shelter: 'moderate', buoys: ['46028'], lat: 35.37, lon: -120.87, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/72,120', mopStation: 'SL348', typicalDiveDepth: { min: 10, max: 30 } },
-  monterey: { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236','46042'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO752', typicalDiveDepth: { min: 15, max: 50 }, headlandShelter: 'high' },  // most dive sites (Breakwater, San Carlos, McAbee) are harbor-sheltered
+  monterey: { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO752', typicalDiveDepth: { min: 15, max: 50 }, headlandShelter: 'high' },  // most dive sites (Breakwater, San Carlos, McAbee) are harbor-sheltered. Dropped 27NM-offshore buoy 46042 (warm surface lens) 2026-06-23 — keep only in-bay 46236.
   // Santa Cruz (city/north Monterey Bay) added 2026-05-24. Cowell's Beach,
   // Natural Bridges, Steamer Lane, 26th Ave dive zones. ~50 mi north of
   // Monterey but same Monterey Bay system. Renamed island spot to
   // `scisland` since "Santa Cruz" colloquially means the city.
   santacruz: { name: 'Santa Cruz', bottom: 'mixed', tideStation: '9413745', coast: 225, shelter: 'moderate', buoys: ['46042','46236'], lat: 36.962, lon: -122.022, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/91,67', typicalDiveDepth: { min: 10, max: 30 } },
   loverspoint: { name: 'Lovers Point (Pacific Grove)', bottom: 'rock', tideStation: '9413450', coast: 0, shelter: 'high', buoys: ['46236','46042'], lat: 36.6267, lon: -121.9166, depth: '10-40 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'Lovers Point-Julia Platt State Marine Reserve', nwsGrid: 'MTR/93,51', mopStation: 'MO741', typicalDiveDepth: { min: 10, max: 30 }, headlandShelter: 'high' },
-  carmel: { name: 'Carmel / Point Lobos', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46236','46042'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO610', typicalDiveDepth: { min: 20, max: 50 }, headlandShelter: 'high' },
+  carmel: { name: 'Carmel / Point Lobos', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'moderate', buoys: ['46236'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO610', typicalDiveDepth: { min: 20, max: 50 }, headlandShelter: 'high' },  // Dropped 27NM-offshore buoy 46042 (warm) 2026-06-23.
   // ── Northern California ──
   halfmoon: { name: 'Half Moon Bay', bottom: 'rock', tideStation: '9414290', coast: 270, shelter: 'low', buoys: ['46012'], lat: 37.50, lon: -122.47, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/80,93', mopStation: 'SM297', typicalDiveDepth: { min: 15, max: 40 } },
   bodega: { name: 'Bodega Bay / Sonoma', bottom: 'rock', tideStation: '9415020', coast: 270, shelter: 'moderate', buoys: ['46013'], lat: 38.33, lon: -123.06, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/68,134', mopStation: 'SN069', typicalDiveDepth: { min: 15, max: 40 } },
@@ -3697,7 +3697,14 @@ const SHORE_STATION_MAP = {
   // Channel Islands — Stearns Wharf for northern islands, Newport for Catalina
   catalina: ['newport','scripps'], anacapa: ['stearnswharf','santamonica','newport'], scisland: ['stearnswharf','santamonica','calpoly'],
   // Central Coast — Monterey Wharf + Moss Landing primary, Cal Poly / Morro fallback
-  morro: ['morro','calpoly'], monterey: ['montereywharf','mosslanding','montereyaq','calpoly'], carmel: ['montereywharf','mosslanding','montereyaq','calpoly'], santacruz: ['montereywharf','mosslanding','montereyaq','calpoly'],
+  // Monterey + Carmel: Monterey Bay Aquarium intake (Cannery Row) is FIRST for temp —
+  // it sits in the cold south-bay upwelling zone where the dive sites are (San Carlos,
+  // McAbee, Pinnacles, Pt Lobos), reading ~56-59°F like divers measure. Moss Landing
+  // (mid-bay) + the Monterey harbor NOAA gauge + the 27NM-offshore buoy all read the
+  // warm surface lens (~62-68°F) and were over-reading the dive-site temp by 5-13°F.
+  // (2026-06-23 fix.) Santa Cruz stays on the wharf chain — it's north-bay, warmer,
+  // and the Aquarium's cold south-bay reading would under-represent it.
+  morro: ['morro','calpoly'], monterey: ['montereyaq','montereywharf','mosslanding','calpoly'], carmel: ['montereyaq','montereywharf','mosslanding','calpoly'], santacruz: ['montereywharf','mosslanding','montereyaq','calpoly'],
   // NorCal — Trinidad, Humboldt
   halfmoon: ['calpoly'], bodega: ['trinidad','humboldt'],
   fortbragg: ['trinidad','humboldt'], trinidad: ['trinidad','humboldt'],
