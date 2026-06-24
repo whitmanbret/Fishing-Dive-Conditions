@@ -3631,6 +3631,54 @@ async function fetchChlorophyll() {
   }
 }
 
+// --- Phase 1B: live multi-sensor satellite chlorophyll blend ---
+// Upgrades the viz model's chlorophyll input for spots WITHOUT a live pier chl
+// sensor. Calls the worker's /chl endpoint, which blends Sentinel-3A/3B OLCI
+// (300m), VIIRS-SNPP and NOAA DINEOF and returns the freshest non-cloudy
+// reading. Runs AFTER the parallel fetch block so the priority stays:
+//   live pier sensor  >  satellite blend  >  monthly climatology
+// (Pier and red-tide events both set chlIsClimatology=false, so we only act
+// when the model is still on climatology.)
+//
+// Override discipline (mirrors the model's "under-reading a bloom is the
+// costly error" rule):
+//   - ANY source may RAISE chl above climatology (flag a bloom) — never miss one.
+//   - Only a FRESH (<=7d) high-res sensor reading may LOWER chl below climatology;
+//     a stale or gap-filled (DINEOF, smoothed/lagged) value must not make the
+//     water look clearer than the seasonal prior.
+async function fetchBlendedChlorophyll() {
+  if (!D.chlIsClimatology) return;            // live pier chl or red-tide event already set it
+  const loc = LOCATIONS[currentLocation];
+  if (!loc || typeof loc.lat !== 'number' || typeof loc.lon !== 'number') return;
+  const climoVal = Number(D.chlorophyll);
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 6000);
+    const r = await fetch(`${SF_PROXY_BASE}/chl?lat=${loc.lat.toFixed(4)}&lon=${loc.lon.toFixed(4)}`, { signal: ctl.signal });
+    clearTimeout(t);
+    if (!r.ok) return;
+    const data = await r.json();
+    const blend = Number(data && data.chl);
+    if (!isFinite(blend)) return;
+    const ageDays = (data.ageDays === undefined || data.ageDays === null) ? 99 : Number(data.ageDays);
+    let useBlend = false;
+    if (!isFinite(climoVal)) {
+      useBlend = true;                                   // no climo to compare against
+    } else if (blend > climoVal) {
+      useBlend = true;                                   // any source may flag MORE chl (bloom)
+    } else if (!data.gapFilled && ageDays <= 7) {
+      useBlend = true;                                   // only a fresh high-res obs may lower chl
+    }
+    if (!useBlend) return;
+    D.chlorophyll = blend;
+    D.chlIsClimatology = false;
+    D.chlSource = `Satellite blend (${(data.source || 'multi-sensor')})`;
+    D.chlBlendAgeDays = ageDays;
+    D.chlBlendGapFilled = !!data.gapFilled;
+    srcStatus.chl = 'ok';
+  } catch (e) { /* keep climatology fallback */ }
+}
+
 // --- Shore Station Network — real-time pier data across California ---
 // SCCOOS (SoCal) + CeNCOOS (NorCal) automated shore stations via CalOOS ERDDAP.
 // Each station has different sensor packages — we extract whatever's available.
@@ -5566,6 +5614,13 @@ async function fetchAllData() {
   ]);
 
   // If location changed while we were fetching, discard these stale results
+  if (thisGen !== _fetchGen) return;
+
+  // Phase 1B: if no live pier chl was obtained, replace monthly climatology
+  // with a live multi-sensor satellite blend (runs here, after the pier fetch
+  // resolved, so pier always wins). See fetchBlendedChlorophyll for the
+  // raise-anytime / lower-only-when-fresh override discipline.
+  await fetchBlendedChlorophyll();
   if (thisGen !== _fetchGen) return;
 
   // NOAA CO-OPS water temp fallback — if shore station ERDDAP returned no data,
@@ -9021,6 +9076,43 @@ function buildSurfPanel(slots, dayIdx, periods) {
   return html;
 }
 
+// Phase 1C — finer time-of-day wind bucketing for the expandable wind panel.
+// Built locally from the day's hourly NWS periods (does NOT touch getTimeSlots,
+// which feeds the summary grid + scoring). Five windows centered on the times
+// divers actually plan around — the pre-dawn/dawn calm window most of all.
+function bucketWindByTimeOfDay(periods) {
+  const defs = [
+    { label: 'Pre-dawn',  timeLabel: '4–6a',  lo: 4,  hi: 6  },
+    { label: 'Dawn',      timeLabel: '6–9a',  lo: 6,  hi: 9  },
+    { label: 'Midday',    timeLabel: '9a–1p', lo: 9,  hi: 13 },
+    { label: 'Afternoon', timeLabel: '1–5p',  lo: 13, hi: 17 },
+    { label: 'Evening',   timeLabel: '5–8p',  lo: 17, hi: 20 },
+  ];
+  return defs.map(b => {
+    const inB = (periods || []).filter(p => { const h = p.date.getHours(); return h >= b.lo && h < b.hi; });
+    if (!inB.length) return { label: b.label, timeLabel: b.timeLabel, empty: true };
+    const speeds = [], gusts = [], dirs = {};
+    for (const p of inB) {
+      const ws = p.windSpeed || '';
+      const wm = ws.match(/(\d+)/);
+      const wr = ws.match(/(\d+)\s+to\s+(\d+)/);
+      if (wm) speeds.push(+wm[1]);
+      if (wr) { gusts.push(+wr[2]); }
+      else if (p.windGust && p.windGust.value) {
+        let g = Math.round(p.windGust.value * 2.237);
+        if (p.windGust.unitCode && p.windGust.unitCode.includes('km_h')) g = Math.round(p.windGust.value * 0.621371);
+        else if (p.windGust.unitCode && p.windGust.unitCode.includes('mi_h')) g = Math.round(p.windGust.value);
+        gusts.push(g);
+      }
+      if (p.windDirection) dirs[p.windDirection] = (dirs[p.windDirection] || 0) + 1;
+    }
+    const avg = speeds.length ? Math.round(speeds.reduce((a, c) => a + c, 0) / speeds.length) : 0;
+    const maxGust = gusts.length ? Math.max(...gusts) : 0;
+    const domDir = Object.keys(dirs).sort((a, c) => dirs[c] - dirs[a])[0] || '';
+    return { label: b.label, timeLabel: b.timeLabel, avg, maxGust: maxGust > avg ? maxGust : 0, domDir };
+  });
+}
+
 function buildWindPanel(slots, dayIdx, periods) {
   const maxWind = Math.max(20, ...slots.map(s => s.windGust || s.windSpeed));
   // Summary: peak wind for the day
@@ -9028,10 +9120,20 @@ function buildWindPanel(slots, dayIdx, periods) {
   const peakGust = Math.max(...slots.map(s => s.windGust || 0));
   const primaryDir = slots.reduce((best, s) => s.windSpeed > best.windSpeed ? s : best, slots[0]);
 
+  // Wind-forecast confidence horizon. Days 0–1 are driven by the high-res
+  // hourly model (HRRR-class, near-term); days 2–3 are moderate; day 4+ is
+  // extended trend only. Surfaced so divers weight a dawn-patrol call by how
+  // far out it is. (Label only — does NOT touch scoring.)
+  let confLabel, confColor;
+  if (dayIdx <= 1) { confLabel = 'High confidence · hourly model'; confColor = 'var(--excellent)'; }
+  else if (dayIdx <= 3) { confLabel = 'Moderate confidence'; confColor = 'var(--text-secondary)'; }
+  else { confLabel = 'Low confidence · extended trend only'; confColor = 'var(--poor)'; }
+
   let html = '<div class="forecast-panel">';
   html += '<div class="cc-head"><div class="cc-head-left"><span class="cc-icon">💨</span><span class="cc-title">Wind</span></div>';
   html += `<span class="fp-summary">${peakWind} mph${peakGust > peakWind ? ` · Gusts ${peakGust} mph` : ''} · ${primaryDir.windDir || 'Calm'}${primaryDir.windDir ? ', ' + getWindType(primaryDir.windDir) : ''}</span>`;
   html += '</div>';
+  html += `<div style="font-size:10px;font-weight:600;color:${confColor};margin:-2px 0 6px;text-align:right">${confLabel}</div>`;
 
   // Day-long wind-speed curve — same cc-svg area-chart style as the daily
   // report's 24-hour wind chart. Built from the day's hourly NWS periods.
@@ -9050,15 +9152,36 @@ function buildWindPanel(slots, dayIdx, periods) {
   html += '<span></span><span>Speed</span><span>Gust</span><span>Dir</span>';
   html += '</div>';
 
-  for (const slot of slots) {
-    html += '<div class="forecast-slot-row">';
-    html += `<div><span class="slot-time">${slot.timeLabel}</span></div>`;
-    html += `<div class="slot-wind-wrap"><div class="slot-wind-val">${slot.windSpeed}<span style="font-size:10px;color:var(--text-muted)">mph</span></div></div>`;
-    html += `<div class="slot-wind-wrap">${slot.windGust ? `<div class="slot-wind-val">${slot.windGust}<span style="font-size:10px;color:var(--text-muted)">mph</span></div>` : '<div style="color:var(--text-muted);font-size:11px">None</div>'}</div>`;
-    const windType = getWindType(slot.windDir);
-    const windTypeColor = windType === 'offshore' ? 'var(--excellent)' : windType === 'onshore' ? 'var(--poor)' : 'var(--text-secondary)';
-    html += `<div><div class="slot-wind-dir-label" style="font-size:13px;font-weight:700">${slot.windDir || 'Calm'}</div><div style="font-size:9px;color:${windTypeColor};font-weight:600">${windType || ''}</div></div>`;
-    html += '</div>';
+  // Finer dawn-patrol breakdown: when hourly NWS periods are available, render
+  // 5 time-of-day windows (Pre-dawn / Dawn / Midday / Afternoon / Evening)
+  // built straight from the hourly data. Falls back to the coarse 3-slot table
+  // (Morning/Noon/Evening) when hourly periods aren't present.
+  const buckets = bucketWindByTimeOfDay(periods);
+  const haveBuckets = Array.isArray(buckets) && buckets.some(b => !b.empty);
+
+  if (haveBuckets) {
+    for (const b of buckets) {
+      if (b.empty) continue;
+      html += '<div class="forecast-slot-row">';
+      html += `<div><span class="slot-time">${b.label}</span><span style="display:block;font-size:9px;color:var(--text-muted)">${b.timeLabel}</span></div>`;
+      html += `<div class="slot-wind-wrap"><div class="slot-wind-val">${b.avg}<span style="font-size:10px;color:var(--text-muted)">mph</span></div></div>`;
+      html += `<div class="slot-wind-wrap">${b.maxGust ? `<div class="slot-wind-val">${b.maxGust}<span style="font-size:10px;color:var(--text-muted)">mph</span></div>` : '<div style="color:var(--text-muted);font-size:11px">None</div>'}</div>`;
+      const wt = getWindType(b.domDir);
+      const wtColor = wt === 'offshore' ? 'var(--excellent)' : wt === 'onshore' ? 'var(--poor)' : 'var(--text-secondary)';
+      html += `<div><div class="slot-wind-dir-label" style="font-size:13px;font-weight:700">${b.domDir || 'Calm'}</div><div style="font-size:9px;color:${wtColor};font-weight:600">${wt || ''}</div></div>`;
+      html += '</div>';
+    }
+  } else {
+    for (const slot of slots) {
+      html += '<div class="forecast-slot-row">';
+      html += `<div><span class="slot-time">${slot.timeLabel}</span></div>`;
+      html += `<div class="slot-wind-wrap"><div class="slot-wind-val">${slot.windSpeed}<span style="font-size:10px;color:var(--text-muted)">mph</span></div></div>`;
+      html += `<div class="slot-wind-wrap">${slot.windGust ? `<div class="slot-wind-val">${slot.windGust}<span style="font-size:10px;color:var(--text-muted)">mph</span></div>` : '<div style="color:var(--text-muted);font-size:11px">None</div>'}</div>`;
+      const windType = getWindType(slot.windDir);
+      const windTypeColor = windType === 'offshore' ? 'var(--excellent)' : windType === 'onshore' ? 'var(--poor)' : 'var(--text-secondary)';
+      html += `<div><div class="slot-wind-dir-label" style="font-size:13px;font-weight:700">${slot.windDir || 'Calm'}</div><div style="font-size:9px;color:${windTypeColor};font-weight:600">${windType || ''}</div></div>`;
+      html += '</div>';
+    }
   }
 
   html += '</div></div>';
