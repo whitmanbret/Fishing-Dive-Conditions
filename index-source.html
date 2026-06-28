@@ -8990,6 +8990,27 @@ function getWindType(dir) {
   return '';
 }
 
+// Day-0 near end-of-day fix: the forecast groups hourly periods by CALENDAR
+// day, and NWS hourly starts at the current hour — so late at night "Today"'s
+// group can shrink to 1-2 periods, too few to draw the surf/wind curves (which
+// need >= 2 points). Fall back to a rolling window of upcoming hourly periods
+// so the day-0 curves always render, matching the daily report's 24h charts
+// (which use a rolling 6h-past + 18h-forecast window rather than calendar-day
+// grouping). Only kicks in for day 0 when its own group is sparse; days 1-6
+// always have full 24h groups and are left untouched.
+function _forecastChartPeriods(periods, dayIdx) {
+  if (dayIdx === 0 && (!periods || periods.length < 4) &&
+      D.hourlyForecast && D.hourlyForecast.length) {
+    const now = Date.now();
+    const upcoming = D.hourlyForecast
+      .map(p => ({ ...p, date: new Date(p.startTime) }))
+      .filter(p => Number.isFinite(p.date.getTime()) && p.date.getTime() >= now - 3600000)
+      .slice(0, 18);
+    if (upcoming.length >= 2) return upcoming;
+  }
+  return periods || [];
+}
+
 function buildSurfPanel(slots, dayIdx, periods) {
   const swellDirLabels={south:'SSW',sw:'SW',west:'W',nw:'NW',north:'N'};
 
@@ -9031,8 +9052,10 @@ function buildSurfPanel(slots, dayIdx, periods) {
   html += '</div>';
 
   // Day-long surf-height curve — same cc-svg area-chart style as the daily
-  // report's 24-hour wave chart. Built from the day's hourly NWS periods.
-  const surfSeries = (periods || []).map(p => {
+  // report's 24-hour wave chart. Built from the day's hourly NWS periods
+  // (rolling upcoming window when day-0's calendar group is sparse late at night).
+  const chartPeriods = _forecastChartPeriods(periods, dayIdx);
+  const surfSeries = (chartPeriods || []).map(p => {
     const ww3 = p.date ? getWW3Swell(p.date) : null;
     let ft = ww3 ? ww3.ft : (D.swellFt || 2.5);
     const wm = (p.windSpeed || '').match(/(\d+)/);
@@ -9139,8 +9162,10 @@ function buildWindPanel(slots, dayIdx, periods) {
   html += `<div style="font-size:10px;font-weight:600;color:${confColor};margin:-2px 0 6px;text-align:right">${confLabel}</div>`;
 
   // Day-long wind-speed curve — same cc-svg area-chart style as the daily
-  // report's 24-hour wind chart. Built from the day's hourly NWS periods.
-  const windSeries = (periods || []).map(p => {
+  // report's 24-hour wind chart. Built from the day's hourly NWS periods
+  // (rolling upcoming window when day-0's calendar group is sparse late at night).
+  const windChartPeriods = _forecastChartPeriods(periods, dayIdx);
+  const windSeries = (windChartPeriods || []).map(p => {
     const wm = (p.windSpeed || '').match(/(\d+)/);
     return { time: p.date, value: wm ? +wm[1] : 0 };
   }).filter(p => p.time && Number.isFinite(p.value));
