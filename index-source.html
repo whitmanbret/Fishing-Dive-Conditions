@@ -3081,7 +3081,9 @@ async function fetchTideState() {
     const fmtDate=d=>`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
     const yesterday=new Date(now.getTime()-24*60*60*1000);
     const tomorrow=new Date(now.getTime()+24*60*60*1000);
-    const r=await fetchWithTimeout(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmtDate(yesterday)}&end_date=${fmtDate(tomorrow)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`);
+    // Routed through the worker proxy (edge-cached 10 min) so a transient NOAA
+    // outage serves last-good data instead of blanking the tide. 2026-06-27.
+    const r=await fetchWithTimeout(sfProxyUrl(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmtDate(yesterday)}&end_date=${fmtDate(tomorrow)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`));
     const d=await r.json();
     if(d.predictions&&d.predictions.length>0) {
       const events=d.predictions.map(p=>({time:new Date(p.t.replace(' ','T')),type:p.type,value:parseFloat(p.v)}));
@@ -3169,16 +3171,17 @@ async function fetchMultiDayTides() {
     const now=new Date();
     const end=new Date(now.getTime()+5*86400000);
     const fmt=d=>`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-    // Fetch hi/lo predictions for 5 days
-    const r=await fetchWithTimeout(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(now)}&end_date=${fmt(end)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`);
+    // Fetch hi/lo predictions for 5 days (via worker proxy — edge-cached 10 min
+    // for resilience against transient NOAA outages). 2026-06-27.
+    const r=await fetchWithTimeout(sfProxyUrl(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(now)}&end_date=${fmt(end)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=hilo`));
     const d=await r.json();
     if(d.predictions) {
       D.multiDayTideHiLo=d.predictions.map(p=>({
         time:new Date(p.t.replace(' ','T')), type:p.type, value:parseFloat(p.v)
       }));
     }
-    // Fetch hourly predictions for tide curve
-    const r2=await fetchWithTimeout(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(now)}&end_date=${fmt(end)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=h`);
+    // Fetch hourly predictions for tide curve (via worker proxy)
+    const r2=await fetchWithTimeout(sfProxyUrl(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${fmt(now)}&end_date=${fmt(end)}&station=${LOCATIONS[currentLocation].tideStation}&product=predictions&datum=MLLW&units=english&time_zone=lst_ldt&format=json&interval=h`));
     const d2=await r2.json();
     if(d2.predictions) {
       D.multiDayTideHourly=d2.predictions.map(p=>({
