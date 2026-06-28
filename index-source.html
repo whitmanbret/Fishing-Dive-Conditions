@@ -5975,7 +5975,12 @@ function renderWindCard() {
     }
   }
   if (dirDeg !== null) {
-    document.getElementById('windArrowG').setAttribute('transform', `rotate(${dirDeg} 50 50)`);
+    // dirDeg is the direction the wind blows FROM (meteorological). The arrow
+    // (base head points up/North at rotate 0) should point the way the wind is
+    // GOING — the intuitive consumer-weather convention — so add 180°. Without
+    // this the head pointed back at the source (e.g. a WSW onshore wind drew the
+    // arrow toward the ocean, reading as "offshore" and contradicting the label).
+    document.getElementById('windArrowG').setAttribute('transform', `rotate(${(dirDeg + 180) % 360} 50 50)`);
   }
   const mph = D.windSpeedMph ?? D.buoyWindSpeed ?? null;
   document.getElementById('windCardDir').textContent = dirDeg !== null ? _degToCardinal(dirDeg) : '--';
