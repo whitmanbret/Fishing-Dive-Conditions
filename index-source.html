@@ -5249,6 +5249,40 @@ function computeSiteTip() {
   }
 
   // 2026-05-11: Marine Room/Tower 23 site tip removed per user request — not useful.
+  // 2026-06-28: NEW canyon-aware tips for ljshores + ljmarineroom, grounded in
+  // the labeled "SCUBA - La Jolla Shores Dive Site Map" (submarine canyon, North/
+  // South/East walls, Vallecitos/Tsunami points, Shallow Reef, Sand Dollar / Sea
+  // Grass beds, Turtle Town, Leopard Sharks; entry at Kellogg Beach Park). Encodes
+  // the surface-vs-depth split logged repeatedly (e.g. 6/27: ~10 ft above 50 ft,
+  // 20-25 ft below): when the shallow inside is stirred/murky, the canyon walls
+  // and outer sand flats hold cleaner water.
+  if (currentLocation === 'ljshores' || currentLocation === 'ljmarineroom') {
+    // Onshore wind stirs the shallow inside (the exact case the bloom/surge
+    // gates miss — e.g. low-swell WSW-wind days). Reuse the coast geometry.
+    let onshoreStir = false;
+    const dirDeg = D.windDirDeg, coast = loc.coast;
+    if (dirDeg !== undefined && dirDeg !== null && coast !== undefined) {
+      const diff = ((dirDeg - coast) + 360) % 360;
+      const onshore = (diff < 45 || diff > 315);
+      const spd = D.windSpeedMph ?? D.buoyWindSpeed ?? 0;
+      // >=14 so routine summer afternoon onshore sea breeze (~10 mph) doesn't
+      // fire it every day — only genuinely windy onshore days.
+      onshoreStir = onshore && spd >= 14;
+    }
+    const bloomy = D.chlorophyll !== undefined && D.chlorophyll > 2.0
+                   && !(D.turbidity !== undefined && D.turbidity < 0.4);
+    const surgy = D.waveEnergy !== undefined && D.waveEnergy > 50;
+    // 0.45 = the level where the Scripps NTU stops reading clear-day-clean and
+    // viz drops to murky (same gate the clear-day boost uses). Measured murk.
+    const turbid = D.turbidity !== undefined && D.turbidity >= 0.45;
+    if (onshoreStir || bloomy || surgy || turbid) {
+      if (currentLocation === 'ljshores') {
+        tips.push("You're on top of the La Jolla submarine canyon. When the Shallow Reef is stirred and murky, the canyon walls (North Wall / Vallecitos Point, straight out from Kellogg) hold cleaner water — the surface haze usually sits in the top 30-50 ft, clearer down the wall faces for divers going deep. Shallower, the Sand Dollar and Sea Grass beds clear better than the churned reef.");
+      } else {
+        tips.push("From the Marine Room, the South Wall and canyon edge hold the cleaner water when the inside reef gets stirred — the sand flats off Turtle Town and the Sand Dollar beds clear better than the shallows. The leopard sharks school in the warm shallows right off here through summer, so the murky inside still has a draw.");
+      }
+    }
+  }
 
   // Pt Lobos / Carmel — inverse spatial gradient on surge days. Two converging
   // ground truths 5/2 + 5/3/2026: cove (parking-lot end) <10 ft while Beto's,
@@ -5288,6 +5322,10 @@ function updateSiteTip() {
     tideState: D.tideState,
     chlorophyll: D.chlorophyll,
     waveEnergy: D.waveEnergy,
+    turbidity: D.turbidity,
+    windDirDeg: D.windDirDeg,
+    windMph: D.windSpeedMph ?? D.buoyWindSpeed,
+    coast: (LOCATIONS[currentLocation] || {}).coast,
   }).then(server => {
     if (server === undefined) { console.log('[sfPredict] siteTip: worker unreachable'); return; }
     const localStr = tip || null;
