@@ -6617,8 +6617,18 @@ async function updateDisplay() {
     // after Scripps + Monterey Wharf went down and tool over-stuck in
     // peak-bloom predictions even though conditions were clearing.
     const _hasLiveStation = !!(typeof SHORE_STATION_MAP !== 'undefined' && SHORE_STATION_MAP[_capturedLocation]);
+    // Onshore-wind lead indicator for the worker's sensor-lag guard: onshore
+    // wind stirs the shallow surface before the Scripps NTU sensor catches up.
+    // Compute onshore from wind FROM-direction vs the spot's coast-facing dir.
+    let _vizWindOnshore = false;
+    if (D.windDirDeg !== undefined && D.windDirDeg !== null && loc.coast !== undefined) {
+      const _wd = ((D.windDirDeg - loc.coast) + 360) % 360;
+      _vizWindOnshore = (_wd < 45 || _wd > 315);
+    }
     const worker = await sfPredict('viz', {
       ntu: D.turbidity,
+      windMph: D.windSpeedMph ?? D.buoyWindSpeed,
+      windOnshore: _vizWindOnshore,
       chlorophyll: D.chlorophyll,
       chlIsClimatology: !!D.chlIsClimatology,
       chlLiveExpected: _hasLiveStation,
