@@ -5984,9 +5984,15 @@ function renderWindCard() {
   const loc = LOCATIONS[currentLocation];
   let onshoreLabel = '--';
   if (dirDeg !== null && loc && loc.coast !== undefined) {
+    // dirDeg is the direction the wind blows FROM (meteorological). loc.coast is
+    // the direction the shoreline faces toward open ocean. So wind FROM ≈ coast
+    // = blowing in off the ocean = ONSHORE; wind FROM ≈ coast+180 (off the land)
+    // = OFFSHORE. (These were previously swapped, mislabeling e.g. a WSW 240°
+    // wind at La Jolla coast 280 as "Offshore" — it's onshore. Now matches the
+    // main wind readout's buoy calc at renderConditions.)
     const rel = ((dirDeg - loc.coast + 540) % 360) - 180;
-    if (Math.abs(rel) < 45) onshoreLabel = 'Offshore';
-    else if (Math.abs(rel) > 135) onshoreLabel = 'Onshore';
+    if (Math.abs(rel) < 45) onshoreLabel = 'Onshore';
+    else if (Math.abs(rel) > 135) onshoreLabel = 'Offshore';
     else onshoreLabel = 'Sideshore';
   }
   document.getElementById('windCardOnshore').textContent = onshoreLabel;
