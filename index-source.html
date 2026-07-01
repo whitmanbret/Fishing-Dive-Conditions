@@ -3249,40 +3249,76 @@ const CDIP_STATIONS = {
 // Falls through silently on failure so the existing fetchBuoyData runs as
 // fallback. Uses the same OPeNDAP DDS+ASCII pattern as fetchBuoyData for
 // CDIP buoys — has CORS headers, no proxy needed.
+// Fetch one CDIP MOP alongshore point's latest wave state. Returns
+// { hs, tp, dp, ta } in native units (hs metres, periods seconds), or null.
+async function fetchMopForStation(stn) {
+  const base = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/model/MOP_alongshore/${stn}_nowcast.nc`;
+  const ddsR = await fetchWithTimeout(base + '.dds', null, 6000);
+  if (!ddsR.ok) return null;
+  const ddsText = await ddsR.text();
+  const match = ddsText.match(/waveTime\[waveTime\s*=\s*(\d+)\]/);
+  if (!match) return null;
+  const lastIdx = parseInt(match[1]) - 1;
+  const dataUrl = `${base}.ascii?waveTime%5B${lastIdx}%5D,waveHs%5B${lastIdx}%5D,waveTp%5B${lastIdx}%5D,waveDp%5B${lastIdx}%5D,waveTa%5B${lastIdx}%5D`;
+  const dataR = await fetchWithTimeout(dataUrl, null, 6000);
+  if (!dataR.ok) return null;
+  const text = await dataR.text();
+  const getVal = name => { const m = text.match(new RegExp(name + '\\[1\\]\\n([\\d.\\-]+)')); return m ? parseFloat(m[1]) : null; };
+  const hs = getVal('waveHs');
+  if (hs === null || isNaN(hs)) return null;
+  return { hs, tp: getVal('waveTp'), dp: getVal('waveDp'), ta: getVal('waveTa') };
+}
+
+// The three La Jolla shore spots each read their own MOP point; Marine Room's
+// (canyon head) can be shadowed on long-period swell while its neighbors aren't.
+const LJ_CLUSTER = ['ljshores', 'ljcove', 'ljmarineroom'];
+
+// Cluster-max wave energy across the LJ shore spots. Passed to the worker so a
+// single shadowed MOP grid point can't fire a false "gin-clear calm day" boost
+// at one spot while its neighbors are getting pounded (2026-06-30: MR MOP read
+// WE ~12 / 4s while Cove+Shores read WE ~120-132 / 18s the same minute).
+async function computeLJClusterMaxWE() {
+  try {
+    const wes = await Promise.all(LJ_CLUSTER.map(async spot => {
+      const stn = LOCATIONS[spot] && LOCATIONS[spot].mopStation;
+      if (!stn) return null;
+      // Reuse the current spot's already-fetched swell rather than re-fetching.
+      if (spot === currentLocation && D.swellFt && D.swellPeriod) {
+        return D.swellFt * D.swellFt * D.swellPeriod;
+      }
+      const m = await fetchMopForStation(stn);
+      if (!m || m.hs == null || m.tp == null || isNaN(m.tp)) return null;
+      const ft = m.hs * 3.28084;
+      return ft * ft * m.tp;
+    }));
+    const valid = wes.filter(w => w != null && isFinite(w));
+    if (valid.length) D.clusterMaxWE = Math.max(...valid);
+  } catch (e) { /* silent — worker falls back to the spot's own WE */ }
+}
+
 async function fetchMopWaves() {
   const loc = LOCATIONS[currentLocation];
+  // Clear any prior cluster value so it never leaks to a non-LJ spot.
+  if (!LJ_CLUSTER.includes(currentLocation)) D.clusterMaxWE = undefined;
   if (!loc || !loc.mopStation) return;
   const stn = loc.mopStation;
   try {
-    const ddsUrl = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/model/MOP_alongshore/${stn}_nowcast.nc.dds`;
-    const ddsR = await fetchWithTimeout(ddsUrl, null, 6000);
-    if (!ddsR.ok) return;
-    const ddsText = await ddsR.text();
-    const match = ddsText.match(/waveTime\[waveTime\s*=\s*(\d+)\]/);
-    if (!match) return;
-    const lastIdx = parseInt(match[1]) - 1;
-    const dataUrl = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/model/MOP_alongshore/${stn}_nowcast.nc.ascii?waveTime%5B${lastIdx}%5D,waveHs%5B${lastIdx}%5D,waveTp%5B${lastIdx}%5D,waveDp%5B${lastIdx}%5D,waveTa%5B${lastIdx}%5D`;
-    const dataR = await fetchWithTimeout(dataUrl, null, 6000);
-    if (!dataR.ok) return;
-    const text = await dataR.text();
-    const getVal = name => { const m = text.match(new RegExp(name + '\\[1\\]\\n([\\d.\\-]+)')); return m ? parseFloat(m[1]) : null; };
-    const hs = getVal('waveHs');
-    const tp = getVal('waveTp');
-    const dp = getVal('waveDp');
-    const ta = getVal('waveTa');
-    if (hs === null || isNaN(hs)) return;
+    const m = await fetchMopForStation(stn);
+    if (!m) return;
     // Populate the same D.* fields fetchBuoyData writes — so the rest of the
     // model uses MOP transparently. fetchBuoyData runs after and sees D.swellFt
     // is already set so its short-circuit on success path keeps it from
     // overwriting MOP with offshore data.
-    D.swellFt = parseFloat((hs * 3.28084).toFixed(1));
-    if (tp !== null && !isNaN(tp)) D.swellPeriod = Math.round(tp);
-    if (ta !== null && !isNaN(ta)) D.avgPeriod = Math.round(ta);
-    if (dp !== null && !isNaN(dp)) classifySwellDir(dp);
+    D.swellFt = parseFloat((m.hs * 3.28084).toFixed(1));
+    if (m.tp !== null && !isNaN(m.tp)) D.swellPeriod = Math.round(m.tp);
+    if (m.ta !== null && !isNaN(m.ta)) D.avgPeriod = Math.round(m.ta);
+    if (m.dp !== null && !isNaN(m.dp)) classifySwellDir(m.dp);
     srcStatus.ndbc = 'ok';
     D.buoyId = stn;
     D.buoyName = 'CDIP MOP ' + stn;
     D.buoySource = 'CDIP MOP';
+    // LJ cluster neighbor sanity-check (see computeLJClusterMaxWE).
+    if (LJ_CLUSTER.includes(currentLocation)) await computeLJClusterMaxWE();
   } catch (e) { /* silent — fetchBuoyData will run as fallback */ }
 }
 
@@ -6629,6 +6665,7 @@ async function updateDisplay() {
       ntu: D.turbidity,
       windMph: D.windSpeedMph ?? D.buoyWindSpeed,
       windOnshore: _vizWindOnshore,
+      clusterWE: D.clusterMaxWE,
       chlorophyll: D.chlorophyll,
       chlIsClimatology: !!D.chlIsClimatology,
       chlLiveExpected: _hasLiveStation,
