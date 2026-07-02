@@ -3685,8 +3685,15 @@ async function fetchChlorophyll() {
 //   - Only a FRESH (<=7d) high-res sensor reading may LOWER chl below climatology;
 //     a stale or gap-filled (DINEOF, smoothed/lagged) value must not make the
 //     water look clearer than the seasonal prior.
+// NorCal exposed-coast spots with NO representative local shore station (see
+// SHORE_STATION_MAP note). The nearshore satellite chl over-reads badly here
+// (bottom/turbidity contamination — e.g. Fort Bragg 18+ vs NorCal climo ~4), so
+// keep them on the seasonal climatology prior rather than a contaminated pixel.
+const NORCAL_NO_SENSOR = ['halfmoon', 'bodega', 'fortbragg'];
+
 async function fetchBlendedChlorophyll() {
   if (!D.chlIsClimatology) return;            // live pier chl or red-tide event already set it
+  if (NORCAL_NO_SENSOR.includes(currentLocation)) return;  // stay on NorCal climatology
   const loc = LOCATIONS[currentLocation];
   if (!loc || typeof loc.lat !== 'number' || typeof loc.lon !== 'number') return;
   const climoVal = Number(D.chlorophyll);
@@ -3792,9 +3799,17 @@ const SHORE_STATION_MAP = {
   // (2026-06-23 fix.) Santa Cruz stays on the wharf chain — it's north-bay, warmer,
   // and the Aquarium's cold south-bay reading would under-represent it.
   morro: ['morro','calpoly'], monterey: ['montereyaq','montereywharf','mosslanding','calpoly'], carmel: ['montereyaq','montereywharf','mosslanding','calpoly'], santacruz: ['montereywharf','mosslanding','montereyaq','calpoly'],
-  // NorCal — Trinidad, Humboldt
-  halfmoon: ['calpoly'], bodega: ['trinidad','humboldt'],
-  fortbragg: ['trinidad','humboldt'], trinidad: ['trinidad','humboldt'],
+  // NorCal — only Trinidad/Humboldt have genuinely local live shore stations.
+  // halfmoon / bodega / fortbragg REMOVED 2026-07-01: their only FRESH CeNCOOS
+  // stations were Trinidad/Humboldt 130-200 mi away (halfmoon was even on Cal Poly
+  // / SLO, ~200 mi south). A far turbidity import is actively misleading — e.g.
+  // Trinidad NTU 5.13 forced Fort Bragg to a false 1-2 ft pea-soup NTU tier. With
+  // no representative local sensor these spots now run on their LOCAL CDIP-MOP
+  // swell + NorCal chl-CLIMATOLOGY (see NORCAL_NO_SENSOR — the nearshore satellite
+  // chl over-reads here, ~18 vs climo ~4, so it's suppressed too). Temp falls back
+  // to buoy/OISST. Searched CalOOS/CeNCOOS 2026-07-01: no fresher nearby station
+  // exists (Bodega BML stale since 6/4, SF fort-point dead since 2023).
+  trinidad: ['trinidad','humboldt'],
   // Offshore — Scripps as closest shore reference
   ninemile: ['scripps','newport'], fortythree: ['scripps','newport'], hiddenbank: ['scripps','newport'],
   sanclemente: ['newport','scripps'], tannerbank: ['scripps','newport'],
