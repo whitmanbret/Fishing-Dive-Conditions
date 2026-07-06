@@ -3736,9 +3736,13 @@ const SHORE_STATIONS = {
   newport:      { id: 'newport-pier-automated-shore-sta', name: 'Newport Pier',
                   temp: 'sea_water_temperature_ctd', turb: null,
                   chl: 'mass_concentration_of_chlorophyll_in_sea_water_ctd', sal: 'sea_water_practical_salinity_ctd' },
-  santamonica:  { id: 'santa-monica-pier-automated-shor', name: 'Santa Monica Pier',
-                  temp: 'sea_water_temperature', turb: null,
-                  chl: 'mass_concentration_of_chlorophyll_in_sea_water', sal: 'sea_water_practical_salinity' },
+  // 2026-07-06: dataset was renamed on CalOOS ERDDAP (old 'santa-monica-pier-automated-shor'
+  // now 404) and switched to _ctd variable names. The stale ID silently failed → all LA
+  // spots fell back to the warm offshore NDBC buoy for temp (Flat Rock/PV read 70.7°F vs an
+  // actual nearshore 64-67°F). New ID + _ctd vars restore the nearshore pier reading (~67.7°F).
+  santamonica:  { id: 'santa-monica-pier-automated-shor-1', name: 'Santa Monica Pier',
+                  temp: 'sea_water_temperature_ctd', turb: null,
+                  chl: 'mass_concentration_of_chlorophyll_in_sea_water_ctd', sal: 'sea_water_practical_salinity_ctd' },
   // CeNCOOS stations (Central/NorCal) — all use standard variable names
   calpoly:      { id: 'san-luis-bay-cal-poly-pier-shore', name: 'Cal Poly Pier (SLO)',
                   temp: 'sea_water_temperature', turb: 'sea_water_turbidity',
