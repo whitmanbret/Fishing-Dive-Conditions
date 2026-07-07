@@ -2037,7 +2037,12 @@ const REGION_MAP = {
   // Santa Barbara
   sb: 'sb', refugio: 'sb',
   // Channel Islands
-  anacapa: 'islands', scisland: 'islands', sannicolas: 'islands', catalina: 'socal',
+  // catalina moved 'socal'→'islands' 2026-07-07: it IS a Channel Island, and the
+  // 'socal' mapping wrongly flagged dorado 'absent' there. Islands region carries
+  // dorado 'rare' (kelp-paddy dorado around the islands) — confirmed by a 42" dorado
+  // landed frontside Catalina at 69.7°F (7/5). Only dorado availability changes
+  // (islands vs socal are otherwise identical: YT/WSB/halibut full, bluefin absent).
+  anacapa: 'islands', scisland: 'islands', sannicolas: 'islands', catalina: 'islands',
   // Offshore / Bluewater
   ninemile: 'offshore', tannerbank: 'offshore', fortythree: 'offshore', hiddenbank: 'offshore',
   sanclemente: 'islands',
@@ -2064,7 +2069,24 @@ function getSpeciesAvailability(species, location) {
   const region = REGION_MAP[location] || 'sd';
   const regionRange = SPECIES_RANGE[region];
   if (!regionRange) return 'full';
-  return regionRange[species] || 'full';
+  let avail = regionRange[species] || 'full';
+  // Dorado — warm-water pelagic. The static regional table is only half the story:
+  // the 16-yr catch data shows dorado presence ~2x in warm/El-Niño years and
+  // near-zero in cold water. Gate the baseline on LIVE surface temp / SST anomaly
+  // so the forecast reflects THIS year's water, not a fixed season:
+  //   • cold (<66°F) → absent anywhere (also handles the off-season, when SoCal is cold)
+  //   • strong-warm (≥71°F OR SST anomaly ≥ +2°F) → push one notch inshore
+  //     (absent→rare) to reflect warm-year kelp-paddy dorado moving into the bight.
+  //   Islands/offshore keep their baseline (already 'rare'/'full').
+  // Grounded in the 42" Catalina dorado at 69.7°F during the 2026 heatwave.
+  if (species === 'dorado' && typeof D !== 'undefined') {
+    const t = D.waterTemp, anom = D.sstAnomaly;
+    if (t !== undefined && t !== null && t < 66) return 'absent';
+    const strongWarm = (t !== undefined && t !== null && t >= 71)
+                    || (anom !== undefined && anom !== null && anom >= 2);
+    if (strongWarm && avail === 'absent') avail = 'rare';
+  }
+  return avail;
 }
 
 // SoCal (LA/OC/Ventura) CPFV data — CDFW logbooks 2019-2025, 47k+ rows
@@ -2077,7 +2099,7 @@ const CPFV_SOCAL = {
   halibut:    { index: [4,4,10,7,6,7,8,10,4,4,1,1], peak_month: 2 },
   // CDFW: bluefin on coast Jul-Sep, peak Aug
   bluefin:    { index: [1,1,1,1,1,1,5,10,6,1,1,1], peak_month: 7 },
-  // FishDope: dorado Jul-Oct, peak Aug-Sep. KP dorado around islands + offshore.
+  // Catch data: dorado Jul-Oct, peak Aug-Sep. KP dorado around islands + offshore.
   dorado:     { index: [1,1,1,1,1,1,6,10,10,7,2,1], peak_month: 8 },
   general:    { index: [3,3,5,6,7,8,9,10,8,7,5,3], peak_month: 7 },
 };
@@ -2188,14 +2210,19 @@ const CPFV = {
     index:          [1,1,1,1,2,2,6,10,6,5,5,5],
   },
   dorado: {
-    // FishDope 6,028 reports (2009-2026): 1,849 dorado mentions. Peak Aug. Season Jul-Oct.
-    // 70% kelp paddy associated. Avg temp 68.2°F.
-    // El Nino years nearly double mentions (163/yr vs 95/yr avg). 2022 = historic (PDO warm phase).
-    catch_per_trip: [0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.40, 0.80, 1.0, 0.65, 0.10, 0.02],
-    five_yr_avg:    [0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.40, 0.80, 1.0, 0.65, 0.10, 0.02],
-    peak_month: 8, // Sep peak in FishDope data
-    // FishDope-calibrated: season Jul-Oct, peak Aug-Sep
-    index:          [1,1,1,1,1,1,6,10,10,7,2,1],
+    // 16-yr catch reports (2009-2026, 6,028 records) re-analyzed 2026-07-07:
+    // 1,854 dorado-mention days. Monthly mention-rate: Jul 77%, Sep 79%, Oct 65%
+    // are the strongest; Jun 17% is the leading shoulder; Aug is peak by volume/
+    // reputation. Off-season (Nov-May) mentions are mostly retrospective/no-fish
+    // noise. Season Jul-Oct, peak Aug-Sep. ~70% kelp-paddy associated; avg catch
+    // temp ~68°F. STRONG WARM-WATER DEPENDENCE: warm/El-Niño years (2014, 2015,
+    // 2020) run ~50% dorado-days vs ~13-27% in cool years (2018, 2024, 2025) —
+    // roughly 2x. See getSpeciesAvailability for the SST gate that encodes this.
+    catch_per_trip: [0.0, 0.0, 0.0, 0.0, 0.0, 0.07, 0.50, 0.85, 1.0, 0.65, 0.12, 0.02],
+    five_yr_avg:    [0.0, 0.0, 0.0, 0.0, 0.0, 0.07, 0.50, 0.85, 1.0, 0.65, 0.12, 0.02],
+    peak_month: 8, // Sep — highest single-month mention rate (79%)
+    // Data-calibrated: season Jul-Oct, peak Aug-Sep, Jun shoulder
+    index:          [1,1,1,1,1,2,8,10,10,7,2,1],
   },
   general: {
     catch_per_trip: [4.2, 5.1, 8.3, 12.7, 18.4, 24.6, 28.1, 25.3, 19.8, 14.2, 7.6, 4.8],
@@ -5080,7 +5107,7 @@ async function fetchSatelliteChlorophyll(loc, proxy) {
 
       const avgChl = vals.reduce((a,b) => a+b, 0) / vals.length;
 
-      // Classify water color based on FishDope spotter plane correlations:
+      // Classify water color based on spotter-plane correlations:
       // Bluefin found ONLY in clean blue water. Green water = no gamefish.
       let waterColor, waterColorLabel, waterColorEmoji;
       if (avgChl < 0.15) {
@@ -7174,24 +7201,24 @@ const FISH_WEIGHTS_BY_SPECIES = {
     sst:        0.02,  // #10 — satellite SST confirmation
   },
   yellowtail: {
-    // FishDope 5,291 reports (2009-2026): kelp 90.2%, current 74.3%, calm 52.4%, dirty water 30.6%
+    // 16-yr catch reports (2009-2026, 5,291 records): kelp 90.2%, current 74.3%, calm 52.4%, dirty water 30.6%
     // Bimodal temps: 60-62°F inshore kelp + 70-75°F offshore. Core 60-75°F.
-    waterTemp:  0.18,  // #1 — broad 60-75°F range (FishDope catch-specific median 70°F)
-    current:    0.16,  // #2 — "no current = no yellowtail" (74.3% of reports, FishDope explicit)
+    waterTemp:  0.18,  // #1 — broad 60-75°F range (catch-specific median 70°F)
+    current:    0.16,  // #2 — "no current = no yellowtail" (74.3% of reports)
     reports:    0.14,  // #3 — seasonal presence from CPFV data
     upwelling:  0.10,  // #4 — YT follow bait driven by upwelling productivity
     tideState:  0.10,  // #5 — tidal current movement drives feeding windows
     tempTrend:  0.08,  // #6 — warming trend = YT push inshore from Coronados
     moonPhase:  0.06,  // #7 — reduced (partly captured by squidProxy)
-    squidProxy: 0.06,  // #8 — FishDope: 94.2% of YT with squid/bait present
+    squidProxy: 0.06,  // #8 — Catch data: 94.2% of YT with squid/bait present
     chlFish:    0.04,  // #9 — bait concentration matters
-    waterColor: 0.03,  // #10 — NOT picky (42.7% clean, 30.6% dirty — FishDope confirmed)
+    waterColor: 0.03,  // #10 — NOT picky (42.7% clean, 30.6% dirty)
     pressure:   0.03,  // #11 — dropping pressure can trigger bite
     sst:        0.02,  // confirmation
   },
   wsb: {
     // Aalbers 2015 + MacNamara 2025 + CDFW ESR: WSB occupy 55-61°F at depth (60-66°F surface)
-    // FishDope 16yr (4,378 reports): 97% of WSB at squid beds. Squid is the #1 binary gate.
+    // 16-yr catch reports (4,378 records): 97% of WSB at squid beds. Squid is the #1 binary gate.
     // Moon drives squid runs → squid drives WSB presence. Tides + moon + squid = the triggers.
     squidProxy: 0.18,  // #1 — THE factor. 97% correlation. Composite: moon+temp+season+reports
     tideState:  0.18,  // #2 — depth shifts correlate with tidal frequencies (3-4 cpd)
@@ -7220,7 +7247,7 @@ const FISH_WEIGHTS_BY_SPECIES = {
     sst:        0.01,  // confirmation only
   },
   bluefin: {
-    waterColor: 0.18,  // #1 — 6,028 FishDope reports (2009-2026): blue water mandatory daytime, less critical night
+    waterColor: 0.18,  // #1 — 6,028 catch reports (2009-2026): blue water mandatory daytime, less critical night
     waterTemp:  0.16,  // #2 — broader tolerance: 60-72°F viable (n=3,447, avg 64.5°F). Peak 60-66°F.
     tempBreak:  0.14,  // #3 — temp fronts concentrate bait+bluefin at edges
     reports:    0.12,  // #4 — seasonal CPFV data + boat report scraper
@@ -7243,7 +7270,7 @@ const FISH_WEIGHTS_BY_SPECIES = {
     current:    0.08,  // #6 — current moves kelp paddies, concentrates bait
     upwelling:  0.06,  // #7 — upwelling = cold = bad for dorado (opposite of bluefin)
     tempBreak:  0.04,  // #8 — warm side of breaks preferred
-    moonPhase:  0.04,  // #9 — minimal effect in FishDope data
+    moonPhase:  0.04,  // #9 — minimal effect in the catch data
     waterColor: 0.02,  // #10 — NOT picky (30% blue, 33% green). Neutral.
     tideState:  0.02,  // #11 — minimal (offshore pelagic)
     chlFish:    0.02,  // minor
@@ -7311,7 +7338,7 @@ async function recalculate() {
     fishEntries.push({score: grunion.score, key: 'grunion'});
   }
 
-  // Squid likelihood proxy — FishDope 16yr: 97% WSB at squid beds, 94% YT with squid/bait
+  // Squid likelihood proxy — 16-yr catch data: 97% WSB at squid beds, 94% YT with squid/bait
   // Composite score from moon phase, water temp, season, region, and boat report squid detections
   if (currentSpecies === 'wsb' || currentSpecies === 'yellowtail') {
     const month = new Date().getMonth(); // 0-indexed
@@ -7426,16 +7453,16 @@ async function recalculate() {
   // Satellite water color + temp break — boosts/penalizes bluefin & yellowtail at offshore spots
   if (LOCATIONS[currentLocation].bluewater) {
     // Water color scoring (from VIIRS chlorophyll)
-    // FishDope spotter plane confirmed: bluefin ONLY in blue water, avoid green
+    // spotter-plane confirmed: bluefin ONLY in blue water, avoid green
     if (D.waterColor) {
       let wcScore;
       if (currentSpecies === 'bluefin') {
         wcScore = ({blue: 10, blue_light: 9, edge: 5, green: 2, bloom: 1})[D.waterColor] || 5;
       } else if (currentSpecies === 'dorado') {
-        // Dorado NOT water-color picky — 30% blue, 33% green in 1,849 FishDope reports. Follow kelp paddies regardless.
+        // Dorado NOT water-color picky — 30% blue, 33% green in 1,849 catch reports. Follow kelp paddies regardless.
         wcScore = ({blue: 7, blue_light: 7, edge: 7, green: 6, bloom: 5})[D.waterColor] || 6;
       } else if (currentSpecies === 'yellowtail') {
-        // FishDope: 42.7% clean, 30.6% dirty, 16.4% green — NOT picky. Edge/color change concentrates fish.
+        // Catch data: 42.7% clean, 30.6% dirty, 16.4% green — NOT picky. Edge/color change concentrates fish.
         wcScore = ({blue: 7, blue_light: 8, edge: 9, green: 6, bloom: 5})[D.waterColor] || 6;
       } else {
         // Default: moderate sensitivity
