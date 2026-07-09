@@ -669,6 +669,7 @@
       width: 100%; box-sizing: border-box; text-align: center;
       background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-input) 100%) !important;
       box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 1px 2px rgba(0,0,0,0.2);
+      color: var(--text-primary) !important;
     }
     .section-toggle-btn:hover {
       box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 2px 8px rgba(44,140,255,0.15);
@@ -1377,25 +1378,40 @@
       </div>
       <div class="brief-am" id="briefAM"></div>
       <div class="brief-pm" id="briefPM"></div>
+    <section class="factors-section" style="background:transparent;border:none;box-shadow:none;margin:8px 0 0;overflow:visible">
+      <div class="category-header" style="color:var(--text-primary);background:transparent;padding:10px 0 6px;letter-spacing:1.5px;border-bottom:1px solid var(--border)">Key Conditions</div>
+      <div class="factor-row"><div class="factor-label">Air Temp</div><div class="factor-value" id="airTempVal"><span class="loading-pulse">loading...</span></div></div>
+      <div class="factor-row"><div class="factor-label">Water Temp</div><div class="factor-value" id="waterTempVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waterTempScore" style="display:none">-</div></div>
+      <div class="factor-row" id="thermoclineRow" style="display:none"><div class="factor-label">Thermocline</div><div class="factor-value" id="thermoclineVal">--</div></div>
+      <div class="factor-row" id="oceanForecastRow" style="display:none"><div class="factor-label">Ocean Forecast</div><div class="factor-value" id="oceanForecastVal">--</div></div>
+      <div class="factor-row" id="thermoclineEvoRow" style="display:none"><div class="factor-label">Thermocline 5-Day</div><div class="factor-value" id="thermoclineEvoVal">--</div></div>
+      <div class="factor-row" id="currentProfileRow" style="display:none"><div class="factor-label">Currents (by depth)</div><div class="factor-value" id="currentProfileVal">--</div></div>
+      <div class="factor-row" id="surfaceCurrentRow" style="display:none"><div class="factor-label">Surface Current</div><div class="factor-value" id="surfaceCurrentVal">--</div></div>
+      <div class="factor-row" id="salinityRow" style="display:none"><div class="factor-label">Salinity</div><div class="factor-value" id="salinityVal">--</div></div>
+      <div class="factor-row" id="targetDepthRow" style="display:none"><div class="factor-label">Target Depths</div><div class="factor-value" id="targetDepthVal">--</div></div>
+      <div class="factor-row" id="eddyRow" style="display:none"><div class="factor-label">Eddy Feature</div><div class="factor-value" id="eddyVal">--</div></div>
+      <div class="factor-row" id="frontRow" style="display:none"><div class="factor-label">Temp Break (front)</div><div class="factor-value" id="frontVal">--</div></div>
+      <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstScore" style="display:none">-</div></div>
+      <div class="factor-row" style="display:none"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tideStateScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="moonPhaseScore" style="display:none">-</div></div>
+      <div class="factor-row" id="baroTrendRow" style="display:none"><div class="factor-label">Barometric Trend</div><div class="factor-value" id="baroTrendVal">--</div></div>
+      <div class="factor-row" id="riverFlowRow" style="display:none"><div class="factor-label">River Runoff</div><div class="factor-value" id="riverFlowVal">--</div></div>
+      <div class="factor-row" id="marineAlertRow" style="display:none"><div class="factor-label">Marine Advisory</div><div class="factor-value" id="marineAlertVal">--</div></div>
+      <!-- Merged into Key Conditions 2026-05-20 (was a separate Dive Visibility Conditions section) -->
+      <div class="factor-row" style="display:none"><div class="factor-label">Wind</div><div class="factor-value" id="windVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="windScore" style="display:none">-</div></div>
+      <div class="factor-row" style="display:none"><div class="factor-label">Swell</div><div class="factor-value" id="swellVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellScore" style="display:none">-</div></div>
+      <div class="factor-row" style="display:none"><div class="factor-label">Swell Dir</div><div class="factor-value" id="swellDirVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellDirScore" style="display:none">-</div></div>
+      <div class="factor-row" style="display:none"><div class="factor-label">Swell Period</div><div class="factor-value" id="swellPeriodVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellPeriodScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Wave Energy</div><div class="factor-value" id="waveEnergyVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waveEnergyScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Chlorophyll</div><div class="factor-value" id="chlVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="chlVizScore" style="display:none">-</div></div>
+      <div class="factor-row"><div class="factor-label">Rainfall (72h)</div><div class="factor-value" id="rainfallVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="rainfallScore" style="display:none">-</div></div>
+    </section>
     </div>
 
-    <!-- ===== RECENT REPORTS — past 7 days of diver-reported viz across the current county/region ===== -->
-    <div class="recent-reports" id="recentReports">
-      <div class="rr-header">
-        <span class="rr-title">Recent Reports · Past 7 days</span>
-        <span class="rr-spot" id="rrSpot"></span>
-      </div>
-      <div class="rr-list" id="rrList"></div>
-      <div class="rr-cta">
-        <span>Dove here recently?</span>
-        <button class="rr-report-btn" onclick="document.getElementById('reportBtn')?.click()">Add Report</button>
-      </div>
-      <div class="rr-partner" id="rrPartner">
-        <a class="rr-report-btn" href="https://justgetwet.com/blogs/dive-reports-and-conditions" target="_blank" rel="noopener">More San Diego reports — Just Get Wet ↗</a>
-      </div>
+    <!-- ===== CONDITION CARDS (Tide / Wind / Wave) — collapsible "Report Details" dropdown ===== -->
+    <div style="text-align:center;margin-bottom:12px">
+      <button id="reportDetailsToggleBtn" class="section-toggle-btn" onclick="toggleReportDetails()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:16px 28px;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Report Details (Tide, Wind, Swell) &#9650;</button>
     </div>
-
-    <!-- ===== CONDITION CARDS (Tide / Wind / Wave) — 2026-05-11 redesign ===== -->
     <div id="conditionCards">
 
       <!-- TIDE CARD -->
@@ -1500,38 +1516,26 @@
 
     </div>
 
+    <!-- ===== RECENT REPORTS — past 7 days of diver-reported viz across the current county/region ===== -->
+    <div class="recent-reports" id="recentReports">
+      <div class="rr-header">
+        <span class="rr-title">Recent Reports · Past 7 days</span>
+        <span class="rr-spot" id="rrSpot"></span>
+      </div>
+      <div class="rr-list" id="rrList"></div>
+      <div class="rr-cta">
+        <span>Dove here recently?</span>
+        <button class="rr-report-btn" onclick="document.getElementById('reportBtn')?.click()">Add Report</button>
+      </div>
+      <div class="rr-partner" id="rrPartner">
+        <a class="rr-report-btn" href="https://justgetwet.com/blogs/dive-reports-and-conditions" target="_blank" rel="noopener">More San Diego reports — Just Get Wet ↗</a>
+      </div>
+    </div>
+
     <!-- ===== CONDITION DETAILS — other data listed as before, always visible ===== -->
     <div id="detailsSections">
 
-    <!-- KEY CONDITIONS — Fish Bite (scores hidden to protect algorithm) -->
-    <section class="factors-section">
-      <div class="category-header">Key Conditions</div>
-      <div class="factor-row"><div class="factor-label">Air Temp</div><div class="factor-value" id="airTempVal"><span class="loading-pulse">loading...</span></div></div>
-      <div class="factor-row"><div class="factor-label">Water Temp</div><div class="factor-value" id="waterTempVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waterTempScore" style="display:none">-</div></div>
-      <div class="factor-row" id="thermoclineRow" style="display:none"><div class="factor-label">Thermocline</div><div class="factor-value" id="thermoclineVal">--</div></div>
-      <div class="factor-row" id="oceanForecastRow" style="display:none"><div class="factor-label">Ocean Forecast</div><div class="factor-value" id="oceanForecastVal">--</div></div>
-      <div class="factor-row" id="thermoclineEvoRow" style="display:none"><div class="factor-label">Thermocline 5-Day</div><div class="factor-value" id="thermoclineEvoVal">--</div></div>
-      <div class="factor-row" id="currentProfileRow" style="display:none"><div class="factor-label">Currents (by depth)</div><div class="factor-value" id="currentProfileVal">--</div></div>
-      <div class="factor-row" id="surfaceCurrentRow" style="display:none"><div class="factor-label">Surface Current</div><div class="factor-value" id="surfaceCurrentVal">--</div></div>
-      <div class="factor-row" id="salinityRow" style="display:none"><div class="factor-label">Salinity</div><div class="factor-value" id="salinityVal">--</div></div>
-      <div class="factor-row" id="targetDepthRow" style="display:none"><div class="factor-label">Target Depths</div><div class="factor-value" id="targetDepthVal">--</div></div>
-      <div class="factor-row" id="eddyRow" style="display:none"><div class="factor-label">Eddy Feature</div><div class="factor-value" id="eddyVal">--</div></div>
-      <div class="factor-row" id="frontRow" style="display:none"><div class="factor-label">Temp Break (front)</div><div class="factor-value" id="frontVal">--</div></div>
-      <div class="factor-row"><div class="factor-label">SST Satellite</div><div class="factor-value" id="sstVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="sstScore" style="display:none">-</div></div>
-      <div class="factor-row" style="display:none"><div class="factor-label">Tide State</div><div class="factor-value" id="tideStateVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="tideStateScore" style="display:none">-</div></div>
-      <div class="factor-row"><div class="factor-label">Moon Phase</div><div class="factor-value" id="moonPhaseVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="moonPhaseScore" style="display:none">-</div></div>
-      <div class="factor-row" id="baroTrendRow" style="display:none"><div class="factor-label">Barometric Trend</div><div class="factor-value" id="baroTrendVal">--</div></div>
-      <div class="factor-row" id="riverFlowRow" style="display:none"><div class="factor-label">River Runoff</div><div class="factor-value" id="riverFlowVal">--</div></div>
-      <div class="factor-row" id="marineAlertRow" style="display:none"><div class="factor-label">Marine Advisory</div><div class="factor-value" id="marineAlertVal">--</div></div>
-      <!-- Merged into Key Conditions 2026-05-20 (was a separate Dive Visibility Conditions section) -->
-      <div class="factor-row" style="display:none"><div class="factor-label">Wind</div><div class="factor-value" id="windVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="windScore" style="display:none">-</div></div>
-      <div class="factor-row" style="display:none"><div class="factor-label">Swell</div><div class="factor-value" id="swellVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellScore" style="display:none">-</div></div>
-      <div class="factor-row" style="display:none"><div class="factor-label">Swell Dir</div><div class="factor-value" id="swellDirVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellDirScore" style="display:none">-</div></div>
-      <div class="factor-row" style="display:none"><div class="factor-label">Swell Period</div><div class="factor-value" id="swellPeriodVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="swellPeriodScore" style="display:none">-</div></div>
-      <div class="factor-row"><div class="factor-label">Wave Energy</div><div class="factor-value" id="waveEnergyVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="waveEnergyScore" style="display:none">-</div></div>
-      <div class="factor-row"><div class="factor-label">Chlorophyll</div><div class="factor-value" id="chlVizVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="chlVizScore" style="display:none">-</div></div>
-      <div class="factor-row"><div class="factor-label">Rainfall (72h)</div><div class="factor-value" id="rainfallVal"><span class="loading-pulse">loading...</span></div><div class="factor-score" id="rainfallScore" style="display:none">-</div></div>
-    </section>
+    <!-- KEY CONDITIONS moved into Today's Conditions card (see #conditionsBrief) -->
 
     <!-- Hidden elements needed by scoring JS but not displayed -->
     <div style="display:none">
@@ -1552,6 +1556,24 @@
 
     <!-- 2026-05-11: Yesterday's Fishing section removed per user request — redundant with the Latest Boat Reports toggle below. The hidden element below preserves the ID for any JS that still references it. -->
     <div class="brief-fishing" id="briefFishing" style="display:none !important"></div>
+
+    <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
+    <div style="text-align:center;margin-bottom:12px">
+      <button id="forecastToggleBtn" class="section-toggle-btn" onclick="toggleForecastSection()" style="
+        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
+        border-radius: 8px; padding: 16px 28px; font-size: 14px; font-weight: 600;
+        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
+      ">7-Day Forecast ▼</button>
+    </div>
+    <section class="forecast-section" id="forecastSection" style="display:none">
+      <div class="forecast-title">
+        <span>7-Day Forecast</span>
+        <span style="font-size:10px; color:var(--text-muted)">NWS · NOAA Tides · WW3 Swell</span>
+      </div>
+      <div id="forecastDays">
+        <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;" class="loading-pulse">Loading forecast data...</div>
+      </div>
+    </section>
 
     <!-- ===== REGIONAL OCEAN TEMPERATURE MAP ===== -->
     <div style="text-align:center;margin-bottom:12px">
@@ -1606,24 +1628,6 @@
         </div>
       </div>
     </div>
-
-    <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
-    <div style="text-align:center;margin-bottom:12px">
-      <button id="forecastToggleBtn" class="section-toggle-btn" onclick="toggleForecastSection()" style="
-        background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);
-        border-radius: 8px; padding: 16px 28px; font-size: 14px; font-weight: 600;
-        cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
-      ">7-Day Forecast ▼</button>
-    </div>
-    <section class="forecast-section" id="forecastSection" style="display:none">
-      <div class="forecast-title">
-        <span>7-Day Forecast</span>
-        <span style="font-size:10px; color:var(--text-muted)">NWS · NOAA Tides · WW3 Swell</span>
-      </div>
-      <div id="forecastDays">
-        <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;" class="loading-pulse">Loading forecast data...</div>
-      </div>
-    </section>
 
     <!-- OFFSHORE SATELLITE DATA — only shows for bluewater spots -->
     <section class="factors-section" id="offshoreDataSection" style="display:none">
@@ -1811,6 +1815,14 @@ function setSstMapType(type) {
     btnSst.style.background = 'transparent'; btnSst.style.color = 'var(--text-muted)'; btnSst.style.borderColor = 'var(--border)';
   }
   loadSstMap();
+}
+function toggleReportDetails() {
+  var section = document.getElementById('conditionCards');
+  var btn = document.getElementById('reportDetailsToggleBtn');
+  if (!section || !btn) return;
+  var hidden = section.style.display === 'none';
+  section.style.display = hidden ? '' : 'none';
+  btn.textContent = hidden ? 'Report Details (Tide, Wind, Swell) \u25B2' : 'Report Details (Tide, Wind, Swell) \u25BC';
 }
 function toggleSstMap() {
   var section = document.getElementById('sstMapSection');
