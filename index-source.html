@@ -3858,6 +3858,16 @@ const SHORE_STATION_MAP = {
   sanclemente: ['newport','scripps'], tannerbank: ['scripps','newport'],
 };
 
+// Temp-safe fallback piers: SoCal-shelf stations that read within ~2-3°F of one
+// another, so they make acceptable TEMP proxies when a PRIMARY returns a null
+// temp (e.g. Newport for San Diego when Scripps' temp field drops out — the
+// 2026-07-12 case where Scripps sent fresh NTU/chl but NULL temp and LJ fell to a
+// 65.9°F buoy/CO-OPS read vs 72°F actual). Central-coast (Monterey Wharf, Moss
+// Landing, Cal Poly, Morro) and NorCal fallbacks are DELIBERATELY excluded — they
+// read the warm mid-bay lens or the cold central coast and misrepresent the dive
+// site (that exclusion is the whole point of the 2026-07-03 isFallback temp gate).
+const TEMP_SAFE_FALLBACKS = new Set(['Scripps Pier', 'Newport Pier', 'Santa Monica Pier', 'Stearns Wharf']);
+
 async function fetchShoreStation() {
   const stationKeys = SHORE_STATION_MAP[currentLocation];
   if (!stationKeys || stationKeys.length === 0) { srcStatus.sass = 'n/a'; return; }
@@ -3865,17 +3875,27 @@ async function fetchShoreStation() {
   // Try each station in priority order until one succeeds
   // isFallback=true for non-primary stations — they should NOT provide turbidity/chl
   // (turbidity is hyper-local; using Morro Bay turbidity for Monterey = wildly wrong)
+  const _loc = LOCATIONS[currentLocation];
+  const _needTemp = !!_loc && !_loc.offshore;   // shore dives need a nearshore temp
   let isPrimary = true;
+  let gotData = false, tempSet = false;
   for (const stationKey of stationKeys) {
     const station = SHORE_STATIONS[stationKey];
     if (!station) continue;
     try {
-      const d = await fetchSingleShoreStation(station, !isPrimary);
-      if (d) return; // Success — stop trying fallbacks
+      const res = await fetchSingleShoreStation(station, !isPrimary);
+      if (res) {
+        gotData = true;
+        if (res.tempStored) tempSet = true;
+        // Stop once we have data AND (temp not needed OR temp is set). If the
+        // primary returned NTU/chl but a NULL temp (Scripps 2026-07-12), keep
+        // going so a temp-safe SoCal fallback (Newport) can supply the temp.
+        if (!_needTemp || tempSet) return;
+      }
     } catch(e) { /* Try next station in chain */ }
     isPrimary = false;
   }
-  srcStatus.sass = 'err';
+  if (!gotData) srcStatus.sass = 'err';
 }
 
 async function fetchSingleShoreStation(station, isFallback = false) {
@@ -3923,12 +3943,37 @@ async function fetchSingleShoreStation(station, isFallback = false) {
         const median = vals.length % 2 ? vals[mid] : (vals[mid-1] + vals[mid]) / 2;
         return parseFloat(median.toFixed(2));
       };
+      // Newest VALID reading — for gradually-changing variables (temp) where a
+      // spike-resistant median actively LAGS the truth. Scripps 2026-07-12: CTD
+      // temp rose 65.9→71.1°F over 2 hrs (warm surface lens building on a calm
+      // sunny day); the 2hr median returned 65.9 while a swimmer felt 72°F. Temp
+      // doesn't spike like turbidity, so the current value is the right one.
+      // (Also skips the interleaved null :10s rows that fooled the health check.)
+      const extractLatest = varName => {
+        if (!varName) return null;
+        const idx = cols.indexOf(varName);
+        if (idx < 0) return null;
+        const source = recentRows.length > 0 ? recentRows : d.table.rows;
+        let bestT = null, bestV = null;
+        for (const r of source) {
+          const v = r[idx];
+          if (v === null || isNaN(v)) continue;
+          const t = timeIdx >= 0 ? r[timeIdx] : '';
+          if (bestT === null || t >= bestT) { bestT = t; bestV = v; }
+        }
+        return bestV === null ? null : parseFloat(Number(bestV).toFixed(2));
+      };
       // Shore station water temp (very accurate nearshore reading)
       // For shore dives (non-offshore), pier temp is more accurate than offshore buoy.
       // Offshore buoys sit in deeper/warmer water — can read 2-3°F higher than actual dive conditions.
       // EXCEPTION: fallback stations (100+ miles away) should NOT override waterTemp —
       // let NOAA CO-OPS or local buoy provide temp instead (much more accurate).
-      const shoreTemp = extract(station.temp);
+      const shoreTemp = extractLatest(station.temp);   // latest valid, not lagging median
+      // Hoisted to function-body scope so the srcStatus line at the end of this
+      // block can reference it on the FALLBACK path too (the live chl assignment
+      // below is gated on !isFallback, so on a fallback chl stays null). Prevents
+      // a ReferenceError now that temp-safe fallbacks (Newport) run more often.
+      let chl = null;
       // Only a PRIMARY (non-fallback) station may set the dive-site temp. Fallback
       // stations are either 100+ mi away OR warm mid-bay/harbor sources (Moss
       // Landing, Monterey Wharf) that read the surface lens ~6°F above the actual
@@ -3938,14 +3983,21 @@ async function fetchSingleShoreStation(station, isFallback = false) {
       // race the chain fell to Moss Landing and Carmel showed 61.8°F vs an actual
       // 54°F. Gate the whole shore-temp store on !isFallback; if the primary is
       // unavailable, fetchNOAAWaterTemp / buoy provide temp instead.
-      if (shoreTemp !== null && !isFallback) {
+      // A FALLBACK may set the dive-site temp ONLY if it is a temp-safe SoCal-shelf
+      // pier (TEMP_SAFE_FALLBACKS). This only runs when the PRIMARY yielded no temp
+      // (fetchShoreStation stops the chain as soon as a temp is stored), so a good
+      // primary is never overridden. Fixes the 2026-07-12 Scripps null-temp case.
+      const _tempSafeFallback = isFallback && TEMP_SAFE_FALLBACKS.has(station.name);
+      let _tempStored = false;
+      if (shoreTemp !== null && (!isFallback || _tempSafeFallback)) {
         D.shoreWaterTempC = shoreTemp;
         D.shoreWaterTemp = parseFloat((shoreTemp * 9/5 + 32).toFixed(1));
-        D.shoreStation = station.name;
+        D.shoreStation = station.name + (_tempSafeFallback ? ' (fallback)' : '');
+        _tempStored = true;
         const loc = LOCATIONS[currentLocation];
         if (!loc.offshore) {
           D.waterTemp = D.shoreWaterTemp;
-          D.waterTempSource = station.name;
+          D.waterTempSource = D.shoreStation;
         }
       }
       // Turbidity — clamp negative sensor noise to 0
@@ -3968,7 +4020,7 @@ async function fetchSingleShoreStation(station, isFallback = false) {
       // bloom climatology) consistently track the live reading better.
       // Trust the sensor; let climo be the FALLBACK only.
       if (!isFallback) {
-        let chl = extract(station.chl);
+        chl = extract(station.chl);
         if (chl !== null) {
           // Newport Pier sanity check (added 2026-05-23): the pier sensor
           // routinely reads bloom-tier chl (>10 mg/m³) on days when divers
@@ -4017,7 +4069,7 @@ async function fetchSingleShoreStation(station, isFallback = false) {
         D.salinity = sal;
       }
       if (srcStatus.sass !== 'ok' && (shoreTemp !== null || chl !== null)) srcStatus.sass = 'ok';
-      return true; // Signal success to fallback chain
+      return { tempStored: _tempStored }; // truthy = success; flag lets the chain know if temp was set
     }
   return false; // No usable data from this station
 }
