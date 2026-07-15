@@ -1921,6 +1921,19 @@ const LOCATIONS = {
   oceanside: { name: 'Oceanside', bottom: 'sand', tideStation: '9410230', coast: 270, shelter: 'moderate', buoys: ['46225'], lat: 33.19, lon: -117.40, depth: '15-60 ft', kelpDensity: 'low', nwsGrid: 'SGX/54,20', mopStation: 'D0911', typicalDiveDepth: { min: 10, max: 30 } },
   // ── Orange County ──
   danapoint: { name: 'Dana Point / Salt Creek', bottom: 'mixed', tideStation: '9410580', coast: 230, shelter: 'low', buoys: ['46242','46225'], lat: 33.4756, lon: -117.7218, depth: '35-70 ft', kelpDensity: 'heavy', nwsGrid: 'SGX/42,51', mopStation: 'OC171', typicalDiveDepth: { min: 15, max: 40 } },
+  // Treasure Island Beach (Montage, South Laguna) — the SHELTERED pick. Rock points
+  // guard it from SW swell, so it HOLDS when the exposed N Laguna coves blow out. The
+  // differentiator is NO coveTrap (vs laguna/woods which get the SW-swell amplification):
+  // on MILD days it converges with the coves (7/14: TI 15-20 ≈ laguna 14-19), but in big
+  // SW swell the coves get the coveTrap penalty and TI doesn't → TI holds ~15 while they
+  // drop to 5-10 (7/13 Divers 5-10). shelter:'moderate' (same baseline as laguna) so it
+  // doesn't over-clear on calm days. Added 2026-07-14 per Bret.
+  treasureisland: { name: 'Treasure Island Beach (Laguna)', bottom: 'reef', tideStation: '9410580', coast: 235, shelter: 'moderate', buoys: ['46242'], lat: 33.4877, lon: -117.7350, depth: '15-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/167,20', mopStation: 'OC270', typicalDiveDepth: { min: 15, max: 40 } },
+  // Woods Cove (Laguna) — CONFINED cove: its narrow geometry CHANNELS/concentrates SW
+  // groundswell and blows out (7/11: all-whitewater at 3-5 ft sets) despite being
+  // wind-sheltered. So coveTrap:true + shelter:'moderate' (NOT high like Treasure Is).
+  // Added 2026-07-14 per Bret.
+  woodscove: { name: 'Woods Cove (Laguna)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5107, lon: -117.7665, depth: '15-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/167,20', coveTrap: true, mopStation: 'OC270', typicalDiveDepth: { min: 15, max: 35 } },
   laguna: { name: 'Laguna Beach (Shaw\'s / Diver\'s Cove)', bottom: 'reef', tideStation: '9410580', coast: 240, shelter: 'moderate', buoys: ['46242'], lat: 33.5450, lon: -117.7987, depth: '15-50 ft', kelpDensity: 'moderate', marineReserve: true, reserveName: 'Laguna Beach State Marine Reserve', nwsGrid: 'LOX/167,20', coveTrap: true, mopStation: 'OC281', typicalDiveDepth: { min: 10, max: 30 } },
   // Crescent Bay + Emerald Bay sit just north of Shaw's/Diver's Cove within
   // the Laguna Beach SMR. Per user observation, visibility tracks identically
@@ -2044,7 +2057,7 @@ const REGION_MAP = {
   coronado: 'sd', imperial: 'sd', pointloma: 'sd', mission: 'sd', birdrock: 'sd',
   ljshores: 'sd', ljmarineroom: 'sd', ljcove: 'sd', lajolla: 'sd', delmar: 'sd', encinitas: 'sd', carlsbad: 'sd', oceanside: 'sd',
   // LA / Orange County / Ventura
-  danapoint: 'socal', laguna: 'socal', crescent: 'socal', emerald: 'socal', brooksstreet: 'socal', crystalcove: 'socal', newport: 'socal', huntington: 'socal', pv: 'socal', horseshoe: 'socal',
+  danapoint: 'socal', treasureisland: 'socal', woodscove: 'socal', laguna: 'socal', crescent: 'socal', emerald: 'socal', brooksstreet: 'socal', crystalcove: 'socal', newport: 'socal', huntington: 'socal', pv: 'socal', horseshoe: 'socal',
   malibu: 'socal', leocarrillo: 'socal', ventura: 'socal',
   // Santa Barbara
   sb: 'sb', refugio: 'sb',
@@ -3247,6 +3260,8 @@ const CDIP_STATIONS = {
   oceanside:   { id: '262p1', name: 'Leucadia Nearshore' },
   // Orange County — uses San Pedro buoy
   danapoint:   { id: '092p1', name: 'San Pedro' },
+  treasureisland: { id: '092p1', name: 'San Pedro' },
+  woodscove:   { id: '092p1', name: 'San Pedro' },
   laguna:      { id: '092p1', name: 'San Pedro' },
   crescent:    { id: '092p1', name: 'San Pedro' },
   emerald:     { id: '092p1', name: 'San Pedro' },
@@ -3825,7 +3840,7 @@ const SHORE_STATION_MAP = {
   ljshores: ['scripps','newport'], ljmarineroom: ['scripps','newport'], ljcove: ['scripps','newport'], lajolla: ['scripps','newport'], birdrock: ['scripps','newport'], delmar: ['scripps','newport'],
   encinitas: ['scripps','newport'], carlsbad: ['scripps','newport'], oceanside: ['scripps','newport'],
   // Orange County — Newport Pier, fallback Scripps
-  danapoint: ['newport','scripps'], laguna: ['newport','scripps'], crescent: ['newport','scripps'], emerald: ['newport','scripps'], crystalcove: ['newport','scripps'],
+  danapoint: ['newport','scripps'], treasureisland: ['newport','scripps'], woodscove: ['newport','scripps'], laguna: ['newport','scripps'], crescent: ['newport','scripps'], emerald: ['newport','scripps'], crystalcove: ['newport','scripps'],
   newport: ['newport','scripps'], huntington: ['newport','scripps'],
   // LA — Santa Monica Pier, fallback Newport
   pv: ['santamonica','newport'], veteranspark: ['santamonica','newport'], horseshoe: ['santamonica','newport'], malibu: ['santamonica','newport'], leocarrillo: ['santamonica','newport'],
@@ -9669,7 +9684,7 @@ function selectSpotFromMap(key) {
 const COUNTY_SPOTS = {
   sandiego:         ['imperial','pointloma','mission','birdrock','ljshores','ljmarineroom','ljcove','lajolla','delmar','encinitas','carlsbad','oceanside'],
   coronado_islands: ['coronado'],
-  orange:           ['danapoint','brooksstreet','laguna','crescent','emerald','crystalcove','newport','huntington'],
+  orange:           ['danapoint','treasureisland','woodscove','brooksstreet','laguna','crescent','emerald','crystalcove','newport','huntington'],
   la:               ['pv','horseshoe','veteranspark','malibu','leocarrillo'],
   catalina:         ['catalina'],
   ventura:          ['ventura'],
