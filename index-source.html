@@ -10233,6 +10233,28 @@ updateWebcams();
 sfCacheHydrate(currentLocation);
 fetchAllData();
 
+// Hourly auto-refresh — keeps a long-open page current with the LIVE pier
+// sensors (Scripps temp/NTU/chl post every few min, so an hourly pull always
+// gets fresh data; the daily SATELLITE chl is unaffected either way). Gated on
+// tab visibility so backgrounded tabs don't fetch needlessly, and re-fetches on
+// visibility-regain if it's been >=1h since the last pull. Skips if a fetch is
+// already in flight (refresh button disabled).
+const AUTO_REFRESH_MS = 60 * 60 * 1000;   // 1 hour
+let _lastAutoFetch = Date.now();
+function _autoRefreshTick() {
+  if (document.visibilityState !== 'visible') return;
+  const _rb = document.getElementById('refreshBtn');
+  if (_rb && _rb.disabled) return;        // a fetch is already running
+  _lastAutoFetch = Date.now();
+  fetchAllData();
+}
+setInterval(_autoRefreshTick, AUTO_REFRESH_MS);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && Date.now() - _lastAutoFetch >= AUTO_REFRESH_MS) {
+    _autoRefreshTick();
+  }
+});
+
 // Initialize map once Leaflet has loaded (deferred script in <head>).
 // `defer` scripts execute after HTML parsing, before DOMContentLoaded fires —
 // so by the time DOMContentLoaded runs, window.L is guaranteed to exist.
