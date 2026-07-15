@@ -1557,6 +1557,12 @@
     <!-- 2026-05-11: Yesterday's Fishing section removed per user request — redundant with the Latest Boat Reports toggle below. The hidden element below preserves the ID for any JS that still references it. -->
     <div class="brief-fishing" id="briefFishing" style="display:none !important"></div>
 
+    <!-- BEACH WEBCAMS (moved above the 7-Day Forecast per user request 2026-07-14) -->
+    <section class="webcams" id="webcamSection">
+      <div class="webcams-title">📹 Live Beach Cams</div>
+      <div class="webcam-grid" id="webcamGrid"></div>
+    </section>
+
     <!-- ===== 5-DAY FORECAST (Surfline-style) ===== -->
     <div style="text-align:center;margin-bottom:12px">
       <button id="forecastToggleBtn" class="section-toggle-btn" onclick="toggleForecastSection()" style="
@@ -1685,12 +1691,6 @@
       <div class="viz-report-thanks" id="vizThanks"></div>
       <div class="viz-report-history" id="vizHistory"></div>
     </div>
-
-    <!-- BEACH WEBCAMS -->
-    <section class="webcams" id="webcamSection">
-      <div class="webcams-title">📹 Live Beach Cams</div>
-      <div class="webcam-grid" id="webcamGrid"></div>
-    </section>
 
     <!-- LOCAL FISHING REPORTS -->
     <section class="local-reports" id="localReports">
