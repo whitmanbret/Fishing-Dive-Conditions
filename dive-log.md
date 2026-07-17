@@ -42,6 +42,23 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 - **Result:** viz **MATCH** ✅ (9–14 overlaps 10–15) · temp exact (71.4 vs 72°F)
 - Caveat: tool value read 7/17 (day after the dive); it doesn't retain the true 7/16 forecast.
 
+### 2026-07-17 — Kelp health note: San Diego–wide warm-water event
+- **Observed:** heavy white lacy/frosty coating on giant kelp blades near the surface; kelp looks stressed.
+- **Water:** ~72°F, warm spell persisting.
+- **Scope:** Bret reports the same situation **happening all over San Diego now**, not spot-specific.
+- **Likely cause:** marine-heatwave signature — prolonged 72°F surface water is nutrient-starving the
+  canopy (bleaching/decay) while also fueling a *Membranipora membranacea* (lace bryozoan) bloom.
+  The white is probably a **mix of both**: decaying/bleaching blades + bryozoan fouling. Heat is the driver.
+- **Uncertainty:** can't fully separate bryozoan vs. decay from photos alone — in-water texture check
+  is the tell (bryozoan = hard/crusty/gritty, doesn't wipe off; decay = soft/slimy, sloughs off).
+- **Why log it:** if this is persisting region-wide it's a canopy-thinning trend worth a dated record
+  (echoes past SoCal warm spells: 2014–2016 "Blob," 2018). Watch for recovery when cold upwelling returns.
+
+### 2026-07-17 — Shaw's Cove / the Cove (Laguna) — same-day tool pairing
+- **Shaw's Cove:** reported 15–20 ft, murky, very surgy. Tool `laguna` (Shaw's/Diver's) **14–19 ft**, 71.6°F → **MATCH ✅**
+- **"The Cove" (inside):** 15–20 ft in spots, a little milky; *"surface makes it look like visibility would be zero"* but 15–20 underneath. Tool **14–19 ft** → **MATCH ✅**
+  - Notable: tool called it right **despite a deceptively murky surface** — warm surface lens over cleaner water below. (Which cove exactly TBD — laguna and ljcove both read 14–19 today, so MATCH either way.)
+
 ---
 
 ## Just Get Wet reports — San Diego (pulled from justgetwet.com/blogs/dive-reports-and-conditions, 2026-07-17)
