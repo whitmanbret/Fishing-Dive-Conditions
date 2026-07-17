@@ -59,6 +59,12 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 - **"The Cove" (inside):** 15–20 ft in spots, a little milky; *"surface makes it look like visibility would be zero"* but 15–20 underneath. Tool **14–19 ft** → **MATCH ✅**
   - Notable: tool called it right **despite a deceptively murky surface** — warm surface lens over cleaner water below. (Which cove exactly TBD — laguna and ljcove both read 14–19 today, so MATCH either way.)
 
+### 2026-07-17 — Crescent Bay — OVER-CALL ⚠️
+- **Reported:** 5–10 ft (occasional 15), murky/milky, **very surgy despite small waves**. Similar yesterday (7/16) morning at Crescent (5–10, murky, surgy).
+- **Tool `crescent` (live):** 14–19 ft · 71.6°F · 2 ft swell.
+- **Result:** **Over-call.** Typical observed 5–10 vs predicted 14–19; only the occasional 15' pockets touch the tool's range. Tool saw small swell → called it clean, but missed **surge-driven murk** (surge stirs sediment independent of swell height).
+- **Calibration idea:** Crescent/Laguna coves can go murky+surgy on small swell; tool over-reads them on calm-looking days. Candidate for a surge-based dampener (analogous to `coveTrap`).
+
 ---
 
 ## Just Get Wet reports — San Diego (pulled from justgetwet.com/blogs/dive-reports-and-conditions, 2026-07-17)
