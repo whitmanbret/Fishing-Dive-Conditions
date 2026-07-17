@@ -15,6 +15,25 @@ Match rule (per Bret): if the observed range overlaps the tool's predicted range
 
 ---
 
+## Daily tool predictions (captured same-day — this is the fix)
+Snapshot of the tool's predicted viz per spot, captured each day so incoming reports can be graded fairly.
+
+### 2026-07-17
+| Spot | Tool viz | Temp |
+|---|---|---|
+| Treasure Island (Laguna) | 14–19 ft | 71°F |
+| Crystal Cove | 14–19 ft | 71°F |
+| Crescent Bay | 9–14 ft | 71°F |
+| Dana Point / Salt Creek | 10–15 ft | 71°F |
+| LJ Shores | 14–19 ft | 71°F |
+| LJ Cove | 14–19 ft | 71°F |
+| LJ Marine Room | 14–19 ft | 71°F |
+| Point Loma | 12–17 ft (green) | 72°F |
+| Monterey Bay (Breakwater) | 10–15 ft | 57°F |
+| Carmel / Point Lobos | 12–17 ft (green) | 57°F |
+
+---
+
 ## My dives
 
 ### 2026-07-16 — Crescent Bay, Laguna Beach
