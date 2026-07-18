@@ -3865,6 +3865,40 @@ async function fetchChlorophyll() {
 // keep them on the seasonal climatology prior rather than a contaminated pixel.
 const NORCAL_NO_SENSOR = ['halfmoon', 'bodega', 'fortbragg'];
 
+// --- Chlorophyll spike guard + viz history logger (added 2026-07-18) ---
+// A bad satellite chl pixel can spike D.chlorophyll and crater viz to "pea soup"
+// for an hour or two, then self-correct (the observed 14-19 -> 2-4 -> 14-19 flip-flop).
+// Guard: an extreme jump above climatology must PERSIST >=20 min (across refreshes)
+// before we trust it as a real bloom; otherwise it's treated as a bad pixel and held.
+function _chlSpikeAccept(blend, climoVal, key){
+  const extreme = isFinite(climoVal) ? (blend > Math.max(climoVal*6, 5)) : (blend > 8);
+  if(!extreme){ try{ localStorage.removeItem('chlSpike_'+key); }catch(e){} return true; }
+  let rec=null; try{ rec=JSON.parse(localStorage.getItem('chlSpike_'+key)||'null'); }catch(e){}
+  const now=Date.now();
+  if(rec && Math.abs(rec.v-blend)/Math.max(rec.v,blend) < 0.3){
+    if(now-rec.since >= 20*60000) return true;   // held >=20 min -> real bloom, trust it
+    return false;                                // still confirming
+  }
+  try{ localStorage.setItem('chlSpike_'+key, JSON.stringify({v:blend, since:now})); }catch(e){}
+  return false;                                  // brand-new extreme -> hold until it persists
+}
+// Log viz + its drivers on each recalc → a real per-spot history (localStorage,
+// 7-day rolling). Backs the spike guard's trend view and a future viz-history chart.
+function logVizHistory(){
+  try{
+    if(!D.vizFeetStr) return;
+    const m=String(D.vizFeetStr).match(/(\d+)\D+(\d+)/); if(!m) return;
+    const key='vizHist_'+currentLocation;
+    let arr=[]; try{ arr=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ arr=[]; }
+    arr.push({ ts:Date.now(), lo:+m[1], hi:+m[2], chl:(D.chlorophyll!=null?+Number(D.chlorophyll).toFixed(2):null), we:Math.round(D.waveEnergy||0), held:(D.chlSpikeHeld!=null?+Number(D.chlSpikeHeld).toFixed(1):null) });
+    const cutoff=Date.now()-7*86400000;
+    arr=arr.filter(e=>e.ts>=cutoff);
+    if(arr.length>600) arr=arr.slice(-600);
+    localStorage.setItem(key, JSON.stringify(arr));
+  }catch(e){}
+}
+function getVizHistory(spot){ try{ return JSON.parse(localStorage.getItem('vizHist_'+(spot||currentLocation))||'[]'); }catch(e){ return []; } }
+
 async function fetchBlendedChlorophyll() {
   if (!D.chlIsClimatology) return;            // live pier chl or red-tide event already set it
   if (NORCAL_NO_SENSOR.includes(currentLocation)) return;  // stay on NorCal climatology
@@ -3890,6 +3924,11 @@ async function fetchBlendedChlorophyll() {
       useBlend = true;                                   // only a fresh high-res obs may lower chl
     }
     if (!useBlend) return;
+    if (!_chlSpikeAccept(blend, climoVal, currentLocation)) {
+      D.chlSpikeHeld = blend;   // suspected bad pixel — hold climatology baseline until it persists 20 min
+      return;
+    }
+    D.chlSpikeHeld = null;
     D.chlorophyll = blend;
     D.chlIsClimatology = false;
     D.chlSource = `Satellite blend (${(data.source || 'multi-sensor')})`;
@@ -7003,6 +7042,7 @@ async function updateDisplay() {
   }
 
   D.vizFeetStr = vizEst;
+  logVizHistory();
 
   // ── Viz Confidence Indicator ──
   // Assess how much data backs the estimate, so divers know how much to trust it
