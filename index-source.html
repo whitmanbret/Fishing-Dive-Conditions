@@ -1999,6 +1999,13 @@ const LOCATIONS = {
   // Monterey but same Monterey Bay system. Renamed island spot to
   // `scisland` since "Santa Cruz" colloquially means the city.
   santacruz: { name: 'Santa Cruz', bottom: 'mixed', tideStation: '9413745', coast: 225, shelter: 'moderate', buoys: ['46042','46236'], lat: 36.962, lon: -122.022, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/91,67', typicalDiveDepth: { min: 10, max: 30 } },
+  // Hopkins Reef (Pacific Grove) — added 2026-07-18 after repeated reports that the
+  // Hopkins/Aquarium side fishes far clearer than the murky harbor corner
+  // (Breakwater/Cannery). 7/16–7/17: Hopkins 20–25 ft & general bay 18–22 while
+  // Breakwater ran 5–10. Sheltered behind Pt Cabrillo → headlandClearing +
+  // bloomSheltered lift it above the generic 'monterey' entry; uses the sheltered
+  // Lovers Point MOP (MO741) rather than the harbor MOP.
+  hopkins: { name: 'Hopkins Reef (Pacific Grove)', bottom: 'rock', tideStation: '9413450', coast: 0, shelter: 'high', buoys: ['46236'], lat: 36.6217, lon: -121.9043, depth: '10-60 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'Pacific Grove Marine Gardens SMCA', nwsGrid: 'MTR/93,51', mopStation: 'MO741', headlandShelter: 'high', headlandClearing: true, bloomSheltered: true, typicalDiveDepth: { min: 10, max: 40 } },
   loverspoint: { name: 'Lovers Point (Pacific Grove)', bottom: 'rock', tideStation: '9413450', coast: 0, shelter: 'high', buoys: ['46236','46042'], lat: 36.6267, lon: -121.9166, depth: '10-40 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'Lovers Point-Julia Platt State Marine Reserve', nwsGrid: 'MTR/93,51', mopStation: 'MO741', typicalDiveDepth: { min: 10, max: 30 }, headlandShelter: 'high' },
   carmel: { name: 'Carmel / Point Lobos', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO610', typicalDiveDepth: { min: 20, max: 50 }, headlandShelter: 'high' },  // Dropped 27NM-offshore buoy 46042 (warm) 2026-06-23. shelter moderate→high 2026-06-30: the primary dive sites (Whalers/Bluefish Cove) are strongly headland-sheltered NE-facing coves, but the CDIP MOP point MO610 sits on the EXPOSED outer coast (read 5.9ft@10s / WE 348 on 6/30 → blew the prediction to 4-6 vs actual 30-40 at Beto's). No MOP point exists inside the coves, so 'high' shelter (0.15× vs 0.55×) represents the cove sheltering. 2 paired over-penalty reports (6/27, 6/30).
   // ── Northern California ──
@@ -2072,7 +2079,7 @@ const REGION_MAP = {
   ninemile: 'offshore', tannerbank: 'offshore', fortythree: 'offshore', hiddenbank: 'offshore',
   sanclemente: 'islands',
   // Central Coast (Monterey, Carmel, Pacific Grove, Morro Bay)
-  morro: 'central', monterey: 'central', loverspoint: 'central', carmel: 'central', santacruz: 'central',
+  morro: 'central', monterey: 'central', hopkins: 'central', loverspoint: 'central', carmel: 'central', santacruz: 'central',
   // NorCal
   halfmoon: 'norcal', bodega: 'norcal', fortbragg: 'norcal', trinidad: 'norcal',
 };
@@ -3391,6 +3398,7 @@ const CDIP_STATIONS = {
   // Central Coast
   morro:       { id: '076p1', name: 'Diablo Canyon' },
   monterey:    { id: '156p1', name: 'Monterey Bay' },
+  hopkins:     { id: '156p1', name: 'Monterey Bay' },
   carmel:      { id: '156p1', name: 'Monterey Bay' },
   santacruz:   { id: '156p1', name: 'Monterey Bay' },
   // NorCal — CDIP coverage is sparse; fall back to NDBC buoys
@@ -9800,7 +9808,7 @@ const COUNTY_SPOTS = {
   // Offshore banks listed close-to-far from SD coast.
   offshore:         ['ninemile','fortythree','hiddenbank','tannerbank'],
   slo:              ['morro'],
-  monterey:         ['santacruz','monterey','loverspoint','carmel'],
+  monterey:         ['santacruz','monterey','hopkins','loverspoint','carmel'],
   sanmateo:         ['halfmoon'],
   sonoma:           ['bodega'],
   mendocino:        ['fortbragg'],
