@@ -1447,6 +1447,31 @@
         </div>
       </div>
 
+      <!-- VISIBILITY HISTORY CARD -->
+      <div class="cond-card" id="vizHistCard">
+        <div class="cc-head">
+          <div class="cc-head-left">
+            <span class="cc-icon">📈</span>
+            <span class="cc-title">Visibility · last 12h</span>
+          </div>
+          <div class="cc-meta-right">
+            <div id="vizHistNote" style="font-size:10px;color:var(--text-muted);">per hour</div>
+          </div>
+        </div>
+        <div class="cc-big"><span id="vizHistCurrent">--</span> <span class="unit">ft</span></div>
+        <div class="cc-sub" id="vizHistSub">now</div>
+        <div class="chart-wrap">
+          <svg id="vizHistSvg" class="cc-svg" viewBox="0 0 400 130" preserveAspectRatio="none"></svg>
+          <div class="chart-tooltip" id="vizHistTooltip">
+            <div class="tt-time"></div><div class="tt-val"></div><div class="tt-sub"></div>
+          </div>
+        </div>
+        <div class="cc-extremes">
+          <div><b>LOW</b><span id="vizHistLow">--</span></div>
+          <div><b>HIGH</b><span id="vizHistHigh">--</span></div>
+        </div>
+      </div>
+
       <!-- WIND CARD -->
       <div class="cond-card" id="windCard">
         <div class="cc-head">
@@ -6272,6 +6297,36 @@ function _renderHourlyArrows(containerId, data) {
   }).join('');
 }
 
+// Renders the last-12h per-hour visibility history from the localStorage logger.
+function renderVizHistoryChart(){
+  const svg=document.getElementById('vizHistSvg'); if(!svg) return;
+  const now=Date.now(), start=now-12*3600000;
+  const raw=getVizHistory(currentLocation).filter(e=>e && e.ts>=start);
+  const noteEl=document.getElementById('vizHistNote'), curEl=document.getElementById('vizHistCurrent'), subEl=document.getElementById('vizHistSub');
+  const lowEl=document.getElementById('vizHistLow'), highEl=document.getElementById('vizHistHigh');
+  // bucket by clock hour → average midpoint
+  const buckets={};
+  raw.forEach(e=>{ const hr=Math.floor(e.ts/3600000); (buckets[hr]=buckets[hr]||[]).push((e.lo+e.hi)/2); });
+  const data=Object.keys(buckets).sort((a,b)=>a-b).map(hr=>({ time:new Date(hr*3600000), value:buckets[hr].reduce((a,b)=>a+b,0)/buckets[hr].length }));
+  if(data.length<2){
+    svg.innerHTML='';
+    if(noteEl) noteEl.textContent='building…';
+    if(curEl) curEl.textContent = raw.length ? String(Math.round((raw[raw.length-1].lo+raw[raw.length-1].hi)/2)) : '--';
+    if(subEl) subEl.textContent='collecting hourly history — check back later';
+    if(lowEl) lowEl.textContent=' --'; if(highEl) highEl.textContent=' --';
+    return;
+  }
+  const built=_buildChartSvg({ svgId:'vizHistSvg', data, getVal:p=>p.value, getLabel:p=>`${Math.round(p.value)} ft`, unit:'ft', height:130, showPeak:false });
+  svg.innerHTML=built.svgHtml;
+  _attachChartTap({ svgId:'vizHistSvg', tooltipId:'vizHistTooltip', data, getVal:p=>p.value, getLabel:p=>`${Math.round(p.value)} ft`, getSub:()=>'', scale:{xScale:built.xScale,yScale:built.yScale,W:built.W,H:built.H} });
+  const vals=data.map(d=>d.value);
+  if(noteEl) noteEl.textContent='per hour';
+  if(curEl) curEl.textContent=String(Math.round(data[data.length-1].value));
+  if(subEl) subEl.textContent='at '+_fmtTime(data[data.length-1].time);
+  if(lowEl) lowEl.textContent=' '+Math.round(Math.min(...vals))+' ft';
+  if(highEl) highEl.textContent=' '+Math.round(Math.max(...vals))+' ft';
+}
+
 function renderTideCard() {
   const hourly = D.multiDayTideHourly || [];
   const hilo = D.multiDayTideHiLo || [];
@@ -7043,6 +7098,7 @@ async function updateDisplay() {
 
   D.vizFeetStr = vizEst;
   logVizHistory();
+  try { renderVizHistoryChart(); } catch(e) {}
 
   // ── Viz Confidence Indicator ──
   // Assess how much data backs the estimate, so divers know how much to trust it
