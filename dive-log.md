@@ -83,6 +83,12 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 - **Monterey Bay (general):** 18–22 ft. Tool `monterey` 10–15 → **UNDER-call** ⚠️ (no overlap; tool ~3–7 ft low).
 - **Repeated signal:** on 7/17 Monterey Bay spanned ~5–10 ft (Breakwater "yucky"/marginal) to 18–25 ft (Hopkins + general Monterey Bay 18–22). The single tool entry (10–15) matched the marginal side but under-called the clear side — a 5-to-22-ft spread one entry can't cover. Hopkins/clear-bay warrant their own spot or a clarity uplift.
 
+### 2026-07-18 — La Jolla Shores — Scripps cam vs tool — UNDER-call ⚠️
+- **Ground truth (Scripps PIERViz underwater cam @ ~13 ft, Scripps Pier / LJ Shores):** ~10–12 ft, green water.
+- **Tool `ljshores` (live):** 2–4 ft "pea soup," 72°F, swell 2.4 ft @9s.
+- **Result:** **UNDER-call** ⚠️ (no overlap; tool ~6–10 ft too low). Water is green but far from pea soup.
+- **Likely cause:** today's chlorophyll/bloom signal is over-penalizing viz region-wide — same spike that put Monterey at 3–5 and Hopkins at 8–10 today. The chl-viz penalty looks too aggressive when the actual bloom is moderate. Candidate fix: cap/sanity-check the chl-viz penalty (or verify the satellite chl value isn't an anomalous spike).
+
 ---
 
 ## Just Get Wet reports — San Diego (pulled from justgetwet.com/blogs/dive-reports-and-conditions, 2026-07-17)
