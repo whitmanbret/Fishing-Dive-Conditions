@@ -34,6 +34,11 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ---
 
+## Safety / shark notes
+- **2026-07-12 — Great white shark attack, Fort Ross Cove (Sonoma coast, NorCal).** Spearfisherman attacked ~10am Sunday 7/12 at a marked spot in Fort Ross Cove. **Diver OK** — minor cuts to head/ear; lost one JBL fin in the attack. Source: NorCal Underwater Hunters (FB), reported ~7/18. Fort Ross is squarely in the "Red Triangle." **Advisory: dive the Fort Ross / Sonoma coast with caution near-term.** → include in this week's report (NorCal safety note).
+
+---
+
 ## My dives
 
 ### 2026-07-16 — Crescent Bay, Laguna Beach
