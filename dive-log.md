@@ -74,7 +74,7 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 ### 2026-07-17 — Monterey micro-spots + snorkel group (addendum)
 - **Monterey (contour → aquarium pipes / Cannery Row / Breakwater):** marginal, ~10 ft max along the 40–50 ft contour, 52°F avg. Tool `monterey` 10–15 → **MATCH** (edge, at 10).
 - **Hopkins:** 20–25 ft (large sheepshead at Metridium Mountain). Tool 10–15 → tool **UNDER** (Hopkins clearer micro-spot — 2nd day running).
-- **Women's Snorkel Group:** warm water, "miso soup" 10–12 ft (heavy particulate). Location not stated — warm water rules out Monterey; likely SoCal/La Jolla. Grade pending spot confirmation (LJ 14–19 would be over-call; Pt Loma/Kelp 11–17 would match).
+- **LJ Marine Room (Women's Snorkel Group):** warm water, "miso soup" 10–12 ft, heavy particulate. Tool `ljmarineroom` 14–19 → **OVER-CALL** ⚠️ (no overlap; tool ~2–7 ft high). Notable: Marine Room already has the `coveTrap` sediment dampener yet still over-called on a warm, high-particulate day — the warm-surface particulate murk is under-weighted (same theme as Crescent surge-murk).
 - **Repeated signal:** Monterey Bay's single tool entry (10–15) sits between the marginal Breakwater/Cannery side (~10) and much clearer Hopkins (20–25) — two days in a row. Hopkins warrants its own spot or a clarity uplift.
 
 ---
