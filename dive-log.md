@@ -65,6 +65,12 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 - **Result:** **MATCH** ✅ — the occasional 15' overlaps the tool's 14–19 range (per overlap rule).
 - **Context (not a miss, just a note):** typical viz sat at the low end (5–10) while the tool read to the high side of the overlap. Surge-driven murk on small swell is a factor the model doesn't fully weight — Crescent/Laguna coves can turn murky+surgy on calm-looking days. Candidate for a surge-based dampener (analogous to `coveTrap`) if this recurs.
 
+### 2026-07-17 — SD general + Monterey (same-day vs 7/17 tool snapshot)
+- **San Diego (general):** 10–15 ft (up to 20 in clearer pockets), green haze/murky, 69–71°F, thermocline ~33–40 ft, swell 2–3 ft NW @15s, S wind ~10 mph. Tool: LJ 14–19 / Pt Loma 12–17 / Kelp 11–16 → **MATCH** (tool sits at the high side of the reported range).
+- **Monterey Bay Breakwater:** 5–8 ft ("yucky"). Tool `monterey` (Monterey Bay) 10–15 → **OVER-CALL** ⚠️ (no overlap).
+- **Hopkins (Monterey):** 20 ft. Tool 10–15 → tool **under** (Hopkins is a clearer micro-spot).
+- **Insight:** Monterey Bay micro-spot variance is huge — Breakwater 5–8 vs Hopkins 20 on the same day. The single tool `monterey` entry (10–15) can't split them; it over-calls Breakwater and under-calls Hopkins. Same limitation as the Laguna coves. ("To say mid is generous" — per reporter.)
+
 ---
 
 ## Just Get Wet reports — San Diego (pulled from justgetwet.com/blogs/dive-reports-and-conditions, 2026-07-17)
