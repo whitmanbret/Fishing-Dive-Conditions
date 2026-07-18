@@ -89,6 +89,10 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 - **Result:** **UNDER-call** ⚠️ (no overlap; tool ~6–10 ft too low). Water is green but far from pea soup.
 - **Likely cause:** today's chlorophyll/bloom signal is over-penalizing viz region-wide — same spike that put Monterey at 3–5 and Hopkins at 8–10 today. The chl-viz penalty looks too aggressive when the actual bloom is moderate. Candidate fix: cap/sanity-check the chl-viz penalty (or verify the satellite chl value isn't an anomalous spike).
 
+### 2026-07-16 — Veterans Park, Redondo (Thu)
+- **Observed:** surface 67°F; viz ~10 ft in the shallows, ~15 ft in the canyon beyond the 35' range; thermocline 67→62°F, down to 56°F at 90'; viz ~15 ft at that depth. Winds stirring things up; "not much change."
+- **Tool grade:** N/A — no 7/16 same-day snapshot captured for `veteranspark` (LA County). Reading it now (7/18) would be a different day, so logged as observation only. Classic Santa Monica Bay stratification (clearer/colder below the thermocline) — matches the spot's config notes.
+
 ---
 
 ## Just Get Wet reports — San Diego (pulled from justgetwet.com/blogs/dive-reports-and-conditions, 2026-07-17)
