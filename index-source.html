@@ -279,6 +279,8 @@
     .refresh-action { background: var(--accent); border-color: var(--accent); color: #fff; }
     .refresh-action:hover { opacity: 0.85; }
     .refresh-action:disabled { opacity: 0.4; cursor: not-allowed; }
+    .cam-action { background: #0a7ea4; border-color: #0a7ea4; color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .cam-action:hover { opacity: 0.85; }
     .share-action { background: rgba(46,204,113,0.12); border-color: var(--excellent); color: var(--excellent); }
     .share-action:hover { background: rgba(46,204,113,0.22); }
     .alerts-action.active { color: var(--accent); border-color: var(--accent); background: rgba(44,140,255,0.1); }
@@ -1209,6 +1211,11 @@
       <button class="action-bar-btn share-action" id="shareBtn" onclick="shareConditions()">Share</button>
       <button class="action-bar-btn alerts-action" id="alertBtn" onclick="toggleAlertsPanel()">Alerts</button>
       <button class="action-bar-btn report-action" id="reportBtn" onclick="openReportModal()">Report Dive</button>
+    </div>
+
+    <!-- Scripps PIERViz underwater camera -->
+    <div class="action-bar">
+      <a class="action-bar-btn cam-action" href="https://coollab.ucsd.edu/pierviz/" target="_blank" rel="noopener">📹 Scripps Underwater Cam</a>
     </div>
 
     <!-- Favorites Bar -->
