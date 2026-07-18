@@ -3124,6 +3124,38 @@ async function fetchTempTrend() {
 }
 
 // --- NOAA CO-OPS: Tide State & Current Estimate ---
+// --- Tide resilience helpers (added 2026-07-18) ---
+// NOAA's tide PREDICTION service periodically goes down (returns "No Predictions
+// data was found") while observed products stay up. Predictions are deterministic,
+// so we cache the last-good forecast and replay it during an outage.
+function saveTideCache(station, hilo, hourly) {
+  try { localStorage.setItem('tideCache_'+station, JSON.stringify({ saved: Date.now(), hilo, hourly })); } catch(e){}
+}
+function loadTideCache(station) {
+  try {
+    const raw = localStorage.getItem('tideCache_'+station); if(!raw) return null;
+    const c = JSON.parse(raw);
+    if (!c || (Date.now()-c.saved) > 6*86400000) return null; // runs out of future coverage after ~6d
+    const revive = a => (a||[]).map(p=>({ time:new Date(p.time), type:p.type, value:p.value }));
+    return { hilo: revive(c.hilo), hourly: revive(c.hourly) };
+  } catch(e){ return null; }
+}
+function _applyTideStateFromEvents(events, now) {
+  if(!events||!events.length) return false;
+  let prev=null,next=null;
+  for(let i=0;i<events.length;i++){ if(events[i].time>now){ next=events[i]; prev=i>0?events[i-1]:null; break; } prev=events[i]; }
+  if(prev&&next){
+    if(Math.abs(now-next.time)<20*60000) D.tideState=next.type==='H'?'high':'low';
+    else if(Math.abs(now-prev.time)<20*60000) D.tideState=prev.type==='H'?'high':'low';
+    else if(prev.type==='L'&&next.type==='H') D.tideState='incoming';
+    else if(prev.type==='H'&&next.type==='L') D.tideState='outgoing';
+    const hoursBetween=(next.time-prev.time)/3600000, heightDiff=Math.abs(next.value-prev.value);
+    if(!D.currentSource){ D.currentStrength=Math.min(2.0,heightDiff/hoursBetween*0.8); D.currentDir=D.tideState==='incoming'?'north':'south'; D.currentSource='tide'; }
+    return true;
+  }
+  return false;
+}
+
 async function fetchTideState() {
   try {
     // Use a 2-day range (today + tomorrow) so late-evening queries still find a future event.
@@ -3140,25 +3172,17 @@ async function fetchTideState() {
     if(d.predictions&&d.predictions.length>0) {
       const events=d.predictions.map(p=>({time:new Date(p.t.replace(' ','T')),type:p.type,value:parseFloat(p.v)}));
       D.tideEvents=events;
-      let prev=null,next=null;
-      for(let i=0;i<events.length;i++) { if(events[i].time>now){next=events[i];prev=i>0?events[i-1]:null;break;} prev=events[i]; }
-      if(prev&&next) {
-        if(Math.abs(now-next.time)<20*60000) D.tideState=next.type==='H'?'high':'low';
-        else if(Math.abs(now-prev.time)<20*60000) D.tideState=prev.type==='H'?'high':'low';
-        else if(prev.type==='L'&&next.type==='H') D.tideState='incoming';
-        else if(prev.type==='H'&&next.type==='L') D.tideState='outgoing';
-        const hoursBetween=(next.time-prev.time)/3600000;
-        const heightDiff=Math.abs(next.value-prev.value);
-        // Only set tide-based current if HF Radar hasn't already provided measured data
-        if (!D.currentSource) {
-          D.currentStrength=Math.min(2.0, heightDiff/hoursBetween*0.8);
-          D.currentDir=D.tideState==='incoming'?'north':'south';
-          D.currentSource = 'tide';
-        }
-      }
+      _applyTideStateFromEvents(events, now);
       srcStatus.noaa='ok';
+    } else {
+      // NOAA prediction service returned no data — replay the last-good cached
+      // forecast (deterministic predictions stay valid). 2026-07-18 outage.
+      const c=loadTideCache(LOCATIONS[currentLocation].tideStation);
+      if(c && _applyTideStateFromEvents(c.hilo, now)) { D.tideEvents=c.hilo; D.tideStale=true; srcStatus.noaa='ok'; }
     }
-  } catch(e) {}
+  } catch(e) {
+    try { const c=loadTideCache(LOCATIONS[currentLocation].tideStation); if(c && _applyTideStateFromEvents(c.hilo, new Date())) { D.tideEvents=c.hilo; D.tideStale=true; srcStatus.noaa='ok'; } } catch(e2){}
+  }
 }
 
 // --- NWS: Wind ---
@@ -3240,7 +3264,18 @@ async function fetchMultiDayTides() {
         time:new Date(p.t.replace(' ','T')), value:parseFloat(p.v)
       }));
     }
-  } catch(e) {}
+    // Cache last-good forecast (deterministic → stays valid) or replay it if the
+    // NOAA prediction service is down. 2026-07-18 outage resilience.
+    if((D.multiDayTideHiLo&&D.multiDayTideHiLo.length) || (D.multiDayTideHourly&&D.multiDayTideHourly.length)) {
+      saveTideCache(LOCATIONS[currentLocation].tideStation, D.multiDayTideHiLo, D.multiDayTideHourly);
+      D.tideStale=false;
+    } else {
+      const c=loadTideCache(LOCATIONS[currentLocation].tideStation);
+      if(c){ if(c.hilo&&c.hilo.length) D.multiDayTideHiLo=c.hilo; if(c.hourly&&c.hourly.length) D.multiDayTideHourly=c.hourly; D.tideStale=true; }
+    }
+  } catch(e) {
+    try { const c=loadTideCache(LOCATIONS[currentLocation].tideStation); if(c){ if(c.hilo&&c.hilo.length) D.multiDayTideHiLo=c.hilo; if(c.hourly&&c.hourly.length) D.multiDayTideHourly=c.hourly; D.tideStale=true; } } catch(e2){}
+  }
 }
 
 // --- CDIP Station Mapping ---
@@ -6158,7 +6193,7 @@ function renderTideCard() {
   // Current tide value (interpolate)
   const closest = range.reduce((best, p) => Math.abs(p.time - now) < Math.abs(best.time - now) ? p : best, range[0]);
   document.getElementById('tideCurrentFt').textContent = closest.value.toFixed(1);
-  document.getElementById('tideNowAt').textContent = `at ${_fmtTime(now)}`;
+  document.getElementById('tideNowAt').textContent = `at ${_fmtTime(now)}${D.tideStale ? ' · cached (NOAA forecast down)' : ''}`;
   // State chip
   const stateMap = { incoming: ['Rising', 'state-good'], outgoing: ['Falling', 'state-falling'], high: ['High', 'state-good'], low: ['Low', 'state-falling'] };
   const chip = document.getElementById('tideStateChip');
@@ -6619,7 +6654,7 @@ async function updateDisplay() {
   const trendLabels={warming_fast:'Warming Fast (+'+((D.tempDiff||0).toFixed(1))+'°F/3d)',warming:'Warming (+'+((D.tempDiff||0).toFixed(1))+'°F/3d)',stable:'Stable',cooling:'Cooling ('+((D.tempDiff||0).toFixed(1))+'°F/3d)',cooling_fast:'Cooling Fast ('+((D.tempDiff||0).toFixed(1))+'°F/3d)'};
   setVal('tempTrendVal', D.tempTrend ? trendLabels[D.tempTrend] : 'Unavailable', 'NOAA');
   const tideLabels={incoming:'Incoming (Low → High)',high:'High Tide',low:'Low Tide',outgoing:'Outgoing (High → Low)'};
-  setVal('tideStateVal', D.tideState ? tideLabels[D.tideState] : 'Unavailable', 'NOAA');
+  setVal('tideStateVal', D.tideState ? tideLabels[D.tideState] : 'Unavailable', D.tideStale ? 'NOAA (cached)' : 'NOAA');
   const curStr=D.currentStrength ? `${D.currentStrength.toFixed(1)} kts ${(D.currentDir||'').toUpperCase()}${D.currentDirDeg !== undefined ? ' ('+D.currentDirDeg+'°)' : ''}` : 'Est. from tide';
   setVal('currentVal', curStr, D.currentSource === 'HF Radar' ? 'HF Radar' : 'EST');
   const upLabels={strong_recent:'Strong (2-5 days ago)',moderate_recent:'Moderate (recent)',active_now:'Active Now',weak:'Weak / None'};
