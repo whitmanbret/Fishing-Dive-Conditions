@@ -1378,6 +1378,22 @@
     <!-- Site-specific local-knowledge tips (only shows when conditions match a known pattern) -->
     <div class="site-tip" id="siteTip" style="display:none"></div>
 
+    <!-- ===== RECENT REPORTS — moved above Today's Conditions 2026-07-19 (past 7 days of diver-reported viz across the current county/region) ===== -->
+    <div class="recent-reports" id="recentReports">
+      <div class="rr-header">
+        <span class="rr-title">Recent Reports · Past 7 days</span>
+        <span class="rr-spot" id="rrSpot"></span>
+      </div>
+      <div class="rr-list" id="rrList"></div>
+      <div class="rr-cta">
+        <span>Dove here recently?</span>
+        <button class="rr-report-btn" onclick="document.getElementById('reportBtn')?.click()">Add Report</button>
+      </div>
+      <div class="rr-partner" id="rrPartner">
+        <a class="rr-report-btn" href="https://justgetwet.com/blogs/dive-reports-and-conditions" target="_blank" rel="noopener">More San Diego reports — Just Get Wet ↗</a>
+      </div>
+    </div>
+
     <!-- ===== CONDITIONS BRIEF (Surfline-style narrative) ===== -->
     <div class="conditions-brief" id="conditionsBrief" style="display:none">
       <div class="brief-header">
@@ -1547,22 +1563,6 @@
         </div>
       </div>
 
-    </div>
-
-    <!-- ===== RECENT REPORTS — past 7 days of diver-reported viz across the current county/region ===== -->
-    <div class="recent-reports" id="recentReports">
-      <div class="rr-header">
-        <span class="rr-title">Recent Reports · Past 7 days</span>
-        <span class="rr-spot" id="rrSpot"></span>
-      </div>
-      <div class="rr-list" id="rrList"></div>
-      <div class="rr-cta">
-        <span>Dove here recently?</span>
-        <button class="rr-report-btn" onclick="document.getElementById('reportBtn')?.click()">Add Report</button>
-      </div>
-      <div class="rr-partner" id="rrPartner">
-        <a class="rr-report-btn" href="https://justgetwet.com/blogs/dive-reports-and-conditions" target="_blank" rel="noopener">More San Diego reports — Just Get Wet ↗</a>
-      </div>
     </div>
 
     <!-- ===== CONDITION DETAILS — other data listed as before, always visible ===== -->
@@ -6033,6 +6033,7 @@ async function fetchAllData() {
     fetchOceanForecast(),   // Open-Meteo Marine — 7-day SST forecast + surface currents
     fetchWindHistory(),     // Open-Meteo — 24h past + 12h forecast wind for the wind card 24h chart
     fetchMarineWaves(),     // Open-Meteo Marine — primary (groundswell) + secondary (wind-wave) breakdown for wave card
+    fetchCalibrationReports(),  // community reports → global viz calibration (all users, not just this device)
   ]);
   await Promise.race([ _allFetches, new Promise(res => setTimeout(res, FETCH_BUDGET_MS)) ]);
   // When any stragglers land past the budget, re-render viz with the fuller data.
@@ -10384,9 +10385,44 @@ function getTideAdjustment() {
 // Time-weighted + condition-aware calibration from user reports.
 // Recent reports weigh more than old ones. If reports were submitted during
 // similar current conditions (bloom / calm / rainy), those match more heavily.
+// --- Community reports → GLOBAL calibration (2026-07-19) ---
+// applyVizCalibration originally only saw this device's localStorage reports, so
+// the report-based correction was per-device. Pull the spot's public community
+// reports (the same store the Report Dive button writes to) and reshape them into
+// the calibration format so the correction benefits ALL users, not just the
+// device that submitted. Server report shape: { ts, spotId, viz(number),
+// predictedViz(string), waterTemp, notes }.
+let _communityCalReports = [];
+function _vizNumToBin(n){ if(n<=5)return '0-5'; if(n<=10)return '6-10'; if(n<=15)return '11-15'; if(n<=20)return '16-20'; if(n<=25)return '21-25'; return '26+'; }
+async function fetchCalibrationReports(){
+  _communityCalReports = [];
+  try {
+    const url = `${SF_PROXY_BASE}/reports/public?spot=${encodeURIComponent(currentLocation)}&days=30&limit=50`;
+    const r = await fetchWithTimeout(url, null, 5000);
+    if (!r || !r.ok) return;
+    const data = await r.json();
+    _communityCalReports = (data.reports || []).map(rep => {
+      const pm = String(rep.predictedViz||'').match(/(\d+)\D+(\d+)/);
+      const lo = pm ? parseInt(pm[1]) : null, hi = pm ? parseInt(pm[2]) : null;
+      const viz = Number(rep.viz);
+      // "accurate" = actual fell inside the predicted range (±1 ft). Only
+      // inaccurate reports feed the correction, matching the local-report logic.
+      const accurate = (lo!=null && hi!=null && Number.isFinite(viz)) ? (viz >= lo-1 && viz <= hi+1) : true;
+      return {
+        location: rep.spotId,
+        time: rep.ts ? new Date(rep.ts).getTime() : Date.now(),
+        predicted: rep.predictedViz || '',
+        actual: Number.isFinite(viz) ? _vizNumToBin(viz) : null,
+        accurate,
+        conditions: null,  // server reports don't carry chl, so no 2x similar-condition weight
+      };
+    }).filter(x => x.location && x.actual);
+  } catch(e) { _communityCalReports = []; }
+}
+
 function applyVizCalibration(vizEst) {
   if (vizEst === '--') return vizEst;
-  const allReports = getVizReports().filter(r => r.location === currentLocation && !r.accurate);
+  const allReports = getVizReports().concat(_communityCalReports || []).filter(r => r.location === currentLocation && !r.accurate);
   if (allReports.length < 3) { D.calibration = null; return vizEst; }
 
   const now = Date.now();
