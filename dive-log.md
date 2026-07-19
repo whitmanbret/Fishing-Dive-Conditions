@@ -112,13 +112,9 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 - **Offshore fish note (for weekly report):** 3 yellowtail to 25 lb on kelp paddies out at the 302→371; blue water past Nine Mile Bank, green inshore of it; 71–72°F. "Solid amount of paddies holding fish." (Also: lots of inconsiderate boat traffic at Point Loma.)
 
-### 2026-07-19 — Marine Room (same-day) + unnamed
-| Spot | Reported (7/19) | Tool (7/19, live) | Result |
-|---|---|---|---|
-| LJ Marine Room, 9–10:30 | low viz over the reef outward; some clear patches inshore near Turtle Town / Devil's Slide; warm | 14–19 | **OVER-call** ⚠️ |
-| Unnamed (¼ mile out), 08:00 | ~10 ft, "bad," 74°F | — (no spot named) | observation |
-
-- **Marine Room over-call = 3 consecutive days (7/17, 7/18, 7/19).** Tool holds 14–19 while actual is low/murky each day. Very high-confidence calibration target: strengthen the warm-particulate/coveTrap penalty for `ljmarineroom`.
+### 2026-07-19 — La Jolla Cove proxy (UNCONFIRMED)
+- **¼ mile outside La Jolla Cove, 08:00:** ~10 ft, "bad," 74°F. **UNCONFIRMED — second-hand guess, not graded.** Method note: Bret uses viz **¼ mile outside the Cove as a proxy for La Jolla Cove** visibility. This one needs first-hand confirmation before comparing to the tool.
+- A 7/19 Marine Room report was received but **set aside per Bret (not first-hand)** — not graded. Marine Room over-call pattern stands at **2 first-hand days (7/17–7/18)**.
 
 ### 2026-07-18 — additional observations (no same-day tool snapshot)
 - **Mission Bay Jetty** ~1:30pm — murky; stayed near the rocks for best viz; water warm. Saw critters.
