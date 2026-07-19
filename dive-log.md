@@ -93,6 +93,17 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 - **Observed:** surface 67°F; viz ~10 ft in the shallows, ~15 ft in the canyon beyond the 35' range; thermocline 67→62°F, down to 56°F at 90'; viz ~15 ft at that depth. Winds stirring things up; "not much change."
 - **Tool grade:** N/A — no 7/16 same-day snapshot captured for `veteranspark` (LA County). Reading it now (7/18) would be a different day, so logged as observation only. Classic Santa Monica Bay stratification (clearer/colder below the thermocline) — matches the spot's config notes.
 
+### 2026-07-18 — LJ Marine Room/Cove + Laguna (Heisler, Crescent) — same-day vs live tool
+| Spot | Reported (7/18) | Tool (7/18, live) | Result |
+|---|---|---|---|
+| LJ Marine Room, 7am shallows | 10–14 ft | 14–19 | MATCH (edge, at 14) |
+| LJ Marine Room → Cove, 9–11am | 5–12 ft ("lousy" whole way, only somewhat decent at Caves/Cove) | 14–19 | **OVER-call** ⚠️ |
+| Heisler Park (Laguna) | 10–20 ft, mild swell when sets roll in | `laguna` 14–19 | **MATCH** ✅ |
+| Crescent | 15–20 ft (seal, octopus, two horn sharks) | 14–19 | **MATCH** ✅ |
+
+- **Marine Room over-called AGAIN** (7/17 was also an over-call). Tool 14–19 vs actual 10–14 → 5–12 through the morning. This is now a repeated, high-confidence signal: the tool over-reads Marine Room on warm/particulate days despite its `coveTrap` dampener. Candidate: strengthen the warm-surface-particulate penalty specifically for `ljmarineroom` (and likely `ljcove`, which ran "somewhat decent" ≈ 10–12 vs tool 14–19).
+- **Laguna coves matched well** — Heisler (10–20) and Crescent (15–20) both overlap 14–19. Crescent clean today vs the surgy/murky 7/17.
+
 ---
 
 ## Just Get Wet reports — San Diego (pulled from justgetwet.com/blogs/dive-reports-and-conditions, 2026-07-17)
