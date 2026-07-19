@@ -104,6 +104,14 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 - **Marine Room over-called AGAIN** (7/17 was also an over-call). Tool 14–19 vs actual 10–14 → 5–12 through the morning. This is now a repeated, high-confidence signal: the tool over-reads Marine Room on warm/particulate days despite its `coveTrap` dampener. Candidate: strengthen the warm-surface-particulate penalty specifically for `ljmarineroom` (and likely `ljcove`, which ran "somewhat decent" ≈ 10–12 vs tool 14–19).
 - **Laguna coves matched well** — Heisler (10–20) and Crescent (15–20) both overlap 14–19. Crescent clean today vs the surgy/murky 7/17.
 
+### 2026-07-18 — Point Loma + offshore banks (302→371)
+| Spot | Reported (7/18) | Tool (7/18, live) | Result |
+|---|---|---|---|
+| Point Loma | hazy 15–20 ft (cleaner in the AM), 70–71°F, "not super fishy" | 14–19, 72.7°F | **MATCH** ✅ (temp ~2°F warm) |
+| Offshore 302→371 (Nine Mile Bank +) | viz good offshore, **green from Nine Mile Bank in**; 71–72°F | `ninemile` 14–19, 74.3°F | Offshore/fish intel; tool's 9 Mile 14–19 ≈ the green→blue transition described |
+
+- **Offshore fish note (for weekly report):** 3 yellowtail to 25 lb on kelp paddies out at the 302→371; blue water past Nine Mile Bank, green inshore of it; 71–72°F. "Solid amount of paddies holding fish." (Also: lots of inconsiderate boat traffic at Point Loma.)
+
 ---
 
 ## Just Get Wet reports — San Diego (pulled from justgetwet.com/blogs/dive-reports-and-conditions, 2026-07-17)
