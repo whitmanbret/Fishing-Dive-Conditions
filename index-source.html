@@ -6011,7 +6011,12 @@ async function fetchAllData() {
   await fetchMopWaves();
   if (thisGen !== _fetchGen) return;
 
-  await Promise.allSettled([
+  // Budget cap so one hung external feed can't block the whole visibility render.
+  // Most sources finish <3s; if any stalls we proceed at FETCH_BUDGET_MS and let
+  // stragglers re-render when they finally land. (2026-07-19 — a dead ERDDAP feed
+  // was hanging the page ~60s because allSettled waits for the slowest request.)
+  const FETCH_BUDGET_MS = 8000;
+  const _allFetches = Promise.allSettled([
     fetchWaterTemp(), fetchTempTrend(), fetchTideState(),
     fetchWind(), fetchWindForecast(), fetchHourlyForecast(),
     fetchBuoyData(), fetchRainfall(), fetchUpwelling(),
@@ -6029,6 +6034,9 @@ async function fetchAllData() {
     fetchWindHistory(),     // Open-Meteo — 24h past + 12h forecast wind for the wind card 24h chart
     fetchMarineWaves(),     // Open-Meteo Marine — primary (groundswell) + secondary (wind-wave) breakdown for wave card
   ]);
+  await Promise.race([ _allFetches, new Promise(res => setTimeout(res, FETCH_BUDGET_MS)) ]);
+  // When any stragglers land past the budget, re-render viz with the fuller data.
+  _allFetches.then(() => { if (thisGen === _fetchGen) { try { updateDisplay(); recalculate(); } catch(e){} } });
 
   // If location changed while we were fetching, discard these stale results
   if (thisGen !== _fetchGen) return;
