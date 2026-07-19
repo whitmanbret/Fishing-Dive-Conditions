@@ -112,9 +112,21 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 - **Offshore fish note (for weekly report):** 3 yellowtail to 25 lb on kelp paddies out at the 302→371; blue water past Nine Mile Bank, green inshore of it; 71–72°F. "Solid amount of paddies holding fish." (Also: lots of inconsiderate boat traffic at Point Loma.)
 
-### 2026-07-19 — La Jolla Cove proxy (UNCONFIRMED)
-- **¼ mile outside La Jolla Cove, 08:00:** ~10 ft, "bad," 74°F. **UNCONFIRMED — second-hand guess, not graded.** Method note: Bret uses viz **¼ mile outside the Cove as a proxy for La Jolla Cove** visibility. This one needs first-hand confirmation before comparing to the tool.
-- A 7/19 Marine Room report was received but **set aside per Bret (not first-hand)** — not graded. Marine Room over-call pattern stands at **2 first-hand days (7/17–7/18)**.
+### 2026-07-19 — La Jolla Cove (CONFIRMED, first-hand) + Marine Room
+| Spot | Reported (7/19, first-hand) | Tool (7/19, live) | Result |
+|---|---|---|---|
+| La Jolla Cove (¼ & ½ mi buoys), 8–10am | **8–12 ft, poor, lots of particulates**; some sets | `ljcove` 14–19 | **OVER-call** ⚠️ |
+
+- **Confirms the ¼-mile-outside-the-Cove proxy.** Yesterday's second-hand ~10 ft guess is now backed first-hand at **8–12 ft** (Bret uses viz ¼ mi outside the Cove to predict La Jolla Cove). Tool over-called at 14–19.
+- Same swim: **best viz at Sunny Jim's cave & east along the caves; worst at Devil's Slide (2', brownish).** Marine Room shallow reef "ok, like yesterday" — consistent with the ongoing MR over-call.
+- Pattern now: **La Jolla Cove joins Marine Room** as a warm/particulate over-call spot vs the tool's 14–19.
+- (A separate non-first-hand 7/19 Marine Room report was set aside per Bret. MR first-hand over-call: 7/17–7/18.)
+
+### 2026-07-18 — Catalina + misc observations (no same-day tool snapshot)
+- **Flat Rock (Catalina):** viz 15–18 ft; 70°F surface, 68°F at 25'.
+- **Avalon wreck (Catalina):** 70°F surface, nice blue hue to ~40', then a **15-ft layer of brown crud**, viz opening back to ~20 ft at 65'. Squirrely currents at both sites.
+- **Unnamed (7/18 "yesterday's dive"):** dive-watch showed **21 ft viz**, "so much better than expected," lots of leopard sharks. **Location not stated** — leopard-shark numbers suggest La Jolla Shores/Marine Room, but unconfirmed. Logged as observation.
+- (Heisler Park 10–20 report received again — **duplicate** of the 7/18 Heisler entry above, already logged/graded as MATCH; not re-logged.)
 
 ### 2026-07-18 — additional observations (no same-day tool snapshot)
 - **Mission Bay Jetty** ~1:30pm — murky; stayed near the rocks for best viz; water warm. Saw critters.
