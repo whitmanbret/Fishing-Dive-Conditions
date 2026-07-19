@@ -6015,7 +6015,7 @@ async function fetchAllData() {
   // Most sources finish <3s; if any stalls we proceed at FETCH_BUDGET_MS and let
   // stragglers re-render when they finally land. (2026-07-19 — a dead ERDDAP feed
   // was hanging the page ~60s because allSettled waits for the slowest request.)
-  const FETCH_BUDGET_MS = 8000;
+  const FETCH_BUDGET_MS = 6000;  // slowest legit viz input (~2.5s) has margin; caps hangs faster
   const _allFetches = Promise.allSettled([
     fetchWaterTemp(), fetchTempTrend(), fetchTideState(),
     fetchWind(), fetchWindForecast(), fetchHourlyForecast(),
