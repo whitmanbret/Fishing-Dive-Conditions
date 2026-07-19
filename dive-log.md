@@ -112,6 +112,21 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 - **Offshore fish note (for weekly report):** 3 yellowtail to 25 lb on kelp paddies out at the 302→371; blue water past Nine Mile Bank, green inshore of it; 71–72°F. "Solid amount of paddies holding fish." (Also: lots of inconsiderate boat traffic at Point Loma.)
 
+### 2026-07-19 — Marine Room (same-day) + unnamed
+| Spot | Reported (7/19) | Tool (7/19, live) | Result |
+|---|---|---|---|
+| LJ Marine Room, 9–10:30 | low viz over the reef outward; some clear patches inshore near Turtle Town / Devil's Slide; warm | 14–19 | **OVER-call** ⚠️ |
+| Unnamed (¼ mile out), 08:00 | ~10 ft, "bad," 74°F | — (no spot named) | observation |
+
+- **Marine Room over-call = 3 consecutive days (7/17, 7/18, 7/19).** Tool holds 14–19 while actual is low/murky each day. Very high-confidence calibration target: strengthen the warm-particulate/coveTrap penalty for `ljmarineroom`.
+
+### 2026-07-18 — additional observations (no same-day tool snapshot)
+- **Mission Bay Jetty** ~1:30pm — murky; stayed near the rocks for best viz; water warm. Saw critters.
+- **Outer Pinnacles (Monterey, Bay Area Deco Assoc. tech charter), 130–155 ft** — glassy, extremely mild swell, no current. **Nasty green algae layer 0–50 ft; dark but clear below.** 61°F on deco, 52°F on the bottom. Great structure/diversity.
+- **Monterey Bay Breakwater** — 20–25 ft; viz *improved* through the day (unusual).
+- **Breakwater (Women's Dive Day)** — 10–12 ft AM → 15–18 ft afternoon; 57°F at 25 ft early, 55°F at 25 ft afternoon. Calm.
+- Note (Monterey): green-algae surface band 0–50 ft with clear water beneath is the same stratified-bloom signature as the tech-charter report — consistent bay-wide 7/18.
+
 ---
 
 ## Just Get Wet reports — San Diego (pulled from justgetwet.com/blogs/dive-reports-and-conditions, 2026-07-17)
