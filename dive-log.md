@@ -38,6 +38,7 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 | Flat Rock / Palos Verdes (`pv`) | 18–23 ft | 74°F (surface) |
 | La Jolla Shores (`ljshores`) | 11–16 ft (green tinge) | — |
 | Point Loma (`pointloma`) | 9–14 ft (green tinge) | — |
+| La Jolla Cove (`ljcove`) | 11–16 ft (green tinge) | 74°F (surface) |
 
 ---
 
@@ -169,6 +170,12 @@ Weekend of prep dives before next weekend's Shootout. **No exact same-day tool s
 - **Tool `ljshores` (live 7/20, ~next-day):** **11–16 ft (green tinge)**, swell 2–3 ft.
 - **Result:** **MATCH** ✅ (mid-column) — the tool's 11–16 sits between the gunky surface (~5–10) and the clear deep (20–30); overlaps the transition. Single number can't express the stratification, but it's in-band.
 - **Big picture:** on **7/18** the tool over-penalized `ljshores` to **2–4 "pea soup"** (logged UNDER-call vs Scripps cam 10–12). Two days later it reads **11–16** — the chl/bloom penalty has **eased**, matching the reporter's "snot-a-palooza abating" (gorgonians in the garden **no longer snot-covered**; lots of nudis, 2 adult horn sharks). Good sign the aggressive chl-viz penalty self-corrected as the bloom faded.
+
+### 2026-07-20 — La Jolla Cove — OVER-call ⚠️ (4th straight day)
+- **Reported (Mon 7/20):** **5–7 ft in the kelp forest at depth, ~10 ft in the shallows.** Water very warm, **69–72°F**.
+- **Tool `ljcove` (live, same-day):** **11–16 ft (green tinge)**, 74°F surface, 1–2 ft surf, current 0.6 kt.
+- **Result:** **OVER-call** ⚠️ (tool low end 11 sits just above the reported 10-ft ceiling — no overlap; ~1–6 ft high). Temp: tool 74°F surface vs 69–72°F reported — warm-lens theme again.
+- **PATTERN — La Jolla Cove has now over-called 4 days running (7/17, 7/18, 7/19, 7/20):** actuals ran ~8–12, then 8–12, then 5–12, now 5–10, while the tool read 14–19 → 14–19 → 14–19 → 11–16. The chl penalty has eased the tool down from 14–19 to 11–16, but it **still over-reads the Cove on warm/particulate days.** This is a high-confidence, ≥3-report spot-structural bias (exactly the case for a per-spot fix — the existing `ljcove` 0.6× NTU dampener lives in the local forecast path but the same-day hero comes from the worker, which isn't applying an equivalent Cove-specific haircut).
 
 ### 2026-07-19 — Point Loma — MATCH ✅ (+ shaped the new current dampener)
 - **Reported (Sun 7/19):** **10–15 ft, with 20 ft at some spots out at the kelp.**
