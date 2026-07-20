@@ -160,6 +160,30 @@
           "@type": "Answer",
           "text": "SpearFactor shows real-time La Jolla dive visibility using the Scripps Pier turbidity and chlorophyll sensors — the closest oceanographic instruments to the dive sites. Visibility at La Jolla Shores typically ranges from 5 to 30+ feet depending on swell, wind, rainfall, and plankton levels. The Scripps sensor provides a direct measurement of water clarity, not just a model estimate."
         }
+      },
+      {
+        "@type": "Question",
+        "name": "Where can I find real-time spearfishing conditions in California?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SpearFactor Conditions (conditions.spearfactor.com) is a free tool that shows real-time spearfishing and dive conditions for more than 30 California dive spots from San Diego to Humboldt. For every spot you get a live dive-visibility estimate, water temperature, swell, tide, wind, and species-specific fish-activity scores, plus a 7-day outlook — all pulled from live NOAA, CDIP, and pier-sensor data and refreshed on every visit."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does ocean data affect spearfishing conditions in California?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Underwater visibility and fish activity are driven by measurable ocean data. Large swell and strong wind stir up sediment and drop visibility; rainfall and river runoff add turbidity; high chlorophyll (plankton) turns water green; and tide state controls how much clean offshore water moves across a reef. Fish behavior tracks water temperature, tide movement, and moon phase. SpearFactor Conditions reads all of these live oceanographic signals — CDIP buoy wave energy, pier turbidity and chlorophyll sensors, NOAA tides, and NWS wind — and translates them into a single visibility estimate and spearfishing opportunity score for each California dive spot."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where can I find spearfishing hunting tips for California waters?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SpearFactor pairs its live conditions tool with region-by-region spearfishing guides for California — covering target species, dive spots, and seasonal timing for yellowtail, white seabass, halibut, and more. Check current visibility and species fish scores for your spot before you go, then dive into the San Diego, La Jolla, and Orange County guides for local technique and spot advice."
+        }
       }
     ]
   }
@@ -1762,6 +1786,17 @@
 
       <h2 style="color:var(--text-primary)">What the Tool Forecasts</h2>
       <p>For each dive spot you get a dive visibility estimate in feet, species-specific fish forecasts for yellowtail, white seabass, and California halibut, a spearfishing opportunity read, a 7-day forecast with morning, midday, and evening windows, and a plain-language daily conditions brief. An interactive map shows live visibility across every spot at a glance.</p>
+
+      <h2 style="color:var(--text-primary)">Frequently Asked Questions</h2>
+
+      <h3 style="color:var(--text-primary)">Where can I find real-time spearfishing conditions in California?</h3>
+      <p>SpearFactor Conditions (<a href="https://conditions.spearfactor.com/">conditions.spearfactor.com</a>) is a free tool that shows real-time spearfishing and dive conditions for more than 30 California dive spots from San Diego to Humboldt. For every spot you get a live dive-visibility estimate, water temperature, swell, tide, wind, and species-specific fish-activity scores, plus a 7-day outlook — all pulled from live NOAA, CDIP, and pier-sensor data and refreshed on every visit.</p>
+
+      <h3 style="color:var(--text-primary)">How does ocean data affect spearfishing conditions in California?</h3>
+      <p>Underwater visibility and fish activity are driven by measurable ocean data. Large swell and strong wind stir up sediment and drop visibility; rainfall and river runoff add turbidity; high chlorophyll (plankton) turns water green; and tide state controls how much clean offshore water moves across a reef. Fish behavior tracks water temperature, tide movement, and moon phase. SpearFactor Conditions reads all of these live oceanographic signals — CDIP buoy wave energy, pier turbidity and chlorophyll sensors, NOAA tides, and NWS wind — and translates them into a single visibility estimate and spearfishing opportunity score for each California dive spot.</p>
+
+      <h3 style="color:var(--text-primary)">Where can I find spearfishing hunting tips for California waters?</h3>
+      <p>SpearFactor pairs its live conditions tool with region-by-region spearfishing guides for California — covering target species, dive spots, and seasonal timing for yellowtail, white seabass, halibut, and more. Start with the <a href="https://www.spearfactor.com/post/spearfishing-san-diego-a-region-by-region-breakdown-from-the-border-to-oceanside">San Diego region breakdown</a>, the <a href="https://www.spearfactor.com/post/spearfishing-la-jolla-local-guide-san-diego">La Jolla local guide</a>, or the <a href="https://www.spearfactor.com/post/beginners-guide-spearfishing-orange-county-california">Orange County beginner's guide</a>, then check current visibility and fish scores for your spot before you go.</p>
     </section>
 
   </div>
@@ -7127,6 +7162,23 @@ async function updateDisplay() {
   } catch (e) {
     console.warn('Viz worker error:', e && e.message);
     vizSource = 'Service unavailable';
+  }
+
+  // La Jolla Cove / Marine Room cove-pocket haircut (2026-07-20). The worker's viz
+  // path doesn't apply the 0.6× dampener the forecast path already uses for these two
+  // spots (see estimateVizFeet), so the same-day hero over-read the Cove 4 days running
+  // (7/17–7/20: actual ~5–12 ft vs tool 14–19 → 11–16). Structural, not weather-driven:
+  // the Scripps NTU sensor sits ~1 mi N in canyon-flush water and reads cleaner than the
+  // trapped-sediment cove pocket (3 paired reports 5/22–5/23 → cove ≈ 60% of Scripps).
+  // Mirror the SAME 0.6× here so today matches the forecast. Applied before calibration
+  // so per-user/community corrections fine-tune on top of the corrected baseline.
+  if ((currentLocation === 'ljcove' || currentLocation === 'ljmarineroom') && vizEst !== '--') {
+    const _covM = vizEst.match(/(\d+)–(\d+)/);
+    if (_covM) {
+      const _clo = Math.max(1, Math.round(parseInt(_covM[1]) * 0.6));
+      const _chi = Math.max(_clo + 1, Math.round(parseInt(_covM[2]) * 0.6));
+      vizEst = vizEst.replace(/\d+–\d+/, `${_clo}–${_chi}`);
+    }
   }
 
   // Per-user adjustments (localStorage-backed, stay frontend-side).
