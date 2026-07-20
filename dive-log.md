@@ -37,6 +37,7 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 |---|---|---|
 | Flat Rock / Palos Verdes (`pv`) | 18–23 ft | 74°F (surface) |
 | La Jolla Shores (`ljshores`) | 11–16 ft (green tinge) | — |
+| Point Loma (`pointloma`) | 9–14 ft (green tinge) | — |
 
 ---
 
@@ -168,6 +169,12 @@ Weekend of prep dives before next weekend's Shootout. **No exact same-day tool s
 - **Tool `ljshores` (live 7/20, ~next-day):** **11–16 ft (green tinge)**, swell 2–3 ft.
 - **Result:** **MATCH** ✅ (mid-column) — the tool's 11–16 sits between the gunky surface (~5–10) and the clear deep (20–30); overlaps the transition. Single number can't express the stratification, but it's in-band.
 - **Big picture:** on **7/18** the tool over-penalized `ljshores` to **2–4 "pea soup"** (logged UNDER-call vs Scripps cam 10–12). Two days later it reads **11–16** — the chl/bloom penalty has **eased**, matching the reporter's "snot-a-palooza abating" (gorgonians in the garden **no longer snot-covered**; lots of nudis, 2 adult horn sharks). Good sign the aggressive chl-viz penalty self-corrected as the bloom faded.
+
+### 2026-07-19 — Point Loma — MATCH ✅ (+ shaped the new current dampener)
+- **Reported (Sun 7/19):** **10–15 ft, with 20 ft at some spots out at the kelp.**
+- **Tool `pointloma` (live 7/20, ~next-day):** **9–14 ft (green tinge)**.
+- **Result:** **MATCH** ✅ (9–14 overlaps 10–15). The 20-ft kelp pockets are a clearer micro-zone the single number sits just below — tool on the low side but in-band.
+- **Why it matters for the tool:** Point Loma's **model surface current was 1.5 m/s (2.9 kt)** on 7/19 — very strong — yet viz was **good**. This is the key counterexample proving strong current ≠ murk at a rocky headland (clean offshore water rides the current). It's why the new current-viz dampener (2026-07-20) is **opt-in per spot (`currentProne`)**, not universal — a blanket dampener would have wrongly under-called Point Loma here. Only sediment/shallow points like Flat Rock/PV are flagged.
 
 ---
 
