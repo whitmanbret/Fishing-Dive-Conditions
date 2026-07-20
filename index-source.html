@@ -1432,6 +1432,31 @@
     </section>
     </div>
 
+    <!-- ===== VISIBILITY · LAST 12H — moved directly below Key Conditions 2026-07-20 (always visible, out of the Report Details dropdown) ===== -->
+    <div class="cond-card" id="vizHistCard">
+      <div class="cc-head">
+        <div class="cc-head-left">
+          <span class="cc-icon">📈</span>
+          <span class="cc-title">Visibility · last 12h</span>
+        </div>
+        <div class="cc-meta-right">
+          <div id="vizHistNote" style="font-size:10px;color:var(--text-muted);">per hour</div>
+        </div>
+      </div>
+      <div class="cc-big"><span id="vizHistCurrent">--</span> <span class="unit">ft</span></div>
+      <div class="cc-sub" id="vizHistSub">now</div>
+      <div class="chart-wrap">
+        <svg id="vizHistSvg" class="cc-svg" viewBox="0 0 400 130" preserveAspectRatio="none"></svg>
+        <div class="chart-tooltip" id="vizHistTooltip">
+          <div class="tt-time"></div><div class="tt-val"></div><div class="tt-sub"></div>
+        </div>
+      </div>
+      <div class="cc-extremes">
+        <div><b>LOW</b><span id="vizHistLow">--</span></div>
+        <div><b>HIGH</b><span id="vizHistHigh">--</span></div>
+      </div>
+    </div>
+
     <!-- ===== CONDITION CARDS (Tide / Wind / Wave) — collapsible "Report Details" dropdown ===== -->
     <div style="text-align:center;margin-bottom:12px">
       <button id="reportDetailsToggleBtn" class="section-toggle-btn" onclick="toggleReportDetails()" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);border-radius:8px;padding:16px 28px;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:0.5px;">Report Details (Tide, Wind, Swell) &#9650;</button>
@@ -1461,31 +1486,6 @@
         <div class="cc-extremes">
           <div><b>LOW</b><span id="tideLowExtreme">--</span></div>
           <div><b>HIGH</b><span id="tideHighExtreme">--</span></div>
-        </div>
-      </div>
-
-      <!-- VISIBILITY HISTORY CARD -->
-      <div class="cond-card" id="vizHistCard">
-        <div class="cc-head">
-          <div class="cc-head-left">
-            <span class="cc-icon">📈</span>
-            <span class="cc-title">Visibility · last 12h</span>
-          </div>
-          <div class="cc-meta-right">
-            <div id="vizHistNote" style="font-size:10px;color:var(--text-muted);">per hour</div>
-          </div>
-        </div>
-        <div class="cc-big"><span id="vizHistCurrent">--</span> <span class="unit">ft</span></div>
-        <div class="cc-sub" id="vizHistSub">now</div>
-        <div class="chart-wrap">
-          <svg id="vizHistSvg" class="cc-svg" viewBox="0 0 400 130" preserveAspectRatio="none"></svg>
-          <div class="chart-tooltip" id="vizHistTooltip">
-            <div class="tt-time"></div><div class="tt-val"></div><div class="tt-sub"></div>
-          </div>
-        </div>
-        <div class="cc-extremes">
-          <div><b>LOW</b><span id="vizHistLow">--</span></div>
-          <div><b>HIGH</b><span id="vizHistHigh">--</span></div>
         </div>
       </div>
 
