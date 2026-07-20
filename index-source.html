@@ -2025,7 +2025,11 @@ const LOCATIONS = {
   fortythree:  { name: '43 Fathom Spot', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46225'], lat: 32.78, lon: -118.10, depth: '80-260 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20', typicalDiveDepth: { min: 60, max: 150 } },
   hiddenbank:  { name: 'Hidden Bank / 302 Spot', bottom: 'rock', tideStation: '9410170', coast: 270, shelter: 'low', buoys: ['46086','46225'], lat: 32.28, lon: -117.85, depth: '100-400 ft', kelpDensity: 'none', offshore: true, bluewater: true, nwsGrid: 'SGX/54,20', typicalDiveDepth: { min: 80, max: 200 } },
   // ── Central Coast (San Luis Obispo / Monterey) ──
-  morro: { name: 'Morro Bay / Montana de Oro', bottom: 'rock', tideStation: '9412110', coast: 250, shelter: 'moderate', buoys: ['46028'], lat: 35.37, lon: -120.87, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/72,120', mopStation: 'SL348', typicalDiveDepth: { min: 10, max: 30 } },
+  morro: { name: 'Morro Bay / Montana de Oro', bottom: 'rock', tideStation: '9412110', coast: 250, shelter: 'moderate', buoys: ['46215','46028'], lat: 35.37, lon: -120.87, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/72,120', mopStation: 'SL348', typicalDiveDepth: { min: 10, max: 30 } },  // 46215 = Diablo Canyon nearshore (wave+temp), 46028 = Cape San Martin offshore swell.
+  // Avila Beach / Port San Luis added 2026-07-19. San Luis Bay is a south-facing,
+  // headland-sheltered cove — much calmer than open Morro coast. Keys off the
+  // Diablo Canyon nearshore buoy (NDBC 46215 / CDIP 076) + Cal Poly Pier temp.
+  avila: { name: 'Avila Beach / Port San Luis', bottom: 'rock', tideStation: '9412110', coast: 200, shelter: 'high', buoys: ['46215','46028'], lat: 35.17, lon: -120.73, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/75,110', mopStation: 'SL348', headlandShelter: 'high', typicalDiveDepth: { min: 10, max: 30 } },
   monterey: { name: 'Monterey Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO752', typicalDiveDepth: { min: 15, max: 50 }, headlandShelter: 'high' },  // most dive sites (Breakwater, San Carlos, McAbee) are harbor-sheltered. Dropped 27NM-offshore buoy 46042 (warm surface lens) 2026-06-23 — keep only in-bay 46236.
   // Santa Cruz (city/north Monterey Bay) added 2026-05-24. Cowell's Beach,
   // Natural Bridges, Steamer Lane, 26th Ave dive zones. ~50 mi north of
@@ -2112,7 +2116,7 @@ const REGION_MAP = {
   ninemile: 'offshore', tannerbank: 'offshore', fortythree: 'offshore', hiddenbank: 'offshore',
   sanclemente: 'islands',
   // Central Coast (Monterey, Carmel, Pacific Grove, Morro Bay)
-  morro: 'central', monterey: 'central', hopkins: 'central', loverspoint: 'central', carmel: 'central', santacruz: 'central',
+  morro: 'central', avila: 'central', monterey: 'central', hopkins: 'central', loverspoint: 'central', carmel: 'central', santacruz: 'central',
   // NorCal
   halfmoon: 'norcal', bodega: 'norcal', fortbragg: 'norcal', trinidad: 'norcal',
 };
@@ -3430,6 +3434,7 @@ const CDIP_STATIONS = {
   sanclemente: { id: '092p1', name: 'San Pedro' },
   // Central Coast
   morro:       { id: '076p1', name: 'Diablo Canyon' },
+  avila:       { id: '076p1', name: 'Diablo Canyon' },
   monterey:    { id: '156p1', name: 'Monterey Bay' },
   hopkins:     { id: '156p1', name: 'Monterey Bay' },
   carmel:      { id: '156p1', name: 'Monterey Bay' },
@@ -4041,7 +4046,7 @@ const SHORE_STATION_MAP = {
   // warm surface lens (~62-68°F) and were over-reading the dive-site temp by 5-13°F.
   // (2026-06-23 fix.) Santa Cruz stays on the wharf chain — it's north-bay, warmer,
   // and the Aquarium's cold south-bay reading would under-represent it.
-  morro: ['morro','calpoly'], monterey: ['montereyaq','montereywharf','mosslanding','calpoly'], carmel: ['montereyaq','montereywharf','mosslanding','calpoly'], santacruz: ['montereywharf','mosslanding','montereyaq','calpoly'],
+  morro: ['morro','calpoly'], avila: ['calpoly','morro'], monterey: ['montereyaq','montereywharf','mosslanding','calpoly'], carmel: ['montereyaq','montereywharf','mosslanding','calpoly'], santacruz: ['montereywharf','mosslanding','montereyaq','calpoly'],
   // NorCal — only Trinidad/Humboldt have genuinely local live shore stations.
   // halfmoon / bodega / fortbragg REMOVED 2026-07-01: their only FRESH CeNCOOS
   // stations were Trinidad/Humboldt 130-200 mi away (halfmoon was even on Cal Poly
@@ -4581,6 +4586,7 @@ const RIVER_GAUGES_BY_SPOT = {
   refugio:    [{site:'11120500', name:'Refugio Cr', baseline:0.5}],
   // Central coast
   morro:      [{site:'11141280', name:'Los Osos Cr', baseline:1}],
+  avila:      [{site:'11142000', name:'San Luis Obispo Cr', baseline:1}],
   monterey:   [{site:'11152500', name:'Salinas R', baseline:20}],
   carmel:     [{site:'11143250', name:'Carmel R', baseline:5}],
   // NorCal
@@ -9925,7 +9931,7 @@ const COUNTY_SPOTS = {
   channel_islands:  ['anacapa','scisland','sannicolas','sanclemente'],
   // Offshore banks listed close-to-far from SD coast.
   offshore:         ['ninemile','fortythree','hiddenbank','tannerbank'],
-  slo:              ['morro'],
+  slo:              ['morro','avila'],
   monterey:         ['santacruz','monterey','hopkins','loverspoint','carmel'],
   sanmateo:         ['halfmoon'],
   sonoma:           ['bodega'],
@@ -10083,6 +10089,11 @@ const WEBCAMS = {
     { name: 'Morro Bay Harbor', url: 'https://www.805webcams.com/morro-bay-california-harbor/', type: 'Free Live' },
     { name: 'Morro Bay Overlook', url: 'https://www.805webcams.com/morro-bay-california-overlook-live-webcam/', type: 'Free Live' },
     { name: 'Cayucos Beach & Pier', url: 'https://805webcams.com/cayucos-beach-pier-california-webcam/', type: 'Free Live' },
+    { name: 'Pismo Beach', url: 'https://www.experiencepismobeach.com/plan/web-cam/', type: 'Free Live' },
+  ],
+  avila: [
+    { name: 'Avila Beach Pier', url: 'https://www.avilabeachpier.com/webcam/', type: 'Free Live' },
+    { name: 'Port San Luis Harbor', url: 'https://www.805webcams.com/avila-beach-california-webcam/', type: 'Free Live' },
     { name: 'Pismo Beach', url: 'https://www.experiencepismobeach.com/plan/web-cam/', type: 'Free Live' },
   ],
   monterey: [
