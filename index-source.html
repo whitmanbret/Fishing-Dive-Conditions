@@ -2044,7 +2044,14 @@ const LOCATIONS = {
   // Lovers Point MOP (MO741) rather than the harbor MOP.
   hopkins: { name: 'Hopkins Reef (Pacific Grove)', bottom: 'rock', tideStation: '9413450', coast: 0, shelter: 'high', buoys: ['46236'], lat: 36.6217, lon: -121.9043, depth: '10-60 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'Pacific Grove Marine Gardens SMCA', nwsGrid: 'MTR/93,51', mopStation: 'MO741', headlandShelter: 'high', headlandClearing: true, bloomSheltered: true, typicalDiveDepth: { min: 10, max: 40 } },
   loverspoint: { name: 'Lovers Point (Pacific Grove)', bottom: 'rock', tideStation: '9413450', coast: 0, shelter: 'high', buoys: ['46236','46042'], lat: 36.6267, lon: -121.9166, depth: '10-40 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'Lovers Point-Julia Platt State Marine Reserve', nwsGrid: 'MTR/93,51', mopStation: 'MO741', typicalDiveDepth: { min: 10, max: 30 }, headlandShelter: 'high' },
-  carmel: { name: 'Carmel / Point Lobos', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO610', typicalDiveDepth: { min: 20, max: 50 }, headlandShelter: 'high' },  // Dropped 27NM-offshore buoy 46042 (warm) 2026-06-23. shelter moderate→high 2026-06-30: the primary dive sites (Whalers/Bluefish Cove) are strongly headland-sheltered NE-facing coves, but the CDIP MOP point MO610 sits on the EXPOSED outer coast (read 5.9ft@10s / WE 348 on 6/30 → blew the prediction to 4-6 vs actual 30-40 at Beto's). No MOP point exists inside the coves, so 'high' shelter (0.15× vs 0.55×) represents the cove sheltering. 2 paired over-penalty reports (6/27, 6/30).
+  carmel: { name: 'Carmel Bay', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236'], lat: 36.52, lon: -121.95, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO610', typicalDiveDepth: { min: 20, max: 50 }, headlandShelter: 'high' },  // Dropped 27NM-offshore buoy 46042 (warm) 2026-06-23. shelter moderate→high 2026-06-30: the primary dive sites (Whalers/Bluefish Cove) are strongly headland-sheltered NE-facing coves, but the CDIP MOP point MO610 sits on the EXPOSED outer coast (read 5.9ft@10s / WE 348 on 6/30 → blew the prediction to 4-6 vs actual 30-40 at Beto's). No MOP point exists inside the coves, so 'high' shelter (0.15× vs 0.55×) represents the cove sheltering. 2 paired over-penalty reports (6/27, 6/30). Renamed 'Carmel / Point Lobos'→'Carmel Bay' 2026-07-20 when Point Lobos got its own spot.
+  // Point Lobos split from carmel 2026-07-20. The primary dive sites (Whalers/
+  // Bluefish Cove, Beto's, Marco's Pinnacle) are NE-facing, strongly headland-
+  // sheltered coves inside the reserve — consistently clearer than the generic
+  // carmel/Monterey read (7/18 40+ ft, 7/12 25-30 deep, 6/30 30-40 at Beto's).
+  // Mirrors Hopkins: headlandShelter high + headlandClearing (+5 when calm/clean)
+  // + bloomSheltered (caps chl penalty) lift it above the exposed outer-coast MOP.
+  ptlobos: { name: 'Point Lobos (Whalers/Bluefish Cove)', bottom: 'rock', tideStation: '9413450', coast: 45, shelter: 'high', buoys: ['46236'], lat: 36.5165, lon: -121.9520, depth: '20-80 ft', kelpDensity: 'high', marineReserve: true, reserveName: 'Point Lobos State Marine Reserve', nwsGrid: 'MTR/93,51', mopStation: 'MO610', headlandShelter: 'high', headlandClearing: true, bloomSheltered: true, typicalDiveDepth: { min: 20, max: 60 } },
   // ── Northern California ──
   halfmoon: { name: 'Half Moon Bay', bottom: 'rock', tideStation: '9414290', coast: 270, shelter: 'low', buoys: ['46012'], lat: 37.50, lon: -122.47, depth: '10-45 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/80,93', mopStation: 'SM297', typicalDiveDepth: { min: 15, max: 40 } },
   bodega: { name: 'Bodega Bay / Sonoma', bottom: 'rock', tideStation: '9415020', coast: 270, shelter: 'moderate', buoys: ['46013'], lat: 38.33, lon: -123.06, depth: '10-50 ft', kelpDensity: 'moderate', nwsGrid: 'MTR/68,134', mopStation: 'SN069', typicalDiveDepth: { min: 15, max: 40 } },
@@ -2116,7 +2123,7 @@ const REGION_MAP = {
   ninemile: 'offshore', tannerbank: 'offshore', fortythree: 'offshore', hiddenbank: 'offshore',
   sanclemente: 'islands',
   // Central Coast (Monterey, Carmel, Pacific Grove, Morro Bay)
-  morro: 'central', avila: 'central', monterey: 'central', hopkins: 'central', loverspoint: 'central', carmel: 'central', santacruz: 'central',
+  morro: 'central', avila: 'central', monterey: 'central', hopkins: 'central', loverspoint: 'central', carmel: 'central', ptlobos: 'central', santacruz: 'central',
   // NorCal
   halfmoon: 'norcal', bodega: 'norcal', fortbragg: 'norcal', trinidad: 'norcal',
 };
@@ -3438,6 +3445,7 @@ const CDIP_STATIONS = {
   monterey:    { id: '156p1', name: 'Monterey Bay' },
   hopkins:     { id: '156p1', name: 'Monterey Bay' },
   carmel:      { id: '156p1', name: 'Monterey Bay' },
+  ptlobos:     { id: '156p1', name: 'Monterey Bay' },
   santacruz:   { id: '156p1', name: 'Monterey Bay' },
   // NorCal — CDIP coverage is sparse; fall back to NDBC buoys
   halfmoon:    { id: '162p1', name: 'Point Reyes' },
@@ -4046,7 +4054,7 @@ const SHORE_STATION_MAP = {
   // warm surface lens (~62-68°F) and were over-reading the dive-site temp by 5-13°F.
   // (2026-06-23 fix.) Santa Cruz stays on the wharf chain — it's north-bay, warmer,
   // and the Aquarium's cold south-bay reading would under-represent it.
-  morro: ['morro','calpoly'], avila: ['calpoly','morro'], monterey: ['montereyaq','montereywharf','mosslanding','calpoly'], carmel: ['montereyaq','montereywharf','mosslanding','calpoly'], santacruz: ['montereywharf','mosslanding','montereyaq','calpoly'],
+  morro: ['morro','calpoly'], avila: ['calpoly','morro'], monterey: ['montereyaq','montereywharf','mosslanding','calpoly'], carmel: ['montereyaq','montereywharf','mosslanding','calpoly'], ptlobos: ['montereyaq','montereywharf','mosslanding','calpoly'], santacruz: ['montereywharf','mosslanding','montereyaq','calpoly'],
   // NorCal — only Trinidad/Humboldt have genuinely local live shore stations.
   // halfmoon / bodega / fortbragg REMOVED 2026-07-01: their only FRESH CeNCOOS
   // stations were Trinidad/Humboldt 130-200 mi away (halfmoon was even on Cal Poly
@@ -4589,6 +4597,7 @@ const RIVER_GAUGES_BY_SPOT = {
   avila:      [{site:'11142000', name:'San Luis Obispo Cr', baseline:1}],
   monterey:   [{site:'11152500', name:'Salinas R', baseline:20}],
   carmel:     [{site:'11143250', name:'Carmel R', baseline:5}],
+  ptlobos:    [{site:'11143250', name:'Carmel R', baseline:5}],
   // NorCal
   halfmoon:   [{site:'11162720', name:'Pescadero Cr', baseline:2}],
   bodega:     [{site:'11467000', name:'Russian R', baseline:80}],
@@ -9932,7 +9941,7 @@ const COUNTY_SPOTS = {
   // Offshore banks listed close-to-far from SD coast.
   offshore:         ['ninemile','fortythree','hiddenbank','tannerbank'],
   slo:              ['morro','avila'],
-  monterey:         ['santacruz','monterey','hopkins','loverspoint','carmel'],
+  monterey:         ['santacruz','monterey','hopkins','loverspoint','carmel','ptlobos'],
   sanmateo:         ['halfmoon'],
   sonoma:           ['bodega'],
   mendocino:        ['fortbragg'],
@@ -10104,6 +10113,10 @@ const WEBCAMS = {
   carmel: [
     { name: 'Point Lobos Whalers Cove', url: 'https://www.parks.ca.gov/?page_id=31194', type: 'Free Live' },
     { name: 'Lovers Point', url: 'https://www.surfline.com/surf-report/lovers-point/5842041f4e65fad6a7708bbc', type: 'Surfline' },
+    { name: 'Monterey Bay', url: 'https://www.surfline.com/surf-report/monterey-bay/584204214e65fad6a7709d05', type: 'Surfline' },
+  ],
+  ptlobos: [
+    { name: 'Point Lobos Whalers Cove', url: 'https://www.parks.ca.gov/?page_id=31194', type: 'Free Live' },
     { name: 'Monterey Bay', url: 'https://www.surfline.com/surf-report/monterey-bay/584204214e65fad6a7709d05', type: 'Surfline' },
   ],
   halfmoon: [
