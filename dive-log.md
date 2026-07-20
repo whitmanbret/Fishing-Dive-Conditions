@@ -135,6 +135,22 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 - **Breakwater (Women's Dive Day)** — 10–12 ft AM → 15–18 ft afternoon; 57°F at 25 ft early, 55°F at 25 ft afternoon. Calm.
 - Note (Monterey): green-algae surface band 0–50 ft with clear water beneath is the same stratified-bloom signature as the tech-charter report — consistent bay-wide 7/18.
 
+### 2026-07-18 & 2026-07-19 — Point Lobos (Carmel), Shootout practice w/ Lindsay Jordan
+Weekend of prep dives before next weekend's Shootout. **No exact same-day tool snapshot captured** for those dates (tool only forecasts forward); graded against the nearest capture — the 7/17 Carmel/Point Lobos snapshot **12–17 ft (green), 57°F**.
+| Day | Reported | Tool (7/17 snapshot) | Result |
+|---|---|---|---|
+| Sat 7/18 | **40+ ft at depth**, better than expected, 51°F, minimal surge | 12–17 (green) | **UNDER-call** ⚠️ (nearest-day; tool ~23+ ft low) |
+| Sun 7/19 | "a bit worse" than Sat (still strong), 51°F, minimal surge | 12–17 (green) | **UNDER-call** ⚠️ (nearest-day) |
+
+- **Temp:** 51°F reported is the **at-depth** temp; surface is a warm lens (Diablo/CDIP 076 buoy reading ~57–59°F surface this window). So the 57°F snapshot isn't a clean temp miss — different layers.
+- **Pattern:** Point Lobos joins **Hopkins** as a consistently-clearer-than-tool Central Coast micro-spot. The single `carmel` entry (green/bloom-penalized 12–17) under-calls these clean, structure-rich sites — same limitation flagged for Hopkins vs `monterey` 7/17.
+- **Wildlife (weekly-report material):** Sat scootered to **Beto's** — Beto the wolf eel photographed (macro), plus the biggest **Sea Lemon** (nudibranch) the reporter had ever seen. Sun ran to **Marco's Pinnacle** (spot found ~2 wks ago), abundant/diverse fish.
+
+### 2026-07-19 — Offshore 302 / Nine Mile Bank (fish + water-color intel)
+- **Reported:** green water has **moved further out**; **blue water now ~5 miles west of the Nine Mile Bank ("the 9")**. Lots of kelp paddies but **only holding small yellowtail**.
+- **Not a viz grade** — offshore fish/water-color intel. Continues the 302→371 thread from 7/18 (blue past Nine Mile, green inshore). Shift since 7/18: green pushed farther offshore (blue line receding west of the 9), and paddy fish have downsized (small yellows vs the 3 yellows to 25 lb on 7/18).
+- **For weekly report:** paddy bite gone small offshore; blue water retreating west of Nine Mile Bank.
+
 ---
 
 ## Just Get Wet reports — San Diego (pulled from justgetwet.com/blogs/dive-reports-and-conditions, 2026-07-17)
