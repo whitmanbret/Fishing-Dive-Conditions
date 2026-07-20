@@ -176,6 +176,7 @@ Weekend of prep dives before next weekend's Shootout. **No exact same-day tool s
 - **Tool `ljcove` (live, same-day):** **11–16 ft (green tinge)**, 74°F surface, 1–2 ft surf, current 0.6 kt.
 - **Result:** **OVER-call** ⚠️ (tool low end 11 sits just above the reported 10-ft ceiling — no overlap; ~1–6 ft high). Temp: tool 74°F surface vs 69–72°F reported — warm-lens theme again.
 - **PATTERN — La Jolla Cove has now over-called 4 days running (7/17, 7/18, 7/19, 7/20):** actuals ran ~8–12, then 8–12, then 5–12, now 5–10, while the tool read 14–19 → 14–19 → 14–19 → 11–16. The chl penalty has eased the tool down from 14–19 to 11–16, but it **still over-reads the Cove on warm/particulate days.** This is a high-confidence, ≥3-report spot-structural bias (exactly the case for a per-spot fix — the existing `ljcove` 0.6× NTU dampener lives in the local forecast path but the same-day hero comes from the worker, which isn't applying an equivalent Cove-specific haircut).
+- **FIX SHIPPED (7/20):** mirrored the forecast path's **0.6× Cove/Marine Room haircut into the today-hero path** (client-side, after the worker, before calibration). Verified live: `ljcove` and `ljmarineroom` **11–16 → 5–8 ft** (now MATCHES today's 5–10 report), while `ljshores` and all other spots are untouched. Applies to both cove-pocket spots to keep today consistent with the forecast.
 
 ### 2026-07-19 — Point Loma — MATCH ✅ (+ shaped the new current dampener)
 - **Reported (Sun 7/19):** **10–15 ft, with 20 ft at some spots out at the kelp.**
