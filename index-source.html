@@ -5824,7 +5824,10 @@ async function fetchSwellForecast() {
     const end = new Date(now.getTime() + 5 * 86400000).toISOString().replace(/\.\d+Z/, 'Z');
     // Fetch swell height, period, direction — stride 1 gets 3-hourly data
     const url = `https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ww3_global.json?shgt%5B(${start}):1:(${end})%5D%5B(0.0)%5D%5B(${lat})%5D%5B(${lon})%5D,sper%5B(${start}):1:(${end})%5D%5B(0.0)%5D%5B(${lat})%5D%5B(${lon})%5D,sdir%5B(${start}):1:(${end})%5D%5B(0.0)%5D%5B(${lat})%5D%5B(${lon})%5D`;
-    const r = await fetchWithTimeout(url, null, 6000);
+    // 10s (not 6s): WW3 ERDDAP is a slower, variable source and can get starved
+    // under the concurrent fetch batch; if it misses the render budget the
+    // straggler re-render (which now rebuilds the forecast) picks it up. 2026-07-20.
+    const r = await fetchWithTimeout(url, null, 10000);
     if (!r.ok) return;
     const d = await r.json();
     if (!d.table || !d.table.rows || d.table.rows.length === 0) return;
@@ -6036,8 +6039,10 @@ async function fetchAllData() {
     fetchCalibrationReports(),  // community reports → global viz calibration (all users, not just this device)
   ]);
   await Promise.race([ _allFetches, new Promise(res => setTimeout(res, FETCH_BUDGET_MS)) ]);
-  // When any stragglers land past the budget, re-render viz with the fuller data.
-  _allFetches.then(() => { if (thisGen === _fetchGen) { try { updateDisplay(); recalculate(); } catch(e){} } });
+  // When any stragglers land past the budget, re-render with the fuller data.
+  // Must include buildForecast() — the WW3 swell forecast is a slow fetch, and
+  // if the 7-day forecast renders before it lands, incoming swells get flatlined.
+  _allFetches.then(() => { if (thisGen === _fetchGen) { try { updateDisplay(); recalculate(); buildForecast(); } catch(e){} } });
 
   // If location changed while we were fetching, discard these stale results
   if (thisGen !== _fetchGen) return;
