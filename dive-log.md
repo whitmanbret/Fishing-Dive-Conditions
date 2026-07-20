@@ -32,6 +32,12 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 | Monterey Bay (Breakwater) | 10–15 ft | 57°F |
 | Carmel / Point Lobos | 12–17 ft (green) | 57°F |
 
+### 2026-07-20 (captured live from the tool, same-day)
+| Spot | Tool viz | Temp |
+|---|---|---|
+| Flat Rock / Palos Verdes (`pv`) | 18–23 ft | 74°F (surface) |
+| La Jolla Shores (`ljshores`) | 11–16 ft (green tinge) | — |
+
 ---
 
 ## Safety / shark notes
@@ -123,7 +129,7 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 - (A separate non-first-hand 7/19 Marine Room report was set aside per Bret. MR first-hand over-call: 7/17–7/18.)
 
 ### 2026-07-18 — Catalina + misc observations (no same-day tool snapshot)
-- **Flat Rock (Catalina):** viz 15–18 ft; 70°F surface, 68°F at 25'.
+- **Flat Rock (Palos Verdes — NOT Catalina; maps to `pv`):** viz 15–18 ft; 70°F surface, 68°F at 25'.
 - **Avalon wreck (Catalina):** 70°F surface, nice blue hue to ~40', then a **15-ft layer of brown crud**, viz opening back to ~20 ft at 65'. Squirrely currents at both sites.
 - **Unnamed (7/18 "yesterday's dive"):** dive-watch showed **21 ft viz**, "so much better than expected," lots of leopard sharks. **Location not stated** — leopard-shark numbers suggest La Jolla Shores/Marine Room, but unconfirmed. Logged as observation.
 - (Heisler Park 10–20 report received again — **duplicate** of the 7/18 Heisler entry above, already logged/graded as MATCH; not re-logged.)
@@ -150,6 +156,18 @@ Weekend of prep dives before next weekend's Shootout. **No exact same-day tool s
 - **Reported:** green water has **moved further out**; **blue water now ~5 miles west of the Nine Mile Bank ("the 9")**. Lots of kelp paddies but **only holding small yellowtail**.
 - **Not a viz grade** — offshore fish/water-color intel. Continues the 302→371 thread from 7/18 (blue past Nine Mile, green inshore). Shift since 7/18: green pushed farther offshore (blue line receding west of the 9), and paddy fish have downsized (small yellows vs the 3 yellows to 25 lb on 7/18).
 - **For weekly report:** paddy bite gone small offshore; blue water retreating west of Nine Mile Bank.
+
+### 2026-07-20 — Flat Rock (Palos Verdes) — same-day, live tool — OVER-call ⚠️
+- **Reported (Mon 7/20):** viz **8–10 ft**, surgy; **2–3 knot current at the surface AND at 25 ft**; **68°F** at 25 ft.
+- **Tool `pv` (live, same-day):** **18–23 ft**, 74°F surface, 1–2 ft surf.
+- **Result:** **OVER-call** ⚠️ (no overlap; tool ~8–13 ft high). Temp: tool 74°F is the warm surface lens; reported 68°F is at 25 ft — different layers, not a clean miss.
+- **Why the miss:** a **2–3 kt current running top-to-bottom** is stirring sediment / driving surge-murk — the tool reads a calm 1–2 ft surf day and has no current input, so it over-calls. Same theme as the Crescent surge-murk and warm-particulate over-calls: the model under-weights viz loss from current/surge on otherwise "clean-looking" days. (**NB: Flat Rock = Palos Verdes**, not Catalina — maps to `pv`.)
+
+### 2026-07-19 — La Jolla Shores (Katherine Mauser) — stratified bloom, improving
+- **Reported (Sun 7/19 AM):** near-flat "Lake La Jolla" surface w/ the odd wave. Swam through brown surface **gunk** ("ocean diarrhea" — unknown, doesn't smell/appears non-fecal). Descended into **gunky greenish cloudy** vis that **improved with depth — noticeably better by 40 ft, 20–30 ft below ~70 ft.** Vis worsened again around the wall / Vallecitos (bat rays or a big school of young barred sand bass churning it).
+- **Tool `ljshores` (live 7/20, ~next-day):** **11–16 ft (green tinge)**, swell 2–3 ft.
+- **Result:** **MATCH** ✅ (mid-column) — the tool's 11–16 sits between the gunky surface (~5–10) and the clear deep (20–30); overlaps the transition. Single number can't express the stratification, but it's in-band.
+- **Big picture:** on **7/18** the tool over-penalized `ljshores` to **2–4 "pea soup"** (logged UNDER-call vs Scripps cam 10–12). Two days later it reads **11–16** — the chl/bloom penalty has **eased**, matching the reporter's "snot-a-palooza abating" (gorgonians in the garden **no longer snot-covered**; lots of nudis, 2 adult horn sharks). Good sign the aggressive chl-viz penalty self-corrected as the bloom faded.
 
 ---
 
