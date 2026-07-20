@@ -1987,7 +1987,7 @@ const LOCATIONS = {
   newport: { name: 'Newport / Corona del Mar', bottom: 'rock', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.59, lon: -117.87, depth: '10-30 ft', kelpDensity: 'low', nwsGrid: 'SGX/35,58', mopStation: 'OC368', typicalDiveDepth: { min: 5, max: 20 } },
   huntington: { name: 'Huntington Cliffs', bottom: 'sand', tideStation: '9410580', coast: 225, shelter: 'low', buoys: ['46242'], lat: 33.65, lon: -117.98, depth: '8-20 ft', kelpDensity: 'none', nwsGrid: 'SGX/35,58', mopStation: 'OC495', typicalDiveDepth: { min: 5, max: 15 } },
   // ── Los Angeles County ──
-  pv: { name: 'Palos Verdes', bottom: 'rock', tideStation: '9410660', coast: 225, shelter: 'moderate', buoys: ['46222'], lat: 33.74, lon: -118.41, depth: '10-55 ft', kelpDensity: 'high', nwsGrid: 'LOX/147,32', mopStation: 'L0357', typicalDiveDepth: { min: 15, max: 40 } },
+  pv: { name: 'Palos Verdes', bottom: 'rock', tideStation: '9410660', coast: 225, shelter: 'moderate', buoys: ['46222'], lat: 33.74, lon: -118.41, depth: '10-55 ft', kelpDensity: 'high', nwsGrid: 'LOX/147,32', mopStation: 'L0357', currentProne: true, typicalDiveDepth: { min: 15, max: 40 } },  // currentProne: Flat Rock / PV points rip on tide/topography — global current model under-reads it (7/20: model ~0.6 m/s vs 2-3 kt observed, viz over-called 18-23 vs 8-10).
   // Veterans Park (Redondo Beach) added 2026-06-02 per user request — sits on
   // the Santa Monica Bay side N of the PV peninsula, different microclimate
   // from PV proper (PV faces the open Pacific). User reports show classic
@@ -5144,12 +5144,37 @@ async function fetchOceanForecast() {
         upwellingAlert = { magnitude: todayAvg - dailySst[3].avg, day: 3 };
       }
     }
+    // Current velocity index: hourly[] starts at LOCAL MIDNIGHT, so index 0 is
+    // NOT "now" (that was an existing bug — currentSurfaceVel read the midnight
+    // value). Find the actual current-hour index for the live reading.
+    let curIdx = 0;
+    if (Array.isArray(times)) {
+      const _n = new Date(), _p = x => String(x).padStart(2, '0');
+      const _key = `${_n.getFullYear()}-${_p(_n.getMonth()+1)}-${_p(_n.getDate())}T${_p(_n.getHours())}:00`;
+      const _i = times.indexOf(_key);
+      if (_i >= 0) curIdx = _i;
+    }
+    // Per-day current summary (midday value + daily max) so the forecast-path
+    // dampener can use each day's modeled current, keeping today/forecast in sync.
+    const dailyCurrent = [];
+    if (currentVel) {
+      for (let d = 0; d < 7; d++) {
+        const s = d * 24, e = Math.min(s + 24, currentVel.length);
+        const slice = currentVel.slice(s, e).filter(v => v != null);
+        if (!slice.length) { dailyCurrent.push(null); continue; }
+        const midday = currentVel[s + 12] != null ? currentVel[s + 12]
+                     : slice.reduce((a, b) => a + b, 0) / slice.length;
+        dailyCurrent.push({ midday, max: Math.max(...slice) });
+      }
+    }
     D.oceanForecast = {
       currentSstF,
       sst48h,
       dailySst,
-      currentSurfaceVel: currentVel ? currentVel[nowIdx] : null,
-      currentSurfaceDir: currentDir ? currentDir[nowIdx] : null,
+      currentSurfaceVel: currentVel ? currentVel[curIdx] : null,
+      currentSurfaceDir: currentDir ? currentDir[curIdx] : null,
+      currentDailyMax: dailyCurrent[0] ? dailyCurrent[0].max : null,
+      dailyCurrent,
       upwellingAlert,
       times
     };
@@ -7118,6 +7143,22 @@ async function updateDisplay() {
     }
   }
 
+  // Strong-current dampener (2026-07-20). Elevated surface current stirs sediment
+  // and drives surge-murk the worker's wave/turbidity model can't see (PV/Flat Rock
+  // 7/20: tool 18–23 ft vs 8–10 actual on a 2–3 kt current). `currentProne` spots
+  // trip at lower model values since the global model under-resolves point currents.
+  if (vizEst !== '--' && D.oceanForecast && D.oceanForecast.currentSurfaceVel != null) {
+    const _cv = D.oceanForecast.currentSurfaceVel;
+    const _cm = currentVizMult(_cv, !!loc.currentProne);
+    const _cMatch = _cm < 1 && vizEst.match(/(\d+)–(\d+)/);
+    if (_cMatch) {
+      const clo = Math.max(1, Math.round(parseInt(_cMatch[1]) * _cm));
+      const chi = Math.max(clo + 1, Math.round(parseInt(_cMatch[2]) * _cm));
+      vizEst = vizEst.replace(/\d+–\d+/, `${clo}–${chi}`);
+      D.currentDampener = { velMs: +_cv.toFixed(2), velKt: +(_cv * 1.94384).toFixed(1), mult: _cm };
+    }
+  }
+
   setVal('estVizVal', vizEst, vizSource);
   const vizFeetEl = document.getElementById('vizFeetLabel');
   if (vizFeetEl) vizFeetEl.textContent = vizEst !== '--' ? `Est. ${vizEst}` : '--';
@@ -8812,6 +8853,21 @@ function calcSlotForecastScores(slot, dayIdx) {
   return { fish, viz, spear, vizFeet };
 }
 
+// Viz multiplier for surface-current strength (Open-Meteo ocean_current_velocity, m/s).
+// OPT-IN per spot via loc.currentProne — because strong current does NOT universally
+// hurt viz. At sediment-laden / shallow points (Flat Rock/PV) it stirs murk (7/20:
+// tool 18-23 vs 8-10 actual on 2-3 kt). But at rocky headlands like Point Loma, strong
+// current (model 1.5 m/s / 2.9 kt on 7/19) rode WITH clean offshore water — diver got
+// 10-15 ft / 20 at the kelp. So a blanket dampener would wrongly under-call those. Only
+// spots flagged currentProne get dampened. Conservative — one ground-truth report so far.
+function currentVizMult(vel, prone) {
+  if (vel == null || !prone) return 1;
+  if (vel >= 0.80) return 0.72;  // very strong
+  if (vel >= 0.55) return 0.80;  // strong
+  if (vel >= 0.40) return 0.88;  // notable
+  return 1;
+}
+
 function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
   // ANCHOR PATH (today + future days). Read today's hero number — which is the
   // calibrated, sensor-driven prediction for right now — and apply only the
@@ -9167,6 +9223,20 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     if (D.turbidity < avgNTU) {
       baseLo = Math.max(1, Math.round(baseLo * Math.max(0.7, turbDrift)));
       baseHi = Math.max(baseLo + 1, Math.round(baseHi * Math.max(0.7, turbDrift)));
+    }
+  }
+
+  // Strong-current dampener (mirror of the today-path — see currentVizMult).
+  // Uses this day's modeled current so today/forecast stay in sync; day 0 uses
+  // the same now-hour value the hero used.
+  if (D.oceanForecast && Array.isArray(D.oceanForecast.dailyCurrent)) {
+    const _dv = dayIdx === 0
+      ? D.oceanForecast.currentSurfaceVel
+      : (D.oceanForecast.dailyCurrent[dayIdx] ? D.oceanForecast.dailyCurrent[dayIdx].midday : null);
+    const _dm = currentVizMult(_dv, !!loc.currentProne);
+    if (_dm < 1) {
+      baseLo = Math.max(1, Math.round(baseLo * _dm));
+      baseHi = Math.max(baseLo + 1, Math.round(baseHi * _dm));
     }
   }
 
