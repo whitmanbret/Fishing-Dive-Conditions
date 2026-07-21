@@ -40,6 +40,13 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 | Point Loma (`pointloma`) | 9–14 ft (green tinge) | — |
 | La Jolla Cove (`ljcove`) | 11–16 ft (green tinge) | 74°F (surface) |
 
+### 2026-07-21 (captured live from the tool, same-day)
+| Spot | Tool viz | Temp |
+|---|---|---|
+| La Jolla Shores (`ljshores`) | 11–16 ft (green tinge) | 74°F (surface) |
+| La Jolla Marine Room (`ljmarineroom`) | 7–9 ft (post-haircut; worker raw 11–15) | 74°F |
+| La Jolla Cove (`ljcove`) | 7–9 ft | 74°F |
+
 ---
 
 ## Safety / shark notes
@@ -170,6 +177,15 @@ Weekend of prep dives before next weekend's Shootout. **No exact same-day tool s
 - **Tool `ljshores` (live 7/20, ~next-day):** **11–16 ft (green tinge)**, swell 2–3 ft.
 - **Result:** **MATCH** ✅ (mid-column) — the tool's 11–16 sits between the gunky surface (~5–10) and the clear deep (20–30); overlaps the transition. Single number can't express the stratification, but it's in-band.
 - **Big picture:** on **7/18** the tool over-penalized `ljshores` to **2–4 "pea soup"** (logged UNDER-call vs Scripps cam 10–12). Two days later it reads **11–16** — the chl/bloom penalty has **eased**, matching the reporter's "snot-a-palooza abating" (gorgonians in the garden **no longer snot-covered**; lots of nudis, 2 adult horn sharks). Good sign the aggressive chl-viz penalty self-corrected as the bloom faded.
+
+### 2026-07-21 — La Jolla Shores (Scripps Pier live cam) — MATCH ✅ (near-exact)
+- **Ground truth (Scripps PIERViz live underwater cam @ ~13 ft, coollab.ucsd.edu / Coastal Ocean Observing Lab):** the **14-ft back-left piling is clearly visible in light-blue water**, with faint structure beyond. Per the cam's piling-distance calibration (pilings at 4 / 11 / 14 / 30 ft; the 14-ft piling shows "only when calm and clear, light blue water") → **~12–16 ft**.
+- **Tool `ljshores` (live, same-day):** **11–16 ft (green tinge)**.
+- **Result:** **MATCH** ✅ — tool 11–16 vs cam 12–16, near-exact. (Cam water reads more blue than the tool's "green tinge" label, but the clarity range is dead-on.) Strong validation of the untouched Shores baseline.
+
+### 2026-07-21 — LJ Shores → Marine Room → Cove aerial (public reel) — directional + fix check
+- Public aerial reel (San Diego Snorkel Report) of the Shores→Marine Room→Cove stretch: **green/teal water with reef & kelp structure visible from above** through the shallows, a lighter sediment band in the surf zone, deepening to blue-green offshore. Directionally consistent with the tool's green-tinge, moderate-viz regime (a top-down aerial reads a touch cleaner than a diver's horizontal viz).
+- **Cove/Marine Room fix verified live:** with the 7/20 haircut, `ljmarineroom` **worker raw 11–15 → displayed 7–9** and `ljcove` **7–9**, vs the untouched `ljshores` 11–16. Confirms the 0.6× is firing on the same-day hero for both cove-pocket spots and nowhere else.
 
 ### 2026-07-20 — La Jolla Cove — OVER-call ⚠️ (4th straight day)
 - **Reported (Mon 7/20):** **5–7 ft in the kelp forest at depth, ~10 ft in the shallows.** Water very warm, **69–72°F**.
