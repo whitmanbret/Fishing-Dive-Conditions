@@ -5889,31 +5889,45 @@ async function fetchHFRadarCurrent() {
 // WW3 SWELL FORECAST (NOAA WaveWatch III via PacIOOS ERDDAP)
 // =========================================================================
 async function fetchSwellForecast() {
+  // Swell/surf forecast. Migrated 2026-07-21 from PacIOOS ERDDAP (ww3_global) to
+  // Open-Meteo Marine. PacIOOS retired the `ww3_global` datasetID — the endpoint
+  // now 404s ("Currently unknown datasetID=ww3_global") after a ~24s hang, which
+  // silently (catch swallows the error) left D.swellForecast empty. With no WW3,
+  // the forecast fell back to a decayed-buoy estimate that FLATLINED surf at
+  // ~2-3 ft and missed incoming swell (Fri/Sat 6 ft read as 2-3). Open-Meteo is
+  // the same provider we already use for SST/current, covers 7 days hourly, and
+  // needs no dataset lookup. `.ft` = TOTAL significant wave height (the full sea
+  // state that breaks) — matches today's card, which derives surf from buoy WVHT
+  // (also total Hs), so day-0 stays continuous. Period from total wave_period to
+  // match the total-Hs basis; direction from the swell partition (the groundswell
+  // that shapes the break).
   try {
     const loc = LOCATIONS[currentLocation];
-    // WW3 grid uses 0-360° longitude; snap to nearest 0.5° grid point
-    const lat = (Math.round(loc.lat * 2) / 2).toFixed(1);
-    const lon = (Math.round((loc.lon + 360) * 2) / 2).toFixed(1);
-    const now = new Date();
-    const start = now.toISOString().replace(/\.\d+Z/, 'Z');
-    const end = new Date(now.getTime() + 5 * 86400000).toISOString().replace(/\.\d+Z/, 'Z');
-    // Fetch swell height, period, direction — stride 1 gets 3-hourly data
-    const url = `https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ww3_global.json?shgt%5B(${start}):1:(${end})%5D%5B(0.0)%5D%5B(${lat})%5D%5B(${lon})%5D,sper%5B(${start}):1:(${end})%5D%5B(0.0)%5D%5B(${lat})%5D%5B(${lon})%5D,sdir%5B(${start}):1:(${end})%5D%5B(0.0)%5D%5B(${lat})%5D%5B(${lon})%5D`;
-    // 10s (not 6s): WW3 ERDDAP is a slower, variable source and can get starved
-    // under the concurrent fetch batch; if it misses the render budget the
-    // straggler re-render (which now rebuilds the forecast) picks it up. 2026-07-20.
+    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}`
+      + `&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction`
+      + `&forecast_days=7&timezone=America/Los_Angeles`;
     const r = await fetchWithTimeout(url, null, 10000);
     if (!r.ok) return;
     const d = await r.json();
-    if (!d.table || !d.table.rows || d.table.rows.length === 0) return;
-    const cols = d.table.columnNames;
-    const iTime = cols.indexOf('time'), iHgt = cols.indexOf('shgt'), iPer = cols.indexOf('sper'), iDir = cols.indexOf('sdir');
-    D.swellForecast = d.table.rows.map(row => ({
-      time: new Date(row[iTime]),
-      ft: parseFloat((row[iHgt] * 3.28084).toFixed(1)),
-      per: Math.round(row[iPer]),
-      dirDeg: Math.round(row[iDir])
-    })).filter(r => !isNaN(r.ft) && r.ft > 0);
+    const H = d.hourly;
+    if (!H || !H.time || !H.wave_height) return;
+    const out = [];
+    for (let i = 0; i < H.time.length; i++) {
+      const waveM = H.wave_height[i];
+      if (waveM === null || waveM === undefined) continue;
+      const swDir = H.swell_wave_direction && H.swell_wave_direction[i] != null
+        ? H.swell_wave_direction[i]
+        : (H.wave_direction ? H.wave_direction[i] : 0);
+      out.push({
+        time: new Date(H.time[i]),
+        ft: parseFloat((waveM * 3.28084).toFixed(1)),
+        per: Math.round(H.wave_period[i] || 0),
+        dirDeg: Math.round(swDir || 0),
+        swellFt: (H.swell_wave_height && H.swell_wave_height[i] != null)
+          ? parseFloat((H.swell_wave_height[i] * 3.28084).toFixed(1)) : null
+      });
+    }
+    D.swellForecast = out.filter(e => !isNaN(e.ft) && e.ft > 0);
     if (D.swellForecast.length > 0) srcStatus.ww3 = 'ok';
   } catch(e) {}
 }
@@ -9678,6 +9692,8 @@ function buildSurfPanel(slots, dayIdx, periods) {
   const surfSeries = (chartPeriods || []).map(p => {
     const ww3 = p.date ? getWW3Swell(p.date) : null;
     let ft = ww3 ? ww3.ft : (D.swellFt || 2.5);
+    const per = ww3 ? ww3.per : (D.swellPeriod || 10);
+    ft *= (per >= 14 ? 1.4 : per >= 11 ? 1.2 : per >= 8 ? 1.0 : 0.85);  // Hs → breaking (match today card)
     const wm = (p.windSpeed || '').match(/(\d+)/);
     const ws = wm ? +wm[1] : 0;
     if (ws > 15) ft *= 1.3; else if (ws > 10) ft *= 1.15; else if (ws <= 4) ft *= 0.9;
@@ -9699,8 +9715,12 @@ function buildSurfPanel(slots, dayIdx, periods) {
     const slot = slots[si];
     const sw = slotSwells[si];
 
+    // Offshore Hs → breaking-wave height, using the same period-factor heuristic as
+    // today's wave card (renderWaveCard): long-period groundswell breaks bigger.
+    // Without this the forecast showed raw Hs and under-read surf vs the today card.
+    const _bf = sw.per >= 14 ? 1.4 : sw.per >= 11 ? 1.2 : sw.per >= 8 ? 1.0 : 0.85;
+    let surfEst = sw.ft * _bf;
     // Wind effects on surf height
-    let surfEst = sw.ft;
     if (slot.windSpeed > 15) surfEst *= 1.3;
     else if (slot.windSpeed > 10) surfEst *= 1.15;
     else if (slot.windSpeed <= 4) surfEst *= 0.9;
