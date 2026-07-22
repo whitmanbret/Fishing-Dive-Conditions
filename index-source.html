@@ -1360,6 +1360,7 @@
         <div class="viz-feet-hero" id="vizFeetHero">--</div>
         <div class="gauge-rating rating-none" id="vizRating">--</div>
         <div class="viz-confidence" id="vizConfidence" style="display:none"></div>
+        <div class="source-health" id="sourceHealth" style="display:none"></div>
         <div class="viz-score-small" id="vizScoreSmall" style="display:none"></div>
         <div id="vizFeetLabel" style="display:none">--</div>
         <!-- Hidden gauge for score calc -->
@@ -4125,8 +4126,11 @@ async function fetchShoreStation() {
   // (turbidity is hyper-local; using Morro Bay turbidity for Monterey = wildly wrong)
   const _loc = LOCATIONS[currentLocation];
   const _needTemp = !!_loc && !_loc.offshore;   // shore dives need a nearshore temp
+  // Track the PRIMARY (nearest) station so the source-health indicator can flag
+  // when the local sensor is down and we're leaning on a distant fallback.
+  D.shorePrimaryName = (SHORE_STATIONS[stationKeys[0]] || {}).name || null;
   let isPrimary = true;
-  let gotData = false, tempSet = false;
+  let gotData = false, tempSet = false, primaryTempOk = false;
   for (const stationKey of stationKeys) {
     const station = SHORE_STATIONS[stationKey];
     if (!station) continue;
@@ -4134,15 +4138,16 @@ async function fetchShoreStation() {
       const res = await fetchSingleShoreStation(station, !isPrimary);
       if (res) {
         gotData = true;
-        if (res.tempStored) tempSet = true;
+        if (res.tempStored) { tempSet = true; if (isPrimary) primaryTempOk = true; }
         // Stop once we have data AND (temp not needed OR temp is set). If the
         // primary returned NTU/chl but a NULL temp (Scripps 2026-07-12), keep
         // going so a temp-safe SoCal fallback (Newport) can supply the temp.
-        if (!_needTemp || tempSet) return;
+        if (!_needTemp || tempSet) { D.shorePrimaryDown = _needTemp && !primaryTempOk; return; }
       }
     } catch(e) { /* Try next station in chain */ }
     isPrimary = false;
   }
+  D.shorePrimaryDown = _needTemp && !primaryTempOk;
   if (!gotData) srcStatus.sass = 'err';
 }
 
@@ -4353,7 +4358,12 @@ async function fetchNOAAWaterTemp() {
   // Only fetch if we don't already have a local waterTemp AND this is a non-offshore spot
   // D.waterTemp may be unset if primary shore station failed and fallback didn't set it
   if (loc.offshore) return;
-  if (D.waterTemp && D.waterTempSource !== 'NDBC Buoy') return; // already have local shore temp
+  // Proceed when temp is missing, from an offshore NDBC buoy, OR from a DISTANT
+  // cross-region shore fallback (e.g. La Jolla borrowing Newport Pier 30 mi north
+  // when Scripps is down). The spot's OWN tide-station gauge (e.g. CO-OPS 9410230,
+  // sited AT the Scripps pier) is a far better nearshore temp than a distant pier.
+  const _distantFallback = D.waterTempSource && /\(fallback\)/.test(D.waterTempSource);
+  if (D.waterTemp && D.waterTempSource !== 'NDBC Buoy' && !_distantFallback) return; // already have a good local shore temp
   const stationId = loc.tideStation;
   if (!stationId) return;
   try {
@@ -4367,7 +4377,7 @@ async function fetchNOAAWaterTemp() {
         const tempF = parseFloat((tempC * 9/5 + 32).toFixed(1));
         D.shoreWaterTempC = tempC;
         D.shoreWaterTemp = tempF;
-        D.shoreStation = json.metadata?.name || 'NOAA CO-OPS';
+        D.shoreStation = (json.metadata?.name || 'NOAA CO-OPS') + ' (NOAA gauge)';
         D.waterTemp = tempF;
         D.waterTempSource = D.shoreStation;
       }
@@ -6583,6 +6593,65 @@ function renderWindCard() {
   document.getElementById('wind24Now').textContent = `Now · ${_fmtTime(new Date())}`;
 }
 
+// =========================================================================
+// SOURCE-HEALTH INDICATOR — surfaces silently-degraded data feeds so a dead
+// source (e.g. Scripps Pier offline since 7/15, PacIOOS WW3 retired) doesn't
+// quietly corrupt the numbers. Only flags feeds that actually change the viz/
+// temp output; live cams etc. are excluded (a diver sees those blink out).
+// =========================================================================
+function buildSourceHealth() {
+  const loc = LOCATIONS[currentLocation] || {};
+  const issues = [];
+  const src = D.waterTempSource || '';
+  // Water-temp source quality
+  if (D.shorePrimaryDown && D.shorePrimaryName) {
+    issues.push({ sev: 'warn', label: 'Water temp', detail: `${D.shorePrimaryName} sensor offline — using ${src || 'fallback source'}` });
+  } else if (/\(fallback\)/.test(src)) {
+    issues.push({ sev: 'warn', label: 'Water temp', detail: `nearest sensor down — using ${src}` });
+  } else if (/buoy/i.test(src) && !loc.offshore) {
+    issues.push({ sev: 'warn', label: 'Water temp', detail: 'from offshore buoy (can read warm) — no live nearshore sensor' });
+  }
+  // Live turbidity — only flag where a turbidity-capable shore station is mapped
+  const stationKeys = (typeof SHORE_STATION_MAP !== 'undefined' && SHORE_STATION_MAP[currentLocation]) || [];
+  const expectsTurb = stationKeys.some(k => SHORE_STATIONS[k] && SHORE_STATIONS[k].turb);
+  if (expectsTurb && (D.turbidity === undefined || D.turbidity === null)) {
+    issues.push({ sev: 'warn', label: 'Turbidity', detail: 'no live NTU — viz estimated from wave + chlorophyll model' });
+  }
+  // Chlorophyll from climatology (no live pier chl)
+  if (D.chlIsClimatology) {
+    issues.push({ sev: 'info', label: 'Chlorophyll', detail: 'seasonal average (no live pier sensor)' });
+  }
+  // Swell / surf forecast feed
+  if (srcStatus.ww3 && srcStatus.ww3 !== 'ok') {
+    issues.push({ sev: 'warn', label: 'Surf forecast', detail: 'swell feed unavailable — forecast may be degraded' });
+  }
+  return issues;
+}
+
+function renderSourceHealth() {
+  const el = document.getElementById('sourceHealth');
+  if (!el) return;
+  let issues = [];
+  try { issues = buildSourceHealth(); } catch(e) { issues = []; }
+  if (!issues.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  const warn = issues.some(i => i.sev === 'warn');
+  const dot = warn ? '⚠️' : 'ℹ️';
+  const summary = issues.length === 1 ? issues[0].label : (issues.length + ' data notes');
+  const color = warn ? '#b8860b' : '#6b7280';
+  const collapsed = `${dot} <span style="text-decoration:underline dotted">${summary}</span>`;
+  const expanded = `${dot} ` + issues.map(i => `<b>${i.label}:</b> ${i.detail}`).join('<br>');
+  el.style.display = '';
+  el.style.cssText += ';cursor:pointer;font-size:11px;line-height:1.35;margin-top:4px;color:' + color;
+  el.title = issues.map(i => `${i.label}: ${i.detail}`).join(' · ');
+  el.setAttribute('data-exp', '0');
+  el.innerHTML = collapsed;
+  el.onclick = () => {
+    const isExp = el.getAttribute('data-exp') === '1';
+    el.setAttribute('data-exp', isExp ? '0' : '1');
+    el.innerHTML = isExp ? collapsed : expanded;
+  };
+}
+
 function renderWaveCard() {
   // Surf height label — derive from primary swell + period (simple breaking-wave heuristic)
   const hsFt = D.swellFt;
@@ -7317,6 +7386,10 @@ async function updateDisplay() {
   } else if (confEl) {
     confEl.innerHTML = '';
   }
+
+  // Source-health indicator — flag any silently-degraded feed (dead sensor,
+  // distant temp fallback, missing turbidity, unavailable swell forecast).
+  try { renderSourceHealth(); } catch(e) {}
 
   // Render the new tide/wind/wave condition cards (added 2026-05-11 redesign)
   renderConditionCards();
