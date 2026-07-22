@@ -194,6 +194,12 @@ Weekend of prep dives before next weekend's Shootout. **No exact same-day tool s
 - **Reported (Sun 7/19):** viz **5–10 ft on the channel side, ~5 ft (murkier) on the bay side**. Water very warm — only a 3mm, comfortable for a 2 hr dive. Highlight: a super-chonky **California chromodorid (Felimare californiensis)** nudibranch.
 - No same-day tool snapshot (past date); Mission Point / Mission Bay maps closest to the `mission` spot, which the tool doesn't retain for 7/19 — logged as observation. The **channel-side > bay-side clarity split is expected**: the enclosed bay is shallow/warm/particulate-laden vs the ocean-flushed channel. Consistent with the region-wide warm-water spell (3mm comfort echoes the 69–74°F we've logged all week). *(Re-sent 7/22 — already logged; name refined MPP = Mission Point Park.)*
 
+### 2026-07-22 — La Jolla Shores (shop daily report) — MATCH ✅
+- **Reported (shop admin, 7/22):** viz **8–12 ft**, green with a moderate amount of particulate; swell **1–2 ft**, light W wind, easy shore entry, very little surge; surface temp **70–72°F**. Best window is the morning before the wind builds; protected areas cleanest.
+- **Tool `ljshores` (live, same-day):** **6–10 ft (green tinge)**, 2–3 ft surf, **75°F (La Jolla NOAA gauge)**.
+- **Result:** **MATCH** ✅ (6–10 overlaps 8–12 at 8–10). Green-tinge + moderate-particulate read matches the shop's description.
+- **Temp note:** tool gauge reads **75°F this afternoon** vs the shop's **70–72°F morning** figure — that's diurnal surface warming (the gauge is now correctly tracking the local La Jolla surface after the 7/22 temp-source fix), not a source error. Yesterday's diver saw 76°F surface here, so 75°F is right in line. Swell: shop 1–2 ft vs tool 2–3 ft breaking estimate — consistent.
+
 ### 2026-07-21 — La Jolla Shores (first-hand, Katherine Mauser + reporter) — MATCH ✅ (mid-column)
 - **Reported (Mon 7/21):** mild surf, easy entry; surface had **nonstop short-interval swell + wind chop**. Surface "ocean barf" gunk **sparser than last time** (the 7/19 "ocean diarrhea" clumps are breaking up). Vis better but still cloudy and **worse the shallower you go**: **garden 20–30 ft, slope-up 20–30 ft, around the wall 10–20 ft, above Vallecitos 5–10 ft.**
 - **Temp:** **76°F surface (!), 56°F at 113 ft** — a big ~20°F thermocline.
