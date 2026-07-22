@@ -46,6 +46,9 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 | La Jolla Shores (`ljshores`) | 11–16 ft (green tinge) | 74°F (surface) |
 | La Jolla Marine Room (`ljmarineroom`) | 7–9 ft (post-haircut; worker raw 11–15) | 74°F |
 | La Jolla Cove (`ljcove`) | 7–9 ft | 74°F |
+| Carmel Bay (`carmel`) | 14–19 ft (est.) | 55°F |
+| Lovers Point (`loverspoint`) | 15–20 ft (green water) | 61°F |
+| Hopkins (`hopkins`) | 26–31 ft (bloom season) | 61°F |
 
 ---
 
@@ -177,6 +180,19 @@ Weekend of prep dives before next weekend's Shootout. **No exact same-day tool s
 - **Tool `ljshores` (live 7/20, ~next-day):** **11–16 ft (green tinge)**, swell 2–3 ft.
 - **Result:** **MATCH** ✅ (mid-column) — the tool's 11–16 sits between the gunky surface (~5–10) and the clear deep (20–30); overlaps the transition. Single number can't express the stratification, but it's in-band.
 - **Big picture:** on **7/18** the tool over-penalized `ljshores` to **2–4 "pea soup"** (logged UNDER-call vs Scripps cam 10–12). Two days later it reads **11–16** — the chl/bloom penalty has **eased**, matching the reporter's "snot-a-palooza abating" (gorgonians in the garden **no longer snot-covered**; lots of nudis, 2 adult horn sharks). Good sign the aggressive chl-viz penalty self-corrected as the bloom faded.
+
+### 2026-07-21 — Monterey Peninsula (Stillwater Cove + Coral Street) — mixed
+| Spot | Reported (7/21) | Tool (7/21, live) | Result |
+|---|---|---|---|
+| Stillwater Cove, Pebble Beach → `carmel` (Carmel Bay) | **rough, 3–5 ft** | 14–19 ft (est.), 55°F | **OVER-call** ⚠️ (no overlap; ~9–16 ft high) |
+| Coral Street, Pacific Grove → `loverspoint` | **10–15 ft** ("a little better") | 15–20 ft (green water), 61°F | **MATCH** ✅ (edge, at 15) |
+
+- **Stillwater over-call:** Stillwater is normally a protected Carmel-Bay cove, but it fished **rough** today — surge/swell-driven murk the `carmel` entry doesn't catch. `carmel` is wave-energy-based (`(est.)`, **no live turbidity sensor**) and read a calm 1–2 ft surf, so it leans optimistic on rough days. Same surge-murk blind spot flagged at Crescent/PV — and the whole Central Coast lacks NTU sensors, so these spots can't see localized stir.
+- **Coral Street:** `loverspoint` 15–20 overlaps the reported 10–15 at the edge → MATCH. Note **`hopkins` read 26–31 (bloom season)** today — that would badly over-call the more-exposed Coral Street, so `loverspoint` is the better analog for it. (No fish either dive.)
+
+### 2026-07-19 — Mission Bay jetty (MPP) — observation (no same-day snapshot)
+- **Reported (Sun 7/19):** viz **5–10 ft on the channel side, ~5 ft (murkier) on the bay side**. Water very warm — only a 3mm, comfortable for a 2 hr dive. Highlight: a super-chonky **California chromodorid (Felimare californiensis)** nudibranch.
+- No same-day tool snapshot (past date); Mission Bay maps closest to the `mission` spot, which the tool doesn't retain for 7/19 — logged as observation. The **channel-side > bay-side clarity split is expected**: the enclosed bay is shallow/warm/particulate-laden vs the ocean-flushed channel. Consistent with the region-wide warm-water spell (3mm comfort echoes the 69–74°F we've logged all week).
 
 ### 2026-07-21 — La Jolla Shores (Scripps Pier live cam) — MATCH ✅ (near-exact)
 - **Ground truth (Scripps PIERViz live underwater cam @ ~13 ft, coollab.ucsd.edu / Coastal Ocean Observing Lab):** the **14-ft back-left piling is clearly visible in light-blue water**, with faint structure beyond. Per the cam's piling-distance calibration (pilings at 4 / 11 / 14 / 30 ft; the 14-ft piling shows "only when calm and clear, light blue water") → **~12–16 ft**.
