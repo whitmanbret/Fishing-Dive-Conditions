@@ -7203,13 +7203,27 @@ async function updateDisplay() {
       const _wd = ((D.windDirDeg - loc.coast) + 360) % 360;
       _vizWindOnshore = (_wd < 45 || _wd > 315);
     }
+    // Bloom-sheltered Central Coast headlands (Point Lobos, Hopkins) have NO live
+    // turbidity sensor, so an extreme SATELLITE chlorophyll spike drives the worker's
+    // viz to pea soup with nothing to corroborate it — yet the sub-surface at these
+    // sheltered/upwelling spots is clearer than the surface bloom implies. 7/22 Point
+    // Lobos: chl 24 → tool 3–5 pea soup, but 3 divers all got 10–20 ft green water.
+    // The worker ignores the bloomSheltered flag, so cap the chl FED TO the viz model
+    // at 10 (still "green/bloom", NOT pea soup) for these spots. Excludes scrippsProximity
+    // cove spots (ljcove — its 0.6× haircut handles it) and respects redTideWarning
+    // (a real toxic bloom should still read bad). Added 2026-07-23 (3 paired reports).
+    const _bloomCapChl = loc.bloomSheltered && !loc.scrippsProximity
+      && (D.turbidity === undefined || D.turbidity === null)
+      && !D.redTideWarning;
+    const _vizChl = (_bloomCapChl && D.chlorophyll > 10) ? 10 : D.chlorophyll;
+    const _vizChlMax = (_bloomCapChl && D.chlRecentMax > 10) ? 10 : D.chlRecentMax;
     const worker = await sfPredict('viz', {
       ntu: D.turbidity,
       windMph: D.windSpeedMph ?? D.buoyWindSpeed,
       windOnshore: _vizWindOnshore,
       clusterWE: D.clusterMaxWE,
-      chlorophyll: D.chlorophyll,
-      chlRecentMax: D.chlRecentMax,
+      chlorophyll: _vizChl,
+      chlRecentMax: _vizChlMax,
       chlIsClimatology: !!D.chlIsClimatology,
       chlLiveExpected: _hasLiveStation,
       waveEnergy: D.waveEnergy,
