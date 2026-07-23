@@ -194,6 +194,24 @@ Weekend of prep dives before next weekend's Shootout. **No exact same-day tool s
 - **Reported (Sun 7/19):** viz **5–10 ft on the channel side, ~5 ft (murkier) on the bay side**. Water very warm — only a 3mm, comfortable for a 2 hr dive. Highlight: a super-chonky **California chromodorid (Felimare californiensis)** nudibranch.
 - No same-day tool snapshot (past date); Mission Point / Mission Bay maps closest to the `mission` spot, which the tool doesn't retain for 7/19 — logged as observation. The **channel-side > bay-side clarity split is expected**: the enclosed bay is shallow/warm/particulate-laden vs the ocean-flushed channel. Consistent with the region-wide warm-water spell (3mm comfort echoes the 69–74°F we've logged all week). *(Re-sent 7/22 — already logged; name refined MPP = Mission Point Park.)*
 
+### 2026-07-22 — Point Lobos (3 dives: Hole in the Wall, Tom Lohmuller, Kevin Chen) — nearest-day UNDER-call ⚠️
+Three independent Point Lobos dives, all 7/22, all green + heavy particulate despite ~no swell:
+- **Hole in the Wall (PM):** **pitch black at 70 ft** (a daytime night dive); **Middle Reef ~15 ft**.
+- **Tom Lohmuller:** **10 ft at depth**, green + lots of particulates (virtually no swell); **shallow/cove 15–20 ft**. Min temp **56°F**.
+- **Kevin Chen (runtime 1:37, max 93 ft, avg 45):** **~20 ft shallow dropping to ~10 ft at depth**; blue haze to the south, dark green to the north. **57°F max / 55°F min.** Highlight: a **20+ ft salp chain**. Reached Hole in the Wall + Sea Mount/Beto's.
+- **Consensus:** cove/shallow 15–20 ft → ~10 ft at depth → near-black in the deepest pockets; green, heavy particulate, calm.
+- **Tool `ptlobos` (nearest-day, 7/23 live):** **3–5 ft (pea soup)**, 58°F, ⚠️ no live turbidity.
+- **Result:** **UNDER-call** ⚠️ (nearest-day) — tool 3–5 is well below the reported 10–20 shallow/general (it *does* match the pitch-black deep pockets). Directionally right (sees degraded/green) but far too aggressive on magnitude.
+- **Two tool flags (watch items — Central Coast has no NTU sensors; not fixing on next-day data):**
+  1. `ptlobos` read **3–5 pea soup despite its `bloomSheltered` flag** — the chl/bloom penalty (worker-side, where the hero is computed) is over-aggressive for a headland spot with no live NTU to anchor it. Same aggressive-chl signature as ljshores on 7/18 (2–4 pea soup).
+  2. **Cross-spot inconsistency:** same day/region the tool split **Point Lobos 3–5 vs Monterey Bay 21–26**, but the actual reports were *similar* (~15–20 shallow, both green). The spread between the two Central Coast entries is far too wide.
+- Temps: reports 55–57°F vs tool 58°F → ~MATCH.
+
+### 2026-07-22 — Monterey Breakwater (ADC / Underwater Voyagers, evening) — nearest-day OVER-call ⚠️ (edge)
+- **Reported (7/22 PM):** flat, high tide, calm; **15–20 ft viz, dark & snotty in patches**; air 73°F, **avg water 59°F**; open-cell 7mm, kicked to marker 7; schools of rockfish in kelp, calico bass, perch, decorator crabs; 44 min, easy exit w/ 1600 psi.
+- **Tool `monterey` (nearest-day, 7/23 live):** **21–26 ft (bloom season)**, 58°F, flat.
+- **Result:** **OVER-call** ⚠️ (edge, nearest-day) — tool 21–26 sits just above the reported 15–20 ceiling (~1–6 ft high). Temp near-exact (58 vs 59°F). The "dark & snotty patches" are the particulate/bloom the tool's high "bloom season" read doesn't reflect.
+
 ### 2026-07-22 — La Jolla Shores (shop daily report) — MATCH ✅
 - **Reported (shop admin, 7/22):** viz **8–12 ft**, green with a moderate amount of particulate; swell **1–2 ft**, light W wind, easy shore entry, very little surge; surface temp **70–72°F**. Best window is the morning before the wind builds; protected areas cleanest.
 - **Tool `ljshores` (live, same-day):** **6–10 ft (green tinge)**, 2–3 ft surf, **75°F (La Jolla NOAA gauge)**.
