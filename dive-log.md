@@ -59,6 +59,20 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-23 — Monterey Breakwater (wall) — MATCH ✅ (same-day)
+- **Reported (7/23, just after noon, rising tide):** viz **15–25 ft**, nicest between 5–15 ft depth; **59–60°F**. Lots of YOY olive/yellowtail rockfish in the canopy with bocaccio YOY hunting them; more sea-lion activity than recent weeks.
+- **Tool `monterey` (live, same-day):** **21–26 ft (bloom season)**, 57°F, flat.
+- **Result:** **MATCH** ✅ (21–26 overlaps 15–25). Temp: tool 57°F vs 59–60°F (~2–3°F low).
+
+### 2026-07-22 — Breakwater (PM) + Veterans Park (night) — nearest-day
+| Spot | Reported (7/22) | Tool (7/23 nearest-day) | Result |
+|---|---|---|---|
+| Breakwater PM → `monterey` | **10–15 shallow / 5–10 beyond 24 ft**, heavy particulate, little swell/waves | 21–26 (bloom season) | **OVER-call** ⚠️ |
+| Vets Park night → `veteranspark` | **3–5 ft at ≤40 ft, cleared up to a nice dive deeper (~50 ft)** after a day of building swell | 6–11 | **MATCH** (mid-column) |
+
+- **Breakwater day-to-day swing:** 7/22 PM ran **5–15 ft** (particulate-laden, shortly after low tide — tidal stir) then 7/23 cleaned to **15–25 ft** (rising tide). The tool held **21–26 both days** → matched 7/23, over-called 7/22. The single `monterey` bloom-season entry can't capture the tidal / day-to-day swing (nor post-low-tide particulate stir). Another Monterey over-call on a marginal day (theme: `monterey` runs high on the bloom-season uplift).
+- **Vets Park:** classic Santa Monica Bay thermocline stratification — murky shallow (3–5), clearer below (~50 ft). Tool 6–11 sits mid-column between the two. Swell-driven surface murk on entry/exit.
+
 ### 2026-07-16 — Crescent Bay, Laguna Beach
 - **Observed:** viz 10–15 ft · 72°F · WNW wind chop · medium surge · good-size bat rays
 - **Tool predicted (spot `crescent`, read live 2026-07-17):** 9–14 ft · 71.4°F · swell 2.2 ft
