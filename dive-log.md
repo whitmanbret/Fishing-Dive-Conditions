@@ -59,6 +59,11 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-23 — La Jolla Shores (Scripps underwater cam) — MATCH ✅ (same-day)
+- **Ground truth (Scripps PIERViz underwater cam, real-time):** **~4–8 ft** visibility, green water.
+- **Tool `ljshores` (live, same-day):** **3–5 ft (green water)**, 71°F.
+- **Result:** **MATCH** ✅ (3–5 overlaps 4–8 at 4–5). Tool sits at the low edge but in-band. Notable: Scripps NTU sensor still offline (temp via La Jolla NOAA gauge, no live turbidity — the source-health indicator flags both), yet the chl-driven 3–5 correctly tracked the degraded cam viz. Conditions genuinely dropped (shop had 8–12 on 7/22 → 4–8 now) — not a tool error, and no bloom-cap needed (ljshores isn't a bloomSheltered headland; the penalty is appropriate here).
+
 ### 2026-07-23 — Monterey Breakwater (wall) — MATCH ✅ (same-day)
 - **Reported (7/23, just after noon, rising tide):** viz **15–25 ft**, nicest between 5–15 ft depth; **59–60°F**. Lots of YOY olive/yellowtail rockfish in the canopy with bocaccio YOY hunting them; more sea-lion activity than recent weeks.
 - **Tool `monterey` (live, same-day):** **21–26 ft (bloom season)**, 57°F, flat.
