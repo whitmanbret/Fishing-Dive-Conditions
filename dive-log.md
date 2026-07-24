@@ -72,10 +72,10 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 ### 2026-07-22 — Breakwater (PM) + Veterans Park (night) — nearest-day
 | Spot | Reported (7/22) | Tool (7/23 nearest-day) | Result |
 |---|---|---|---|
-| Breakwater PM → `monterey` | **10–15 shallow / 5–10 beyond 24 ft**, heavy particulate, little swell/waves | 21–26 (bloom season) | **OVER-call** ⚠️ |
+| Breakwater PM → `monterey` | 10–15 shallow / 5–10 beyond 24 ft typical, **~25 ft at best** (per Bret), heavy particulate, little swell/waves | 21–26 (bloom season) | **MATCH** ✅ |
 | Vets Park night → `veteranspark` | **3–5 ft at ≤40 ft, cleared up to a nice dive deeper (~50 ft)** after a day of building swell | 6–11 | **MATCH** (mid-column) |
 
-- **Breakwater day-to-day swing:** 7/22 PM ran **5–15 ft** (particulate-laden, shortly after low tide — tidal stir) then 7/23 cleaned to **15–25 ft** (rising tide). The tool held **21–26 both days** → matched 7/23, over-called 7/22. The single `monterey` bloom-season entry can't capture the tidal / day-to-day swing (nor post-low-tide particulate stir). Another Monterey over-call on a marginal day (theme: `monterey` runs high on the bloom-season uplift).
+- **Breakwater — MATCH both days (corrected 7/23):** Bret confirms 7/22 PM best viz was **~25 ft**, which overlaps the tool's 21–26 per the overlap rule (occasional/best pockets count). So the tool's 21–26 was consistent AND correct across both days (7/22 best 25, 7/23 15–25). Initial 5–15 over-call read was wrong — I graded off the typical/deep figures instead of the best. Reinforces: use the **real per-spot best**, don't downgrade on the murky-deep number.
 - **Vets Park:** classic Santa Monica Bay thermocline stratification — murky shallow (3–5), clearer below (~50 ft). Tool 6–11 sits mid-column between the two. Swell-driven surface murk on entry/exit.
 
 ### 2026-07-16 — Crescent Bay, Laguna Beach
