@@ -10462,6 +10462,18 @@ function onLocationChange() {
   // Hide site-specific tip immediately on location switch so it doesn't linger
   const _siteTip = document.getElementById('siteTip');
   if (_siteTip) { _siteTip.style.display = 'none'; _siteTip.textContent = ''; }
+  // Clear the viz hero + rating immediately so the PREVIOUS spot's number doesn't
+  // flash under the new spot during the switch. Cache hydrate (next frame) or the
+  // fresh fetch fills it back in. Without this, e.g. Point Lobos's 12–17 lingered
+  // on-screen after selecting La Jolla until the worker responded.
+  const _vizHero = document.getElementById('vizFeetHero');
+  if (_vizHero) _vizHero.textContent = '…';
+  const _vizRating = document.getElementById('vizRating');
+  if (_vizRating) { _vizRating.textContent = '…'; _vizRating.className = 'gauge-rating rating-none'; }
+  const _vizConf = document.getElementById('vizConfidence');
+  if (_vizConf) _vizConf.style.display = 'none';
+  const _srcHealth = document.getElementById('sourceHealth');
+  if (_srcHealth) _srcHealth.style.display = 'none';
   document.getElementById('forecastDays').innerHTML = '<div class="forecast-loading">Loading forecast data...</div>';
   document.getElementById('briefAM').textContent = '';
   document.getElementById('briefPM').textContent = '';
