@@ -2672,6 +2672,7 @@ async function submitReport() {
     });
     const data = await r.json().catch(() => ({}));
     if (!r.ok || !data.ok) throw new Error(data.error || `HTTP ${r.status}`);
+    try { _reportsCacheClear(); } catch(e) {}  // drop cached feeds so this report shows now
     status.textContent = 'Thanks — report saved.';
     status.className = 'report-modal-status success';
     btn.textContent = 'Submitted';
@@ -6784,6 +6785,32 @@ const _REGION_LABELS = {
   humboldt: 'Humboldt',
 };
 
+// Cache /reports/public responses in localStorage to spare the Cloudflare Worker's
+// KV free-tier quota. The Recent Reports feed AND the viz calibration both hit that
+// endpoint on EVERY page load and spot switch — each is a KV read/list op, and under
+// any traffic that blows through the ~1k/day free limit (hit 50% on 2026-07-25).
+// Community reports change slowly, so a short client cache cuts these calls ~90%+.
+function _reportsCacheGet(url, ttlMs) {
+  try {
+    const raw = localStorage.getItem('sf_rc_' + url);
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    if (!o || (Date.now() - o.ts) > ttlMs) return null;
+    return o.data;
+  } catch (e) { return null; }
+}
+function _reportsCacheSet(url, data) {
+  try { localStorage.setItem('sf_rc_' + url, JSON.stringify({ ts: Date.now(), data })); } catch (e) {}
+}
+function _reportsCacheClear() {
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && k.indexOf('sf_rc_') === 0) localStorage.removeItem(k);
+    }
+  } catch (e) {}
+}
+
 async function renderRecentReports() {
   const listEl = document.getElementById('rrList');
   const spotEl = document.getElementById('rrSpot');
@@ -6813,19 +6840,24 @@ async function renderRecentReports() {
     : `${SF_PROXY_BASE}/reports/public?spot=${encodeURIComponent(currentLocation)}&days=7&limit=20`;
 
   let reports = [];
-  try {
-    const r = await fetchWithTimeout(fetchUrl, null, 5000);
-    if (r && r.ok) {
-      const data = await r.json();
-      reports = (data.reports || []).map(report => ({
-        when: _formatReportWhen(report.ts),
-        viz: _formatReportViz(report.viz),
-        note: _formatReportNote(report.notes),
-        spotLabel: report.spotId ? (LOCATIONS[report.spotId]?.name || report.spotId) : '',
-      }));
+  // Serve from localStorage cache when fresh (15 min) — avoids a worker KV hit on
+  // every load/spot-switch. The worker also edge-caches ~5 min, so this is layered.
+  let data = _reportsCacheGet(fetchUrl, 15 * 60 * 1000);
+  if (!data) {
+    try {
+      const r = await fetchWithTimeout(fetchUrl, null, 5000);
+      if (r && r.ok) { data = await r.json(); _reportsCacheSet(fetchUrl, data); }
+    } catch (e) {
+      // Quiet fail — show empty state if fetch fails
     }
-  } catch (e) {
-    // Quiet fail — show empty state if fetch fails
+  }
+  if (data) {
+    reports = (data.reports || []).map(report => ({
+      when: _formatReportWhen(report.ts),
+      viz: _formatReportViz(report.viz),
+      note: _formatReportNote(report.notes),
+      spotLabel: report.spotId ? (LOCATIONS[report.spotId]?.name || report.spotId) : '',
+    }));
   }
 
   if (!reports.length) {
@@ -10708,9 +10740,15 @@ async function fetchCalibrationReports(){
   _communityCalReports = [];
   try {
     const url = `${SF_PROXY_BASE}/reports/public?spot=${encodeURIComponent(currentLocation)}&days=30&limit=50`;
-    const r = await fetchWithTimeout(url, null, 5000);
-    if (!r || !r.ok) return;
-    const data = await r.json();
+    // Cache 60 min — community calibration reports barely change day-to-day, and this
+    // is the heavier query (30 days / limit 50). Big KV-op saver vs fetching per switch.
+    let data = _reportsCacheGet(url, 60 * 60 * 1000);
+    if (!data) {
+      const r = await fetchWithTimeout(url, null, 5000);
+      if (!r || !r.ok) return;
+      data = await r.json();
+      _reportsCacheSet(url, data);
+    }
     _communityCalReports = (data.reports || []).map(rep => {
       const pm = String(rep.predictedViz||'').match(/(\d+)\D+(\d+)/);
       const lo = pm ? parseInt(pm[1]) : null, hi = pm ? parseInt(pm[2]) : null;
