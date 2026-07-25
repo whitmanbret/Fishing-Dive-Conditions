@@ -59,6 +59,11 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-25 — La Jolla Shores + Cove (aerial, San Diego Snorkel Report) — Shores MATCH ✅, Cove MATCH ✅
+- **LJ Shores (aerial):** looks **~8–12 ft** today, ~5 ft better than yesterday morning. Tool `ljshores` **5–8 ft (green water)**, 68°F, 2–3 ft surf. → **MATCH** ✅ (edge, at 8). Aerials read cleaner than in-water horizontal viz (top-down through the surface), so 5–8 in-water is consistent with an 8–12 top-down look. Caveat: tool held 5–8 (same as yesterday) — with Scripps NTU still down and chl steady (6.07), it can't "see" a day-to-day clarity bump, so it may run a touch low as SD water settles.
+- **LJ Cove (aerial):** "rough and really nasty." Tool `ljcove` **4–5 ft (green water)**, **3–4 ft surf** (up from Shores' 2–3). → **MATCH** ✅ — poor/nasty confirmed; the 0.6× cove haircut keeps it appropriately low. Good validation.
+- **Aerial notes:** brown muck piled along the cliffs from LJ Shores → past Marine Room → the Cove — swell-driven sediment resuspension + the ongoing surface bloom. Cove churning/foamy; clearly rougher than the Shores.
+
 ### 2026-07-24 — Crescent Bay, Laguna (first-hand, 10am–noon) — MATCH ✅ (near-exact)
 - **Reported (7/24):** **8–12 ft**; surf moderate with the occasional 4–5 ft set (had to time the entry to avoid a tumble cycle). Usual crowd — kelp bass, halfmoons, opaleye, zebra perch, garibaldi — plus a fast school of yellowfin. No leopard sharks/rays (conditions not as good as Doug's dive ~a week ago).
 - **Tool `crescent` (live, same-day):** **8–13 ft**, 73°F, 2–3 ft surf.
