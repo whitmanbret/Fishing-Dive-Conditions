@@ -1361,6 +1361,7 @@
         <div class="gauge-rating rating-none" id="vizRating">--</div>
         <div class="viz-confidence" id="vizConfidence" style="display:none"></div>
         <div class="source-health" id="sourceHealth" style="display:none"></div>
+        <div class="viz-outage-note" id="vizOutageNote" style="display:none"></div>
         <div class="viz-score-small" id="vizScoreSmall" style="display:none"></div>
         <div id="vizFeetLabel" style="display:none">--</div>
         <!-- Hidden gauge for score calc -->
@@ -7404,6 +7405,26 @@ async function updateDisplay() {
   // Source-health indicator — flag any silently-degraded feed (dead sensor,
   // distant temp fallback, missing turbidity, unavailable swell forecast).
   try { renderSourceHealth(); } catch(e) {}
+
+  // Turbidity-outage clarity caveat (2026-07-25). When a spot that normally has a
+  // live turbidity sensor is running WITHOUT one, viz leans on stale daily satellite
+  // chlorophyll and can UNDER-state a same-day clearing (La Jolla 7/25: tool 5–8 ft
+  // vs cam 20–25 ft, Scripps NTU offline 10 days). Nudge the diver to verify against
+  // the live cam rather than skip a possibly-clearing spot.
+  try {
+    const _outEl = document.getElementById('vizOutageNote');
+    if (_outEl) {
+      const _sk = (typeof SHORE_STATION_MAP !== 'undefined' && SHORE_STATION_MAP[currentLocation]) || [];
+      const _expectsTurb = _sk.some(k => SHORE_STATIONS[k] && SHORE_STATIONS[k].turb);
+      const _noLiveTurb = _expectsTurb && (D.turbidity === undefined || D.turbidity === null);
+      if (_noLiveTurb && vizEst !== '--' && vizEst !== 'Service unavailable') {
+        _outEl.textContent = '⚠ Live turbidity sensor offline — actual clarity may be better than shown. Check the live cam.';
+        _outEl.style.cssText = 'display:block;font-size:11px;line-height:1.35;margin-top:5px;color:#b8860b;font-weight:600';
+      } else {
+        _outEl.style.display = 'none';
+      }
+    }
+  } catch(e) {}
 
   // Render the new tide/wind/wave condition cards (added 2026-05-11 redesign)
   renderConditionCards();
