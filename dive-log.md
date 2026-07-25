@@ -59,6 +59,16 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-24 — Crescent Bay, Laguna (first-hand, 10am–noon) — MATCH ✅ (near-exact)
+- **Reported (7/24):** **8–12 ft**; surf moderate with the occasional 4–5 ft set (had to time the entry to avoid a tumble cycle). Usual crowd — kelp bass, halfmoons, opaleye, zebra perch, garibaldi — plus a fast school of yellowfin. No leopard sharks/rays (conditions not as good as Doug's dive ~a week ago).
+- **Tool `crescent` (live, same-day):** **8–13 ft**, 73°F, 2–3 ft surf.
+- **Result:** **MATCH** ✅ (8–13 vs 8–12, near-exact). Notable: Crescent has been a repeat **surge-murk over-call** spot on calm-looking days — today it's genuinely clean and the tool nailed it. Surf: tool 2–3 ft base vs the occasional 4–5 ft sets — reasonable.
+
+### 2026-07-24 — La Jolla Shores (SD shop / Scripps cam) — MATCH ✅ (same-day)
+- **Reported (7/24):** **5 ft, green**; swell up **3–4 ft** across San Diego; **70–72°F**. Scripps pier cam ~5 ft. Divers calling it "not worth the drive."
+- **Tool `ljshores` (live, same-day):** **5–8 ft (green water)**, 69°F, 2–3 ft surf.
+- **Result:** **MATCH** ✅ (5 at the low edge of 5–8). Green matches; temp ~1–3°F low; swell building (tool 2–3 vs reported 3–4). Consistent with yesterday's 4–8 ft cam → SD holding poor/green as swell fills in.
+
 ### 2026-07-23 — La Jolla Shores (Scripps underwater cam) — MATCH ✅ (same-day)
 - **Ground truth (Scripps PIERViz underwater cam, real-time):** **~4–8 ft** visibility, green water.
 - **Tool `ljshores` (live, same-day):** **3–5 ft (green water)**, 71°F.
