@@ -64,7 +64,10 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 - **LJ Cove (aerial):** "rough and really nasty." Tool `ljcove` **4–5 ft (green water)**, **3–4 ft surf** (up from Shores' 2–3). → **MATCH** ✅ — poor/nasty confirmed; the 0.6× cove haircut keeps it appropriately low. Good validation.
 - **Aerial notes:** brown muck piled along the cliffs from LJ Shores → past Marine Room → the Cove — swell-driven sediment resuspension + the ongoing surface bloom. Cove churning/foamy; clearly rougher than the Shores.
 
-### 2026-07-24 — Crescent Bay, Laguna (first-hand, 10am–noon) — MATCH ✅ (near-exact)
+### 2026-07-25 (PM) — La Jolla Shores (Scripps underwater cam) — UNDER-call ⚠️ (afternoon clearing)
+- **Ground truth (Scripps PIERViz underwater cam, real-time PM):** **~20–25 ft**, light-blue water — the back pilings and structure well beyond the near piling are clearly visible (a big step up from the ~8–12 ft aerial look this morning).
+- **Tool `ljshores` (same-day AM capture):** **5–8 ft (green water)**, 68°F, 2–3 ft surf.
+- **Result:** **UNDER-call** ⚠️ (no overlap; tool ~12–20 ft low) — **but this is the exact scenario this morning's note flagged:** with Scripps NTU still down and chl steady (6.07), the tool can't "see" a same-day clarity bump, so it ran low as the SD water settled through the day. La Jolla was called as the first spot to recover, and it did — the Cove/Shores stretch cleared into the afternoon after the swell eased. Good validation of the recovery call, honest miss on the tool's magnitude (it's anchored to a stale/steady chl signal with no live turbidity to catch the clearing).
 - **Reported (7/24):** **8–12 ft**; surf moderate with the occasional 4–5 ft set (had to time the entry to avoid a tumble cycle). Usual crowd — kelp bass, halfmoons, opaleye, zebra perch, garibaldi — plus a fast school of yellowfin. No leopard sharks/rays (conditions not as good as Doug's dive ~a week ago).
 - **Tool `crescent` (live, same-day):** **8–13 ft**, 73°F, 2–3 ft surf.
 - **Result:** **MATCH** ✅ (8–13 vs 8–12, near-exact). Notable: Crescent has been a repeat **surge-murk over-call** spot on calm-looking days — today it's genuinely clean and the tool nailed it. Surf: tool 2–3 ft base vs the occasional 4–5 ft sets — reasonable.
