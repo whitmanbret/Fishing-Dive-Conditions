@@ -6203,6 +6203,12 @@ async function fetchAllData() {
   // Re-apply boat report boost after all fetches complete (boost may have been set during fetchBoatReports)
   applyBoatReportBoost();
 
+  // All late viz inputs (blended chlorophyll, temp, buoy/satellite SST) are now
+  // resolved — mark ready so this final render is the one allowed to paint the
+  // viz hero. Intermediate renders (straggler, cache hydrate) leave the '…'
+  // placeholder in place, eliminating the pre-chl phantom flash on spot switch.
+  D._vizInputsReady = true;
+
   updateDisplay();
   recalculate();
   buildForecast();
@@ -6961,6 +6967,12 @@ function renderSummaryGrid() {
 }
 
 async function updateDisplay() {
+  // Snapshot (at compute start) whether the late viz inputs — esp. blended
+  // chlorophyll, which is await'd AFTER the straggler re-render — are finalized.
+  // The straggler render calls the viz worker BEFORE chl lands, so its result is
+  // a no-chl phantom (La Jolla: 11–18 → 5–8). Gate the hero paint on this so the
+  // number only appears once, from the inputs-ready final render. (2026-07-25)
+  const _vizInputsReady = (D._vizInputsReady === true);
   const now=new Date();
   const loc=LOCATIONS[currentLocation];
   const dateStr = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
@@ -7310,16 +7322,20 @@ async function updateDisplay() {
   }
 
   setVal('estVizVal', vizEst, vizSource);
-  const vizFeetEl = document.getElementById('vizFeetLabel');
-  if (vizFeetEl) vizFeetEl.textContent = vizEst !== '--' ? `Est. ${vizEst}` : '--';
-  const vizHeroEl = document.getElementById('vizFeetHero');
-  if (vizHeroEl) {
-    vizHeroEl.textContent = vizEst !== '--' ? vizEst : (vizSource === 'Service unavailable' ? 'Service unavailable' : '--');
+  // Paint the viz number only when inputs are finalized (see _vizInputsReady at
+  // top) — skips the pre-chlorophyll straggler render so the hero goes '…' → real
+  // value with no phantom. Standalone/refresh renders keep _vizInputsReady=true.
+  if (_vizInputsReady) {
+    const vizFeetEl = document.getElementById('vizFeetLabel');
+    if (vizFeetEl) vizFeetEl.textContent = vizEst !== '--' ? `Est. ${vizEst}` : '--';
+    const vizHeroEl = document.getElementById('vizFeetHero');
+    if (vizHeroEl) {
+      vizHeroEl.textContent = vizEst !== '--' ? vizEst : (vizSource === 'Service unavailable' ? 'Service unavailable' : '--');
+    }
+    D.vizFeetStr = vizEst;
+    logVizHistory();
+    try { renderVizHistoryChart(); } catch(e) {}
   }
-
-  D.vizFeetStr = vizEst;
-  logVizHistory();
-  try { renderVizHistoryChart(); } catch(e) {}
 
   // ── Viz Confidence Indicator ──
   // Assess how much data backs the estimate, so divers know how much to trust it
