@@ -10489,8 +10489,11 @@ function onLocationChange() {
   updateWebcams();
   updateFavoriteStar();
   renderFavoritesBar();
-  // Hydrate from cache for instant feedback, then fetch fresh in background
-  sfCacheHydrate(currentLocation);
+  // Fetch fresh data. Cache-hydrate is intentionally NOT used on a spot switch:
+  // fetchAllData() resets D={} synchronously right after, so the hydrate render
+  // (deferred one frame via rAF) fired against an already-empty D — flashing a
+  // bogus viz value for a frame before the fresh number resolved. The hero is
+  // already set to a loading '…' above, so switch now goes '…' → fresh cleanly.
   fetchAllData();
 }
 
