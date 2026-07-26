@@ -59,6 +59,22 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-26 — Malaga Cove, PV (snorkel, first-hand "Al") — OVER-call ⚠️
+- **Reported:** snorkeled today, **viz terrible <5 ft**.
+- **Tool `pv` (live, same-day):** **11–14 ft**, 73°F, 2–3 ft surf.
+- **Result:** **OVER-call** ⚠️ (no overlap; tool ~6–9 ft high). Key factor: this is a **snorkel = shallow water**, which runs much murkier than the dive-depth number the `pv` spot models — Malaga Cove is a shallow reef/sand pocket that clouds up in any surf. PV is `currentProne` but today's current is low, so no dampener fired. Shallow-snorkel vs dive-depth is a known gap.
+
+### 2026-07-26 — "2-turtle morning" (10–15 shallow / 25+ deep) — likely La Jolla → MATCH ✅ (shallow)
+- **Reported:** viz **10–15 ft in the shallows, 25'+ AMAZING in the deep**. Two green turtles, first dive back from vacation. *(Spot not explicitly named; turtles + the shallow-murky/deep-clear split point to La Jolla.)*
+- **Tool `ljshores` (live):** **8–13 ft**, 75°F. → **MATCH** ✅ (8–13 overlaps the shallow 10–15). The 25'+ deep is the offshore/canyon clearing the tool underreads with the Scripps sensor down — consistent with yesterday's cam (25–30). La Jolla's deep water is genuinely clearing.
+
+### 2026-07-26 — La Jolla: offshore clear, Cove still murky (2nd-hand) — Cove MATCH ✅
+- **Heard:** can see the bottom from the **¼-mi to ½-mi buoys** (offshore clear, ~30+ ft), but **still no vis in the Cove**.
+- **Tool `ljcove` (live):** **5–8 ft** → **MATCH** ✅ — "no vis in the Cove" = the low tool number; the 0.6× cove haircut correctly holds the Cove low while offshore clears. Classic La Jolla split: clean offshore/canyon, murky Cove pocket. Second-hand — logged as intel.
+
+### 2026-07-26 — Monterey Breakwater (night dive) — wildlife note (LOBSTER)
+- A **lobster (~11–15 in)** at Breakwater, between mid reef and the wall — notable this far north (California spiny lobster is a SoCal species; a range-edge sighting in Monterey Bay). Night dive on doubles; harbor seals followed the light; waves looked sketchy on entry. No viz reported (wildlife-focused). Odd tail-tucked posture (possible eggs?).
+
 ### 2026-07-25 — Monterey Breakwater (grand circuit w/ Thomas) — MATCH ✅ (same-day)
 - **Reported:** **barge wreck 25 ft · the wall 20 ft · metridium field 10–15 ft** (lots of particulate) · calm/clear in the shallows. Bottom temp **52°F**, 105 min run. Beautiful halibut over the sand; the resident wolf eel back in its hole at the barge wreck.
 - **Tool `monterey` (live, same-day):** **18–23 ft (green tinge)**, 58°F surface, 1 ft surf.
