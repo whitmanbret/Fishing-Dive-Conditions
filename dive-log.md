@@ -59,6 +59,11 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-26 — McAbee Beach, Monterey Bay (reported next day) — MATCH ✅ (near-exact)
+- **Reported (yesterday AM, w/ Jim + Uncle E Benoni):** Vis **clear ~20 ft**; temp **52–60°F** (avg 54 — ~60 surface / 52 deep); max 59 ft (avg 35), 70 min. "Some of the most enjoyable conditions recently" — nice for the Shootout weekend. Surprise **halibut + a sea hare** on the way in.
+- **Tool `monterey` (live, nearest-day):** **15–20 ft (green water)**, 58°F, 1 ft surf.
+- **Result:** **MATCH** ✅ (near-exact — reported 20 sits at the top of 15–20). Temp: tool 58°F within the 52–60°F profile. Another Monterey Bay match — the tool's been dialed for Breakwater/McAbee all week.
+
 ### 2026-07-26 (PM) — La Jolla Shores (Scripps pier cam) — UNDER-call ⚠️ (narrowing; bloom cleared)
 - **Ground truth (Scripps PIERViz pier cam, real-time):** **15–20 ft**.
 - **Tool `ljshores` (live, same-day):** **8–13 ft**, 75°F, **chl 0.78** (down from 6.07 → 2.82 → 0.78), no live NTU (outage caveat showing).
