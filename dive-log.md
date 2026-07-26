@@ -59,6 +59,18 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-25 — Monterey Breakwater (grand circuit w/ Thomas) — MATCH ✅ (same-day)
+- **Reported:** **barge wreck 25 ft · the wall 20 ft · metridium field 10–15 ft** (lots of particulate) · calm/clear in the shallows. Bottom temp **52°F**, 105 min run. Beautiful halibut over the sand; the resident wolf eel back in its hole at the barge wreck.
+- **Tool `monterey` (live, same-day):** **18–23 ft (green tinge)**, 58°F surface, 1 ft surf.
+- **Result:** **MATCH** ✅ — 18–23 brackets the dive (wall 20 dead-center, barge 25 just above, deep metridium 10–15 = the particulate low end). Temp: tool 58°F surface vs 52°F at the bottom — consistent thermocline.
+
+### 2026-07-25 — Treasure Island / Goff, Laguna (surface look, NO dive)
+- **Reported:** didn't get in — from the surface, viz "looks good." Air ~80s, water high 60s, surf mild **2–3 ft** but sets **up to 5 ft on the Goff reefs**.
+- **Tool `treasureisland` (live):** **8–13 ft**, 72°F, **4–5 ft surf**. → Surf matches (tool 4–5 ≈ the 5-ft Goff reef sets); temp ~2–4°F warm. **No in-water viz to grade** (surface impressions read cleaner than horizontal viz) — logged as observation.
+
+### 2026-07-25 — Offshore 302 → 182 → Nine Mile Bank (fish/water intel)
+- **Reported:** water **72–74°F**, viz good **except north of the 9** (Nine Mile Bank); paddies still holding fish. **4 yellowtail + a dorado** (mahi — a warm-water pelatic, notable this far up). Not a viz grade — offshore fish/color intel for the weekly report; continues the warm blue-water-offshore pattern.
+
 ### 2026-07-25 (late PM) — La Jolla Shores (Scripps cam) — UNDER-call ⚠️ + validates pier anchor + caveat
 - **Ground truth (Scripps PIERViz cam, real-time):** **25–30 ft** — near pilings razor-sharp, the far piling AND a fish visible well into the blue. Peak of the afternoon clearing (this morning's aerial was 8–12, mid-PM cam 20–25, now 25–30).
 - **Tool `ljshores` (live, same-day):** **6–10 ft (green tinge)**, 75°F, chl 2.82, no live NTU.
