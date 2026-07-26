@@ -59,6 +59,13 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-26 (PM) — La Jolla Shores (Scripps pier cam) — UNDER-call ⚠️ (narrowing; bloom cleared)
+- **Ground truth (Scripps PIERViz pier cam, real-time):** **15–20 ft**.
+- **Tool `ljshores` (live, same-day):** **8–13 ft**, 75°F, **chl 0.78** (down from 6.07 → 2.82 → 0.78), no live NTU (outage caveat showing).
+- **Result:** **UNDER-call** ⚠️ but **edge/narrow** (tool top 13 vs cam bottom 15 — only ~2 ft short of overlap, vs the 15+ ft gaps earlier this week). The bloom has essentially cleared (chl 0.78), so the tool is climbing toward reality on its own; the residual gap is the missing turbidity sensor (can't fully confirm the clean water without NTU). The caveat is correctly flagging "clarity may be better — check the cam."
+- **Aerial (San Diego Snorkel Report, same day) — confirms the spatial split:** **clear teal water over the reef at LJ Shores and the Marine Room**, but heading **south toward the reef and over to the Cove, the sediment piles up** (turbid green-brown against the cliffs, clearing offshore). Exactly the north-clear / south-murk gradient: the pier-anchored `ljshores` sits in the clean water, and the `ljcove` 0.6× haircut correctly holds the Cove low where the sediment accumulates. Strong validation of both the pier move and the cove dampener.
+- **Cove / Children's Pool / Casa Cove aerial:** **waves breaking hard on the rocks** and greenish stirred-up water through the Cove → Children's Pool → Casa Cove pocket — the surf/surge is what's keeping the sediment suspended there. Matches `ljcove` **3–4 ft surf** and the poor Cove viz. The whole south-end pocket (Cove/Children's/Casa) is the murky, surf-worked zone; the Shores/Marine Room/pier stretch to the north is the clean zone.
+
 ### 2026-07-26 — Malaga Cove, PV (snorkel, first-hand "Al") — OVER-call ⚠️
 - **Reported:** snorkeled today, **viz terrible <5 ft**.
 - **Tool `pv` (live, same-day):** **11–14 ft**, 73°F, 2–3 ft surf.
