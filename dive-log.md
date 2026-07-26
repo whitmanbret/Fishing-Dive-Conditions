@@ -59,6 +59,12 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-25 (late PM) — La Jolla Shores (Scripps cam) — UNDER-call ⚠️ + validates pier anchor + caveat
+- **Ground truth (Scripps PIERViz cam, real-time):** **25–30 ft** — near pilings razor-sharp, the far piling AND a fish visible well into the blue. Peak of the afternoon clearing (this morning's aerial was 8–12, mid-PM cam 20–25, now 25–30).
+- **Tool `ljshores` (live, same-day):** **6–10 ft (green tinge)**, 75°F, chl 2.82, no live NTU.
+- **Result:** **UNDER-call** ⚠️ (tool ~15–24 ft low) — the ongoing Scripps-sensor-outage limitation: chl-driven with no turbidity to catch the intraday clearing.
+- **Two wins despite the miss:** (1) **the outage caveat is doing its job** — the tool is actively showing "⚠ Live turbidity sensor offline — actual clarity may be better than shown. Check the live cam," so a diver won't skip a clearing La Jolla on the 6–10. (2) **First cam reading since anchoring `ljshores` to the pier** — the cam IS the spot's location now, so this is a direct, apples-to-apples ground truth. chl also easing (6.07 → 2.82), consistent with the recovery.
+
 ### 2026-07-25 — La Jolla Shores + Cove (aerial, San Diego Snorkel Report) — Shores MATCH ✅, Cove MATCH ✅
 - **LJ Shores (aerial):** looks **~8–12 ft** today, ~5 ft better than yesterday morning. Tool `ljshores` **5–8 ft (green water)**, 68°F, 2–3 ft surf. → **MATCH** ✅ (edge, at 8). Aerials read cleaner than in-water horizontal viz (top-down through the surface), so 5–8 in-water is consistent with an 8–12 top-down look. Caveat: tool held 5–8 (same as yesterday) — with Scripps NTU still down and chl steady (6.07), it can't "see" a day-to-day clarity bump, so it may run a touch low as SD water settles.
 - **LJ Cove (aerial):** "rough and really nasty." Tool `ljcove` **4–5 ft (green water)**, **3–4 ft surf** (up from Shores' 2–3). → **MATCH** ✅ — poor/nasty confirmed; the 0.6× cove haircut keeps it appropriately low. Good validation.
