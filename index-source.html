@@ -7315,10 +7315,23 @@ async function updateDisplay() {
   // Mirror the SAME 0.6× here so today matches the forecast. Applied before calibration
   // so per-user/community corrections fine-tune on top of the corrected baseline.
   if ((currentLocation === 'ljcove' || currentLocation === 'ljmarineroom') && vizEst !== '--') {
+    // ljcove: flat 0.6× — a permanently trapped-sediment pocket, still brown even at
+    // low chl (drone-confirmed 7/26). ljmarineroom: CHL-AWARE (2026-07-26) — Marine
+    // Room itself clears with the Shores when the bloom fades (7/26: 20+ ft at chl
+    // ~0.9); it's the reef just SOUTH of MR that stays murky. The over-calls that
+    // justified the haircut (7/17–19) were all bloom days, so MR's murk is
+    // bloom-dependent: keep the full cut only during a bloom, ease it as chl drops.
+    let _covF = 0.6;
+    if (currentLocation === 'ljmarineroom') {
+      const _chl = D.chlorophyll;
+      if (_chl === undefined || _chl === null || _chl >= 3) _covF = 0.6;   // bloom/unknown → full cut (matches 7/17–19 over-calls)
+      else if (_chl >= 1.5) _covF = 0.85;                                  // transition
+      else _covF = 1.15;                                                   // clear → slight LIFT: MR clears (7/26 20+); counteracts the worker's coveTrap over-suppression. Runoff pocket drains S toward the Cove, not MR reef.
+    }
     const _covM = vizEst.match(/(\d+)–(\d+)/);
     if (_covM) {
-      const _clo = Math.max(1, Math.round(parseInt(_covM[1]) * 0.6));
-      const _chi = Math.max(_clo + 1, Math.round(parseInt(_covM[2]) * 0.6));
+      const _clo = Math.max(1, Math.round(parseInt(_covM[1]) * _covF));
+      const _chi = Math.max(_clo + 1, Math.round(parseInt(_covM[2]) * _covF));
       vizEst = vizEst.replace(/\d+–\d+/, `${_clo}–${_chi}`);
     }
   }
@@ -9247,9 +9260,19 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
     // NTU-derived base for ljcove specifically. This also implicitly
     // removes the headlandClearing +5 boost since we skip that gate too.
     if (currentLocation === 'ljcove' || currentLocation === 'ljmarineroom') {
-      // LJ Cove + LJ Marine Room: reef-pocket sub-spots, same 0.6× dampener.
-      baseLo = Math.max(1, Math.round(baseLo * 0.6));
-      baseHi = Math.max(baseLo + 1, Math.round(baseHi * 0.6));
+      // ljcove: flat 0.6× (permanently trapped-sediment pocket). ljmarineroom:
+      // CHL-AWARE (2026-07-26) — MR clears with the Shores when the bloom fades
+      // (murk is on the reef just S of MR); ease the cut as chl drops. Mirrors the
+      // today-path so the forecast stays consistent.
+      let _covF = 0.6;
+      if (currentLocation === 'ljmarineroom') {
+        const _chl = D.chlorophyll;
+        if (_chl === undefined || _chl === null || _chl >= 3) _covF = 0.6;
+        else if (_chl >= 1.5) _covF = 0.85;
+        else _covF = 1.15;   // clear → slight lift (MR clears; runoff drains S toward the Cove)
+      }
+      baseLo = Math.max(1, Math.round(baseLo * _covF));
+      baseHi = Math.max(baseLo + 1, Math.round(baseHi * _covF));
     } else if (loc.headlandClearing
         && (D.waveEnergy || 0) < 50
         && D.turbidity !== undefined && D.turbidity < 0.4) {
