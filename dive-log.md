@@ -59,6 +59,11 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-26 — Del Monte Beach, Monterey Bay — MATCH ✅ (surface) + warm-water note
+- **Reported:** **mega mola mola!** Water **super warm — 64°F at the surface** (sweating in a 7mm — very warm for Monterey). Vis **~20 ft from the surface, but hazy below ~20 ft depth.** Fun day.
+- **Tool `monterey` (live, same-day):** **15–20 ft (green water)**, ~58°F.
+- **Result:** **MATCH** ✅ (15–20 overlaps the ~20-ft surface read). The "hazy below 20 ft" is a deep haze band a single number can't split — an inversion of the usual clear-at-depth pattern. **Temp note:** tool ~58°F vs the diver's **64°F surface** — the surface has warmed ~6°F above the tool's SST source (marine-heatwave warmth pushing into Monterey; SST source lags the surface spike). A mola at Del Monte fits the warm-water signature.
+
 ### 2026-07-26 — La Jolla Shores (Katherine Mauser + reporter) — MATCH ✅ (bimodal)
 - **Reported (AM):** two distinct vis zones. **North of the east wall: blueish 15–25'+** (could almost see the bottom at 30'), "everywhere north kind of awesome." **The "Vallecitos triangle" / V-point / along the wall: 0–10'** (bat rays digging divots, stirring sediment). **55°F at depth, 73°F surface.** Low-power surf, easy entry.
 - **Tool `ljshores` (live):** **8–13 ft**, 73°F, chl 0.78, 2–3 ft surf.
