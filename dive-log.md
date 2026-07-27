@@ -59,6 +59,19 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-26 — La Jolla Shores (Katherine Mauser + reporter) — MATCH ✅ (bimodal)
+- **Reported (AM):** two distinct vis zones. **North of the east wall: blueish 15–25'+** (could almost see the bottom at 30'), "everywhere north kind of awesome." **The "Vallecitos triangle" / V-point / along the wall: 0–10'** (bat rays digging divots, stirring sediment). **55°F at depth, 73°F surface.** Low-power surf, easy entry.
+- **Tool `ljshores` (live):** **8–13 ft**, 73°F, chl 0.78, 2–3 ft surf.
+- **Result:** **MATCH** ✅ (bimodal day) — 8–13 overlaps the murky Vallecitos zone (0–10 at 8–10) and sits just under the clean north (15–25). Single number lands between a genuinely two-zone day. **Temp exact (73°F surface).** Refines the LJ map: **clean north of the east wall, murky at Vallecitos / along the wall** (bat-ray-stirred).
+
+### 2026-07-26 — La Jolla Marine Room (9:15–11:15) — UNDER-call ⚠️ (haircut over-suppressing as it clears?)
+- **Reported:** **20+ ft in the AM** ("way better than the entire last 2–3 months!"), then ~10:30 the swell picked up, vis worsened, surface got choppy → exited. No GSB at the ¼ mi; schools of fish, timid topes.
+- **Tool `ljmarineroom` (live):** **7–10 ft**, 73°F, chl 0.93, 1 ft surf (0.6× cove-pocket haircut applied).
+- **Result:** **UNDER-call** ⚠️ for the morning peak (7–10 vs 20+). **CANDIDATE FINDING:** the 0.6× Marine Room/Cove haircut was added 7/20 during the *peak bloom*; now the bloom's gone (chl ~0.9) and MR cleared to 20+, so the haircut is holding it artificially low. Still correct for the *Cove* (drone-confirmed brown), but **MR may need the haircut relaxed when chl is low / water's clearing** → proposed fix: make the haircut **chl-aware** (full 0.6× during a bloom, ease it when chl is low). Flagging, not auto-tuning (1 clearing report; and MR *did* worsen after 10:30, so 7–10 fits the later state).
+
+### 2026-07-26 — 425 / Rockpile (offshore SD) — fish/water intel
+- **Reported:** not many paddies; **one yellowtail on a paddy spear**, one more trolling a rapala at Rockpile. Water **72–73°F**. "Viz not great from the islands south." Offshore intel — paddy bite thinning, green/murk line extends from the Coronado Islands south.
+
 ### 2026-07-26 — McAbee Beach, Monterey Bay (reported next day) — MATCH ✅ (near-exact)
 - **Reported (yesterday AM, w/ Jim + Uncle E Benoni):** Vis **clear ~20 ft**; temp **52–60°F** (avg 54 — ~60 surface / 52 deep); max 59 ft (avg 35), 70 min. "Some of the most enjoyable conditions recently" — nice for the Shootout weekend. Surprise **halibut + a sea hare** on the way in.
 - **Tool `monterey` (live, nearest-day):** **15–20 ft (green water)**, 58°F, 1 ft surf.
