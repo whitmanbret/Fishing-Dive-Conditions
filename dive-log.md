@@ -59,6 +59,17 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-27 — La Jolla Shores (shop report) — MATCH ✅ (same-day)
+- **Reported:** **8–12 ft** (up to 15 in the cleanest offshore water), SW swell **3–4 ft**, 70–72°F. Moderate SW swell stirring the shallow reefs/inside → greener, more suspended sand & particulate; cleanest blue held farther offshore.
+- **Tool `ljshores` (live, same-day):** **8–13 ft**, 75°F, **3–4 ft surf**.
+- **Result:** **MATCH** ✅ (8–13 vs 8–12/15, near-exact). Surf: tool 3–4 = reported 3–4 to the foot. Temp: tool 75°F vs 70–72°F surface (~3–5°F warm). The pier-anchored Shores is tracking well; the SW swell nudged it back from the weekend clearing — exactly the "stirred up the shallows" read.
+
+### 2026-07-27 — Goff, Laguna (swim) — OVER-call ⚠️ (surf blowout)
+- **Reported:** viz **1–5 ft**, waves **4–5 ft**.
+- **Tool `treasureisland` (live, same-day):** **8–13 ft**, **4–5 ft surf**.
+- **Result:** **OVER-call** ⚠️ (no overlap; tool ~3–12 ft high). The **4–5 ft surf blew out the shallow Goff reef** → 1–5 ft. The tool has the surf *right* (4–5 ft = reported) but its viz model doesn't crater enough for heavy surf on a shallow, exposed reef. Same shallow-surf-blowout theme as **Malaga Cove 7/26** (<5 in the surf) and **Flat Rock 7/20** (surgy/current over-call).
+- **CANDIDATE (strengthening):** a **surf-driven viz dampener for shallow/exposed spots** — when surf is high (≥~4 ft) at a shallow reef/snorkel spot, viz should crater. Now 2–3 paired reports (Goff, Malaga, Flat Rock). Worth building once I can cleanly define "shallow-exposed" spots and a surf threshold; the tool already ingests the surf, it's just not penalizing viz for it.
+
 ### 2026-07-26 — Del Monte Beach, Monterey Bay — MATCH ✅ (surface) + warm-water note
 - **Reported:** **mega mola mola!** Water **super warm — 64°F at the surface** (sweating in a 7mm — very warm for Monterey). Vis **~20 ft from the surface, but hazy below ~20 ft depth.** Fun day.
 - **Tool `monterey` (live, same-day):** **15–20 ft (green water)**, ~58°F.
