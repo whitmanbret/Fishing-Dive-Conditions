@@ -59,6 +59,20 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-28 — Monterey Breakwater (first-hand, 7:45am) — UNDER-call ⚠️ (chl overshoot)
+- **Reported:** "tale of two cities." Shallow **kelp forest ~15 ft**; along the wall and down to 45 ft **fluctuating 7–15 ft**, lots of particulate, greenish cloudy at depth. No surge, glassy/no waves. **60°F surface / 53°F at 45 ft.**
+- **Tool `monterey` (live, same-day):** **3–5 ft (pea soup)**, 56°F, 1 ft surf.
+- **Result:** **UNDER-call** ⚠️ (no overlap; tool ~2–10 ft low). The tool swung from clean 15–25 all week to pea-soup 3–5 on a **chlorophyll/particulate spike** — it correctly caught the green-up (confirmed: particulate + green at depth) but **overshot** when actual was a diveable 7–15. Temp: tool 56°F vs 60°F surface / 53°F deep — good.
+- **Pattern / note:** recurring chl-penalty overshoot (cf. ljshores 7/18 2–4, ptlobos bloom → both fixed). Monterey Bay DOES get genuine pea-soup blooms (the 0–50 ft green-band), so I'm **not** capping it (would over-call a real bloom day) — but on a diveable-green day like today the chl-driven number runs too low, and Monterey's only NTU (the Wharf) reads harbor sediment, so it can't tell them apart. **Watch:** a 2nd Monterey chl-overshoot report → consider a Monterey-specific softening. Diver's tip: McAbee or Lover's Point for better viz.
+
+### 2026-07-28 — La Jolla Shores (Scripps cam, 7:44pm) — MATCH ✅
+- **Ground truth (Scripps pier cam):** **~11–13 ft** — hazy blue, near piling fouled/visible, particulate through the column.
+- **Tool `ljshores` (live):** **8–13 ft**, 75°F, 2–3 ft surf.
+- **Result:** **MATCH** ✅ (8–13 overlaps 11–13). Pier-anchored Shores tracking the cam well; SW swell keeping it hazy.
+
+### 2026-07-28 — La Jolla Cove + Marine Room (aerial) — swell-driven murk
+- **Aerials (today):** La Jolla Cove churning whitewater on the rocks; toward La Jolla Shores, visible murk and rough sea state from the swell; offshore still holding teal. Confirms the SW swell working the shallows — Cove/Shores stirred, cleaner water offshore. Consistent with `ljcove` staying low and the Shores 8–13 / cam 11–13.
+
 ### 2026-07-27 — La Jolla Shores (shop report) — MATCH ✅ (same-day)
 - **Reported:** **8–12 ft** (up to 15 in the cleanest offshore water), SW swell **3–4 ft**, 70–72°F. Moderate SW swell stirring the shallow reefs/inside → greener, more suspended sand & particulate; cleanest blue held farther offshore.
 - **Tool `ljshores` (live, same-day):** **8–13 ft**, 75°F, **3–4 ft surf**.
