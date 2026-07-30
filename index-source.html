@@ -1404,10 +1404,10 @@
     <!-- Site-specific local-knowledge tips (only shows when conditions match a known pattern) -->
     <div class="site-tip" id="siteTip" style="display:none"></div>
 
-    <!-- ===== RECENT REPORTS — moved above Today's Conditions 2026-07-19 (past 7 days of diver-reported viz across the current county/region) ===== -->
+    <!-- ===== RECENT REPORTS — moved above Today's Conditions 2026-07-19 (past 3 days of diver-reported viz across the current county/region; narrowed 7→3 on 2026-07-30) ===== -->
     <div class="recent-reports" id="recentReports">
       <div class="rr-header">
-        <span class="rr-title">Recent Reports · Past 7 days</span>
+        <span class="rr-title">Recent Reports · Past 3 days</span>
         <span class="rr-spot" id="rrSpot"></span>
       </div>
       <div class="rr-list" id="rrList"></div>
@@ -6741,7 +6741,7 @@ function renderConditionCards() {
 }
 
 // Recent Reports section (2026-05-25).
-// Diver-submitted reports for the past 7 days, aggregated across the current
+// Diver-submitted reports for the past 3 days, aggregated across the current
 // county/region, fetched from the worker /reports/public endpoint. Sanitized
 // (no email/IP) and edge-cached for ~5 min. Each row is labeled with its
 // spot of origin.
@@ -6828,7 +6828,7 @@ async function renderRecentReports() {
 
   // Header chip: in region mode show "<County label>", in spot mode show
   // the spot name. Drops the "ALL ... SPOTS" wording per user feedback —
-  // the section header already says "Recent Reports · past 7 days" so the
+  // the section header already says "Recent Reports · past 3 days" so the
   // region label alone is enough context.
   spotEl.textContent = useRegion
     ? (_REGION_LABELS[county] || county).toUpperCase()
@@ -6836,8 +6836,8 @@ async function renderRecentReports() {
   listEl.innerHTML = '<div class="rr-empty">Loading recent reports…</div>';
 
   const fetchUrl = useRegion
-    ? `${SF_PROXY_BASE}/reports/public?region=${encodeURIComponent(county)}&days=7&limit=20`
-    : `${SF_PROXY_BASE}/reports/public?spot=${encodeURIComponent(currentLocation)}&days=7&limit=20`;
+    ? `${SF_PROXY_BASE}/reports/public?region=${encodeURIComponent(county)}&days=3&limit=20`
+    : `${SF_PROXY_BASE}/reports/public?spot=${encodeURIComponent(currentLocation)}&days=3&limit=20`;
 
   let reports = [];
   // Serve from localStorage cache when fresh (15 min) — avoids a worker KV hit on
@@ -6862,7 +6862,7 @@ async function renderRecentReports() {
 
   if (!reports.length) {
     const scopeWord = useRegion ? `${_REGION_LABELS[county] || county} spots` : 'this spot';
-    listEl.innerHTML = `<div class="rr-empty">No diver reports in the past 7 days for ${scopeWord}. Be the first — tap Add Report below.</div>`;
+    listEl.innerHTML = `<div class="rr-empty">No diver reports in the past 3 days for ${scopeWord}. Be the first — tap Add Report below.</div>`;
     return;
   }
 
