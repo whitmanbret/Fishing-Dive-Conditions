@@ -57,6 +57,12 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ---
 
+## Data source status
+- **Scripps Pier shore station (turbidity + chlorophyll) — offline since 2026-07-15.** Three SoCal AUTOSS stations (Scripps / Santa Monica / Stearns Wharf) stopped simultaneously ~03:00 UTC 7/15, pointing to a recoverable pipeline issue rather than a dead sensor. During the outage `ljshores` falls back to daily satellite chl and can't see intraday clearing → the recurring afternoon UNDER-calls (7/25, 7/28, 7/29). Outage caveat + Scripps cam are the interim ground truth.
+  - **2026-07-29 — reported to SCCOOS; they replied they're looking into it and believe our diagnosis is correct.** Awaiting sensor restoration; no code change needed on our side — the fallback + caveat are behaving as designed.
+
+---
+
 ## My dives
 
 ### 2026-07-29 — La Jolla (all day) — morning MATCH ✅ / afternoon clearing UNDER-call ⚠️ / Cove pea soup MATCH ✅
