@@ -51,10 +51,13 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install estimator deps
-        # imageio-ffmpeg provides a self-contained ffmpeg (runner PATH ffmpeg is
-        # not guaranteed); scripps_capture.sh resolves it via $PYTHON.
-        run: pip install anthropic pydantic imageio-ffmpeg
+      - name: Install ffmpeg + estimator deps
+        # System ffmpeg via apt (the imageio-ffmpeg static build segfaults on the
+        # runner over HLS/TLS); capture.sh picks it up via `command -v ffmpeg`.
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          pip install anthropic pydantic
 
       - name: Prepare cam-data branch (worktree)
         run: |
