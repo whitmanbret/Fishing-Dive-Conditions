@@ -59,7 +59,8 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## Data source status
 - **Scripps Pier shore station (turbidity + chlorophyll) — offline since 2026-07-15.** Three SoCal AUTOSS stations (Scripps / Santa Monica / Stearns Wharf) stopped simultaneously ~03:00 UTC 7/15, pointing to a recoverable pipeline issue rather than a dead sensor. During the outage `ljshores` falls back to daily satellite chl and can't see intraday clearing → the recurring afternoon UNDER-calls (7/25, 7/28, 7/29). Outage caveat + Scripps cam are the interim ground truth.
-  - **2026-07-29 — reported to SCCOOS; they replied they're looking into it and believe our diagnosis is correct.** Awaiting sensor restoration; no code change needed on our side — the fallback + caveat are behaving as designed.
+  - **2026-07-29 — reported to SCCOOS; Ian Brunjes (Product Developer, SCCOOS / Scripps Institution of Oceanography) replied confirming our diagnosis:** *"Thanks for alerting us to the outage that you've noticed — your suspicion seems spot on. We are looking into it!"* No code change needed on our side — the fallback + caveat were behaving as designed.
+  - **2026-07-30 — RESOLVED.** Scripps Pier shore station back online: tool reading live turbidity 0.32 NTU + chl 0.29, `vizConfidence: High`, `shorePrimaryDown: false`, outage caveat gone. ~15-day outage (7/15–7/30). Contact for future outages: Ian Brunjes, SCCOOS. (Note: sensor restoration surfaced a separate wave-energy over-penalty — see 7/30 dive entry.)
 
 ---
 
