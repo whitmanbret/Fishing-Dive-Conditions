@@ -1,7 +1,0 @@
-# Capture artifacts — durable storage TBD (data branch / bucket), keep out of main.
-frames/
-cam_training_log.csv
-# Python
-__pycache__/
-*.pyc
-.venv/
