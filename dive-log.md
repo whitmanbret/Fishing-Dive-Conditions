@@ -59,6 +59,17 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-29 — La Jolla (all day) — morning MATCH ✅ / afternoon clearing UNDER-call ⚠️ / Cove pea soup MATCH ✅
+- **Morning:** Scripps cam ~**10–14 ft**; tool `ljshores` **8–13 ft** → **MATCH ✅** ("visibility prediction tool was spot on this morning" — Bret).
+- **Vallecitos sandy shallows:** now **very clear** — the pocket that was 0–10 ft last week has cleared; bat rays, diamond rays, a few leopard sharks, clear out to the sand dollars; silts up further south.
+- **Afternoon (~6pm, slight incoming tide):** water off the launch and the Beach & Tennis Club was **crystal clear, 15–20 ft**, and the cam pushed to **~25–30 ft**. A turtle cruising toward turtle town. Tool held **8–13** → **UNDER-call ⚠️** — the recurring sensor-down clearing miss (Scripps NTU offline; outage caveat flags it). Bret: the afternoon cleared on the incoming tide, **same as yesterday** — a tidal/diurnal clearing signal worth noting.
+- **Caves / turtle town / Cove:** **absolute pea soup.** Tool `ljcove` (low, ~5–8) → **MATCH ✅** — the 0.6× cove haircut holds the Cove low while the Shores clears. Sharpest split yet: crystal-clear Shores and pea-soup caves in the same outing.
+
+### 2026-07-29 — Mission Point Park (MPP) — MATCH ✅ (same-day)
+- **Reported:** warm and murky at the entry (bay side); **~15 ft after wrapping the corner** (channel side), and noticeably colder there.
+- **Tool `mission` (live, same-day):** **14–19 ft**, 76°F, 3–4 ft surf.
+- **Result:** **MATCH** ✅ (14–19 overlaps the ~15 ft channel read). Warm murky bay-side entry vs colder/clearer channel is the classic Mission split; the tool matches the channel/ocean-side viz.
+
 ### 2026-07-28 — Monterey Breakwater (first-hand, 7:45am) — UNDER-call ⚠️ (chl overshoot)
 - **Reported:** "tale of two cities." Shallow **kelp forest ~15 ft**; along the wall and down to 45 ft **fluctuating 7–15 ft**, lots of particulate, greenish cloudy at depth. No surge, glassy/no waves. **60°F surface / 53°F at 45 ft.**
 - **Tool `monterey` (live, same-day):** **3–5 ft (pea soup)**, 56°F, 1 ft surf.
