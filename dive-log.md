@@ -65,6 +65,14 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 
 ## My dives
 
+### 2026-07-30 — La Jolla Shores (Scripps cam, afternoon) — SENSOR BACK ✅ / but UNDER-call ⚠️ (new cause: wave-energy penalty)
+- **Reported:** Scripps underwater cam showing **~30 ft, very blue, very clear** (frame confirms: near fouled piling + receding pilings + sandy bottom all resolvable through clean blue water, easily 25–30 ft).
+- **BIG NEWS — the Scripps shore station is back online.** Tool now reads **live** Scripps Pier turbidity **0.32 NTU** + chl **0.29**, `vizConfidence: High` ("Live turbidity + live chlorophyll"), `shorePrimaryDown: false`, outage caveat correctly gone. SCCOOS's fix landed (they'd said 7/29 they were looking into it and agreed with our diagnosis).
+- **Tool `ljshores` (live):** **7–11 ft** (hero) → **UNDER-call ⚠️** vs a ~30 ft cam.
+- **New root cause (NOT stale data this time):** replayed the exact worker viz call — inputs `ntu 0.32, chl 0.29, waveEnergy 87.5, swellPeriod 14`. Worker takes the `ntu` path (correctly clear water) but a **wave-energy penalty** (WE 87.5 → effectiveWE 52.75) crushes it to **9–14 ft**. The long-period (14s) south swell is triggering a surf-stir haircut even though the **live turbidity already measures the water as crystal clear**.
+- **Diagnosis:** with a live low-NTU reading, the wave-energy penalty is **double-counting** — the turbidity sensor already captures the swell's real effect on clarity. The WE proxy makes sense when NTU is unavailable; it should back off when NTU is live and low. **Worker-side fix** (worker source not in this repo). Flagged to Bret 7/30.
+- Posted display-only (`predictedViz:""`) — sensor-transition/model-issue miss, not a calibration-tuning signal.
+
 ### 2026-07-29 — La Jolla (all day) — morning MATCH ✅ / afternoon clearing UNDER-call ⚠️ / Cove pea soup MATCH ✅
 - **Morning:** Scripps cam ~**10–14 ft**; tool `ljshores` **8–13 ft** → **MATCH ✅** ("visibility prediction tool was spot on this morning" — Bret).
 - **Vallecitos sandy shallows:** now **very clear** — the pocket that was 0–10 ft last week has cleared; bat rays, diamond rays, a few leopard sharks, clear out to the sand dollars; silts up further south.
