@@ -109,6 +109,9 @@ log "sensor: NTU=${NTU:-NA} chl=${CHL:-NA} @ ${NTU_TIME:-NA}"
 VLO=""; VHI=""; CONF=""; PILING=""; USABLE=""
 if [ "$ESTIMATE" = "1" ] && [ -n "${ANTHROPIC_API_KEY:-}" ]; then
   EARGS=(--json); [ "$POST" = "1" ] && EARGS+=(--post)
+  # CAM_MODEL lets automation use a cheaper model than the script's Opus default
+  # (the vision estimate is the ONLY paid step — frame + NTU/chl capture is free).
+  [ -n "${CAM_MODEL:-}" ] && EARGS+=(--model "$CAM_MODEL")
   if OUT=$("$PYTHON" "$SCRIPT_DIR/scripps_cam_viz.py" "$FRAME" "${EARGS[@]}" 2>/dev/null); then
     IFS=$'\t' read -r VLO VHI CONF PILING USABLE <<<"$(printf '%s' "$OUT" | "$PYTHON" -c '
 import sys,json
