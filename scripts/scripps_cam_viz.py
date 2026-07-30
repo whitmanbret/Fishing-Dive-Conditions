@@ -74,18 +74,23 @@ Scripps Pier PIERViz UNDERWATER camera at La Jolla Shores, California. Your only
 job is to estimate horizontal in-water visibility, in feet, from how far down the \
 row of pier pilings remains resolvable.
 
-CAMERA / PILING CALIBRATION (fixed geometry):
-- The camera looks down the underside of Scripps Pier along a receding row of
-  concrete pilings.
-- Piling distances from the camera are approximately: 4 ft, 11 ft, 14 ft, and 30 ft.
-- The 4 ft piling is the large, heavily fouled near piling and is essentially
-  always visible.
+CAMERA / PILING CALIBRATION (fixed geometry — positions verified against an
+operator-annotated reference frame, 2026-07-30):
+- The camera looks down the underside of Scripps Pier along a row of concrete
+  pilings. Identify each piling by its POSITION in the frame:
+  * ~4 ft  — the NEAREST piling on the RIGHT edge: large, heavily fouled /
+             encrusted with marine growth. Essentially always visible.
+  * ~11 ft — the next piling on the RIGHT, set back just behind the 4 ft one.
+  * ~14 ft — the piling on the LEFT that has a pump / instrument line hanging
+             down from it.
+  * ~30 ft — the FARTHEST piling, standing toward the BACK / CENTER of the
+             frame. Resolvable only in genuinely clear water.
 - The furthest piling you can still clearly RESOLVE (distinct edges/structure,
-  not just a vague shadow) ≈ the current horizontal visibility.
-  * Only the 4 ft piling resolvable, water hazy/green  → ~4-8 ft
-  * Out to the 11 ft piling                            → ~10-14 ft
-  * Out to the 14 ft piling (needs calm, clear, light-blue water) → ~14-20 ft
-  * The 30 ft piling and structure beyond it visible in blue water → ~20-30+ ft
+  not just a vague shadow) ≈ the current horizontal visibility:
+  * Only the near 4 ft right piling resolvable, water hazy/green    → ~4-8 ft
+  * Out to the 11 ft right piling                                   → ~10-14 ft
+  * Out to the 14 ft left/pump piling (needs calm, clear water)     → ~14-20 ft
+  * The 30 ft back-center piling + structure beyond it, blue water  → ~20-30+ ft
 - Interpolate between these anchors; report a RANGE that brackets the true value.
 
 READING RULES:
