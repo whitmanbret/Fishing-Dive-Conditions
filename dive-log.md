@@ -73,6 +73,12 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-07-31 — Monterey Bay area ("off Molla Mountain," boat) — soft match / deep UNDER-call ⚠️ (stratified bloom)
+- **Reported:** stratified column — **green-brown murk the first ~20 ft**, **thermocline at 25 ft**, then **35+ ft below 40 ft**, really **opening to ~40–60 ft by 60  ft depth**. Low surge, very minor current, **50°F at depth**.
+- **Tool `monterey` (live): 21–26 ft (bloom season), Low confidence** — chl **5 (central climatology**, no live Wharf chl), WE **18** (calm — matches the low surge), 55°F.
+- **Result: reasonable middle / slight deep UNDER-call.** 21–26 is a fair single-number compromise for a column that's ~5–15 ft murky up top and 35–60 ft clear below the thermocline — it over-reads the murky surface and under-reads the deep clear water. Crucially it **avoided the pea-soup overshoot** that burned 7/28 (tool 3–5 vs actual 7–15) — because chl is climatology (5) here, not a live Wharf spike.
+- **Takeaway:** a single, surface-weighted viz number can't express strong Monterey stratification (murky bloom surface + clear sub-thermocline) — a known-hard case, not a tunable miss. Monterey chl is still climatology (Wharf sensor not feeding), so this is an estimate, not a measurement (Low-confidence flag doing its job). Posted display-only — a deep boat/offshore site + stratification shouldn't skew the shore-Breakwater calibration.
+
 ### 2026-07-31 — La Jolla Cove / Marine Room / Shores (morning) — UNDER-call ⚠️ (elevated chl dampening gin-clear NTU)
 - **Reported (this morning):** **Cove + Marine Room ~25–30 ft, surge minimal.** **Scripps cam ~20 ft.**
 - **Tool (live, same-day):** `ljcove` **6–8 ft (settling)**, `ljmarineroom` **9–15 (settling)**, `ljshores` **11–16 (settling)** — all at **NTU 0.29–0.31 (gin-clear)** but **chl ~0.99** and WE 34–52.
