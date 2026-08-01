@@ -73,6 +73,25 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-07-31 — La Jolla Cove / Marine Room / Shores (morning) — UNDER-call ⚠️ (elevated chl dampening gin-clear NTU)
+- **Reported (this morning):** **Cove + Marine Room ~25–30 ft, surge minimal.** **Scripps cam ~20 ft.**
+- **Tool (live, same-day):** `ljcove` **6–8 ft (settling)**, `ljmarineroom` **9–15 (settling)**, `ljshores` **11–16 (settling)** — all at **NTU 0.29–0.31 (gin-clear)** but **chl ~0.99** and WE 34–52.
+- **Result: UNDER-call ⚠️** across all three (Cove worst: 6–8 vs 25–30). Root cause: **NTU says gin-clear (~0.3) but chl ~0.99 triggers the green-water "settling" dampener**, and the Cove's 0.6× haircut stacks on top — even though the direct turbidity reading + the cam + divers all say 20–30 ft clear with minimal surge. Yesterday's gin-clear fix doesn't fire (it gates chl < 0.6; today chl ≈ 1.0).
+- **Timing caveat:** tool read is later-day; the shop forecast had surf/wind building through the afternoon, so the WE component may be higher now than at the morning observation. But chl (~0.99) and the Cove haircut don't move with surf — the chl-driven part of the under-call was present this morning too.
+- **SIGNAL (2nd clear-water LJ day):** 7/30 was gin-clear (chl 0.29 → fix → 24–29, validated). Today shows LJ can be **20–30 ft clear at chl ~1.0 with low NTU** — i.e. the water is clear (low NTU), chl just adds *color* not *murk*. Candidate fix: when NTU is very low (< ~0.35, the direct clarity measurement), **ease the chl green-water dampener** — don't let a moderate chl (~0.6–1.3) crush water the turbidity sensor says is clear. Would lift Cove/MR/Shores toward the reported 20–30. **Proposed, not yet deployed — awaiting go-ahead** (one chl~1.0 clear day; want to avoid over-lifting a genuine stealth-bloom day). Posted display-only (timing + single data point).
+
+### 2026-07-31 — Crescent Bay (Laguna) — OVER-call ⚠️ (rough short-period surf)
+- **Reported:** rough, **occasional 5+ ft waves kept most people out** in the AM; viz "not so good, **maybe 8 ft**"; garibaldi "like dim orange lights in fog."
+- **Tool `crescent` (live, same-day): 11–16 ft (settling)**, WE 34, swell period 7s, 76°F.
+- **Result: OVER-call ⚠️** — actual ~8 vs tool 11–16, no overlap, tool ~3+ ft high. The short-period rough surf that muddied the cove and kept divers out isn't reflected in the tool's WE 34, and the coveTrap long-period penalty doesn't fire on a 7s swell (it gates ≥12s). **Single report → log + watch.** If a 2nd rough-day over-call appears at Crescent / another SW-facing Laguna cove, consider a short-period (<10s) rough-surf dampener for that cove group. Posted with predictedViz set so it feeds the crescent calibration (a genuine over-call).
+
+### 2026-07-30 — La Jolla Shores + Marine Room (shop + 2 divers) — MATCH ✅ (independent validation of the gin-clear fix)
+- **Shop daily (7/30):** LJ-area vis 10–20 ft, swell 3–4, temp 70–72, "clear blue water around LJ Shores per local reports + the Scripps pier cam; a little hazier at 15 m+." Winds climbing toward 10 kt ~2pm.
+- **Diver, 8–9:30am:** **25–30 ft very clear** in front of Marine Room + slightly north deeper reef / sand-dollar beds; "started getting a bit mixed up on the way out, especially in the shallows."
+- **Diver, 1–2pm:** Marine Room toward LJ Shores **25–30 ft** (similar to morning), "deteriorated in the deeper reef." **Huge school of yellowtail (50+, some easily ~4 ft) + a confident, curious school of triggerfish.**
+- **Tool 7/30 (same-day, AFTER the gin-clear worker fix): `ljshores` 24–29 ft** → **MATCH ✅** with the 25–30 reports.
+- **Significance:** this is the independent corroboration the 7/30 gin-clear fix was flagged to wait for ("revisit once a 2nd report corroborates"). The fix lifted `ljshores` 7–11 → 24–29; now a shop report **and** two separate divers confirm 25–30 ft at LJ Shores / Marine Room — real in-water validation, not just the cam. **Marine Room** also 25–30 (its 7/30 tool value wasn't captured same-day; the chl-aware MR haircut lifts on clear days — watch that MR tracks these clear-day 25–30 reads, and consider whether MR warrants the same gin-clear treatment as ljshores). Deeper-reef/shallows haze on exit = the usual MR-clears / adjacent-reef-murky split.
+
 ### 2026-07-30 — La Jolla Shores (Scripps cam, afternoon) — SENSOR BACK ✅ / but UNDER-call ⚠️ (new cause: wave-energy penalty)
 - **Reported:** Scripps underwater cam showing **~30 ft, very blue, very clear** (frame confirms: near fouled piling + receding pilings + sandy bottom all resolvable through clean blue water, easily 25–30 ft).
 - **BIG NEWS — the Scripps shore station is back online.** Tool now reads **live** Scripps Pier turbidity **0.32 NTU** + chl **0.29**, `vizConfidence: High` ("Live turbidity + live chlorophyll"), `shorePrimaryDown: false`, outage caveat correctly gone. SCCOOS's fix landed (they'd said 7/29 they were looking into it and agreed with our diagnosis).
