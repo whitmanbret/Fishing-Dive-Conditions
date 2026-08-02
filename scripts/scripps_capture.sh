@@ -95,11 +95,15 @@ FEAT=$(curl -fsS --max-time 25 \
   "${ERDDAP}?time,sea_water_turbidity_eco,mass_concentration_of_chlorophyll_in_sea_water_eco&orderByMax(%22time%22)" \
   2>/dev/null | "$PYTHON" -c '
 import sys,json
+def _num(x):
+    return repr(x) if isinstance(x,(int,float)) and not isinstance(x,bool) else ""
 try:
-    r=json.load(sys.stdin)["table"]["rows"][0]
-    ntu="" if r[1] is None else r[1]
-    chl="" if r[2] is None else r[2]
-    print(f"{ntu}\t{chl}\t{r[0]}")
+    t=json.load(sys.stdin)["table"]
+    d=dict(zip(t["columnNames"], t["rows"][0]))   # map by NAME, not position
+    ntu=_num(d.get("sea_water_turbidity_eco"))
+    chl=_num(d.get("mass_concentration_of_chlorophyll_in_sea_water_eco"))
+    tm=d.get("time"); tm=tm if isinstance(tm,str) else ""
+    print(f"{ntu}\t{chl}\t{tm}")
 except Exception:
     print("\t\t")' || printf '\t\t')
 IFS=$'\t' read -r NTU CHL NTU_TIME <<<"$FEAT"
