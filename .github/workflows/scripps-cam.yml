@@ -28,7 +28,12 @@ on:
     # Top of the hour across the daylight UTC window (~6am-8pm PT year-round);
     # scripps_capture.sh applies the exact America/Los_Angeles daylight gate.
     - cron: '0 13-23,0-4 * * *'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Bypass the daylight gate (for on-demand test/capture, e.g. at night)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -78,6 +83,10 @@ jobs:
           CAM_MODEL: ${{ vars.CAM_MODEL || 'claude-haiku-4-5' }}
           CSV: ${{ github.workspace }}/_data/cam_training_log.csv
           FRAME_DIR: ${{ github.workspace }}/_frames
+          # force=true (manual dispatch) widens the daylight gate to 24h so we can
+          # test/capture on demand (e.g. verify the model call at night).
+          START_HOUR: ${{ github.event.inputs.force == 'true' && '0' || '6' }}
+          END_HOUR: ${{ github.event.inputs.force == 'true' && '24' || '20' }}
         run: ./scripts/scripps_capture.sh
 
       - name: Upload frame artifact
