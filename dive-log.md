@@ -73,6 +73,12 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-01 — Monterey Bay (McAbee → Aquarium Intake → Metridium, scooter) — soft match / deep UNDER-call ⚠️ (stratified bloom, day 2)
+- **Reported:** strong thermocline **58→50°F**. **Top layer very low vis, pitch black under the kelp canopy**; **bottom layer much clearer, 30 ft+.** Bay ray at McAbee Pinnacle, pigeon guillemot, sand dollars past 60 ft, urchin-thinned kelp toward the Aquarium. 102 min, max depth 67 ft.
+- **Tool `monterey` (live, same-day): 21–26 ft (bloom season), Low confidence** — chl 4 (central climatology), WE 32, **58.5°F (matches the 58°F surface).**
+- **Result: soft match / deep under-call** — same as 7/31: 21–26 is a fair single-number middle for a column that's very-low-vis up top and 30 ft+ below the thermocline. Under-reads the clear bottom, over-reads the murky/dark surface, but **avoided the pea-soup overshoot again** (climatology chl, not a live Wharf spike).
+- **2-DAY MONTEREY PATTERN:** 7/31 (Molla Mtn, 35–60 deep) + 8/1 (McAbee–Metridium, 30+ deep) both = bloom-stratified columns (murky/dark surface, clear sub-thermocline). The tool's ~21–26 is a sensible, non-overshooting compromise; the single-number surface-weighted model simply can't express the stratification — not a tunable miss. **Feature idea (not urgent):** a Monterey bloom-season caveat line — *"summer bloom often stratifies: expect a murky surface but clearer water below the thermocline."* (Note the regional contrast: same-day LJ shop report has the OPPOSITE stratification — clear on top, hazier below ~50 ft.) Posted display-only.
+
 ### 2026-07-31 — Monterey Bay area ("off Molla Mountain," boat) — soft match / deep UNDER-call ⚠️ (stratified bloom)
 - **Reported:** stratified column — **green-brown murk the first ~20 ft**, **thermocline at 25 ft**, then **35+ ft below 40 ft**, really **opening to ~40–60 ft by 60  ft depth**. Low surge, very minor current, **50°F at depth**.
 - **Tool `monterey` (live): 21–26 ft (bloom season), Low confidence** — chl **5 (central climatology**, no live Wharf chl), WE **18** (calm — matches the low surge), 55°F.
