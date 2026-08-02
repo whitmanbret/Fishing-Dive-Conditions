@@ -73,6 +73,16 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-01 — Catalina Island — MATCH ✅
+- **Reported:** **50–70 ft, no waves.**
+- **Tool `catalina` (live): 40–45+ ft** (the "+" signals excellent / uncapped), chl 1, WE 58, 75°F.
+- **Result: MATCH ✅** — the "40–45+" excellent call brackets the reported 50–70 (the "+" bridges to the actual high end). Catalina blue water reading correctly. Posted display-only (already calling excellent — don't nudge a well-behaving spot up on one report).
+
+### 2026-08-01 — Treasure Island / Goff (Laguna), 0930 — UNDER-call ⚠️ (surf over-dampening clear water)
+- **Reported:** **15–20 ft** at 0930.
+- **Tool `treasureisland` (live): 7–12 ft**, chl **0.21 (gin-clear)**, WE **63 (elevated early-week surf)**, 75°F.
+- **Result: UNDER-call ⚠️** — 7–12 vs 15–20, no overlap, tool ~3–8 ft low. chl is gin-clear (0.21) but WE 63 (this week's dropping swell, still up today) dampened viz to 7–12; actual held at 15–20 despite the surf. Same surf-over-dampening theme as the Laguna shallow spots. **Single report + swell is falling all week → log + watch** (should ease on its own as surge drops toward 8/5–8/7). Posted feeding calibration.
+
 ### 2026-08-01 — Monterey Bay (McAbee → Aquarium Intake → Metridium, scooter) — soft match / deep UNDER-call ⚠️ (stratified bloom, day 2)
 - **Reported:** strong thermocline **58→50°F**. **Top layer very low vis, pitch black under the kelp canopy**; **bottom layer much clearer, 30 ft+.** Bay ray at McAbee Pinnacle, pigeon guillemot, sand dollars past 60 ft, urchin-thinned kelp toward the Aquarium. 102 min, max depth 67 ft.
 - **Tool `monterey` (live, same-day): 21–26 ft (bloom season), Low confidence** — chl 4 (central climatology), WE 32, **58.5°F (matches the 58°F surface).**
