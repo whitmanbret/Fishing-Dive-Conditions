@@ -170,10 +170,9 @@ def build_image_block(image: str) -> dict:
 # ---------------------------------------------------------------------------
 def estimate(image: str, model: str) -> tuple[VizEstimate, "anthropic.types.Usage"]:
     client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from env
-    response = client.messages.parse(
+    kwargs = dict(
         model=model,
         max_tokens=3000,
-        thinking={"type": "adaptive"},  # reason about piling geometry / water color
         system=[
             {
                 "type": "text",
@@ -189,6 +188,13 @@ def estimate(image: str, model: str) -> tuple[VizEstimate, "anthropic.types.Usag
         ],
         output_format=VizEstimate,
     )
+    # Adaptive thinking helps larger models reason about piling geometry / water
+    # color, but Haiku doesn't support it ("adaptive thinking is not supported on
+    # this model"). Only request it for models that do (Opus/Sonnet); the cheap
+    # Haiku automation path reasons directly into the structured output instead.
+    if "haiku" not in model.lower():
+        kwargs["thinking"] = {"type": "adaptive"}
+    response = client.messages.parse(**kwargs)
     if response.parsed_output is None:
         sys.exit("error: model did not return a parseable estimate (possible refusal).")
     return response.parsed_output, response.usage
