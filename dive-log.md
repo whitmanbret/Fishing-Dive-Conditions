@@ -73,10 +73,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
-### 2026-08-02 — Goff / Treasure Island (Laguna) — MATCH ✅ (surf-blowout: rough top, clear below)
-- **Reported:** big waves at the surface, but diving down it **opened up to 10–15 ft**.
-- **Tool `treasureisland` (live, same-day): 11–16 ft**, chl **0.15 (gin-clear)**, WE **75** (13s groundswell — matches "big waves"), 74°F.
-- **Result: MATCH ✅** — 11–16 overlaps the 10–15 below-surface viz. **Calibration self-correction in action:** yesterday (8/1) this spot under-called (7–12 vs 15–20) and I posted that miss feeding calibration; today it reads 11–16 and matches — the nudge appears to have lifted Goff into range. The tool's WE 75 correctly reflects the big waves, and 11–16 matches the sub-surge clarity (surface rougher/murkier from the waves, as reported).
+### 2026-08-02 — Crescent Bay + OC beaches (this morning) — OVER-call ⚠️ (2nd rough-day Crescent miss → pattern confirmed)
+- **Reported (8/2 AM):** Crescent Bay — the 1–2 ft forecast surf was actually **4–5 ft**; snorkelers said **viz 5 ft at best**. Orange County beach divers broadly: **2–5 ft, "no viz, not worth it," not going out this morning.**
+- **Tool `crescent` (live, same-day): 14–19 ft**, chl **0.14 (gin-clear)**, WE **57**, swell 2.1 ft / 13s, 75°F.
+- **Result: big OVER-call ⚠️** — 14–19 vs ~5 ft, tool ~9–14 ft too high. The gin-clear offshore chl (0.14) drives viz HIGH, but the 4–5 ft breaking surf blew out the shallow SW-facing cove (stirred sand/sediment) to 5 ft. The tool over-trusts the clear chl and under-weights the surf-driven shallow-cove blowout.
+- **PATTERN CONFIRMED (2nd report):** 7/31 Crescent tool 11–16 vs actual 8 (over); now 8/2 tool 14–19 vs actual 5 (over). Both rough-surf days, both over-calls — but different periods (7s then 13s), so it's NOT period-specific; it's **breaking-surf-height–driven cove blowout**. This is the 2nd corroborating report I flagged to watch for → **candidate fix: a surf-blowout dampener for the shallow SW-facing Laguna coves** (Crescent, Shaw's/Diver's, Emerald, Brooks, Woods) — dampen viz when breaking surf is elevated even if offshore chl is clear. **Proposed, awaiting go-ahead** (multi-spot change). Posted feeding calibration.
 
 ### 2026-08-01 — Catalina Island — MATCH ✅
 - **Reported:** **50–70 ft, no waves.**
@@ -87,6 +88,7 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 - **Reported:** **15–20 ft** at 0930.
 - **Tool `treasureisland` (live): 7–12 ft**, chl **0.21 (gin-clear)**, WE **63 (elevated early-week surf)**, 75°F.
 - **Result: UNDER-call ⚠️** — 7–12 vs 15–20, no overlap, tool ~3–8 ft low. chl is gin-clear (0.21) but WE 63 (this week's dropping swell, still up today) dampened viz to 7–12; actual held at 15–20 despite the surf. Same surf-over-dampening theme as the Laguna shallow spots. **Single report + swell is falling all week → log + watch** (should ease on its own as surge drops toward 8/5–8/7). Posted feeding calibration.
+- **Later that day (big-waves push — "the last push from that swell"):** a buddy reported big waves but it **opened to 10–15 ft below the surge** → vs the 7–12 tool = **edge MATCH** (10–12 overlap). So 8/1 Goff ran morning 15–20 (calm, tool under-called) → afternoon 10–15 (surf built, tool ~matched). *(This 10–15 reading was briefly mis-logged as 8/2; corrected 8/2 — it's an 8/1 report.)*
 
 ### 2026-08-01 — Monterey Bay (McAbee → Aquarium Intake → Metridium, scooter) — soft match / deep UNDER-call ⚠️ (stratified bloom, day 2)
 - **Reported:** strong thermocline **58→50°F**. **Top layer very low vis, pitch black under the kelp canopy**; **bottom layer much clearer, 30 ft+.** Bay ray at McAbee Pinnacle, pigeon guillemot, sand dollars past 60 ft, urchin-thinned kelp toward the Aquarium. 102 min, max depth 67 ft.
