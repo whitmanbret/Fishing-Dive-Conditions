@@ -1362,6 +1362,7 @@
         <div class="viz-confidence" id="vizConfidence" style="display:none"></div>
         <div class="source-health" id="sourceHealth" style="display:none"></div>
         <div class="viz-outage-note" id="vizOutageNote" style="display:none"></div>
+        <div class="viz-strat-note" id="vizStratNote" style="display:none"></div>
         <div class="viz-score-small" id="vizScoreSmall" style="display:none"></div>
         <div id="vizFeetLabel" style="display:none">--</div>
         <!-- Hidden gauge for score calc -->
@@ -7483,6 +7484,30 @@ async function updateDisplay() {
         _outEl.style.cssText = 'display:block;font-size:11px;line-height:1.35;margin-top:5px;color:#b8860b;font-weight:600';
       } else {
         _outEl.style.display = 'none';
+      }
+    }
+  } catch(e) {}
+
+  // Central-CA bloom stratification caveat (2026-08-01). Monterey/central summer
+  // upwelling blooms stratify HARD: a murky green/particulate surface layer over
+  // much clearer water below the thermocline. Two straight days of diver reports
+  // (7/31 "Molla Mtn" 35–60 ft deep vs murky top; 8/1 McAbee–Metridium 30 ft+ deep
+  // vs pitch-black surface) confirmed it, and a single surface-weighted viz number
+  // can't express it — the tool's bloom-season estimate reads like a middling murk
+  // when the sub-thermocline water is actually great. So when a CENTRAL-region
+  // nearshore spot is in bloom-season mode, tell divers to expect the split rather
+  // than skip a spot on the surface number. Info (blue), not a warning.
+  try {
+    const _stratEl = document.getElementById('vizStratNote');
+    if (_stratEl) {
+      const _reg = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
+      const _bloomSeason = typeof vizEst === 'string' && /bloom season/i.test(vizEst);
+      const _stratifies = _reg === 'central' && !loc.bluewater && !loc.offshore;
+      if (_bloomSeason && _stratifies && vizEst !== '--' && vizEst !== 'Service unavailable') {
+        _stratEl.textContent = '🌡 Summer bloom often stratifies here — expect a murkier green surface layer, with clearer water below the thermocline (the best visibility is frequently deeper).';
+        _stratEl.style.cssText = 'display:block;font-size:11px;line-height:1.35;margin-top:5px;color:#2a7ab0;font-weight:600';
+      } else {
+        _stratEl.style.display = 'none';
       }
     }
   } catch(e) {}
