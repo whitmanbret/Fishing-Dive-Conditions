@@ -1363,6 +1363,7 @@
         <div class="source-health" id="sourceHealth" style="display:none"></div>
         <div class="viz-outage-note" id="vizOutageNote" style="display:none"></div>
         <div class="viz-strat-note" id="vizStratNote" style="display:none"></div>
+        <div class="viz-surf-note" id="vizSurfNote" style="display:none"></div>
         <div class="viz-score-small" id="vizScoreSmall" style="display:none"></div>
         <div id="vizFeetLabel" style="display:none">--</div>
         <!-- Hidden gauge for score calc -->
@@ -7508,6 +7509,27 @@ async function updateDisplay() {
         _stratEl.style.cssText = 'display:block;font-size:11px;line-height:1.35;margin-top:5px;color:#2a7ab0;font-weight:600';
       } else {
         _stratEl.style.display = 'none';
+      }
+    }
+  } catch(e) {}
+
+  // Shallow SW-facing Laguna cove surf-blowout caveat (2026-08-02). The Laguna
+  // reef coves (Crescent, Shaw's/Diver's, Emerald, Woods, Brooks) have reef/rock
+  // structure that MAGNIFIES incoming surf, so on a surf day the shallow cove +
+  // shore entry blow out (churned sand) even when the offshore water is clear —
+  // the worker now dampens the headline number for that, but a diver should also
+  // know the split: the shallows are worse than the number, deeper water is
+  // clearer. Mirrors the worker gate (coveTrap && !scrippsProximity && rawWE>30).
+  // Confirmed 7/31 + 8/2 (snorkelers 5–8 ft vs gin-clear offshore chl).
+  try {
+    const _surfEl = document.getElementById('vizSurfNote');
+    if (_surfEl) {
+      const _surfy = loc.coveTrap && !loc.scrippsProximity && (Number(D.waveEnergy) || 0) > 30;
+      if (_surfy && vizEst !== '--' && vizEst !== 'Service unavailable') {
+        _surfEl.textContent = '🌊 The reef here magnifies the surf — on a day like today the shallow cove/entry can blow out (churned sand), even with clear water offshore. Expect the best visibility in deeper water past the surge; watch the entry.';
+        _surfEl.style.cssText = 'display:block;font-size:11px;line-height:1.35;margin-top:5px;color:#b8860b;font-weight:600';
+      } else {
+        _surfEl.style.display = 'none';
       }
     }
   } catch(e) {}
