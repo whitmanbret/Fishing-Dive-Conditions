@@ -73,6 +73,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-02 — Goff / Treasure Island (Laguna) — MATCH ✅ (surf-blowout: rough top, clear below)
+- **Reported:** big waves at the surface, but diving down it **opened up to 10–15 ft**.
+- **Tool `treasureisland` (live, same-day): 11–16 ft**, chl **0.15 (gin-clear)**, WE **75** (13s groundswell — matches "big waves"), 74°F.
+- **Result: MATCH ✅** — 11–16 overlaps the 10–15 below-surface viz. **Calibration self-correction in action:** yesterday (8/1) this spot under-called (7–12 vs 15–20) and I posted that miss feeding calibration; today it reads 11–16 and matches — the nudge appears to have lifted Goff into range. The tool's WE 75 correctly reflects the big waves, and 11–16 matches the sub-surge clarity (surface rougher/murkier from the waves, as reported).
+
 ### 2026-08-01 — Catalina Island — MATCH ✅
 - **Reported:** **50–70 ft, no waves.**
 - **Tool `catalina` (live): 40–45+ ft** (the "+" signals excellent / uncapped), chl 1, WE 58, 75°F.
