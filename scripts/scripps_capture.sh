@@ -112,7 +112,8 @@ if [ "$ESTIMATE" = "1" ] && [ -n "${ANTHROPIC_API_KEY:-}" ]; then
   # CAM_MODEL lets automation use a cheaper model than the script's Opus default
   # (the vision estimate is the ONLY paid step — frame + NTU/chl capture is free).
   [ -n "${CAM_MODEL:-}" ] && EARGS+=(--model "$CAM_MODEL")
-  if OUT=$("$PYTHON" "$SCRIPT_DIR/scripps_cam_viz.py" "$FRAME" "${EARGS[@]}" 2>/dev/null); then
+  _err=$(mktemp)
+  if OUT=$("$PYTHON" "$SCRIPT_DIR/scripps_cam_viz.py" "$FRAME" "${EARGS[@]}" 2>"$_err"); then
     IFS=$'\t' read -r VLO VHI CONF PILING USABLE <<<"$(printf '%s' "$OUT" | "$PYTHON" -c '
 import sys,json
 d=json.load(sys.stdin)
@@ -120,8 +121,9 @@ print("\t".join(str(d.get(k,"")) for k in
       ("viz_low_ft","viz_high_ft","confidence","furthest_piling_ft","usable_frame")))')"
     log "estimate: ${VLO}-${VHI} ft ($CONF, furthest piling ~${PILING} ft, usable=$USABLE)"
   else
-    log "estimate: scripps_cam_viz.py failed (frame still captured + logged)"
+    log "estimate: scripps_cam_viz.py failed — $(tr '\n' ' ' < "$_err" | tail -c 500)"
   fi
+  rm -f "$_err"
 elif [ "$ESTIMATE" = "1" ]; then
   log "estimate: skipped — ANTHROPIC_API_KEY not set"
 fi
