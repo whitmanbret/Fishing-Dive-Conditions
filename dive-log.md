@@ -73,6 +73,9 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-02 — Shop daily forecast (La Jolla) — context (not a gradeable dive)
+- Shop admin: LJ Shores **vis 10–20 ft** (best in the shallow kelp/Shores, **hazier below ~50 ft**), **surf settled to 2–3 ft**, 70–72°F, light AM winds building PM. → Tool `ljshores` ~11–16 **overlaps 10–20 = agrees**. Two takeaways: (1) LJ's stratification is the **opposite of Monterey** — clear on top, hazier deep (particulate below 50 ft); (2) **surf is settling on schedule** (2–3 ft), tracking toward the low-surge 8/5–8/7 window for the clean chl experiment. Forecast summary — not posted to the feed.
+
 ### 2026-08-02 — La Jolla (MR/reserve AM + Cove 2pm) — UNDER-call ⚠️ (clear water crushed; more 8/5 evidence, but surf-confounded)
 - **MR → 1/4 buoy → sea caves → sand dollars (8:45–11:30am):** **20 ft** in the deeper reef + 1/4-mi buoy; sand-dollar beds + sea caves **clearest**; the reef itself carried a **murk layer from mid-level to bottom**, murkier heading back. Tool `ljmarineroom` **8–13 ft** → matches the murky reef but **UNDER-calls the 20 ft clear zones**.
 - **LJ Cove, 2pm (1.5 hr):** got **clearer the longer they stayed** — grass/rocks in front of the caves gorgeous, viz almost to the bottom between cove and caves, **crystal clear inside the Cove proper**. Tool `ljcove` **5–7 ft** → **big UNDER-call ⚠️**.
