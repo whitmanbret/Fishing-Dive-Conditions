@@ -73,6 +73,20 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-02 — La Jolla (MR/reserve AM + Cove 2pm) — UNDER-call ⚠️ (clear water crushed; more 8/5 evidence, but surf-confounded)
+- **MR → 1/4 buoy → sea caves → sand dollars (8:45–11:30am):** **20 ft** in the deeper reef + 1/4-mi buoy; sand-dollar beds + sea caves **clearest**; the reef itself carried a **murk layer from mid-level to bottom**, murkier heading back. Tool `ljmarineroom` **8–13 ft** → matches the murky reef but **UNDER-calls the 20 ft clear zones**.
+- **LJ Cove, 2pm (1.5 hr):** got **clearer the longer they stayed** — grass/rocks in front of the caves gorgeous, viz almost to the bottom between cove and caves, **crystal clear inside the Cove proper**. Tool `ljcove` **5–7 ft** → **big UNDER-call ⚠️**.
+- **Read:** more corroboration of the LJ clear-water under-call — Cove/MR get crushed (0.6× haircut + surf-withheld clear-day bonus + chl dampener) on a day they actually cleared. BUT today still has surf up (Cove WE 69) and ntu 0.41 (NOT gin-clear), so it's **confounded — not the clean isolated-chl test.** Adds to the pile for the **8/5 low-surge experiment**. Posted display-only (surf confound — don't muddy the 8/5 signal).
+
+### 2026-08-02 — Pirates Cove, Corona del Mar (`newport`) — MATCH ✅
+- **Reported:** 15–20 ft all day. (First wild octopus 🐙.)
+- **Tool `newport`: 13–18 ft**, chl 0.18, WE 42 → **MATCH ✅** (13–18 overlaps 15–20).
+
+### 2026-08-01 — South Monastery (Carmel / Monastery) deep dive — soft match / deep UNDER-call ⚠️ (stratified LIVE bloom)
+- **Reported (Sat):** sporty conditions; **30'+ viz at depth**, dark; ratfish + a huge baitfish school; sleeping angel shark between N/S Monastery. (Returned a lost iPhone found at ~10'; and a mystery bottom-mounted device at ~35' on the N side — see reply.)
+- **Tool `carmel` (live): 8–12 ft (bloom)** — LIVE chl **8.73** (a real bloom, not climo), WE **250** (big surf = "sporty"), 52.7°F.
+- **Result: soft match / deep under-call** — same central-CA stratification (murky bloom surface + big surf up top, clear 30'+ below). Tool's 8–12 is a fair middle, under-reads the deep. **Caveat gap found:** carmel shows "(bloom)" (live chl) not "(bloom season)" (climo), so the new stratification caveat did NOT fire — should broaden it to fire on live-bloom / green-water suffixes for central spots too.
+
 ### 2026-08-02 — Crescent Bay + OC beaches (this morning) — OVER-call ⚠️ (2nd rough-day Crescent miss → pattern confirmed)
 - **Reported (8/2 AM):** Crescent Bay — the 1–2 ft forecast surf was actually **4–5 ft**; snorkelers said **viz 5 ft at best**. Orange County beach divers broadly: **2–5 ft, "no viz, not worth it," not going out this morning.**
 - **Tool `crescent` (live, same-day): 14–19 ft**, chl **0.14 (gin-clear)**, WE **57**, swell 2.1 ft / 13s, 75°F.
