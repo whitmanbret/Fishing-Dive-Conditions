@@ -73,6 +73,23 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-03 — La Jolla Marine Room (AM + noon) — MATCH ✅ (hazy/mixed)
+- **Reported:** early-AM MR — **hazy in the shallows, opened up some at depth** (first huge school of bat rays!); noon snorkel — **clear in parts, hazy in others**, rough entry/exit at high tide, **74°F**. Bat ray w/ spiracle sand-flushing, school of perch.
+- **Tool `ljmarineroom` (live, same-day): 6–9 ft (settling)**, ntu **0.57**, chl **0.96**, WE 10, 71°F.
+- **Result: MATCH ✅** — the low-moderate hazy call matches the mixed report. MR is no longer the 7/31 gin-clear 25–30: NTU (0.57) and chl (0.96) have ticked up and the tool tracked it back down. Temp 71 (tool, AM) vs 74 (noon snorkel) — surface warmed through midday.
+
+### 2026-08-03 — Shop daily forecast (La Jolla) — context (not a gradeable dive)
+- LJ Shores 10–20 (best in the shallows, hazier below ~50 ft), surf 2–3, 70–72°F. Consistent with the tool; forecast summary, not posted to the feed.
+
+### 2026-08-02 — Point Lobos (Whalers/Bluefish Cove, Sun) — MATCH ✅ (edge; surge + bloom correctly flagged)
+- **Reported:** "a seemingly OK swell number that **doesn't translate underwater**" — 6–7 ft swell (Pt Sur buoy), heavy water movement at the ramp (esp. on exit), **surge noticeable even to ~80 ft**. **Viz awful the whole dive — best ~10 ft at 130', worse in the cove.** 51°F at depth. Wolf eels at Great Pinnacle; "Chonk" the giant sea lemon relocated near Beto's.
+- **Tool `ptlobos` (live): 10–15 ft (green water)**, chl **7.34** (satellite bloom), **WE 260** (big surge off the 5 ft / 10 s swell shoaling), 55.8°F surface.
+- **Result: MATCH ✅ (edge)** — the tool flagged BOTH the bloom (green water) AND the heavy surge (WE 260) and landed 10–15; actual ~10 best / worse in the cove (tool's high end a touch generous). Good handling of a surge+bloom day. Reinforces the week's theme: **swell height alone under-represents the underwater surge** — the WE model catching it here is exactly right.
+
+### 2026-08-02 — LJ Cove 20–25+ (GSB) + Catalina Casino Point 50–60 — corroborations ✅
+- **LJ Cove:** **20–25+ ft, low surge, 69–74°F, a Giant (Black) Sea Bass.** Confirms the 8/2 afternoon Cove clearing (the "cleared the longer we stayed" read) — a strong Cove day once the surge dropped.
+- **Catalina — Casino Point (Avalon):** **50–60 ft.** Confirms Catalina's excellent week (50–70 on 8/1). Tool `catalina` 40–45+ → MATCH (the "+" brackets it).
+
 ### 2026-08-02 — Shop daily forecast (La Jolla) — context (not a gradeable dive)
 - Shop admin: LJ Shores **vis 10–20 ft** (best in the shallow kelp/Shores, **hazier below ~50 ft**), **surf settled to 2–3 ft**, 70–72°F, light AM winds building PM. → Tool `ljshores` ~11–16 **overlaps 10–20 = agrees**. Two takeaways: (1) LJ's stratification is the **opposite of Monterey** — clear on top, hazier deep (particulate below 50 ft); (2) **surf is settling on schedule** (2–3 ft), tracking toward the low-surge 8/5–8/7 window for the clean chl experiment. Forecast summary — not posted to the feed.
 
