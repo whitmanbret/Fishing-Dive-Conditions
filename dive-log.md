@@ -73,6 +73,16 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-04 — Crescent Bay, 0930 — MATCH ✅ (validates the Laguna surf-blowout fix)
+- **Reported:** **15 ft in the shallows, 8–12 ft outside by the kelp forest**; planned to head further out hoping it clears.
+- **Tool `crescent` (live): 7–11 ft**, chl **0.18 (gin-clear)**, WE **40**, 1.7 ft / 14s, 74°F. Reef surf-magnification caveat correctly showing.
+- **Result: MATCH ✅** — 7–11 overlaps the 8–12 kelp/outside read. **This validates the 8/2 Laguna surf-blowout fix:** pre-fix Crescent over-called (14–19 on 8/2 vs actual 5); now with WE 40 the graduated dampener lands 7–11, matching the 8–12 actual. The gin-clear offshore chl (0.18) no longer wrongly reads the surf-worked cove as clear.
+
+### 2026-08-04 — La Jolla Marine Room (9–9:20am) — MATCH ✅ (edge; hazy/mixed)
+- **Reported:** reef **murky from the shallows to the sand dollar beds**; open water toward the ¼-mile buoy **hazy 15–20 ft with some clear spots, 75°F**. (Turtle "Scar" at the round-ball buoy — swam with her ~90 min.)
+- **Tool `ljmarineroom` (live, post Cove-fix): 17–23 ft (green tinge)**, ntu 0.2, chl 0.46, WE 10.
+- **Result: MATCH ✅ (edge)** — 17–23 overlaps the 15–20 hazy open-water read; the murky reef is the known south-reef sub-spot the MR model expects to stay murkier. **Watch:** the MR chl-aware 1.15× lift tops slightly high (23 vs the reported 20) on a hazy-but-low-chl day — if it recurs, gate the lift on genuinely gin-clear rather than any chl < 1.5.
+
 ### 2026-08-03 — San Carlos Beach / Breakwater (Monterey), morning — MATCH ✅ (heavy bloom = pea soup)
 - **Reported:** **5 ft off the boat at the end of the wall** this morning; "been better at high tide the last few days."
 - **Tool `monterey` (live): 3–5 ft (pea soup), High confidence** — chl **14.91** (live Sentinel-3A satellite bloom, NOT climatology), WE 12, 53°F.
