@@ -1,0 +1,73 @@
+name: Forecast log
+
+# Once a day, capture what the tool FORECASTS for each future day (viz range +
+# swell) per spot, so we can score forecast accuracy against the cam-viz actuals
+# the cam pipeline logs. Scrapes the deployed tool with headless Chromium (the
+# forecast is computed client-side). Appends to forecast-log.csv on the cam-data
+# branch — kept off main so it never triggers a Cloudflare Pages rebuild.
+#
+# Scoring later: join forecast rows (forecast_for_date + horizon) against the
+# actual cam-viz for that date → "on 8/4 the tool forecast 8/6 = X; actual was Y".
+
+on:
+  schedule:
+    - cron: '30 15 * * *'   # ~8:30am PT (15:30 UTC) daily
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forecast-log
+  cancel-in-progress: false
+
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (main — scripts)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright + Chromium
+        run: |
+          npm i playwright@latest
+          npx playwright install --with-deps chromium
+
+      - name: Prepare cam-data branch (worktree)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin --prune
+          if git show-ref --verify --quiet refs/remotes/origin/cam-data; then
+            git worktree add _data origin/cam-data
+            git -C _data switch -C cam-data
+          else
+            git worktree add -b cam-data _data
+            ( cd _data && git rm -rq . >/dev/null 2>&1 || true )
+          fi
+
+      - name: Capture forecast + append
+        run: |
+          node scripts/forecast_log.mjs > /tmp/fc.csv
+          echo "=== captured ==="; cat /tmp/fc.csv
+          CSV=_data/forecast-log.csv
+          if [ -f "$CSV" ]; then
+            tail -n +2 /tmp/fc.csv >> "$CSV"    # append data rows only (skip header)
+          else
+            cp /tmp/fc.csv "$CSV"               # first run: header + rows
+          fi
+          echo "total data rows: $(( $(wc -l < "$CSV") - 1 ))"
+
+      - name: Commit to cam-data
+        run: |
+          cd _data
+          git add forecast-log.csv
+          git commit -m "forecast log $(date -u +%FT%TZ)" || { echo "nothing to commit"; exit 0; }
+          git push origin HEAD:cam-data
