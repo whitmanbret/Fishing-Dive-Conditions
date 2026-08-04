@@ -1680,7 +1680,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
           <span style="font-size:11px;color:var(--text-muted);">Satellite Chlorophyll-a Concentration</span>
           <div style="display:flex;gap:6px;">
-            <button id="chlMap8dayBtn" onclick="setChlMapView('8day')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:var(--accent);color:#fff;border:1px solid var(--accent);">Weekly</button>
+            <button id="chlMap8dayBtn" onclick="setChlMapView('8day')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:var(--accent);color:#fff;border:1px solid var(--accent);">Smoothed</button>
             <button id="chlMapDailyBtn" onclick="setChlMapView('daily')" style="padding:4px 10px;font-size:10px;border-radius:4px;cursor:pointer;font-weight:600;background:transparent;color:var(--text-muted);border:1px solid var(--border);">Daily</button>
           </div>
         </div>
@@ -1690,7 +1690,7 @@
           <div id="chlMapLoading" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-muted);font-size:12px;">Loading satellite imagery...</div>
         </div>
         <div style="margin-top:8px;font-size:10px;color:var(--text-muted);line-height:1.5;">
-          <span id="chlMapSourceLabel">MODIS Aqua · 8-day composite · 4km</span><br>
+          <span id="chlMapSourceLabel">VIIRS+OLCI gap-filled (DINEOF) · ~9km</span><br>
           Source: NOAA CoastWatch / ERDDAP · Green = high chlorophyll (reduced viz) · Blue = clear water
         </div>
       </div>
@@ -1807,16 +1807,20 @@
 
 <script>
 // Chlorophyll Map — outside obfuscated block so onclick handlers resolve.
-// Switched 2026-05-23 from coastwatch.noaa.gov VIIRS (502 outage) to PFEG
-// MODIS Aqua (coastwatch.pfeg.noaa.gov), which has been stable. Note the
-// new endpoints have no altitude dim, so the URL is one bracket shorter.
+// 2026-08-04: MODIS Aqua (erdMH1chla*) was retired — those datasets end
+// July 2022, so the map had been serving 4-year-stale imagery. Switched to
+// live NESDIS VIIRS science-quality products on the same PFEG node. Note these
+// DO carry an altitude dim, so the URL needs the extra [(0.0)] bracket, and the
+// variable is chlor_a (not chlorophyll). Two views:
+//   'smoothed' = VIIRS+OLCI DINEOF gap-filled (cloud-free by construction, ~9km)
+//   'daily'    = VIIRS SNPP 4km (freshest, but has cloud gaps nearshore)
 var CHL_MAP_URLS = {
-  '8day': 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla8day.png?chlorophyll[(last)][(32):(35.5)][(-121.5):(-116.5)]',
-  'daily': 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chla1day.png?chlorophyll[(last)][(32):(35.5)][(-121.5):(-116.5)]'
+  '8day': 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisNPPN20S3ASCIDINEOFDaily.png?chlor_a[(last)][(0.0)][(32):(35.5)][(-121.5):(-116.5)]',
+  'daily': 'https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNSQchlaDaily.png?chlor_a[(last)][(0.0)][(32):(35.5)][(-121.5):(-116.5)]'
 };
 var CHL_MAP_LABELS = {
-  '8day': 'MODIS Aqua · 8-day composite · 4km',
-  'daily': 'MODIS Aqua · Daily · 4km (may have cloud gaps)'
+  '8day': 'VIIRS+OLCI gap-filled (DINEOF) · ~9km',
+  'daily': 'VIIRS · Daily · 4km (may have cloud gaps)'
 };
 var chlMapCurrentView = '8day';
 var chlMapLoaded = false;
@@ -7341,6 +7345,24 @@ async function updateDisplay() {
       if (_chl === undefined || _chl === null || _chl >= 3) _covF = 0.6;   // bloom/unknown → full cut (matches 7/17–19 over-calls)
       else if (_chl >= 1.5) _covF = 0.85;                                  // transition
       else _covF = 1.15;                                                   // clear → slight LIFT: MR clears (7/26 20+); counteracts the worker's coveTrap over-suppression. Runoff pocket drains S toward the Cove, not MR reef.
+    } else { // ljcove — SURGE + CHL aware (2026-08-04). The Cove traps sediment,
+      // but it CLEARS on calm + low-chl days (drone/diver: 25–30 ft 7/31, 20–25+
+      // with a GSB 8/2, both minimal surge) and BLOWS OUT when surf resuspends
+      // that sediment (the "brown" drone day 7/26 was actually surgy). So gate the
+      // trap cut on surge + chl instead of a flat 0.6× that crushed those clear,
+      // calm days to ~9–12. NOTE: on a gin-clear calm day the lift only partly
+      // recovers it (the worker still applies its reef 0.6–0.85× and doesn't extend
+      // the ljshores gin-clear lift to the Cove) — a fuller fix is worker-side.
+      const _chl = D.chlorophyll;
+      const _we = Number(D.waveEnergy) || 0;
+      const _ntu = D.turbidity;
+      const _surgy = _we > 50;                                             // surf resuspends the trapped sediment → blown out
+      const _blooming = (_chl === undefined || _chl === null || _chl >= 1.5);
+      const _ginClear = (_ntu !== undefined && _ntu !== null && _ntu < 0.40) && (_chl !== undefined && _chl !== null && _chl < 0.6);
+      if (_surgy || _blooming) _covF = 0.6;                                // surf-churned or blooming → full trap cut
+      else if (_ginClear) _covF = 1.35;                                    // calm + gin-clear → the Cove tracks the clear Shores
+      else if (_chl < 0.9) _covF = 1.0;                                    // clear-ish + calm → no cut
+      else _covF = 0.85;                                                   // transition
     }
     const _covM = vizEst.match(/(\d+)–(\d+)/);
     if (_covM) {
@@ -9329,6 +9351,20 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
         if (_chl === undefined || _chl === null || _chl >= 3) _covF = 0.6;
         else if (_chl >= 1.5) _covF = 0.85;
         else _covF = 1.15;   // clear → slight lift (MR clears; runoff drains S toward the Cove)
+      } else { // ljcove — surge + chl aware (2026-08-04); mirrors the today-path.
+        // Cove clears on calm + low-chl days, blows out when surf resuspends the
+        // trapped sediment. (Surge uses current D.waveEnergy, same as the
+        // headlandClearing gate below — chl/NTU don't forecast forward anyway.)
+        const _chl = D.chlorophyll;
+        const _we = Number(D.waveEnergy) || 0;
+        const _ntu = D.turbidity;
+        const _surgy = _we > 50;
+        const _blooming = (_chl === undefined || _chl === null || _chl >= 1.5);
+        const _ginClear = (_ntu !== undefined && _ntu !== null && _ntu < 0.40) && (_chl !== undefined && _chl !== null && _chl < 0.6);
+        if (_surgy || _blooming) _covF = 0.6;
+        else if (_ginClear) _covF = 1.35;
+        else if (_chl < 0.9) _covF = 1.0;
+        else _covF = 0.85;
       }
       baseLo = Math.max(1, Math.round(baseLo * _covF));
       baseHi = Math.max(baseLo + 1, Math.round(baseHi * _covF));
