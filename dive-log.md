@@ -73,6 +73,12 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-03 — San Carlos Beach / Breakwater (Monterey), morning — MATCH ✅ (heavy bloom = pea soup)
+- **Reported:** **5 ft off the boat at the end of the wall** this morning; "been better at high tide the last few days."
+- **Tool `monterey` (live): 3–5 ft (pea soup), High confidence** — chl **14.91** (live Sentinel-3A satellite bloom, NOT climatology), WE 12, 53°F.
+- **Result: MATCH ✅** — 3–5 brackets the reported 5 ft. The Monterey bloom has **intensified** (chl ~15 now vs the ~4–5 climatology earlier in the week), so the surface is genuinely pea soup and the tool + reality converged. Contrast the 7/31–8/1 stratified dives (tool 21–26, over-reading the murky surface): a heavier *live* bloom signal now pulls the tool down to match the actual murky surface. Tidal note: divers say Breakwater cleans on the **high tide** — a tidal-clearing signal the tool doesn't currently model for Monterey.
+- **Caveat-gap noted (not yet acted on):** the new stratification caveat only fires on the "(bloom season)" *climatology* suffix — it does NOT show on a live-satellite "(pea soup)" day like today, even though the murky-surface / clearer-deep split likely still applies. Widen it to live-bloom pea-soup days only after a confirming DEEP reading on a heavy-bloom day.
+
 ### 2026-08-03 — La Jolla Marine Room (AM + noon) — MATCH ✅ (hazy/mixed)
 - **Reported:** early-AM MR — **hazy in the shallows, opened up some at depth** (first huge school of bat rays!); noon snorkel — **clear in parts, hazy in others**, rough entry/exit at high tide, **74°F**. Bat ray w/ spiracle sand-flushing, school of perch.
 - **Tool `ljmarineroom` (live, same-day): 6–9 ft (settling)**, ntu **0.57**, chl **0.96**, WE 10, 71°F.
