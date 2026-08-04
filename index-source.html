@@ -2651,7 +2651,19 @@ async function submitReport() {
   }
 
   const loc = LOCATIONS[currentLocation] || {};
-  const predEl = document.getElementById('reportModalPred');
+  // Capture the tool's current prediction CLEANLY (2026-08-03 fix). Two bugs:
+  //   1) predictedViz used to grab the hero text at submit time — if viz hadn't
+  //      loaded yet it captured the '…' placeholder, which isn't a parseable
+  //      range, so the report slipped past applyVizCalibration's "is the reported
+  //      viz inside the predicted range?" exclusion and WRONGLY fed calibration.
+  //   2) predictedRange grabbed the whole "Predicted: X (Y)" label string.
+  // Now: if the hero isn't a real number yet ('…' / '--' / 'Service unavailable'),
+  // send empty (report becomes display-only, can't corrupt calibration). Else
+  // extract just the clean range (e.g. "24–29 ft", "45+ ft"), dropping any suffix.
+  const _heroTxt = ((document.getElementById('vizFeetHero') || {}).textContent || '').trim();
+  const _hasNum = /\d/.test(_heroTxt) && !/service unavailable/i.test(_heroTxt);
+  const _rangeMatch = _heroTxt.match(/\d+\s*[–-]?\s*\d*\+?\s*ft/i);
+  const _cleanPred = _hasNum ? (_rangeMatch ? _rangeMatch[0].trim() : _heroTxt) : '';
   const payload = {
     spotId: currentLocation,
     spotName: loc.name || currentLocation,
@@ -2659,8 +2671,8 @@ async function submitReport() {
     waterTemp: tempEl.value ? parseFloat(tempEl.value) : null,
     notes: (notesEl.value || '').trim(),
     email: (emailEl.value || '').trim(),
-    predictedViz: (document.getElementById('vizFeetHero')||{}).textContent || '',
-    predictedRange: (predEl ? predEl.textContent : '') || '',
+    predictedViz: _cleanPred,
+    predictedRange: _cleanPred,
   };
 
   btn.disabled = true; btn.textContent = 'Submitting…';
