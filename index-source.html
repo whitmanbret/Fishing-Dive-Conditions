@@ -7324,46 +7324,24 @@ async function updateDisplay() {
     vizSource = 'Service unavailable';
   }
 
-  // La Jolla Cove / Marine Room cove-pocket haircut (2026-07-20). The worker's viz
-  // path doesn't apply the 0.6× dampener the forecast path already uses for these two
-  // spots (see estimateVizFeet), so the same-day hero over-read the Cove 4 days running
-  // (7/17–7/20: actual ~5–12 ft vs tool 14–19 → 11–16). Structural, not weather-driven:
-  // the Scripps NTU sensor sits ~1 mi N in canyon-flush water and reads cleaner than the
-  // trapped-sediment cove pocket (3 paired reports 5/22–5/23 → cove ≈ 60% of Scripps).
-  // Mirror the SAME 0.6× here so today matches the forecast. Applied before calibration
-  // so per-user/community corrections fine-tune on top of the corrected baseline.
-  if ((currentLocation === 'ljcove' || currentLocation === 'ljmarineroom') && vizEst !== '--') {
-    // ljcove: flat 0.6× — a permanently trapped-sediment pocket, still brown even at
-    // low chl (drone-confirmed 7/26). ljmarineroom: CHL-AWARE (2026-07-26) — Marine
-    // Room itself clears with the Shores when the bloom fades (7/26: 20+ ft at chl
-    // ~0.9); it's the reef just SOUTH of MR that stays murky. The over-calls that
-    // justified the haircut (7/17–19) were all bloom days, so MR's murk is
-    // bloom-dependent: keep the full cut only during a bloom, ease it as chl drops.
+  // La Jolla Marine Room reef-pocket haircut — CHL-AWARE (2026-07-26). MR clears
+  // with the Shores when the bloom fades (the murk is the reef just S of MR), so
+  // ease/lift as chl drops: bloom(≥3)/unknown → 0.6×, transition(≥1.5) → 0.85×,
+  // clear → 1.15× (a mild lift toward the observed clear-day 25-30; verified the
+  // worker gives MR ~19-24 gin-clear, so ×1.15 → ~22-28, and its 5-8 hazy → 6-9).
+  //
+  // LJ COVE REMOVED HERE (2026-08-04): the worker already outputs correct, well-
+  // differentiated Cove viz on its own (replayed: gin-clear calm 22-27 tracking the
+  // Shores, transition/surgy 15-20, big surf 10-15, bloom 4-6). The old frontend
+  // 0.6× was legacy DOUBLE-dampening (added 7/20 before the worker's reef dampener
+  // matured) that crushed clear-calm Cove days to ~9-12 (7/31 & 8/2 actual 20-30).
+  // Let the worker's value stand for the Cove — no frontend haircut.
+  if (currentLocation === 'ljmarineroom' && vizEst !== '--') {
+    const _chl = D.chlorophyll;
     let _covF = 0.6;
-    if (currentLocation === 'ljmarineroom') {
-      const _chl = D.chlorophyll;
-      if (_chl === undefined || _chl === null || _chl >= 3) _covF = 0.6;   // bloom/unknown → full cut (matches 7/17–19 over-calls)
-      else if (_chl >= 1.5) _covF = 0.85;                                  // transition
-      else _covF = 1.15;                                                   // clear → slight LIFT: MR clears (7/26 20+); counteracts the worker's coveTrap over-suppression. Runoff pocket drains S toward the Cove, not MR reef.
-    } else { // ljcove — SURGE + CHL aware (2026-08-04). The Cove traps sediment,
-      // but it CLEARS on calm + low-chl days (drone/diver: 25–30 ft 7/31, 20–25+
-      // with a GSB 8/2, both minimal surge) and BLOWS OUT when surf resuspends
-      // that sediment (the "brown" drone day 7/26 was actually surgy). So gate the
-      // trap cut on surge + chl instead of a flat 0.6× that crushed those clear,
-      // calm days to ~9–12. NOTE: on a gin-clear calm day the lift only partly
-      // recovers it (the worker still applies its reef 0.6–0.85× and doesn't extend
-      // the ljshores gin-clear lift to the Cove) — a fuller fix is worker-side.
-      const _chl = D.chlorophyll;
-      const _we = Number(D.waveEnergy) || 0;
-      const _ntu = D.turbidity;
-      const _surgy = _we > 50;                                             // surf resuspends the trapped sediment → blown out
-      const _blooming = (_chl === undefined || _chl === null || _chl >= 1.5);
-      const _ginClear = (_ntu !== undefined && _ntu !== null && _ntu < 0.40) && (_chl !== undefined && _chl !== null && _chl < 0.6);
-      if (_surgy || _blooming) _covF = 0.6;                                // surf-churned or blooming → full trap cut
-      else if (_ginClear) _covF = 1.35;                                    // calm + gin-clear → the Cove tracks the clear Shores
-      else if (_chl < 0.9) _covF = 1.0;                                    // clear-ish + calm → no cut
-      else _covF = 0.85;                                                   // transition
-    }
+    if (_chl === undefined || _chl === null || _chl >= 3) _covF = 0.6;
+    else if (_chl >= 1.5) _covF = 0.85;
+    else _covF = 1.15;
     const _covM = vizEst.match(/(\d+)–(\d+)/);
     if (_covM) {
       const _clo = Math.max(1, Math.round(parseInt(_covM[1]) * _covF));
@@ -9332,47 +9310,25 @@ function estimateVizFeet(vizScore, avgWind, precipPct, dayIdx, slotDate) {
       baseLo = Math.round(baseLo * kelpBedMultFc);
       baseHi = Math.max(baseLo + 1, Math.round(baseHi * kelpBedMultFc));
     }
-    // LJ Cove proxy-mismatch dampener (added 2026-05-24, Option B).
-    // The Scripps NTU sensor sits on the LJ Shores pier ~1 mile N of the
-    // cove proper and samples canyon-flush water, not the trapped-sediment
-    // dynamics of the cove pocket. 3 paired reports (5/22-5/23) all show
-    // the cove tracking at ~60% of what Scripps NTU implies — e.g. 5/23 AM
-    // tool 22-30 ft vs actual 6-10 ft. Apply a 0.6× multiplier on the
-    // NTU-derived base for ljcove specifically. This also implicitly
-    // removes the headlandClearing +5 boost since we skip that gate too.
-    if (currentLocation === 'ljcove' || currentLocation === 'ljmarineroom') {
-      // ljcove: flat 0.6× (permanently trapped-sediment pocket). ljmarineroom:
-      // CHL-AWARE (2026-07-26) — MR clears with the Shores when the bloom fades
-      // (murk is on the reef just S of MR); ease the cut as chl drops. Mirrors the
-      // today-path so the forecast stays consistent.
+    // LJ Marine Room reef-pocket haircut — CHL-AWARE (mirrors the today-path).
+    // LJ COVE removed here 2026-08-04: the worker already outputs correct Cove viz
+    // (gin-clear calm 22-27 / bloom 4-6 / big surf 10-15), so the old frontend 0.6×
+    // was redundant double-dampening — let the worker's value stand for the Cove.
+    if (currentLocation === 'ljmarineroom') {
+      const _chl = D.chlorophyll;
       let _covF = 0.6;
-      if (currentLocation === 'ljmarineroom') {
-        const _chl = D.chlorophyll;
-        if (_chl === undefined || _chl === null || _chl >= 3) _covF = 0.6;
-        else if (_chl >= 1.5) _covF = 0.85;
-        else _covF = 1.15;   // clear → slight lift (MR clears; runoff drains S toward the Cove)
-      } else { // ljcove — surge + chl aware (2026-08-04); mirrors the today-path.
-        // Cove clears on calm + low-chl days, blows out when surf resuspends the
-        // trapped sediment. (Surge uses current D.waveEnergy, same as the
-        // headlandClearing gate below — chl/NTU don't forecast forward anyway.)
-        const _chl = D.chlorophyll;
-        const _we = Number(D.waveEnergy) || 0;
-        const _ntu = D.turbidity;
-        const _surgy = _we > 50;
-        const _blooming = (_chl === undefined || _chl === null || _chl >= 1.5);
-        const _ginClear = (_ntu !== undefined && _ntu !== null && _ntu < 0.40) && (_chl !== undefined && _chl !== null && _chl < 0.6);
-        if (_surgy || _blooming) _covF = 0.6;
-        else if (_ginClear) _covF = 1.35;
-        else if (_chl < 0.9) _covF = 1.0;
-        else _covF = 0.85;
-      }
+      if (_chl === undefined || _chl === null || _chl >= 3) _covF = 0.6;
+      else if (_chl >= 1.5) _covF = 0.85;
+      else _covF = 1.15;   // clear → slight lift (MR clears; runoff drains S toward the Cove)
       baseLo = Math.max(1, Math.round(baseLo * _covF));
       baseHi = Math.max(baseLo + 1, Math.round(baseHi * _covF));
-    } else if (loc.headlandClearing
+    } else if (loc.headlandClearing && currentLocation !== 'ljcove'
         && (D.waveEnergy || 0) < 50
         && D.turbidity !== undefined && D.turbidity < 0.4) {
-      // Other headlandClearing spots (lajolla / LJ Kelp Beds — offshore,
-      // boost still applies). LJ Cove takes the dampener above instead.
+      // OFFSHORE headlandClearing spots (lajolla / LJ Kelp Beds) get the +5.
+      // LJ Cove (nearshore reef pocket) is EXCLUDED — as of 2026-08-04 it no
+      // longer takes a frontend dampener (the worker handles the Cove), but it
+      // must not pick up the offshore +5 either; its forecast rides the base tier.
       baseLo += 5;
       baseHi += 5;
     }
