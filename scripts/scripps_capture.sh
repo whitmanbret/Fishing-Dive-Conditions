@@ -91,8 +91,10 @@ log "frame: $FRAME ($(wc -c <"$FRAME" | tr -d ' ') bytes)"
 
 # ---- concurrent Scripps sensor features (NTU + chl) ------------------------
 NTU=""; CHL=""; NTU_TIME=""
+# NB: filter out the station's interleaved null rows (sea_water_turbidity_eco!=NaN)
+# BEFORE orderByMax, so we always grab the latest REAL turbidity, not a null row.
 FEAT=$(curl -fsS --max-time 25 \
-  "${ERDDAP}?time,sea_water_turbidity_eco,mass_concentration_of_chlorophyll_in_sea_water_eco&orderByMax(%22time%22)" \
+  "${ERDDAP}?time,sea_water_turbidity_eco,mass_concentration_of_chlorophyll_in_sea_water_eco&sea_water_turbidity_eco!=NaN&orderByMax(%22time%22)" \
   2>/dev/null | "$PYTHON" -c '
 import sys,json
 def _num(x):
