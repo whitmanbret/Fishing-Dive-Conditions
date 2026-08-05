@@ -73,7 +73,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
-### 2026-08-04 — Shaw's / Diver's Cove (Laguna, `laguna`) — MATCH ✅ (edge; surf-churned & milky)
+### 2026-08-04 — Shale Island (Monterey Bay, Del Monte shale bed, boat) — stratified; tool UNSTABLE ⚠️
+- **Reported:** two dives to ~100'. **Disgusting green ~5 ft to 70 FSW, opening to 15–20 ft at the bottom**; pitch-black at 100' ("like a night dive"). **52–53°F bottom.** Glassy AM, swell/wind up ~11am, little current on the bottom.
+- **Spot:** Shale Island = underwater shale outcrop in southern Monterey Bay (~½ mi E of the Breakwater, ~½ mi off Del Monte Beach; boat-only). Maps to **`monterey`** (memory saved).
+- **Tool `monterey` — UNSTABLE today:** **3–5 ft (pea soup)** earlier when the **live satellite chl** read the heavy bloom (14.91), but **21–26 ft (bloom season)** now on **climatology chl (4)** — same day, same water. Stratification caveat correctly showing.
+- **Result:** the actual is the classic Monterey stratified column (green ~5' surface / clear-ish 15–20 deep). The **3–5 read MATCHED the murky surface**; the **21–26 read OVER-calls it** (over the best-of-dive 15–20 even). **KEY ISSUE: the Monterey headline swings 3–5 ↔ 21–26 depending on whether the live satellite chl (heavy bloom) or climatology is the active chl source** — a data-availability instability worth fixing (hold/decay the bloom signal, or blend, so it doesn't flip-flop when the satellite drops out). Posted display-only.
 - **Reported:** "kind of a bust." **Milky** water, viz all over the place — best ~15 ft, worst literally **ZERO** (couldn't see fins in waist-deep water). **~4 ft in the shallows, opening to 10–15 ft past the point**, inconsistent. Choppy + surgey with a good swell rolling through (waves 1–3 ft building but "very little power"). 5+ ft tide. Leopard sharks, a **large horn shark**, sting rays, garibaldi. Water uncomfortably warm; kelp visibly heat-stressed.
 - **Tool `laguna` (live): 10–15 ft**, chl **0.2 (gin-clear)**, WE **38**, 13s, 74°F. Reef surf-magnification caveat showing.
 - **Result: MATCH ✅ (edge)** — 10–15 matches the "past the point 10–15." The 4-ft/zero shallows are the surge-churned nearshore the single number can't resolve per-depth, but the **surf-blowout caveat flags exactly that**. Good behavior on a surgey Laguna day (and the surf-blowout dampener holding it at 10–15 rather than over-calling on the gin-clear 0.2 chl).
