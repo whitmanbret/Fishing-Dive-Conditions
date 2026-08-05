@@ -3994,43 +3994,86 @@ function logVizHistory(){
 }
 function getVizHistory(spot){ try{ return JSON.parse(localStorage.getItem('vizHist_'+(spot||currentLocation))||'[]'); }catch(e){ return []; } }
 
+// --- Satellite bloom PERSISTENCE (2026-08-04) ---
+// The satellite chl blend (Sentinel-3A/VIIRS) is intermittent — clouds/gaps make a
+// REAL bloom reading blink out, and the model snaps back to climatology, so viz
+// JUMPS (Monterey 8/4: 3-5 ft pea soup with live satellite chl 14.91 → 21-26 ft on
+// climo 4, the SAME day, when the satellite dropped out). Blooms persist for days,
+// so remember the last confirmed satellite bloom and HOLD it (decaying toward
+// climatology over ~72h) when a fresh fetch doesn't deliver one. Only RAISES chl
+// above climo (never lowers) — same "never miss a bloom" discipline as the blend;
+// a FRESH high-res clear reading (<3) clears the record.
+function _bloomKey(){ return 'chlBloom_' + currentLocation; }
+function _rememberBloom(chl, fresh){
+  try{
+    if (chl >= 5) localStorage.setItem(_bloomKey(), JSON.stringify({ v: chl, ts: Date.now() }));
+    else if (fresh && chl < 3) localStorage.removeItem(_bloomKey());   // confirmed cleared
+  }catch(e){}
+}
+function _heldBloom(climoVal){
+  try{
+    const rec = JSON.parse(localStorage.getItem(_bloomKey()) || 'null');
+    if (!rec) return null;
+    const ageH = (Date.now() - rec.ts) / 3600000;
+    if (ageH > 72){ localStorage.removeItem(_bloomKey()); return null; }
+    const climo = Number(climoVal) || 0;
+    const decayed = rec.v + (climo - rec.v) * Math.min(1, ageH / 72);   // decay toward climo over 72h
+    return (isFinite(decayed) && decayed > climo + 0.5) ? +decayed.toFixed(2) : null;
+  }catch(e){ return null; }
+}
+
 async function fetchBlendedChlorophyll() {
   if (!D.chlIsClimatology) return;            // live pier chl or red-tide event already set it
   if (NORCAL_NO_SENSOR.includes(currentLocation)) return;  // stay on NorCal climatology
   const loc = LOCATIONS[currentLocation];
   if (!loc || typeof loc.lat !== 'number' || typeof loc.lon !== 'number') return;
   const climoVal = Number(D.chlorophyll);
+  let accepted = false;
   try {
     const ctl = new AbortController();
     const t = setTimeout(() => ctl.abort(), 6000);
     const r = await fetch(`${SF_PROXY_BASE}/chl?lat=${loc.lat.toFixed(4)}&lon=${loc.lon.toFixed(4)}`, { signal: ctl.signal });
     clearTimeout(t);
-    if (!r.ok) return;
-    const data = await r.json();
-    const blend = Number(data && data.chl);
-    if (!isFinite(blend)) return;
-    const ageDays = (data.ageDays === undefined || data.ageDays === null) ? 99 : Number(data.ageDays);
-    let useBlend = false;
-    if (!isFinite(climoVal)) {
-      useBlend = true;                                   // no climo to compare against
-    } else if (blend > climoVal) {
-      useBlend = true;                                   // any source may flag MORE chl (bloom)
-    } else if (!data.gapFilled && ageDays <= 7) {
-      useBlend = true;                                   // only a fresh high-res obs may lower chl
+    if (r.ok) {
+      const data = await r.json();
+      const blend = Number(data && data.chl);
+      if (isFinite(blend)) {
+        const ageDays = (data.ageDays === undefined || data.ageDays === null) ? 99 : Number(data.ageDays);
+        const fresh = !data.gapFilled && ageDays <= 7;
+        let useBlend = false;
+        if (!isFinite(climoVal)) useBlend = true;          // no climo to compare against
+        else if (blend > climoVal) useBlend = true;        // any source may flag MORE chl (bloom)
+        else if (fresh) useBlend = true;                   // only a fresh high-res obs may lower chl
+        if (useBlend) {
+          if (_chlSpikeAccept(blend, climoVal, currentLocation)) {
+            D.chlSpikeHeld = null;
+            D.chlorophyll = blend;
+            D.chlIsClimatology = false;
+            D.chlSource = `Satellite blend (${(data.source || 'multi-sensor')})`;
+            D.chlBlendAgeDays = ageDays;
+            D.chlBlendGapFilled = !!data.gapFilled;
+            srcStatus.chl = 'ok';
+            _rememberBloom(blend, fresh);
+            accepted = true;
+          } else {
+            D.chlSpikeHeld = blend;   // suspected bad pixel — hold climatology baseline until it persists 20 min
+          }
+        }
+      }
     }
-    if (!useBlend) return;
-    if (!_chlSpikeAccept(blend, climoVal, currentLocation)) {
-      D.chlSpikeHeld = blend;   // suspected bad pixel — hold climatology baseline until it persists 20 min
-      return;
+  } catch (e) { /* keep climatology fallback / persistence below */ }
+  // Bloom persistence: no fresh accepted bloom this cycle → hold a recent one
+  // (decayed) instead of snapping back to climatology and spiking viz UP.
+  if (!accepted) {
+    const held = _heldBloom(climoVal);
+    if (held != null) {
+      D.chlorophyll = held;
+      D.chlIsClimatology = false;
+      D.chlSource = 'Satellite bloom (recent · held)';
+      D.chlBlendGapFilled = true;
+      srcStatus.chl = 'ok';
     }
-    D.chlSpikeHeld = null;
-    D.chlorophyll = blend;
-    D.chlIsClimatology = false;
-    D.chlSource = `Satellite blend (${(data.source || 'multi-sensor')})`;
-    D.chlBlendAgeDays = ageDays;
-    D.chlBlendGapFilled = !!data.gapFilled;
-    srcStatus.chl = 'ok';
-  } catch (e) { /* keep climatology fallback */ }
+  }
 }
 
 // --- Shore Station Network — real-time pier data across California ---
