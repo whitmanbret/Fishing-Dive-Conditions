@@ -73,6 +73,16 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-04 — Shaw's / Diver's Cove (Laguna, `laguna`) — MATCH ✅ (edge; surf-churned & milky)
+- **Reported:** "kind of a bust." **Milky** water, viz all over the place — best ~15 ft, worst literally **ZERO** (couldn't see fins in waist-deep water). **~4 ft in the shallows, opening to 10–15 ft past the point**, inconsistent. Choppy + surgey with a good swell rolling through (waves 1–3 ft building but "very little power"). 5+ ft tide. Leopard sharks, a **large horn shark**, sting rays, garibaldi. Water uncomfortably warm; kelp visibly heat-stressed.
+- **Tool `laguna` (live): 10–15 ft**, chl **0.2 (gin-clear)**, WE **38**, 13s, 74°F. Reef surf-magnification caveat showing.
+- **Result: MATCH ✅ (edge)** — 10–15 matches the "past the point 10–15." The 4-ft/zero shallows are the surge-churned nearshore the single number can't resolve per-depth, but the **surf-blowout caveat flags exactly that**. Good behavior on a surgey Laguna day (and the surf-blowout dampener holding it at 10–15 rather than over-calling on the gin-clear 0.2 chl).
+
+### 2026-08-04 — La Jolla Shores (shore-to-canyon snorkel) — MATCH ✅ (edge; improving)
+- **Reported:** "conditions **significantly improving** — waves and surge way down." Viz ~15 ft all the way to the sand-dollar beds (just barely visible at the surface; they start ~18 ft down). Low-70s surface, 57°F deep. Sharks, rays, bait fish in the shallows.
+- **Tool `ljshores` (live): 16–21 ft**, ntu 0.35, chl 0.6, WE 48, 76.5°F.
+- **Result: MATCH ✅ (edge)** — 16–21 overlaps the ~15–18 read (15 horizontal, sand dollars just visible ~18 ft down). Tool tops slightly high but brackets the improving conditions.
+
 ### 2026-08-04 — Crescent Bay, 0930 — MATCH ✅ (validates the Laguna surf-blowout fix)
 - **Reported:** **15 ft in the shallows, 8–12 ft outside by the kelp forest**; planned to head further out hoping it clears.
 - **Tool `crescent` (live): 7–11 ft**, chl **0.18 (gin-clear)**, WE **40**, 1.7 ft / 14s, 74°F. Reef surf-magnification caveat correctly showing.
