@@ -73,6 +73,16 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-05 — La Jolla Cove (early AM + shop) — MATCH ✅ (validates the Cove fix on a HAZY day)
+- **Reported:** early-morning Cove, **dark/hazy, low tide**. **15–18 ft** (one report); **10–15 ft in the shallows, 5–10 ft at the ¼-mile buoy, ~20 ft further out in spots** (another); shop (Gretchen): **15–20 ft**, hazy but can see the bottom swimming out, worst by the caves, clearing toward the Shores. Schools of fish; **first turtle IN the Cove** for two separate reporters — turtles are now resident in the Cove. Topes out by the buoys.
+- **Tool `ljcove` (live): 15–20 ft (green tinge)**, ntu 0.15, chl 0.46, WE 38, incoming tide, 76.7°F.
+- **Result: MATCH ✅** — 15–20 matches the shop's 15–20 and the "15–18" read. **Validates the 8/4 Cove double-dampening removal on a HAZY (non-gin-clear) day:** the un-double-dampened worker value lands a correct 15–20, not the old crushed ~9–12 (under-call) and not an over-call. The 5–10 at the buoy / dark shallows was the pre-sun + low-tide variation. Cove fix now confirmed on both clear (→ ~22–27) and hazy (→ 15–20) days.
+
+### 2026-08-05 — Crescent Bay (~10am) — MATCH ✅ (edge; hazy)
+- **Reported:** "good today." **Vertical viz 20', horizontal less due to haziness.** **Kelp suffering — the massive canopy is missing.** 68–71°F at 20' down (warm).
+- **Tool `crescent` (live): 10–15 ft**, chl 0.15 (gin-clear), WE 38, 13s, 74.6°F. Surf caveat showing.
+- **Result: MATCH ✅ (edge)** — 10–15 overlaps the reduced *horizontal* viz (below the 20' vertical, cut by haze). The Laguna surf-blowout dampener (WE 38) holds it at a sensible 10–15 rather than over-calling on the gin-clear 0.15 chl. **Heatwave note:** the missing kelp canopy (echoed at Shaw's yesterday) is a strong prolonged-high-temp signal — worth featuring.
+
 ### 2026-08-04 — Shale Island (Monterey Bay, Del Monte shale bed, boat) — stratified; tool UNSTABLE ⚠️
 - **Reported:** two dives to ~100'. **Disgusting green ~5 ft to 70 FSW, opening to 15–20 ft at the bottom**; pitch-black at 100' ("like a night dive"). **52–53°F bottom.** Glassy AM, swell/wind up ~11am, little current on the bottom.
 - **Spot:** Shale Island = underwater shale outcrop in southern Monterey Bay (~½ mi E of the Breakwater, ~½ mi off Del Monte Beach; boat-only). Maps to **`monterey`** (memory saved).
