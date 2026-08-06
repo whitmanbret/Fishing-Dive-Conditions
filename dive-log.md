@@ -73,6 +73,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-05 (night) — La Jolla Shores night dive — consistent ✅ (biological "poor patches", no hard numbers)
+- **Reported:** vis **GOOD above the La Jolla canyon** (like all last week); **POOR on the canyon edge and below — but biological:** bat rays, round rays, and lobsters sifting the sand kick up localized clouds of murk. Wildlife show: an adult **leopard shark** spooked by the lights ran into him; two enormous **bat rays** sifting sand (great footage); a **baby bat ray swam straight into his face** ("a literal punch"). Video of all of it.
+- **Tool `ljshores` (recent, same-day ~16–21 ft):** consistent with "good above the canyon."
+- **Result: consistent ✅ (qualitative)** — the tool's ambient reading matches the "good above the canyon" viz. The "poor" patches are **biological + localized** (critter-stirred sand at night), NOT a water-column condition the tool models or should — a good reminder that canyon-edge/sand night dives get animal-stirred murk regardless of ambient clarity. No hard viz numbers to grade; posted display-only.
+
 ### 2026-08-05 — Kawika's Garden (Monterey Bay deep boat reef) — stratified; Monterey instability RECURRED ⚠️
 - **Reported:** **3–5' murk cloud to ~80', then ~20 ft at the bottom (120')**, absolutely pitch black. 52–53°F bottom. A little slow rolling swell on ascent, otherwise glassy.
 - **Spot:** Kawika's Garden = deep (80–120') offshore rocky reef in the Monterey Bay / Carmel area (gorgonians, rockfish; BAUE/GUE boat dive, named after Kawika Chetron). Maps to **`monterey`** (alias saved).
