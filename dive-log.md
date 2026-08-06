@@ -78,6 +78,25 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 - **Tool (live, same-day):** `ljshores` **22–27 ft** (ntu 0.2, chl 0.44, WE 23 — gin-clear lift firing); `ljcove` **15–20 ft** (ntu 0.2, chl 0.44, WE 33). 71.6°F.
 - **Result: MATCH ✅✅ both** — 20+ overlaps each. **Two fixes validated together on a clear day:** (1) the **ljshores gin-clear lift** → 22–27, nailing the "20+ amazing"; (2) the **8/4 Cove haircut removal** → Cove reads 15–20 (edge-matching 20+), where the old flat 0.6× would have crushed it to ~9–12. A drone "20+" is a *vertical/aerial* clarity read, which slightly over-states horizontal diver viz, so the Cove's 15–20 horizontal is a solid match. **Watch:** the ~5 ft Shores(22–27) > Cove(15–20) split today = the Cove's WE 33 surf + reef pocket vs the Shores' calmer gin-clear lift; if the Cove keeps reading below the Shores on clear 20+ days, consider extending a mild gin-clear lift to the Cove too.
 
+### 2026-08-06 (afternoon) — Shaw's Cove, Laguna (nearshore reef) — MATCH ✅
+- **Reported:** Elaine & Bret out at Shaw's this afternoon, stayed in the **nearshore reef, ~10 ft viz. Everything else super milky. Waves 0–1'.** Wildlife: a teeny **Spanish Shawl** nudibranch (~2") and a **juvenile eel** (~14").
+- **Tool `laguna` (live, same-day):** **7–11 ft**, surf note firing.
+- **Result: MATCH ✅** — reported ~10 ft nearshore sits right in 7–11, and the "everything else super milky" matches the low-viz read. **Note:** the **surf blowout note fired despite 0–1' waves** — the coveTrap wave-energy trigger (D.waveEnergy>30) is running on swell period/energy, not raw height, so it can flag on a small-but-long-period day. The viz number is right, so no change; but worth watching whether the surf note over-fires on genuinely flat days (may want to gate the note text on raw wave height, separate from the viz math).
+
+### 2026-08-06 (Thu 8:00–10:30am) — La Jolla Marine Room — consistent / edge MATCH ✅
+- **Reported:** "Really pretty out. **A bit deeper is super clear** and **even the reef is clearing in spots.** Reef was **blown this morning** from MR and out from the cove, and **south it was murky.**" A classic stratified/mixed morning — churned shallow reef, clear deeper water, improving.
+- **Tool `ljmarineroom` (live, same-day):** **9–15 ft (green tinge)**.
+- **Result: consistent ✅** — no single hard number, but 9–15 (green tinge) captures exactly the described spread: murky/blown shallow reef (~9) up to the clearing deeper water (~15). The MR chl-aware haircut is behaving.
+
+### 2026-08-06 — San Diego shop daily conditions post — MATCH ✅ (corroborates the La Jolla reads)
+- **Reported (shop admin daily):** "Vis **15–20 ft**, **up to 30 ft in some areas**; clear blue water. Swell **1–2 ft @ 13 sec**. Temp **76.5°F**. Conditions holding; wind picks up ~1pm so viz may drop later." No spot named, but the warm 76.5°F + 15–20/30 clear-blue profile is mainland San Diego (Catalina reads 50–55+ today, so this is NOT Catalina).
+- **Tool (live, same-day La Jolla):** `ljcove` **15–20** (exact), `ljshores` **22–27** — the "up to 30 in spots" aligns with the Shores end of the range.
+- **Result: MATCH ✅** — independent regional corroboration of today's La Jolla reads (Cove 15–20 exact; 30-in-spots ≈ Shores 22–27+). Not re-posted to the feed to avoid double-counting today's La Jolla (already posted from the drone report).
+
+### 2026-08-04 (Wed ~4:30pm) — La Jolla area (water-logged GoPro backfill) — display-only, not graded
+- **Reported (late post):** "Gorgeous conditions **around 20 ft+ in places.**" Delayed due to a water-logged GoPro. No specific spot named (La Jolla group).
+- **Note:** past-date backfill — the tool doesn't retain 8/4's prediction, so this can't be scored. Logged for the record. Consistent with the run of clear 20+ La Jolla days that week (8/4 Shores snorkel + 8/6 drone 20+).
+
 ### 2026-08-05 (night) — La Jolla Shores night dive — consistent ✅ (biological "poor patches", no hard numbers)
 - **Reported:** vis **GOOD above the La Jolla canyon** (like all last week); **POOR on the canyon edge and below — but biological:** bat rays, round rays, and lobsters sifting the sand kick up localized clouds of murk. Wildlife show: an adult **leopard shark** spooked by the lights ran into him; two enormous **bat rays** sifting sand (great footage); a **baby bat ray swam straight into his face** ("a literal punch"). Video of all of it.
 - **Tool `ljshores` (recent, same-day ~16–21 ft):** consistent with "good above the canyon."
