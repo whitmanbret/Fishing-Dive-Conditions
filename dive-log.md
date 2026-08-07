@@ -78,6 +78,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 - **Tool (live, same-day):** `ljshores` **22–27 ft** (ntu 0.2, chl 0.44, WE 23 — gin-clear lift firing); `ljcove` **15–20 ft** (ntu 0.2, chl 0.44, WE 33). 71.6°F.
 - **Result: MATCH ✅✅ both** — 20+ overlaps each. **Two fixes validated together on a clear day:** (1) the **ljshores gin-clear lift** → 22–27, nailing the "20+ amazing"; (2) the **8/4 Cove haircut removal** → Cove reads 15–20 (edge-matching 20+), where the old flat 0.6× would have crushed it to ~9–12. A drone "20+" is a *vertical/aerial* clarity read, which slightly over-states horizontal diver viz, so the Cove's 15–20 horizontal is a solid match. **Watch:** the ~5 ft Shores(22–27) > Cove(15–20) split today = the Cove's WE 33 surf + reef pocket vs the Shores' calmer gin-clear lift; if the Cove keeps reading below the Shores on clear 20+ days, consider extending a mild gin-clear lift to the Cove too.
 
+### 2026-08-06 — Treasure Island / Goff (Laguna) — MATCH ✅ (calm-day; no-coveTrap design validated)
+- **Reported:** "Treasure Island is **back for snorkeling! Waves gone and good viz! 15–20+**" Huge sea lion playing around them.
+- **Tool `treasureisland` (live, same-day):** **14–19 ft**, no surf note.
+- **Result: MATCH ✅** — 15–20+ overlaps 14–19. **Nice same-day cross-check:** Shaw's (`laguna`, coveTrap) read **7–11 (milky, surf note)** while TI (**no coveTrap**) reads **14–19 (clear, "waves gone")** — exactly the intended behavior: TI holds/clears when the exposed Laguna coves get churned. The Goff/TI coast:180 + shelter:low tuning is converging correctly on a calm day (~15–20), as designed.
+
 ### 2026-08-06 (afternoon) — Shaw's Cove, Laguna (nearshore reef) — MATCH ✅
 - **Reported:** Elaine & Bret out at Shaw's this afternoon, stayed in the **nearshore reef, ~10 ft viz. Everything else super milky. Waves 0–1'.** Wildlife: a teeny **Spanish Shawl** nudibranch (~2") and a **juvenile eel** (~14").
 - **Tool `laguna` (live, same-day):** **7–11 ft**, surf note firing.
