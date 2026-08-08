@@ -73,6 +73,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-08 (after work) — Fort Bragg (NorCal) — MATCH ✅ (tool beat the "epic" forecast)
+- **Reported:** after-work dive with Cade off Fort Bragg. "Forecast was calling for **Epic conditions.** Ocean was decent everywhere except where we went. We had about **6 to 8 ft of visibility.**" Could have shot a ton of smaller fish; took one 20" black rockfish.
+- **Tool `fortbragg` (live, same-day):** **6–11 ft (bloom season)** — chl 3.5 (NorCal climatology, no local sensor), swell 3.3 ft @ **7 s (short-period wind chop)**, WE 76, 51.6°F. 7-day forecast trends **6–11 → 3–8** (not "epic").
+- **Result: MATCH ✅.** 6–11 overlaps the reported 6–8. **Good data point:** the "epic" the diver expected was a general sea-state forecast (calm ocean, which was accurate — "decent everywhere"), NOT our viz tool — our read was a realistic **6–11 (bloom season)**, so the tool was *more* accurate than the forecast they went off. Validates the NORCAL_NO_SENSOR approach (local CDIP-MOP swell + NorCal chl climatology) for Fort Bragg on a short-period-chop bloom day.
+
 ### 2026-08-08 — batch (6 reports) — 2 MATCH, but 3 OVER-calls incl. BOTH fixes I shipped 8/7 ⚠️⚠️
 Rough day for the tool — a hazier/mixed day exposed over-calls, including on the two fixes shipped 8/7. **Not re-tuning the fresh fixes on a single messy day (that would whipsaw); logging honestly and watching.**
 
