@@ -73,6 +73,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-07 (evening) — 3 more reports — all MATCH ✅; Monterey fix validated on a FRESH report
+- **La Jolla Marine Room ("washroom") 5–6pm — MATCH ✅ (edge).** Reported: **super high tide, lots of small waves, "felt like a washing machine," good viz 15 ft+.** Entry a bit tough. Wildlife: a big **turtle**, leopard sharks, garibaldi. Tool `ljmarineroom` (live, same-day evening): **9–15 ft (settling)**, incoming tide, WE 31. Overlaps 15+ at the top edge; the "settling" suffix + surface churn match the washing-machine feel. MATCH.
+- **Point Loma Kelp — MATCH ✅ (offshore portion).** Reported (8/7): **bat rays mating**; viz **poor <5 ft in the nearshore shallows** ("much worse than LJ yesterday") but **15–20 ft at 0.5 mi out and beyond.** Tool `pointloma` (live): **14–19 ft (settling)** (ntu 0.27, chl 0.82, WE 58). MATCH on the offshore kelp bed the tool targets (14–19 vs 15–20); the <5 ft nearshore shallows are a shallow-specific band the offshore-kelp spot doesn't represent (and the isOffshoreKelpBed boost is doing its job — pier sediment filtered before the beds).
+- **Monastery (Carmel) 8/7 — MATCH ✅ (validates the Monterey bloom-hold fix on a FRESH same-day report).** Reported: **5 ft most of the dive, opened up to 10–15 ft around 70–80 ft**, waves picking up on exit. Tool `monterey` (live, post-fix): **3–5 ft (pea soup)**, chl 14.21 held. **MATCH** — surface/most-of-dive 5 ft sits right in 3–5, and the deeper 10–15 ft is the sub-thermocline clear layer the (surface-weighted) tool is designed to sit below. **This is the first FRESH same-day Monterey grade since the 9441f43d fix** — pre-fix the tool read 21–26 (a >15 ft miss); now it nails the surface bloom. The held-bloom fast-path is working in the wild.
+
 ### 2026-08-07 — batch (5 spots) — 2 MATCH, 2 clear-day UNDER-calls (Cove 30 / Goff 25+), + Monterey hero-vs-hold BUG found ⚠️
 
 **Same-day SoCal grades (8/7):**
