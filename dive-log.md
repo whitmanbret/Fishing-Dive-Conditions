@@ -73,6 +73,25 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-07 — batch (5 spots) — 2 MATCH, 2 clear-day UNDER-calls (Cove 30 / Goff 25+), + Monterey hero-vs-hold BUG found ⚠️
+
+**Same-day SoCal grades (8/7):**
+- **La Jolla Marine Room ~8:30am — MATCH ✅.** Reported **15+ ft**, "a bit hazy over the reef but **swimming pool in some areas by MR**." Tool `ljmarineroom` **15–21 ft**. Overlaps at 15+; MR chl-aware haircut behaving.
+- **Crescent Bay ~8:30am — MATCH ✅.** Reported "some areas **15 to 20 ft**." Tool `crescent` **18–23 ft** (no surf note; calm). Overlap 18–20.
+- **La Jolla Cove ~8:20am — MISS ✗ (clear-day UNDER-call).** Reported **flat, viz 30 ft**, surface 73F / 68F @30fsw; topes (soupfin) in groups of 2–3, a couple **giant sea bass**; hotel construction by the cove, parking dicey by 6am; started raining. Tool `ljcove` **13–18 ft** — no overlap with 30. Under by ~12 ft.
+- **La Jolla Cove (yellow buoy) — MISS ✗ (corroborates the under-call).** Second reporter same day: "**viz was great!**" thermocline at ~26 fsw (surface 79F → 69F @26fsw). No hard number, but "great" + a hard 30 from the other reporter = the Cove was genuinely gin-clear (~25–30) while the tool read 13–18.
+- **Goff / Treasure Island ~0930 — MISS ✗ (clear-day UNDER-call).** Reported **73F, 25+ ft, "even better than 2 days ago."** Tool `treasureisland` **14–19 ft** — no overlap with 25+. (Contrast: 8/6 TI reported 15–20+ and matched 14–19; today it cleared past the tool's ceiling.)
+
+**PATTERN — SoCal clear-day ceiling:** on a genuinely gin-clear day the tool caps the exposed SoCal spots around **high-teens** and misses **25–30 ft** reads. Today: Cove 30 vs 13–18, Goff 25+ vs 14–19 both MISS, while the mid-range spots (MR 15+, Crescent 15–20) matched. This corroborates the 8/6 note ("if the Cove keeps reading below the Shores on clear 20+ days, extend a mild gin-clear lift to the Cove"). **Now 2+ corroborating clear-day under-calls at the Cove (8/6 drone edge + 8/7 hard 30) and a fresh Goff under-call.** → Candidate: a Shores-style gin-clear lift for `ljcove` (and possibly `treasureisland`), verified via worker replay before shipping. NOT changed yet.
+
+**Monterey / Carmel deep reports (8/6 — yesterday, can't clean-grade, but exposed a BUG):**
+- **North Monastery (Carmel), Aug 6 — reported <5 ft at ALL depths**, 55–57F, very green & brown / snotty, three deep-course dives to 76–106 ft. Full-column bloom murk.
+- **Mile Marker Buoy (Monterey/Carmel deep boat), Aug 6 — 140 ft dive**, 52–53F bottom, glassy surface, **~5 ft snot in the top 20 ft**, **10–15 ft at 140'** (worse than the day before), no ambient light until ~80 ft. Classic deep-stratified bloom column.
+- **Tool `monterey` (read 8/7): 21–26 ft (bloom season)**, stratification note firing. **This is way too high for a <5 ft surface bloom.** 🐞 **BUG FOUND:** the worker `/chl` endpoint returns a **held bloom of chl 14.21** (`source: "Satellite bloom (recent · held)"`, `held:true`) — the server-side hold IS active — **but the hero viz still shows 21–26**, i.e. the viz path is NOT consuming the held bloom chl. The bloom hold was wired into the `/chl` display endpoint but the hero's `calcViz` input (fetched frontend-side) isn't getting the held value, so the hero still flip-flops to the clear climatology number. **This is the root of the Monterey instability the server-side hold was supposed to fix — it fixed the displayed chl badge but not the hero viz.** → Next: trace how the frontend feeds chl into the worker `calcViz` call and make it use the held-bloom value; verify via replay that chl 14.21 → single-digit Monterey viz.
+
+### ~2026-07-31 — Malaga Cove (Palos Verdes) — display-only (a week old, not graded)
+- **Reported (~a week ago):** "Better than it's been for months! Surf 1–2 ft, **10–15 ft viz.**" Maps to `pv`. Past-date, logged for the record only.
+
 ### 2026-08-06 — La Jolla, Cove → Shores (drone) — MATCH ✅✅ (both fixes validated on a clear day)
 - **Reported:** "Amazing today! La Jolla from the Cove over to the Shores. **20+ feet.**" Drone footage: clear blue-green water with the reef/kelp visible through it the whole way, Cove to Shores.
 - **Tool (live, same-day):** `ljshores` **22–27 ft** (ntu 0.2, chl 0.44, WE 23 — gin-clear lift firing); `ljcove` **15–20 ft** (ntu 0.2, chl 0.44, WE 33). 71.6°F.
