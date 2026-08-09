@@ -73,6 +73,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-09 (morning, 7:45–9:15) — La Jolla Cove — MATCH ✅ (gin-clear lift correctly did NOT fire)
+- **Reported:** Caves → 1/4-mile buoy → Devil's Slide. **Murky 10–15 ft** by the caves & buoy, **3–5 ft at Devil's Slide** (surge-exposed point). "Sun is out so visibility is better." Wildlife: **3 giant sea bass** by the 1/4 buoy, a **turtle** in deeper water, a glimpse of 3 topes at Devil's Slide (scattered fast), tons of **garibaldi at Goldfish Point** + hundreds of micro juvenile garibaldi.
+- **Tool `ljcove` (live, same-day):** **8–11 ft** (ntu **0.36**, chl 0.72, chlRecentMax 6.84, WE 79, 62.2°F — cooler upwelling/surgier).
+- **Result: MATCH ✅** — 8–11 overlaps the caves/buoy 10–15; the 3–5 at Devil's Slide is a localized surge-exposed pocket. **The `_coveGinClear` lift correctly did NOT fire:** ntu 0.36 is just above the <0.35 gin-clear gate (and WE 79 is surgy), so the Cove read a realistic 8–11 instead of over-lifting to the 20s. **Cove gin-clear watch is now 2-of-3 well-behaved:** 8/7 fired right (gin-clear, 30 ft), 8/8 fired wrong (stealth surface haze while the pier read gin-clear ntu 0.17 — the known limitation), 8/9 correctly stayed off (ntu 0.36). The ntu<0.35 threshold is doing real work — the only failure mode remains the *stealth surface bloom* where the pier reads clean but the water is hazy (the cam pipeline is the eventual fix for that).
+
 ### 2026-08-08 — Monterey BREAKWATER 15 ft — flat-hold now UNDER-calls ✗ (I over-corrected — REVERT candidate) 🔁
 - **Reported (same-day):** "About **15 ft** visibility at **BW** [Breakwater] today. Warm water, **57°F**. Surf a little stronger than forecast."
 - **Tool `monterey` (live, AFTER the flat-hold deploy):** **3–5 ft (pea soup)** — chl 14.91 held flat. **MISS ✗ — now under-calls the Breakwater by ~10 ft.**
