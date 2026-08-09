@@ -2073,7 +2073,7 @@ const LOCATIONS = {
   // headland-sheltered cove — much calmer than open Morro coast. Keys off the
   // Diablo Canyon nearshore buoy (NDBC 46215 / CDIP 076) + Cal Poly Pier temp.
   avila: { name: 'Avila Beach / Port San Luis', bottom: 'rock', tideStation: '9412110', coast: 200, shelter: 'high', buoys: ['46215','46028'], lat: 35.17, lon: -120.73, depth: '10-40 ft', kelpDensity: 'moderate', nwsGrid: 'LOX/75,110', mopStation: 'SL348', headlandShelter: 'high', typicalDiveDepth: { min: 10, max: 30 } },
-  monterey: { name: 'Monterey Bay (Breakwater / San Carlos)', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', nwsGrid: 'MTR/93,51', mopStation: 'MO752', typicalDiveDepth: { min: 15, max: 50 }, headlandShelter: 'high' },  // most dive sites (Breakwater, San Carlos, McAbee) are harbor-sheltered. San Carlos Beach IS the Breakwater shore-dive entry, so it's named here rather than a duplicate spot. Dropped 27NM-offshore buoy 46042 (warm surface lens) 2026-06-23 — keep only in-bay 46236.
+  monterey: { name: 'Monterey Bay (Breakwater / San Carlos)', bottom: 'rock', tideStation: '9413450', coast: 270, shelter: 'high', buoys: ['46236'], lat: 36.62, lon: -121.90, depth: '10-60 ft', kelpDensity: 'high', bloomSheltered: true, nwsGrid: 'MTR/93,51', mopStation: 'MO752', typicalDiveDepth: { min: 15, max: 50 }, headlandShelter: 'high' },  // bloomSheltered (2026-08-08): the sheltered shallow Breakwater/San Carlos clears better than the open-bay satellite bloom implies (8/8 diver 15 ft at BW vs raw chl 14.91 → 3-5). Caps chl fed to the viz model at 10 → ~12-17 "bloom" (like Point Lobos/Hopkins); deep-Carmel dives that grade here are covered by the #vizStratNote. most dive sites (Breakwater, San Carlos, McAbee) are harbor-sheltered. San Carlos Beach IS the Breakwater shore-dive entry, so it's named here rather than a duplicate spot. Dropped 27NM-offshore buoy 46042 (warm surface lens) 2026-06-23 — keep only in-bay 46236.
   // Santa Cruz (city/north Monterey Bay) added 2026-05-24. Cowell's Beach,
   // Natural Bridges, Steamer Lane, 26th Ave dive zones. ~50 mi north of
   // Monterey but same Monterey Bay system. Renamed island spot to
@@ -7557,7 +7557,12 @@ async function updateDisplay() {
     const _stratEl = document.getElementById('vizStratNote');
     if (_stratEl) {
       const _reg = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
-      const _bloomSeason = typeof vizEst === 'string' && /bloom season/i.test(vizEst);
+      // Fire on ANY bloom-affected label, not just the seasonal "bloom season" one.
+      // An ACTIVE bloom ("(bloom)", "(pea soup)", "(green water)") is exactly when the
+      // hard stratification hits — and now that bloomSheltered spots (Breakwater, Pt Lobos)
+      // read a surface-optimistic 12–17 during a bloom, deep divers NEED this deeper-is-
+      // clearer caveat. (Broadened 2026-08-08 with the Breakwater bloomSheltered fix.)
+      const _bloomSeason = typeof vizEst === 'string' && /bloom season|\(bloom\)|pea soup|green water/i.test(vizEst);
       const _stratifies = _reg === 'central' && !loc.bluewater && !loc.offshore;
       if (_bloomSeason && _stratifies && vizEst !== '--' && vizEst !== 'Service unavailable') {
         _stratEl.textContent = '🌡 Summer bloom often stratifies here — expect a murkier green surface layer, with clearer water below the thermocline (the best visibility is frequently deeper).';
