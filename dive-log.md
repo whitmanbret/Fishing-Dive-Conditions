@@ -73,6 +73,13 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-09 — Laguna group (Goff / Shaw's / Crescent) — surf-milky day; edge MATCHes, tool leans slightly high
+Group chat consensus: "kind of sucky / terrible / awful" across Laguna today. **chl 0.16 everywhere → NOT a bloom; this is SURF-stirred sediment** (big surf/chop, WE 72–109), warm 70.6°F.
+- **Goff / Treasure Island — edge MATCH ✅ (tool leans high).** Reported: "very milky, extremely low, choppy"; a 2nd diver (Elaine + Maureen, just out): **"pretty awful, probably 4–7 ft, quite surgy."** Tool `treasureisland` **7–12 ft** (WE **109** — huge). Overlap only at **7** (4–7 vs 7–12) → technical edge MATCH, but the tool's center (~9–10) leans ~3–5 ft high vs the 4–7 actual. **Why:** Goff has **no coveTrap**, so on a big-surf day it doesn't get the surf-blowout dampener the coves get — the "TI holds when the coves blow" design (right on SWELL days) *over-protected* it on today's just-plain-big-surf/milky day. 1 big-surf data point — watch, don't change (the no-coveTrap design is well-supported on swell days: 8/6 Goff held at 15–20+ calm).
+- **Shaw's — consistent ✅ (edge).** "Terrible at Shaw's today too" (no number). Tool `laguna` **7–11 ft** (WE 72, surf note firing). Consistent with terrible/very-low; edge.
+- **Crescent — tool read only (no ground truth yet).** Tool `crescent` **7–11 ft** (WE 72, surf note firing). Elaine headed there; group expects it milky too ("isn't going to be magical"). Logged for context, not graded.
+- **Net:** the tool directionally NAILED the bad day — all three dropped from their calm-day 14–23 to **7–12 with surf notes firing** — but the magnitude leans ~2–3 ft high vs the "4–7 awful" hard number. Within the noise of subjective "milky/terrible" reports; no change. (Fun note: Elaine got the towel off the bottom in a 3 mm — 70.6°F water.)
+
 ### 2026-08-09 (morning, 7:45–9:15) — La Jolla Cove — MATCH ✅ (gin-clear lift correctly did NOT fire)
 - **Reported:** Caves → 1/4-mile buoy → Devil's Slide. **Murky 10–15 ft** by the caves & buoy, **3–5 ft at Devil's Slide** (surge-exposed point). "Sun is out so visibility is better." Wildlife: **3 giant sea bass** by the 1/4 buoy, a **turtle** in deeper water, a glimpse of 3 topes at Devil's Slide (scattered fast), tons of **garibaldi at Goldfish Point** + hundreds of micro juvenile garibaldi.
 - **Tool `ljcove` (live, same-day):** **8–11 ft** (ntu **0.36**, chl 0.72, chlRecentMax 6.84, WE 79, 62.2°F — cooler upwelling/surgier).
