@@ -78,10 +78,22 @@ FRAME="$FRAME_DIR/scripps_${TS}.jpg"
 
 # ---- mint signed HLS URL ---------------------------------------------------
 R=$(printf '%s' "$REFERER" | base64)
-SRC=$(curl -fsS -A "$UA" -e "$REFERER" "${EMBED_API}?r=${R}" \
-        | base64 -d \
-        | "$PYTHON" -c 'import sys,json;print(json.load(sys.stdin).get("streamSrc",""))')
-[ -n "$SRC" ] || { echo "error: failed to mint stream URL (referrer gate / API change?)" >&2; exit 1; }
+MINT=$(curl -fsS -A "$UA" -e "$REFERER" "${EMBED_API}?r=${R}" | base64 -d 2>/dev/null)
+SRC=$(printf '%s' "$MINT" | "$PYTHON" -c 'import sys,json;print(json.load(sys.stdin).get("streamSrc",""))' 2>/dev/null)
+if [ -z "$SRC" ]; then
+  # HDOnTap returns HTTP 200 with {"error":true,"errorMessage":"...offline!"} when the
+  # Scripps underwater cam is simply DOWN. That's a transient upstream outage, not a
+  # pipeline break — skip cleanly (like the daylight gate) so it doesn't spam
+  # workflow-failure emails. A genuinely empty/changed response (no offline flag)
+  # still exits 1 so a real API change surfaces loudly.
+  if printf '%s' "$MINT" | grep -qiE '"error"[[:space:]]*:[[:space:]]*true|offline'; then
+    MSG=$(printf '%s' "$MINT" | "$PYTHON" -c 'import sys,json;print(json.load(sys.stdin).get("errorMessage","(no message)"))' 2>/dev/null)
+    log "skip: Scripps cam offline upstream — ${MSG:-offline}"
+    exit 0
+  fi
+  echo "error: failed to mint stream URL (referrer gate / API change?)" >&2
+  exit 1
+fi
 
 # ---- grab one frame --------------------------------------------------------
 HDR=$(printf 'Referer: %s\r\n' "$REFERER")
