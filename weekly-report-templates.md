@@ -50,6 +50,41 @@ upwelling), and practical (what to dive, when, where's sheltered in swell). The 
 
 ## Past examples (verbatim reference)
 
+### FACEBOOK — Week of August 3–9, 2026 (plain-language / "layman's" version per Bret; generic, no individual reports named)
+Warm water up and down the coast this week, and the visibility came down to picking the right spot. Early on, a lot of places were clear and blue. By the weekend, a little haze settled into the shallows in the south and some surf stirred things up. The pattern all week: if the shallow, close-to-shore water looked murky, going deeper or a bit farther offshore usually found cleaner water.
+
+🟢 SAN DIEGO / LA JOLLA
+Started the week gorgeous — 20 to 30 feet of warm, clear blue water. Mid-to-late week a little haze crept into the shallow, close-in spots (more like 5 to 15 feet), especially in the coves. But head out over the deeper canyon water and it was still 25 to 30 feet. Warm surface (low-to-mid 70s) and lots of life around — giant sea bass, sea turtles, leopard sharks, and clouds of garibaldi.
+
+🟡 ORANGE COUNTY / LAGUNA
+A real mixed bag. The calm days early in the week were nice — 15 to 25 feet at the more sheltered spots. Then the surf came up over the weekend and churned the shallow reef coves into a milky 4 to 15 feet. Warm enough a few folks got away with a thin wetsuit. Tip: on a surf day, the sheltered spots and deeper water hold up far better than the exposed coves.
+
+🟡 LA / SOUTH BAY (Palos Verdes)
+Quiet on the dive-report front this week, but the fishing more than made up for it — some of the best mixed-bag action of the year close to shore. Tons of barracuda, along with bonito and bass, and a few yellowtail mixed in. Warm water like everywhere else in the south.
+
+🔵 CATALINA
+The gem again — flat, warm, and big blue water. The easiest, clearest conditions in Southern California, with good fishing to match.
+
+🟢 MONTEREY / CENTRAL COAST
+Still a "green on top, cleaner down low" week. A plankton bloom kept the surface murky — often just 5 to 10 feet on the deeper sites — but the sheltered, shallow water near the Breakwater cleared better, around 10 to 15 feet, and several folks were pleasantly surprised. On some dives the water actually got clearer once you dropped below the cold layer. Still cold up here (mid-50s), so bring the thick suit. (Heads up: it's Car Week — traffic in town is brutal.)
+
+🔴 NORTHERN CALIFORNIA
+Fair — roughly 6 to 8 feet around Fort Bragg, a bit stirred up by surf.
+
+🐟 FISHING & OFFSHORE
+Warm, blue offshore water kept the bite going. Tuna were the headline — bigger bluefin out west in the cooler water, and smaller yellowfin pushing up close to home. Dorado (mahi) scattered on the floating kelp, and marlin showed around Catalina. Yellowtail were biting around the islands. Two warm-water tells: the squid disappeared and live bait was hard to come by.
+
+🌡️ WATER TEMPS
+Southern California surface: low-to-mid 70s. Monterey surface: mid-50s. Everywhere, it gets colder the deeper you go — so the cleanest, coolest water is usually down below.
+
+🌙 MOON
+Waning down toward a new moon at the end of the week.
+
+🔗 Full spot-by-spot conditions and forecasts: conditions.spearfactor.com
+Dive safe!
+
+#spearfishing #scuba #californiadiving #spearfactor #lajolla #diveconditions #freediving #montereybay #catalina
+
 ### FACEBOOK — Week of June 22–28, 2026
 This week was all about short windows — and the cleanest water hiding down deep. San Diego ripped wide open midweek, with Friday the best La Jolla has looked in months, before a weekend swell and onshore wind knocked it back into the murk. Up in Central California, last week's blue-water run started giving way to green as upwelling reloaded the surface bloom. The throughline on both coasts: a warm, murky surface lens sitting on cold, clean, upwelled water — if you wanted the good stuff, you had to drop through the top.
 
