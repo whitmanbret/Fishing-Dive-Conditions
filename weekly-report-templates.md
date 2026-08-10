@@ -74,6 +74,9 @@ Fair — roughly 6 to 8 feet around Fort Bragg, a bit stirred up by surf.
 🐟 FISHING & OFFSHORE
 Warm, blue offshore water kept the bite going. Tuna were the headline — bigger bluefin out west in the cooler water, and smaller yellowfin pushing up close to home. Dorado (mahi) scattered on the floating kelp, and marlin showed around Catalina. Yellowtail were biting around the islands. Two warm-water tells: the squid disappeared and live bait was hard to come by.
 
+📊 HOW THE FORECAST DID THIS WEEK
+Pretty solid — the tool matched what divers actually found on about 7 out of 10 reports. It was strongest on the calm days, and it correctly called the rough, surfy days down in Orange County (it flagged them before people even got wet). Where it slipped: on a couple of exceptionally gin-clear La Jolla days it played it safe and read the high teens when the water was really 25–30, and it still can't "see" a sneaky surface haze — a few days the pier sensor read clean but the shallow water had actually gone a little milky. Up in Monterey we fine-tuned it midweek so it better matches the sheltered, shallow spots during the bloom. Bottom line: trust it most on calm days, lean on it to warn you off the rough ones, and know it stays a touch conservative when the water goes absolutely gin-clear.
+
 🌡️ WATER TEMPS
 Southern California surface: low-to-mid 70s. Monterey surface: mid-50s. Everywhere, it gets colder the deeper you go — so the cleanest, coolest water is usually down below.
 
