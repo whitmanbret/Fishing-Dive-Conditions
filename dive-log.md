@@ -73,6 +73,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-08 (Sat) — Monterey Bay charter (Metridium Mountain / VT3) — past-date; corroborates the Breakwater bloomSheltered fix
+- **Reported (Sat 8/8, boat, 10 divers):** Metridium Mountain & VT3 — **viz ~10 ft, "better than expected."** Flat seas, slight breeze by 11:30. (Car-week traffic gridlock on Lighthouse Ave — "a good time to avoid Monterey.")
+- **Past-date so not a live grade** (tool doesn't retain 8/8's number). But Metridium/VT3 are Breakwater/Cannery-Row-area sites (grade vs `monterey`), and this **~10 ft + the same-day Breakwater 15 ft bracket the Breakwater area at ~10–15 on 8/8** — squarely in line with the `bloomSheltered` fix's **12–17** target (overlaps 12–15). The **"better than expected"** is the exact rationale behind that fix: the sheltered shallow Breakwater/Cannery-Row area clears better than the open-bay satellite bloom (chl ~15) implies, so it should read green-bloom (~12–17), NOT pea-soup. Good corroboration that the fix direction is right. Posted display-only (past date).
+
 ### 2026-08-09 — Point Lobos (Whaler's Cove → Wall Street, tech) — near-miss / mild over-call ✗ (climo bloom-season leans high)
 - **Reported:** tech dive to **Wall Street** (deep canyon system). **~15 ft most locations, improved to 20 ft at Wall Street at 120 ft (but very dark down there).** Min temp 54°F, moderate surge above 30 ft, max 125 ft, 100 min.
 - **Tool `ptlobos` (live):** **21–26 ft (bloom season)** — chl **4 (Climo central)**, WE 79, 56.9°F, strat note firing.
