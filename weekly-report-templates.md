@@ -144,6 +144,16 @@ Warm, blue offshore water kept the bite going all week. Tuna were the headline: 
 🌡️ THE HEATWAVE — READ THE WHOLE WATER COLUMN
 Same lesson as all summer: the good water is usually down. Surfaces were warm — low-to-mid 70s in Southern California, mid-50s in Monterey — sitting over cold, clean, upwelled water (around 50–53°F) at depth. That cold layer is nutrient-rich, and in Monterey especially it's been feeding the surface bloom that greens the top. So the pattern to plan around: warm and murky (or green) up top, cold and cleaner below a sharp thermocline. Dress for the bottom temperature, not the surface.
 
+🔮 THE WEEK AHEAD — 7-DAY OUTLOOK
+Here's where the tool sees things heading over the next seven days. It's a quiet-swell, warm stretch — no big clean-up and no blow-out on the horizon, so this week's patterns mostly carry forward:
+• San Diego / La Jolla: Steady. A mild 12–17 ft nearshore, holding all week on a gentle 2–3 ft SW swell, with the deeper canyon water offshore staying clearer (low-to-mid 20s+). No big swings — play the calm mornings and swim out for the good stuff.
+• Orange County / Laguna: Slow to recover. The tool keeps the coves around 7–12 ft most of the week while the surf stays up — don't expect them to go clear until the swell backs off. Sheltered spots and afternoons remain the play.
+• LA / South Bay (Palos Verdes): Holding in the low-to-mid teens (11–17 ft), green-tinged from the mild bloom over a warm surface. Steady.
+• Catalina: Still the best water around — starts 50–55 ft and eases toward the upper 30s–low 40s later in the week as a little swell fills in. That's still gin-clear by any normal standard.
+• Monterey / Central Coast: The bloom hangs on — sheltered Breakwater around 12–17 ft early, softening toward 7–15 ft late week, and the deep sites stay a green-on-top, clearer-below story. Cold; thick suit.
+• Northern California: Fair and surf-dependent — think single digits to low teens.
+Bottom line for the week: Catalina stays the sure thing, La Jolla holds mild and steady (clearer offshore), the OC coves stay surf-worked, and Monterey's bloom lingers. If you want blue water, point the truck at an island or swim out past the shallows.
+
 🌙 MOON
 We're waning down toward a new moon at the end of the week — the darker, low-light windows white seabass tend to favor on the deep iron.
 
