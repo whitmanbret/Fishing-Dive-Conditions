@@ -92,3 +92,4 @@ capture_time_utc,frame_file,ntu,chl,sensor_time_utc,cam_viz_low_ft,cam_viz_high_
 20260812T234741Z,scripps_20260812T234741Z.jpg,0.55,0.71,2026-08-12T23:24:00Z,14,20,moderate,14,True
 20260813T022129Z,scripps_20260813T022129Z.jpg,-0.07,0.98,2026-08-13T01:24:00Z,14,20,moderate,14,True
 20260813T142410Z,scripps_20260813T142410Z.jpg,0.5,0.89,2026-08-13T14:08:00Z,14,20,moderate,14,True
+20260813T160152Z,scripps_20260813T160152Z.jpg,0.02,0.58,2026-08-13T15:40:00Z,14,20,moderate,14,True
