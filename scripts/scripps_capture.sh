@@ -154,3 +154,43 @@ printf '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n' \
   "$TS" "$(basename "$FRAME")" "$NTU" "$CHL" "$NTU_TIME" \
   "$VLO" "$VHI" "$CONF" "$PILING" "$USABLE" >> "$CSV"
 log "logged -> $CSV"
+
+# ---- push a SMOOTHED cam-viz to the worker (dampen-only LIVE viz input) -----
+# The worker uses this as DIRECT surface-clarity ground truth, DAMPEN-ONLY, for the
+# Scripps-proximity spots (catches "stealth" over-calls where the pier NTU/chl read
+# clean but the surface is hazy). We post the MEDIAN of the last few USABLE readings
+# within ~3.5h (incl. this frame) so one noisy frame can't swing a live prediction.
+# No-op if CAM_KEY is unset or there are no usable readings.
+WORKER="${WORKER:-https://spearfactor-api.whitmanbret.workers.dev}"
+if [ -n "${CAM_KEY:-}" ] && [ "$USABLE" = "True" ] && [ -f "$CSV" ]; then
+  SMOOTH=$("$PYTHON" - "$CSV" <<'PY'
+import sys, csv, time, statistics
+from datetime import datetime, timezone
+now=time.time(); rows=[]
+with open(sys.argv[1]) as f:
+    for r in csv.DictReader(f):
+        if (r.get('usable_frame') or '').strip()!='True': continue
+        try: lo=float(r['cam_viz_low_ft']); hi=float(r['cam_viz_high_ft'])
+        except Exception: continue
+        try: t=datetime.strptime(r['capture_time_utc'],'%Y%m%dT%H%M%SZ').replace(tzinfo=timezone.utc).timestamp()
+        except Exception: continue
+        if now-t <= 3.5*3600: rows.append((lo,hi,(r.get('confidence') or 'moderate').strip()))
+rows=rows[-4:]
+if rows:
+    lo=round(statistics.median(x[0] for x in rows)); hi=round(statistics.median(x[1] for x in rows))
+    cs=[x[2] for x in rows]
+    conf='high' if cs.count('high')>len(cs)/2 else ('low' if (len(rows)<2 and cs[-1]=='low') else 'moderate')
+    print(f"{lo}\t{hi}\t{conf}\t{len(rows)}")
+PY
+)
+  if [ -n "$SMOOTH" ]; then
+    IFS=$'\t' read -r SLO SHI SCONF SN <<<"$SMOOTH"
+    if curl -fsS --max-time 15 -X POST "$WORKER/camviz" \
+         -H "X-Cam-Key: $CAM_KEY" -H "Content-Type: application/json" \
+         -d "{\"lo\":$SLO,\"hi\":$SHI,\"conf\":\"$SCONF\",\"n\":$SN}" >/dev/null 2>&1; then
+      log "camviz posted: ${SLO}-${SHI} ft ($SCONF, n=$SN)"
+    else
+      log "camviz post failed (non-fatal)"
+    fi
+  fi
+fi

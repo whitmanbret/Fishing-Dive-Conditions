@@ -81,6 +81,9 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CAM_MODEL: ${{ vars.CAM_MODEL || 'claude-haiku-4-5' }}
+          # Secret-gates the smoothed cam-viz POST to the worker /camviz endpoint
+          # (dampen-only live viz input). If unset, the capture just skips the POST.
+          CAM_KEY: ${{ secrets.CAM_KEY }}
           CSV: ${{ github.workspace }}/_data/cam_training_log.csv
           FRAME_DIR: ${{ github.workspace }}/_frames
           # force=true (manual dispatch) widens the daylight gate to 24h so we can
