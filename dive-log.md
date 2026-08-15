@@ -73,6 +73,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-14 (Fri) — MacAbee Pinnacle (Monterey Bay) — under-call, but SPATIAL (pinnacle clearer than the Breakwater)
+- **Reported (Fri):** MacAbee Pinnacle — **35 ft in all directions.** (Uniformly clear, not stratified — the bloom has eased.)
+- **Tool `monterey` (live):** **21–26 ft (bloom season)** — chl **4 (Climo central**; the held bloom has now decayed OUT and fallen to climo, so the tool is tracking the clearing), 60.6°F, strat note firing.
+- **Result: under-call (~9–14 ft), but it's SPATIAL + the safe direction.** MacAbee Pinnacle is a deeper **Cannery-Row pinnacle**, which runs clearer than the shallow **Breakwater/San Carlos** the `monterey` spot is calibrated to — same as the deep Carmel/Point Lobos sites reading clearer than the surface-weighted number. So 21–26 (Breakwater surface) vs 35 (pinnacle) is a spatial gap, not a calibration error, and under-calling is the safe direction. The tool IS tracking the overall clearing (bloom → climo → 21–26). **MacAbee Pinnacle grades against `monterey`** (Monterey Bay pinnacle). Posted display-only (spatial — a clearer pinnacle shouldn't nudge the Breakwater-calibrated number up).
+
 ### 2026-08-14 (Fri) — Coronado Islands (MX) — roughly consistent (qualitative; North Island best) + yellowtail
 - **Reported:** Coronado Islands, **Northern Island** — "**mixed bag of visibility, some clean water and some dirty water**," not much current, **the North Island had the best viz.** Best overall conditions were at **Pukie Point** (the northern tip of the North Island). Each diver got a **yellowtail** (nice). *(All Coronado Islands sub-sites — Pukie Point, North/Middle/South Island, Rockpile — grade against the `coronado` = "Coronado Islands (MX)" spot.)*
 - **Tool `coronado` (live):** **40–45+ ft** (offshore/bluewater path — chl 2.03, warm **75.2°F**, WE 260 but offshore island water stays blue regardless of surface energy).
