@@ -73,6 +73,12 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-15 (Sat) — La Jolla Marine Room — OVER-call ✗ (sensors BLIND + calm surface trap; likely self-corrects)
+- **Reported (Bret, secondhand — "I heard"):** Marine Room **~5' visibility** today; Bret flagged it's "way over predicting."
+- **Tool `ljmarineroom` (live):** **11–14 ft** — but **no live sensor data:** NTU is absent (Scripps not feeding MR) and chl is **climatology 2.03** ("Climo (sd)", chlIsClimo=true), WE **7.3 (dead calm/glassy)**, incoming tide, 68°F.
+- **Over-call ~6–9 ft.** **Root cause = the tool is BLIND at MR today.** With no live NTU and only mild *climo* chl (2.03), it has no signal that there's a surface bloom, so it falls to the clean-ish calm-day tier (11–14). On a **glassy calm day a mild surface bloom accumulates undisturbed → pea-soup ~5 ft** (the "calm ≠ clean" reef-pocket paradox), but the sensors aren't there to catch it. The code's calm-bloom-trap only fires at **chl > 3** (live) — today's is 2.03 *climo*, so it slips through.
+- **NOT tuning it.** Reasons: (1) secondhand single report; (2) sensors are OFFLINE — this is a sensor-outage artifact that should **self-correct when Scripps NTU/live-chl return** (exactly how LJ Shores self-corrected yesterday once its NTU updated); (3) lowering the calm-bloom-trap threshold (chl>3 → ~2) risks **over-dampening genuinely-clear calm days** (MR runs 15–20 on plenty of calm days at climo chl ~2). Per the over-correction discipline (burned twice this week), I won't touch it on blind sensors + one relayed number. **Watch:** if Scripps comes back and MR STILL reads 11–14 while divers get 5, that's a real over-call worth a fix. Logged only (no feed post on a secondhand number).
+
 ### 2026-08-14 (Fri) — MacAbee Pinnacle (Monterey Bay) — under-call, but SPATIAL (pinnacle clearer than the Breakwater)
 - **Reported (Fri):** MacAbee Pinnacle — **35 ft in all directions.** (Uniformly clear, not stratified — the bloom has eased.)
 - **Tool `monterey` (live):** **21–26 ft (bloom season)** — chl **4 (Climo central**; the held bloom has now decayed OUT and fallen to climo, so the tool is tracking the clearing), 60.6°F, strat note firing.
