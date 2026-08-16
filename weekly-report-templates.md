@@ -86,92 +86,61 @@ Dive safe!
 
 #spearfishing #scuba #californiadiving #spearfactor #lajolla #diveconditions #freediving #montereybay #catalina
 
-### WEEKLY EMAIL — Week of August 10–16, 2026 (detailed subscriber version; generic, no individual reports named, no offshore-source named)
+### WEEKLY EMAIL — Week of August 10–16, 2026 (June-template format; generic, no individual reports named; offshore intel paraphrased, no source)
 Subject line options (pick one):
-- Clear → hazy → blown: La Jolla's wild week, and Monterey's bloom finally breaks
-- The week we taught the forecast to see haze — plus Monterey's bloom cleared
-- California Dive Report, Aug 10–16 — and how the forecast did (about 8 in 10)
-
-Preheader: La Jolla rode a rollercoaster and a weekend swell blew it out — but Monterey's weeks-long bloom finally cleared. Plus an honest look at the forecast, and a new underwater-camera check that made its first save.
-
+A tale of two coasts: La Jolla blows out, Monterey's bloom breaks — Dive Report Aug 10–16
+Preheader (preview text): La Jolla went clear, then hazy, then blown out by a weekend swell. Monterey's weeks-long bloom finally cleared. Same heatwave, opposite results.
 Hey divers,
+Here's what California waters did this week.
+The big theme was a coast that couldn't make up its mind — and a Central Coast that finally did. La Jolla opened gin-clear (20–30 ft early week), caught a thin surface haze midweek that the shallows couldn't shake, then a weekend swell blew the whole cluster out to a surgy 5–13 ft by Sunday. Up in Monterey and Carmel the script flipped: the stubborn green surface bloom that's dogged the region for weeks finally scoured out and the water opened way up. Same marine heatwave, opposite results — a warm surface lens over cold, clean, upwelled water, all driven by wind and coastline.
 
-Two coasts, two opposite stories this week — plus a genuinely fun milestone on the forecasting side.
-
-Down south, La Jolla rode a rollercoaster: gin-clear early, a sneaky surface haze midweek, then a weekend swell that blew the whole cluster out. Up in Monterey and Carmel, the persistent green surface bloom that's dogged the region for weeks finally broke, and the water opened way up. Same marine heatwave underneath it all — warm surface over cold, clean, upwelled water.
-
-⚡ THE 60-SECOND VERSION (for the skimmers)
-• Best water on the coast right now: Monterey/Carmel finally cleared — go EARLY in the week before it softens (40–50+ ft once you drop below the thermocline).
-• Clearest, easiest SoCal pick: Palos Verdes / South Bay (20–25 ft, gin-clear, warm, uncrowded) or a Catalina day trip (40+ ft blue).
-• Give it a few days: La Jolla and the Laguna coves — a weekend swell blew them out (5–13 ft) and they need time to lay down.
-• Your window: the swell eases midweek — La Jolla's calm early mornings are the play, if you drop deeper past the surge.
-
-WILDLIFE NOTES: A big week for the charismatic stuff. Leopard sharks everywhere in La Jolla — including a dense "nursery" of them in the sandy shallows just north of the Marine Room, in about 3 ft of gin-clear water — plus giant sea bass, sea turtles, soupfin (tope) sharks, and yellowtail cruising the Marine Room reef. Up in Monterey: impressively thick clouds of mysid shrimp in the shallows, and a sea-lion migration from the Channel Islands staging on San Carlos Beach at the Breakwater (a noisy bull hauled out — give them plenty of room). Yellowtail on the chew at the Coronado Islands.
+WILDLIFE NOTES: Leopard sharks all over La Jolla — including a dense nursery in the sandy shallows just north of the Marine Room, in about 3 ft of gin-clear water — plus giant sea bass, sea turtles, and soupfin (tope) sharks, with yellowtail cruising the Marine Room reef. Up in Monterey: thick clouds of mysid shrimp in the shallows, and a sea-lion migration from the Channel Islands staging on San Carlos Beach at the Breakwater (a noisy bull hauled out — give them room). Yellowtail biting at the Coronado Islands.
 
 THE WEEK BY REGION
+🟡 SAN DIEGO / LA JOLLA
 
-🟡 SAN DIEGO / LA JOLLA — clear, then hazy, then blown
-A three-act week. Early on it was excellent: 20–30 ft of warm blue, gin-clear on the calm mornings, with giant sea bass and topes on the reef. Midweek a thin surface haze moved into the shallows — the tricky kind the pier sensor reads right through, so some spots looked cleaner on paper than they fished (more below). Then a swell filled in over the weekend and blew the whole cluster out: by Sunday morning the Cove was a surgy 5–10 ft, the Shores was pea soup, and the Marine Room was poor enough you had to swim 100 yards past the buoys to find clean water. Surface ran warm (68–72°F) but cooled as upwelling reasserted.
-Tip: on a swell day the La Jolla shallows churn fast — drop deeper past the surge, or wait for it to lay down.
+* Clear → hazy → blown. Early week was excellent: 20–30 ft of warm blue, gin-clear on the calm mornings, with the deeper Shores canyon running a clean 25–30 ft about ½ mile out (8/10).
+* Midweek stealth haze (8/14): the pier read gin-clear but a thin surface layer had settled in — the Cove and Shores actually fished ~15–20 ft, not the 25+ it looked like on paper.
+* Weekend blowout (8/16): a swell churned the whole cluster — the Cove was a surgy 5–10 ft, the Shores went pea soup, and the Marine Room was poor enough you had to swim 100 yd past the buoys for clean water.
+* Classic inner-murk / outer-clean gradient all week — shallows hazy, clearing as you moved out and down. Warm 68–72°F surface cooling to the mid-50s at depth as upwelling reasserted.
 
-🟡 ORANGE COUNTY / LAGUNA — surfy and swingy
-A classic mixed bag. On the calm mornings the sheltered Laguna spots ran up to ~20 ft, but the exposed coves churned to 5–15 ft whenever the surf came up — and it came up more than it laid down. Warm water throughout.
-Tip: on a surf day in Laguna, the sheltered spots and the deeper water hold up far better than the exposed coves — and afternoons often beat mornings once the tide settles.
+🟡 ORANGE COUNTY / LAGUNA
+Surfy and swingy. On the calm mornings the sheltered spots ran up to ~20 ft (Goff, 8/11), but surf churned the exposed coves down: Shaw's 0–10 ft (8/13), Crescent 10 ft on 3 ft of surf (8/14). Same rule in surf — Treasure Island (Goff), Shaw's, and the tucked-in coves are your most sheltered bets, and afternoons often beat mornings once the tide settles.
 
-🟢 LA / SOUTH BAY (Palos Verdes) — the quiet winner
-Nice turnaround. Flat Rock / Big Pipe cleaned up to a solid 20–25 ft by the weekend — genuinely gin-clear water, warm 74°F top to bottom, and barely any current. While La Jolla was blowing out, the South Bay was the calm, clear, uncrowded pick.
+🟢 LA / SOUTH BAY (Palos Verdes)
+The quiet winner. Flat Rock / Big Pipe cleaned up to a solid 20–25 ft by the weekend (8/16) — genuinely gin-clear, warm 74°F top to bottom, and barely any current. While La Jolla blew out, the South Bay was the calm, clear, uncrowded pick.
 
-🔵 CATALINA / CORONADO ISLANDS — big blue
-Catalina held its usual big blue water. Down at the Coronado Islands (Mexican waters) it was a hazy but solid 40 ft, best up at Pukie Point on the north island, with a sharp thermocline and a ripping current — and yellowtail biting for the divers who made the run.
+🟢 CENTRAL COAST (Carmel / Pt Lobos)
+The week's best story. The surface bloom finally cleared: Point Lobos ran blue-hazy with 30+ ft at depth (8/13), then 20–30 ft up top opening to 40–50+ ft below the thermocline by the weekend; Monastery went 20–30 ft horizontal / 40+ vertical (8/15); and the pinnacles fired — MacAbee 35 ft, Beto's 50+ (8/15). Cold and clean: mid-50s to low-60s at the surface, colder below. If you've been waiting out the summer green up here, this was your window.
 
-🟢 MONTEREY / CENTRAL COAST — the bloom finally broke
-The best story of the week. The stubborn green surface bloom that's plagued Monterey and Carmel for weeks finally cleared out. You could watch it happen: the Breakwater climbed from a particulate ~10 ft midweek to a hazy 20–30 ft by the weekend; Monastery and Point Lobos ran 20–30 ft up top and opened to 40–50+ ft once you dropped below the thermocline; and the pinnacles (MacAbee, Beto's) hit 35 to 50+. Still cold up here — mid-50s to low-60s at the surface and colder below — so bring the thick suit. (And it's Car Week in Monterey — the in-town traffic has been brutal, so plan around it.)
+🟢 MONTEREY BAY (Breakwater / McAbee)
+The bay followed suit. The Breakwater climbed from a particulate ~10 ft midweek (8/11) to a hazy but real 20–30 ft by 8/12, and held into the weekend — glassy on the calm mornings. Water 56–60°F with a chilly thermocline. A genuinely nice turnaround for Monterey shore diving. (Heads up: it's Car Week — town traffic has been brutal, so plan around it.)
 
-📊 HOW THE FORECAST DID THIS WEEK
-An honest scorecard, since you asked. Across the reports we could check, the tool matched what divers actually found on roughly 8 out of 10.
-Where it was strong: it nailed the blown-out weekend — flagged the incoming swell and had the entire La Jolla cluster pegged at a surgy 5–13 ft while divers were finding pea soup. It tracked the Monterey bloom clearing in real time, climbing right alongside the water. And it self-corrected a couple of times as the sensors caught up — a spot that read high on a shadowed morning fell into line by afternoon once the wave-energy data updated.
-Where it slipped, and what we did about it:
-• The midweek "stealth haze" at La Jolla. For a day, the pier sensor read gin-clear but a thin surface haze had actually settled in, so the tool briefly over-called (it can't see that haze from the sensor alone). We took two swings at it: first, we capped the top end so it can't over-promise on an ultra-clean-sensor day; second — the big one — we wired the Scripps Pier underwater camera in as a live check. The camera is direct ground truth for the water's clarity, so when it sees haze the sensor misses, it now pulls the estimate down. It made its first real save this Sunday, catching the blown-out Shores and adjusting the number to match what divers saw. This is the fix we've wanted all summer for that exact problem.
-• A couple of gin-clear days it read a touch low — Palos Verdes and Goff both hit ~25 ft while the tool called high-teens. We leave those alone on purpose: under-promising and being pleasantly surprised beats over-promising and being let down.
-Bottom line: trust it most on calm and blown-out days, and know it now has a camera watching for the sneaky haze in between.
+🔵 CATALINA / CORONADO ISLANDS
+Catalina held its usual big blue water (40+ ft). Down at the Coronado Islands it was a hazy but solid 40 ft, best up at Pukie Point on the north island, with a sharp thermocline and a ripping current.
 
-🎯 WHERE I'D DIVE THIS WEEK (subscriber picks)
-Not just numbers — here's where I'd actually point the truck, and when:
-• Want clear water with minimal fuss? Palos Verdes (Flat Rock / Big Pipe) on a calm morning, or a Catalina day trip. Both are holding 20–45 ft and neither needs a swell to lay down first — these are your safe bets this week.
-• Making the Monterey drive? Go EARLY in the week — the bloom's cleared but the forecast softens it toward the weekend. Dive the pinnacles and get below the thermocline: the top 15–20 ft is the worst of it, and 40–50+ waits underneath. Thick suit — it's mid-50s down there.
-• Stuck in San Diego? Give the swell two or three days to ease, then hit La Jolla on a calm early-morning slack tide and swim out and down — the shallow reefs are the churny part; the Shores canyon and the deeper kelp clear first.
-• Laguna diver? Wait it out or go sheltered (the tucked-in coves), and favor the afternoon once the tide settles — the exposed coves are a coin flip in this surf.
-• Chasing fish? See below — the yellowtail moved north and the marlin bite is the best in years.
+HOW THE FORECAST DID THIS WEEK
+An honest scorecard: the tool matched what divers actually found on roughly 8 out of 10 reports. It nailed the blown-out weekend — it flagged the swell and had the whole La Jolla cluster pegged at 5–13 ft while divers found pea soup — and it tracked the Monterey bloom clearing in real time. Its one real stumble was the midweek "stealth haze" at La Jolla, where the pier read gin-clear but a thin surface layer had moved in (the sensor can't see it), so it briefly over-called. We shipped two fixes: a cap so it can't over-promise on an ultra-clean-sensor day, and — the big one — we wired the Scripps Pier underwater camera in as a live clarity check. It made its first real save Sunday, catching the blown-out Shores and pulling the number down to match what divers saw. The only other misses were a couple of gin-clear days it read a touch low (Palos Verdes and Goff both hit ~25 ft while it called high-teens) — we leave those alone on purpose, since under-promising beats over-promising.
 
-🐟 FISH & OFFSHORE
-The marlin showed up — and how. Some of the best striped marlin fishing in years is happening right now, thick around Catalina and the channel and out toward the 711, mostly small wolf packs busting bait balls. The yellowtail moved north out of San Diego and into Orange County and LA — the PV/Horseshoe area and the Dana Point–Oceanside stretch had the near-wide-open days, with some standout 25–30+ lb fish. A wahoo even turned up down south within range of Mission Bay. Dorado are scattered on the kelp paddies, bluefin have slowed off (better at night now), and the squid have vanished with the warm water — which has the island white-seabass bite off.
+FISH AND OFFSHORE INTEL
 
-🌡️ THE HEATWAVE — READ THE WHOLE WATER COLUMN
-Same summer lesson: the good water is usually down. Surfaces ran warm — upper 60s to mid-70s in Southern California, mid-50s to low-60s in Monterey — over cold, clean, upwelled water (around 50–55°F) at depth. That cold layer is what cleared Monterey (upwelling flushing the bloom) and what keeps cooling La Jolla's nearshore. Plan for the bottom temperature, not the surface, and expect a sharp thermocline — at Point Lobos this week it was low-viz in the shallows and 50+ ft once you dropped below it.
-Two things worth understanding, because they'll keep repeating all summer:
-• Why Monterey cleared: upwelling on a timer. Northwest wind pushes the surface water offshore, and cold, nutrient-rich water rises up the coast to replace it. It comes up clean and blue at first — but within a few days those nutrients feed a plankton bloom that greens the surface. When the wind pattern relaxes, the bloom stops getting fed and flushes out. That's exactly what happened this week. Practical tell: watch the NW wind — cranking = green water coming, backing off = clearing on the way.
-• Why the "stealth haze" fools a sensor: a pier turbidity sensor reads the water passing the pier at depth. On a calm day a thin bloom or haze layer can float right on top of it — clean at the sensor, murky where you're actually finning. That surface layer is invisible to the sensor, which is the entire reason we added the underwater-camera check.
+* The marlin showed up — and how. Some of the best striped marlin fishing in years, thick around Catalina, the channel, and out toward the 711, mostly small wolf packs busting bait balls.
+* The yellowtail moved north out of San Diego into Orange County and LA — the PV/Horseshoe area and the Dana Point–Oceanside stretch had the near-wide-open days, with standout 25–30+ lb fish. San Diego/La Jolla is sketchier now that the volume pushed up the coast, and the islands (Catalina, Coronados) are slower and boat-shy.
+* A wahoo turned up down south within full-day range of Mission Bay. Dorado are scattered on the kelp paddies, bluefin have slowed (better at night), and the squid vanished with the warm water — which has the island white-seabass bite off.
 
-🔮 THE WEEK AHEAD — 7-DAY OUTLOOK
-Where the tool sees things heading:
-• San Diego / La Jolla: Steady but mild — roughly 10–16 ft as the weekend swell slowly eases. Don't expect gin-clear again this week; play the calmer mornings and drop deeper.
-• Orange County / Laguna: Slow — the coves hold around 2–9 ft while the surf stays up. Sheltered spots and deeper water remain the play.
-• LA / South Bay: The steady winner — holding in the mid-teens to low-20s, warm and often the clearest nearshore option in SoCal.
-• Catalina: Still the gem — starts 40–45 ft and eases toward the low 30s later in the week as a little swell fills in. Gin-clear by any standard.
-• Monterey / Central Coast: Good early (low-to-mid 20s) but softening toward the mid-teens late week — the bloom's cleared, but watch it, as upwelling can reload one fast. Cold; thick suit.
-Bottom line: Catalina and the South Bay are the clear-water bets, La Jolla stays mild, the OC coves stay surf-worked, and Monterey's window is early in the week.
+THE MARINE HEATWAVE — READ THE WHOLE WATER COLUMN
+The heatwave is still running the show, and the story is in the split:
 
-🌙 MOON
-We came through the new moon midweek and we're building back into a waxing crescent — the darker early-week nights are the low-light windows white seabass tend to favor on the deep iron.
+* Surface: upper 60s to mid-70s in SoCal, mid-50s to low-60s in Monterey
+* At depth: a clean, cold ~50–55°F — that cold water is active upwelling
+That contrast drove the whole week. In Monterey, a shift in the NW wind let upwelling flush the surface bloom out — clear water is the payoff, but watch that wind, because a few days of it cranking can reload the green fast. In La Jolla, the warm surface lens is what let a thin haze float on top of a clean pier reading (the exact gap our new camera check now closes). Plan for the bottom temp, not the surface — you'll punch through a sharp thermocline either way.
 
-Check the live conditions before you head out — that's what they're there for.
+🌑 MOON
+We came through the 8/12 new moon and we're building back into a waxing crescent. White seabass favor the low-light edges around the new moon, so the early-week dawn and dusk windows were the smart play.
+Stay safe and check the live conditions before you head out.
 Real-time predictions and 7-day forecasts: conditions.spearfactor.com
 
-A quick note on why this email exists: you're getting the stuff a public post can't give you — the honest forecast scorecard, the behind-the-scenes on the tool we're building, and real "where I'd actually dive" calls instead of a generic surf number. If a diving buddy would find it useful, forward it along — they can sign up at conditions.spearfactor.com. And if YOU got wet this week, hit reply and tell us what you saw: your reports are literally what trains the forecast (and make this email sharper every week).
-
-One safety-and-regs reminder: a lot of these spots sit inside Marine Protected Areas (La Jolla, Point Lobos, the Laguna reserves, and more), and take rules vary spot to spot. Know the boundaries and regulations before you dive or take anything — verify current rules with CDFW.
-
-Dive safe,
+Dive Safe,
 Bret
 SpearFactor
 
