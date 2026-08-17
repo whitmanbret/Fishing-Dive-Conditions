@@ -10932,8 +10932,22 @@ function applyVizCalibration(vizEst) {
   const correction = Math.max(-6, Math.min(6, Math.round(avgError)));
   const match = vizEst.match(/(\d+)–(\d+)\s*ft/);
   if (match) {
-    let lo = Math.max(1, parseInt(match[1]) + correction);
-    let hi = Math.max(lo + 1, parseInt(match[2]) + correction);
+    const mLo = parseInt(match[1]), mHi = parseInt(match[2]);
+    let lo = Math.max(1, mLo + correction);
+    let hi = Math.max(lo + 1, mHi + correction);
+    // FLOOR (2026-08-17). A negative correction is calibrated from OVER-call
+    // reports on the model's clear/high tier (e.g. actual 15 vs predicted 24–29),
+    // but it's applied FLAT to every prediction regardless of tier. On an already
+    // low-turbidity day that crushes the hero to an absurd under-call — Shores
+    // model 7–10 was being dragged to 1–2 by a −6 sourced entirely from three
+    // gin-clear over-call days. Don't let calibration cut either bound below
+    // HALF the model value: a genuine correction still shows on the high/clear
+    // days it was calibrated from (a −6 off 29–34 → 23–28 is well above half),
+    // but it can no longer crush a low-model day into an absurd under-call.
+    if (correction < 0) {
+      lo = Math.max(lo, Math.round(mLo * 0.5), 1);
+      hi = Math.max(hi, Math.round(mHi * 0.5), lo + 1);
+    }
     const suffix = vizEst.includes('(') ? vizEst.slice(vizEst.indexOf('(') - 1) : ' ft';
     // Store for display
     D.calibration = { correction, avgError: parseFloat(avgError.toFixed(1)), reports: matchedCount };
