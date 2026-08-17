@@ -104,10 +104,10 @@ WILDLIFE NOTES: A big week for the charismatic stuff. Leopard sharks were all ov
 THE WEEK BY REGION
 
 🟡 SAN DIEGO / LA JOLLA — clear, then hazy, then blown
-A three-act week.
-* Act 1 — clear (early week): 20–30 ft of warm blue, gin-clear on the calm mornings, with giant sea bass and topes out on the reef. The deeper Shores canyon was the standout, running a clean 25–30 ft about a half-mile out over the sand (8/10).
-* Act 2 — stealth haze (8/14): the tricky one. The pier turbidity sensor read gin-clear, but a thin surface haze had actually settled in, so the Cove and Shores fished more like 15–20 ft even though the numbers looked like 25+. If you dove it expecting gin-clear and got green, that's why.
-* Act 3 — blowout (8/16): a long-period swell filled in and churned the whole cluster. The Cove dropped to a surgy 5–10 ft, the Shores went full pea soup, and the Marine Room was rough enough you had to swim a good 100 yards past the buoys to find anything clean.
+A three-phase week.
+* Phase 1 — clear (early week): 20–30 ft of warm blue, gin-clear on the calm mornings, with giant sea bass and topes out on the reef. The deeper Shores canyon was the standout, running a clean 25–30 ft about a half-mile out over the sand (8/10).
+* Phase 2 — stealth haze (8/14): the tricky one. The pier turbidity sensor read gin-clear, but a thin surface haze had actually settled in, so the Cove and Shores fished more like 15–20 ft even though the numbers looked like 25+. If you dove it expecting gin-clear and got green, that's why.
+* Phase 3 — blowout (8/16): a long-period swell filled in and churned the whole cluster. The Cove dropped to a surgy 5–10 ft, the Shores went full pea soup, and the Marine Room was rough enough you had to swim a good 100 yards past the buoys to find anything clean.
 * All week it was the classic La Jolla inner-murk / outer-clean gradient — hazy and stirred in the shallows, clearing as you moved out and dropped down. Surface ran a warm 68–72°F but cooled into the mid-50s at depth as upwelling reasserted itself, with a sharp thermocline in between.
 
 🟡 ORANGE COUNTY / LAGUNA — surfy and swingy
