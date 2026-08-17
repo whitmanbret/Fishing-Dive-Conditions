@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Draft — Wind + Wave Graphs</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root {
+    --bg-primary: #0a1628; --bg-secondary: #0f1a2e; --bg-card: #14223a; --bg-input: #0c1726;
+    --text-primary: #e0ecff; --text-secondary: #7a99c4; --text-muted: #4a6a96;
+    --accent: #2c8cff; --border: #1e3558; --fair: #f39c12;
+  }
+  body { background: var(--bg-primary); color: var(--text-primary); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 16px; max-width: 480px; margin: 0 auto; }
+  h1 { font-size: 13px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.2px; margin: 0 0 12px; font-weight: 700; }
+  .note { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; font-style: italic; }
+
+  /* ===== Existing card styles (copied from production) ===== */
+  .cond-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+  .cc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .cc-head-left { display: flex; align-items: center; gap: 6px; }
+  .cc-icon { color: var(--accent); font-size: 13px; }
+  .cc-title { text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: var(--text-secondary); }
+  .cc-svg { width: 100%; height: 130px; display: block; margin-top: 6px; overflow: visible; }
+  .cc-svg .axis-text { font-size: 9px; fill: var(--text-muted); }
+  .cc-svg .curve-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .cc-svg .curve-fill { fill: var(--accent); opacity: 0.12; }
+  .cc-svg .now-line { stroke: var(--fair); stroke-width: 1.5; stroke-dasharray: 3,3; }
+  .cc-svg .hover-line { stroke: var(--text-secondary); stroke-width: 1; pointer-events: none; opacity: 0; }
+  .cc-svg .hover-dot { fill: var(--accent); stroke: var(--text-primary); stroke-width: 1.5; pointer-events: none; opacity: 0; }
+  .cc-svg .grid-line { stroke: var(--border); stroke-width: 0.5; stroke-dasharray: 2,3; }
+  .cc-svg .y-label { font-size: 9px; fill: var(--text-muted); }
+  .cc-svg .peak-label { font-size: 10px; font-weight: 700; fill: var(--text-secondary); }
+  .wind-row { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .wind-compass { width: 90px; height: 90px; flex-shrink: 0; }
+  .wind-compass .ring { fill: var(--bg-input); stroke: var(--border); stroke-width: 1; }
+  .wind-compass .tick { stroke: var(--text-muted); stroke-width: 0.5; }
+  .wind-compass .nesw { font-size: 9px; fill: var(--text-secondary); text-anchor: middle; dominant-baseline: middle; font-weight: 600; }
+  .wind-compass .arrow { fill: var(--text-primary); }
+  .wind-readout { flex: 1; }
+  .wind-readout .big { font-size: 22px; font-weight: 700; color: var(--text-primary); line-height: 1.1; }
+  .wind-readout .big .unit { font-size: 11px; color: var(--text-muted); margin-left: 2px; font-weight: 500; }
+  .wind-readout .sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .chart-title-row { font-size: 9px; font-weight: 700; letter-spacing: 1.2px; color: var(--text-muted); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; }
+
+  .wave-surf { padding-bottom: 10px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+  .wave-surf-label { font-size: 9px; font-weight: 700; letter-spacing: 1.2px; color: var(--text-muted); }
+  .wave-surf-val { font-size: 28px; font-weight: 700; color: var(--text-primary); line-height: 1.15; }
+  .wave-surf-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .swell-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .swell-table th { text-align: right; padding: 6px 4px 8px; font-size: 9px; letter-spacing: 1.2px; color: var(--text-muted); font-weight: 700; border-bottom: 1px solid var(--border); text-transform: uppercase; }
+  .swell-table th:first-child { text-align: left; }
+  .swell-table td { padding: 6px 4px; color: var(--text-primary); text-align: right; }
+  .swell-table td:first-child { text-align: left; color: var(--text-secondary); font-size: 11px; }
+
+  /* ===== NEW: hourly-arrows row for wind chart ===== */
+  .hourly-arrows { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; margin-top: 6px; padding: 0 8px; }
+  .hourly-arrow-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .hourly-arrow-cell .ha-time { font-size: 9px; color: var(--text-muted); }
+  .hourly-arrow-cell .ha-arrow { display: inline-block; font-size: 14px; line-height: 1; color: var(--text-secondary); }
+  .hourly-arrow-cell .ha-speed { font-size: 11px; font-weight: 700; color: var(--text-primary); }
+  .hourly-arrow-cell.now .ha-time { color: var(--fair); font-weight: 700; }
+
+  /* ===== NEW: chart tooltip (tap-to-show) ===== */
+  .chart-wrap { position: relative; }
+  .chart-tooltip {
+    position: absolute; pointer-events: none;
+    background: var(--bg-card); border: 1px solid var(--accent);
+    border-radius: 6px; padding: 6px 9px; font-size: 11px; line-height: 1.4;
+    color: var(--text-primary); white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    transform: translate(-50%, -110%);
+    opacity: 0; transition: opacity 0.12s;
+    z-index: 10;
+  }
+  .chart-tooltip.show { opacity: 1; }
+  .chart-tooltip .tt-time { color: var(--text-secondary); font-size: 10px; }
+  .chart-tooltip .tt-val { font-weight: 700; font-size: 13px; margin-top: 1px; }
+  .chart-tooltip .tt-sub { color: var(--text-secondary); font-size: 10px; margin-top: 1px; }
+</style>
+</head>
+<body>
+
+<h1>Draft — Tide, Wind & Wave Graphs</h1>
+<p class="note">Tap anywhere along any graph to see the value at that time. Try it on mobile or click on desktop.</p>
+
+<!-- ===== TIDE CARD ===== -->
+<div class="cond-card">
+  <div class="cc-head">
+    <div class="cc-head-left">
+      <span class="cc-icon">≈</span>
+      <span class="cc-title">Tide · PDT</span>
+    </div>
+  </div>
+  <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px;">
+    <div style="font-size:11px;color:var(--text-secondary);">State: <span style="color:var(--text-primary);font-weight:600;">Falling</span></div>
+    <div style="font-size:11px;color:var(--text-secondary);">Next low at 1:02 PM</div>
+  </div>
+  <div style="font-size:26px;font-weight:700;color:var(--text-primary);line-height:1.1;">3.3 <span style="font-size:13px;color:var(--text-muted);font-weight:500;">ft at 8:53 AM</span></div>
+  <div class="chart-title-row">
+    <span>24-HOUR TIDE</span>
+    <span id="tideNowLabel" style="font-weight:400;letter-spacing:0;text-transform:none;">Now · 8:53a</span>
+  </div>
+  <div class="chart-wrap">
+    <svg id="tideChart" class="cc-svg" viewBox="0 0 400 130" preserveAspectRatio="none"></svg>
+    <div class="chart-tooltip" id="tideTooltip">
+      <div class="tt-time"></div><div class="tt-val"></div><div class="tt-sub"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WIND CARD ===== -->
+<div class="cond-card">
+  <div class="cc-head">
+    <div class="cc-head-left">
+      <span class="cc-icon">💨</span>
+      <span class="cc-title">Wind</span>
+    </div>
+  </div>
+  <div class="wind-row">
+    <svg class="wind-compass" viewBox="0 0 100 100">
+      <circle class="ring" cx="50" cy="50" r="38"/>
+      <line class="tick" x1="50" y1="12" x2="50" y2="18"/>
+      <line class="tick" x1="50" y1="82" x2="50" y2="88"/>
+      <line class="tick" x1="12" y1="50" x2="18" y2="50"/>
+      <line class="tick" x1="82" y1="50" x2="88" y2="50"/>
+      <text class="nesw" x="50" y="9">N</text>
+      <text class="nesw" x="50" y="93">S</text>
+      <text class="nesw" x="9" y="51">W</text>
+      <text class="nesw" x="91" y="51">E</text>
+      <g id="windArrowG" transform="rotate(225 50 50)">
+        <path class="arrow" d="M50 22 L56 42 L50 36 L44 42 Z"/>
+        <line x1="50" y1="36" x2="50" y2="78" stroke="var(--text-primary)" stroke-width="2"/>
+      </g>
+    </svg>
+    <div class="wind-readout">
+      <div class="big"><span>SW</span> <span>6</span> <span class="unit">mph</span></div>
+      <div class="sub">Sideshore</div>
+    </div>
+  </div>
+  <div class="chart-title-row">
+    <span>24-HOUR WIND</span>
+    <span id="windNowLabel" style="font-weight:400;letter-spacing:0;text-transform:none;">Now · 8:53a</span>
+  </div>
+  <div class="chart-wrap">
+    <svg id="windChart" class="cc-svg" viewBox="0 0 400 90" preserveAspectRatio="none" style="height:90px"></svg>
+    <div class="chart-tooltip" id="windTooltip">
+      <div class="tt-time"></div><div class="tt-val"></div><div class="tt-sub"></div>
+    </div>
+  </div>
+  <div class="hourly-arrows" id="windHourlyArrows"></div>
+</div>
+
+<!-- ===== WAVE CARD ===== -->
+<div class="cond-card">
+  <div class="cc-head">
+    <div class="cc-head-left">
+      <span class="cc-icon">≈</span>
+      <span class="cc-title">Wave Height &amp; Swell</span>
+    </div>
+  </div>
+  <div class="wave-surf">
+    <div class="wave-surf-label">SURF</div>
+    <div class="wave-surf-val">2-3 ft</div>
+    <div class="wave-surf-sub">Estimated breaking wave height</div>
+  </div>
+  <table class="swell-table">
+    <thead><tr><th></th><th>Swell</th><th>Period</th><th>Dir</th></tr></thead>
+    <tbody>
+      <tr><td>Primary</td><td>4.2 ft</td><td>11s</td><td>WNW 290°</td></tr>
+      <tr><td>Secondary</td><td>1.4 ft</td><td>7s</td><td>S 180°</td></tr>
+    </tbody>
+  </table>
+  <div class="chart-title-row">
+    <span>24-HOUR WAVE HEIGHT</span>
+    <span id="waveNowLabel" style="font-weight:400;letter-spacing:0;text-transform:none;">Now · 8:53a</span>
+  </div>
+  <div class="chart-wrap">
+    <svg id="waveChart" class="cc-svg" viewBox="0 0 400 90" preserveAspectRatio="none" style="height:90px"></svg>
+    <div class="chart-tooltip" id="waveTooltip">
+      <div class="tt-time"></div><div class="tt-val"></div><div class="tt-sub"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+ * DEMO DATA — replace with real D.windHistory / D.waveHistory in prod
+ * =========================================================================*/
+const NOW = new Date();
+NOW.setMinutes(53, 0, 0); NOW.setHours(8);  // pretend it's 8:53 AM for the screenshot match
+
+// Build 30 hourly points: 24h past + 6h forecast
+function mkSeries(fn) {
+  const pts = [];
+  for (let h = -24; h <= 5; h++) {
+    const t = new Date(NOW.getTime() + h * 3600000);
+    pts.push({ time: t, ...fn(h) });
+  }
+  return pts;
+}
+
+const windData = mkSeries(h => {
+  // matches the shape in your screenshot: high around -18h, dip overnight, ramp back up
+  const mph = Math.max(1, 7 + 6*Math.sin((h+18)*0.32) - 3*Math.cos((h+6)*0.5) + (h>0?h*0.8:0));
+  // direction sweeps SW → W → NW over the day
+  const dirDeg = 200 + h*4 + 30*Math.sin(h*0.4);
+  return { mph: +mph.toFixed(1), dirDeg: ((dirDeg%360)+360)%360 };
+});
+
+const waveData = mkSeries(h => {
+  // gentle 3-5 ft swell, slight peak mid-afternoon
+  const ft = 3.5 + 1.2*Math.sin((h+3)*0.22) + 0.3*Math.cos(h*0.6);
+  return { ft: +ft.toFixed(2), period: 11 };
+});
+
+const tideData = mkSeries(h => {
+  // M2 semi-diurnal tide — roughly 12.4h period, range ~0.5 to 4.5 ft
+  // Two highs and two lows across 24h, with mixed amplitudes
+  const ft = 2.4 + 1.9*Math.sin((h-7) * (2*Math.PI/12.4)) + 0.5*Math.sin((h-3)*(2*Math.PI/6.2));
+  return { ft: +Math.max(0.2, ft).toFixed(2) };
+});
+
+/* =========================================================================
+ * CHART RENDERER — shared by wind & wave
+ * =========================================================================*/
+function _fmtTime(t) {
+  let h = t.getHours(), m = t.getMinutes(), ap = h >= 12 ? 'p' : 'a';
+  h = h % 12 || 12;
+  return `${h}:${String(m).padStart(2,'0')}${ap}`;
+}
+function _fmtHourLabel(t) {
+  let h = t.getHours();
+  return h === 0 ? '12a' : h === 12 ? '12p' : (h > 12 ? (h-12) + 'p' : h + 'a');
+}
+function _degToCardinal(d) {
+  const C = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return C[Math.round(((d%360)+360)%360 / 22.5) % 16];
+}
+
+function renderChart(opts) {
+  const { svgId, tooltipId, data, getVal, valLabel, valUnit, getSub } = opts;
+  const svg = document.getElementById(svgId);
+  const tt = document.getElementById(tooltipId);
+  // Pull height from the viewBox so each chart can size itself (wind/wave=90, tide=130)
+  const vb = (svg.getAttribute('viewBox') || '0 0 400 90').split(/\s+/).map(Number);
+  const W = vb[2] || 400, H = vb[3] || 90;
+  const padL = 28, padR = 14, padT = 10, padB = 16;
+  const start = data[0].time, end = data[data.length-1].time;
+  const rawMax = Math.max(...data.map(getVal));
+  const rawMin = Math.min(...data.map(getVal));
+  // round the max up to a "nice" tick value so the label reads cleanly
+  const niceMax = (m => {
+    if (m <= 5) return Math.ceil(m);
+    if (m <= 20) return Math.ceil(m / 2) * 2;
+    if (m <= 50) return Math.ceil(m / 5) * 5;
+    return Math.ceil(m / 10) * 10;
+  })(rawMax * 1.1);
+  const ymax = Math.max(1, niceMax);
+  const ymid = Math.round(ymax / 2 * 10) / 10;
+  const xScale = t => padL + ((t.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * (W - padL - padR);
+  const yScale = v => H - padB - (v / ymax) * (H - padT - padB);
+
+  let path = '';
+  data.forEach((p,i) => { path += (i===0?'M':'L') + xScale(p.time).toFixed(1) + ',' + yScale(getVal(p)).toFixed(1) + ' '; });
+  const fillPath = path + `L${xScale(end).toFixed(1)},${(H-padB).toFixed(1)} L${padL},${(H-padB).toFixed(1)} Z`;
+  const nowX = xScale(NOW);
+
+  // X-axis (hour labels)
+  let xAxis = '';
+  for (let h = 0; h <= (end - start) / 3600000; h += 6) {
+    const t = new Date(start.getTime() + h * 3600000);
+    if (t > end) break;
+    xAxis += `<text class="axis-text" x="${xScale(t).toFixed(1)}" y="${H-4}" text-anchor="middle">${_fmtHourLabel(t)}</text>`;
+  }
+
+  // Y-axis (max + mid + 0) with horizontal grid lines
+  const unit = opts.unit || '';
+  let yAxis = '';
+  const yTicks = [ymax, ymid, 0];
+  yTicks.forEach(v => {
+    const y = yScale(v);
+    yAxis += `<line class="grid-line" x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}"/>`;
+    yAxis += `<text class="y-label" x="${padL-4}" y="${(y+3).toFixed(1)}" text-anchor="end">${v}${unit?' '+unit:''}</text>`;
+  });
+
+  // Peak marker — small dot + label at the highest point of the curve
+  const peakIdx = data.reduce((bi, p, i, a) => getVal(p) > getVal(a[bi]) ? i : bi, 0);
+  const peak = data[peakIdx];
+  const pX = xScale(peak.time), pY = yScale(getVal(peak));
+  const peakLabel = `<circle cx="${pX.toFixed(1)}" cy="${pY.toFixed(1)}" r="3" fill="var(--text-secondary)"/>` +
+    `<text class="peak-label" x="${pX.toFixed(1)}" y="${(pY-5).toFixed(1)}" text-anchor="middle">${opts.valLabel(peak)}</text>`;
+
+  svg.innerHTML =
+    yAxis +
+    `<path class="curve-fill" d="${fillPath}"/>` +
+    `<path class="curve-line" d="${path}"/>` +
+    peakLabel +
+    `<line class="now-line" x1="${nowX.toFixed(1)}" y1="${padT}" x2="${nowX.toFixed(1)}" y2="${H-padB}"/>` +
+    `<line class="hover-line" id="${svgId}-hov" x1="0" y1="${padT}" x2="0" y2="${H-padB}"/>` +
+    `<circle class="hover-dot" id="${svgId}-dot" cx="0" cy="0" r="4"/>` +
+    xAxis;
+
+  /* ===== tap / click / drag interaction ===== */
+  function pointFromEvent(e) {
+    const rect = svg.getBoundingClientRect();
+    const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const px = cx / rect.width * W;
+    // find nearest data point
+    let best = data[0], bestDist = Infinity;
+    for (const p of data) {
+      const dx = Math.abs(xScale(p.time) - px);
+      if (dx < bestDist) { bestDist = dx; best = p; }
+    }
+    return best;
+  }
+  function show(e) {
+    e.preventDefault();
+    const p = pointFromEvent(e);
+    const cx = xScale(p.time), cy = yScale(getVal(p));
+    document.getElementById(svgId+'-hov').setAttribute('x1', cx);
+    document.getElementById(svgId+'-hov').setAttribute('x2', cx);
+    document.getElementById(svgId+'-hov').style.opacity = 1;
+    document.getElementById(svgId+'-dot').setAttribute('cx', cx);
+    document.getElementById(svgId+'-dot').setAttribute('cy', cy);
+    document.getElementById(svgId+'-dot').style.opacity = 1;
+    // position tooltip relative to chart-wrap
+    const wrap = svg.parentElement;
+    const wrapRect = wrap.getBoundingClientRect();
+    const svgRect = svg.getBoundingClientRect();
+    const leftPx = svgRect.left - wrapRect.left + (cx / W) * svgRect.width;
+    const topPx  = svgRect.top  - wrapRect.top  + (cy / H) * svgRect.height;
+    tt.style.left = leftPx + 'px';
+    tt.style.top  = topPx + 'px';
+    tt.querySelector('.tt-time').textContent = _fmtTime(p.time) + ' · ' + p.time.toLocaleDateString('en-US',{weekday:'short'});
+    tt.querySelector('.tt-val').textContent = valLabel(p);
+    const sub = getSub ? getSub(p) : '';
+    tt.querySelector('.tt-sub').textContent = sub;
+    tt.querySelector('.tt-sub').style.display = sub ? '' : 'none';
+    tt.classList.add('show');
+  }
+  function hide() {
+    tt.classList.remove('show');
+    document.getElementById(svgId+'-hov').style.opacity = 0;
+    document.getElementById(svgId+'-dot').style.opacity = 0;
+  }
+  svg.addEventListener('mousedown', show);
+  svg.addEventListener('mousemove', e => { if (e.buttons) show(e); });
+  svg.addEventListener('touchstart', show, { passive: false });
+  svg.addEventListener('touchmove', show, { passive: false });
+  svg.addEventListener('click', show);
+  document.addEventListener('click', e => { if (!svg.contains(e.target)) hide(); });
+}
+
+/* =========================================================================
+ * HOURLY ARROW ROW (wind only — matches the Surfline-style screenshot)
+ * =========================================================================*/
+function renderHourlyArrows(containerId, data) {
+  const el = document.getElementById(containerId);
+  // Show 8 sequential hours starting an hour before now (so "now" sits inside the row)
+  let startIdx = data.findIndex(p => p.time >= NOW) - 1;
+  if (startIdx < 0) startIdx = 0;
+  if (startIdx + 8 > data.length) startIdx = Math.max(0, data.length - 8);
+  const slice = data.slice(startIdx, startIdx + 8);
+  el.innerHTML = slice.map(p => {
+    const isNow = Math.abs(p.time - NOW) < 30*60000;
+    // CSS rotation: arrow points TOWARD wind direction (FROM the source)
+    // dirDeg is "from" — arrow visually points opposite (downwind)
+    const rot = ((p.dirDeg + 180) % 360);
+    const hourLbl = _fmtHourLabel(p.time);
+    return `<div class="hourly-arrow-cell${isNow?' now':''}">
+      <div class="ha-time">${hourLbl}</div>
+      <div class="ha-arrow" style="transform: rotate(${rot.toFixed(0)}deg)">↑</div>
+      <div class="ha-speed">${Math.round(p.mph)}</div>
+    </div>`;
+  }).join('');
+}
+
+/* =========================================================================
+ * RENDER ALL
+ * =========================================================================*/
+renderChart({
+  svgId: 'tideChart', tooltipId: 'tideTooltip',
+  data: tideData,
+  getVal: p => p.ft,
+  unit: 'ft',
+  valLabel: p => `${p.ft.toFixed(1)} ft`,
+  getSub: p => '',
+});
+
+renderChart({
+  svgId: 'windChart', tooltipId: 'windTooltip',
+  data: windData,
+  getVal: p => p.mph,
+  unit: 'mph',
+  valLabel: p => `${Math.round(p.mph)} mph`,
+  getSub: p => `${_degToCardinal(p.dirDeg)} (${Math.round(p.dirDeg)}°)`,
+});
+renderHourlyArrows('windHourlyArrows', windData);
+
+renderChart({
+  svgId: 'waveChart', tooltipId: 'waveTooltip',
+  data: waveData,
+  getVal: p => p.ft,
+  unit: 'ft',
+  valLabel: p => `${p.ft.toFixed(1)} ft`,
+  getSub: p => `${p.period}s period`,
+});
+
+document.getElementById('tideNowLabel').textContent = 'Now · ' + _fmtTime(NOW);
+document.getElementById('windNowLabel').textContent = 'Now · ' + _fmtTime(NOW);
+document.getElementById('waveNowLabel').textContent = 'Now · ' + _fmtTime(NOW);
+</script>
+</body>
+</html>
