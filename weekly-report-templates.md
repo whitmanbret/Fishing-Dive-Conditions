@@ -122,6 +122,15 @@ Catalina held its usual big blue water (40+ ft). Down at the Coronado Islands it
 HOW THE FORECAST DID THIS WEEK
 An honest scorecard: the tool matched what divers actually found on roughly 8 out of 10 reports. It nailed the blown-out weekend — it flagged the swell and had the whole La Jolla cluster pegged at 5–13 ft while divers found pea soup — and it tracked the Monterey bloom clearing in real time. Its one real stumble was the midweek "stealth haze" at La Jolla, where the pier read gin-clear but a thin surface layer had moved in (the sensor can't see it), so it briefly over-called. We shipped two fixes: a cap so it can't over-promise on an ultra-clean-sensor day, and — the big one — we wired the Scripps Pier underwater camera in as a live clarity check. It made its first real save Sunday, catching the blown-out Shores and pulling the number down to match what divers saw. The only other misses were a couple of gin-clear days it read a touch low (Palos Verdes and Goff both hit ~25 ft while it called high-teens) — we leave those alone on purpose, since under-promising beats over-promising.
 
+THE WEEK AHEAD — 7-DAY OUTLOOK
+Where the tool has conditions heading into next week:
+* San Diego / La Jolla: Rough. A long-period west swell (about 3 ft at 15 seconds) has the nearshore blown and surgy — the Cove, Shores, and Marine Room are forecast at a poor 2–8 ft most of the week. Give it time; play the calm mornings and go deep or offshore if you have to get wet.
+* Orange County / Laguna: Same swell, same story — the exposed coves stay churned at 2–7 ft. Sheltered spots and deeper water only.
+* LA / South Bay (Palos Verdes): The steadier nearshore option and the cleaner of the SoCal picks lately, but this west swell reaches the point too — check it before you commit.
+* Catalina: Holds up best — 40+ ft early, easing toward the low 30s later in the week as a little swell fills in. Still the SoCal clear-water bet.
+* Monterey / Central Coast: The real clear water right now. The bloom's gone and it's calm — Point Lobos and the pinnacles are running 40–50+ ft outside the cove. (The tool's seasonal number is conservative up here — low-20s softening to the mid-teens — but the actual water's been better; just watch the NW wind, since a few days of it can reload the green.)
+Bottom line: SoCal's nearshore is surf-worked this week — Catalina is your clear-water day trip in the south, and Monterey/Carmel is the standout if you can make the drive.
+
 FISH AND OFFSHORE INTEL
 
 * The marlin showed up — and how. Some of the best striped marlin fishing in years, thick around Catalina, the channel, and out toward the 711, mostly small wolf packs busting bait balls.
