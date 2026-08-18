@@ -6005,18 +6005,76 @@ async function fetchSwellForecast() {
   } catch(e) {}
 }
 
-// Helper: get WW3 swell forecast for a specific time slot
+// CDIP MOP nearshore wave FORECAST (2026-08-18). Companion to fetchSwellForecast
+// (Open-Meteo). The live "today" card already uses CDIP MOP (nearshore transform),
+// but the forecast tiles were reading Open-Meteo `wave_height` — TOTAL sig height
+// off a coarse offshore grid cell that doesn't resolve the SoCal Bight sheltering.
+// Verified 8/18 for LJ Shores Sat: MOP 1.2-1.3 ft / iWindsurf 1.7 / Surfline 1.9
+// vs Open-Meteo 3.0 ft — a systematic ~2-2.5x over-read across ALL spots, which
+// over-penalized forecast viz on calm days (under-called). MOP is the authoritative
+// CA nearshore model and matches the day-0 card + external apps, so anchor the
+// forecast to it. MOP forecast covers ~3 days (80 x 3-hourly steps); beyond that
+// getWW3Swell falls back to Open-Meteo scaled by the MOP/OM overlap ratio.
+async function fetchMopForecast() {
+  D.mopForecast = null; D.mopOmRatio = undefined;
+  const loc = LOCATIONS[currentLocation];
+  if (!loc || !loc.mopStation) return;
+  const stn = loc.mopStation;
+  try {
+    const base = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/model/MOP_alongshore/${stn}_forecast.nc`;
+    const ddsR = await fetchWithTimeout(base + '.dds', null, 6000);
+    if (!ddsR.ok) return;
+    const dds = await ddsR.text();
+    const nm = dds.match(/waveTime\[waveTime\s*=\s*(\d+)\]/);
+    if (!nm) return;
+    const n = parseInt(nm[1]);
+    const dataUrl = `${base}.ascii?waveTime%5B0:${n-1}%5D,waveHs%5B0:${n-1}%5D,waveTp%5B0:${n-1}%5D,waveDp%5B0:${n-1}%5D`;
+    const dR = await fetchWithTimeout(dataUrl, null, 9000);
+    if (!dR.ok) return;
+    const txt = await dR.text();
+    const grab = (name) => {
+      const g = txt.match(new RegExp(name + '\\[' + n + '\\]\\s*\\n([\\s\\S]*?)(?:\\n\\s*\\n|\\n[A-Za-z]\\w*\\[|$)'));
+      if (!g) return [];
+      return (g[1].match(/-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g) || []).map(Number);
+    };
+    const t = grab('waveTime'), hs = grab('waveHs'), tp = grab('waveTp'), dp = grab('waveDp');
+    const out = [];
+    const len = Math.min(t.length, hs.length);
+    for (let i = 0; i < len; i++) {
+      if (!isFinite(hs[i]) || hs[i] < 0) continue;
+      out.push({ time: new Date(t[i] * 1000), ft: +(hs[i] * 3.28084).toFixed(1), per: Math.round(tp[i] || 0), dirDeg: Math.round(dp[i] || 0) });
+    }
+    if (out.length) { D.mopForecast = out; srcStatus.ww3 = 'ok'; }
+  } catch(e) { /* silent — getWW3Swell falls back to Open-Meteo */ }
+}
+
+// Helper: get the swell forecast for a specific time slot. Prefers CDIP MOP
+// (nearshore) over Open-Meteo (offshore, ~2x high — see fetchMopForecast).
 function getWW3Swell(targetTime) {
-  if (!D.swellForecast || D.swellForecast.length === 0) return null;
   const t = targetTime.getTime();
-  let best = null, bestDiff = Infinity;
-  for (const entry of D.swellForecast) {
-    const diff = Math.abs(entry.time.getTime() - t);
-    if (diff < bestDiff) { bestDiff = diff; best = entry; }
+  const pick = (arr) => {
+    if (!arr || !arr.length) return null;
+    let best = null, bd = Infinity;
+    for (const e of arr) { const d = Math.abs(e.time.getTime() - t); if (d < bd) { bd = d; best = e; } }
+    return bd <= 3 * 3600000 ? best : null;  // within 3h of target
+  };
+  // Memoize the MOP/Open-Meteo height ratio over their overlap window, so days
+  // beyond MOP's ~3-day horizon still get pulled onto the nearshore basis.
+  if (D.mopOmRatio === undefined && D.mopForecast && D.swellForecast) {
+    const ratios = [];
+    for (const m of D.mopForecast) {
+      let best = null, bd = Infinity;
+      for (const e of D.swellForecast) { const d = Math.abs(e.time.getTime() - m.time.getTime()); if (d < bd) { bd = d; best = e; } }
+      if (best && bd <= 1.5 * 3600000 && best.ft > 0.3) ratios.push(m.ft / best.ft);
+    }
+    ratios.sort((a, b) => a - b);
+    D.mopOmRatio = ratios.length ? ratios[Math.floor(ratios.length / 2)] : null;
   }
-  // Only use if within 3 hours of target
-  if (bestDiff > 3 * 3600000) return null;
-  return best;
+  const mop = pick(D.mopForecast);
+  if (mop) return mop;
+  const om = pick(D.swellForecast);
+  if (om && D.mopOmRatio) return Object.assign({}, om, { ft: +(om.ft * D.mopOmRatio).toFixed(1) });
+  return om;
 }
 
 // =========================================================================
@@ -6187,7 +6245,8 @@ async function fetchAllData() {
     fetchBuoyData(), fetchRainfall(), fetchUpwelling(),
     fetchSST(), fetchChlorophyll(), fetchMultiDayTides(),
     fetchShoreStation(),  // real-time pier data — temp, turbidity, chlorophyll from nearest shore station
-    fetchSwellForecast(),  // WW3 5-day swell forecast from NOAA/PacIOOS
+    fetchSwellForecast(),  // Open-Meteo 7-day swell forecast (offshore; scaled/fallback)
+    fetchMopForecast(),    // CDIP MOP nearshore wave forecast (~3 days; preferred)
     fetchHFRadarCurrent(),  // real-time surface current from SIO HF Radar
     fetchNDBCBuoy(),        // real-time buoy wind & water temp from NDBC
     fetchPressureTrend(),   // 24-hr barometric pressure trend (storm leading indicator)

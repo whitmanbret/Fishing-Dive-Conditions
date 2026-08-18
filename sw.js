@@ -1,6 +1,6 @@
 // SpearFactor Conditions — Service Worker
 // Version is bumped on every deploy to bust cache
-const CACHE_VERSION = 'sf-v20260817a';
+const CACHE_VERSION = 'sf-v20260818a';
 const CACHE_FILES = [
   '/',
   '/manifest.json'
