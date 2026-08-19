@@ -7494,6 +7494,16 @@ async function updateDisplay() {
       vizHeroEl.textContent = vizEst !== '--' ? vizEst : (vizSource === 'Service unavailable' ? 'Service unavailable' : '--');
     }
     D.vizFeetStr = vizEst;
+    // Keep the viz RATING badge in sync with the feet actually shown (2026-08-19).
+    // updateGauge('viz') runs earlier in the render and, before D.vizFeetStr is
+    // ready, falls back to rating the 0–10 local score — which for a sheltered
+    // spot can read "Excellent" even when the worker feet resolve to 2–4 ft green
+    // water. That left the badge stuck at Excellent over a 1–2 ft number. Re-derive
+    // the badge from the final feet so the label can never contradict the number.
+    if (vizEst !== '--') {
+      const _vr = document.getElementById('vizRating');
+      if (_vr) { const _r = getVizRatingFromFeet(vizEst); _vr.textContent = _r.label; _vr.className = `gauge-rating ${_r.cls}`; }
+    }
     logVizHistory();
     try { renderVizHistoryChart(); } catch(e) {}
   }
@@ -10959,6 +10969,10 @@ function applyVizCalibration(vizEst) {
   const currentNtu = D.turbidity;
   const currentWe = D.waveEnergy;
   const currentBloom = currentChl !== undefined && currentChl > 0.8;
+  // TIER-AWARE gate (2026-08-19). Today's prediction midpoint — a report only
+  // corrects today if the report's OWN prediction was in a similar viz band.
+  const _todayM = vizEst.match(/(\d+)\D+(\d+)/);
+  const todayMid = _todayM ? (parseInt(_todayM[1]) + parseInt(_todayM[2])) / 2 : null;
 
   let weightedSum = 0;
   let weightTotal = 0;
@@ -10967,6 +10981,15 @@ function applyVizCalibration(vizEst) {
     const predMatch = (r.predicted || '').match(/(\d+)/);
     if (!predMatch) continue;
     const predicted = parseInt(predMatch[0]);
+    // TIER-AWARE (2026-08-19). The old flat average pulled clear-day OVER-calls
+    // (e.g. predicted 24–34, actual 15) onto today's low green-water prediction
+    // (3–5), crushing the LJ landing spots to 1–3 ft while the Scripps cam + shop
+    // reports showed 11–15. A correction earned on gin-clear days must not apply
+    // to a pea-soup day (or vice-versa). Skip reports whose own prediction sat in
+    // a different viz band (>8 ft from today's predicted midpoint).
+    const pm2 = (r.predicted || '').match(/(\d+)\D+(\d+)/);
+    const reportPredMid = pm2 ? (parseInt(pm2[1]) + parseInt(pm2[2])) / 2 : predicted;
+    if (todayMid != null && Math.abs(reportPredMid - todayMid) > 8) continue;
     const actualMid = {'0-5': 3, '6-10': 8, '11-15': 13, '16-20': 18, '21-25': 23, '26+': 30}[r.actual];
     if (!actualMid) continue;
     const error = actualMid - predicted;
