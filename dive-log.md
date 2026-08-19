@@ -73,6 +73,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-19 (Wed, PM) — La Jolla Cove → 1/4-mi buoy — MATCH ✅ (viz); ⚠️ tool SST ~6°F HIGH (upwelling lag)
+- **Reported (PM):** Cove out to the white 1/4-mile buoy — swell down to **1–2 ft (calmer)**, viz **5–15 hazy**. Water **cooled a lot**: **61°F at the cove entrance, 58–64°F by the buoy.**
+- **Tool `ljcove` (live, PM):** **6–8 ft** (Poor), swell 1.9 ft. 6–8 sits inside 5–15 → **MATCH ✅.** The Cove climbed from this morning's 2–4 → 6–8 as the swell eased — the tool tracked the afternoon calm-down correctly.
+- **⚠️ Water temp lag:** tool shows **67°F** vs the diver's **58–64°F** by the buoy / 61°F at entrance — the tool's SST is **~6°F warm**, lagging the (temporary) upwelling cool-down the shop flagged. Satellite/surface SST doesn't capture the fresh cold upwelled water. Temp is a secondary display (not a viz input), single reading, transient upwelling — noting as a watch item, not tuning. Posted display-only.
+
 ### 2026-08-19 (Wed) — SD/La Jolla in-water reports (MATCH ✅) + ⛔ REVERSED the cam-estimator loosening (firsthand proved 4–8 RIGHT)
 - **Firsthand (Bret, this AM):** "It was **bad**. Definitely a **washing machine** and **very green water**. Murk layer at the **Marine Room → sea caves → La Jolla Cove**." Posted display-only under `ljmarineroom`.
 - **Shop (8/19):** Vis **5–15, mostly 5–10** (15 in cleaner pockets); swell 2–4; "stirred up, lingering swell = haze, hit-or-miss spot to spot"; temps cooled slightly (temporary upwelling).
