@@ -73,6 +73,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-18 (Tue) — Corona del Mar — MATCH ✅ (shop/report 10–15)
+- **Reported (~5pm):** "Waves weren't too bad at Corona Del Mar. Viz **10–15 ft**." Graded against `newport` (Newport / Corona del Mar).
+- **Tool `newport` (live):** **7–12 ft** — swell **1.9 ft @ 15s SSW** (small long-period), moderate confidence, no strat note. 7–12 overlaps the reported 10–15 at **10–12 → MATCH**. Tool sits slightly low (consistent with divers under-calling summer green water), and "waves weren't too bad" matches the small 1.9 ft swell. Posted to the feed (accurate/within-range → won't feed calibration).
+
 ### 2026-08-18 (Tue) — ✅ SHIPPED: forecast swell anchored to CDIP MOP nearshore (fixes ~2× Open-Meteo over-read → forecast viz under-call)
 - **Trigger:** Bret questioned why the LJ Shores *weekend* forecast read "poor" with no wind and small swell. He cross-checked two independent sources for Sat 8/22: **iWindsurf 1.7 ft @ 13s** and **Surfline 1–2 ft surf (partitions 1.2@7s + 0.8@10s + 1.3@15s ≈ 1.9 ft combined)**, plus <8 mph wind all day and minimal daytime tide swing.
 - **Diagnosis (confirmed with raw data):** the live "today" card already uses **CDIP MOP** (nearshore transform, accurate), but the **forecast tiles used Open-Meteo Marine `wave_height`** — TOTAL significant height off a coarse *offshore* grid cell that doesn't resolve the SoCal Bight sheltering. Open-Meteo read **3.0 ft** for Shores Sat vs MOP **1.2–1.3 ft**. Checked across 7 spots: the over-read is **systematic ~2.1–2.6×** (even exposed spots like Imperial/Encinitas), so it's an Open-Meteo model bias, not just sheltering. CDIP MOP forecast (D0504 etc.) matches iWindsurf/Surfline everywhere. The inflated swell → phantom `WE = ft²·per` penalty → **forecast viz under-called on calm days** (same "WE reads rough on a calm day" pattern as Point Lobos 8/17 & PV 8/16, now with hard external proof).
