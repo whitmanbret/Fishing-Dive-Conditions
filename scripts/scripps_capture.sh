@@ -95,10 +95,29 @@ if [ -z "$SRC" ]; then
   exit 1
 fi
 
-# ---- grab one frame --------------------------------------------------------
+# ---- grab one frame (retry transient HLS/ffmpeg hiccups) -------------------
+# The HDOnTap HLS stream intermittently serves an invalid/short segment, which
+# makes ffmpeg exit non-zero ("Invalid data found when processing input"). That's
+# transient — the next attempt (with a freshly minted URL) or the next hourly run
+# almost always succeeds. Retry a few times, then SKIP cleanly (exit 0) like the
+# offline case rather than hard-failing the job and emailing on every glitch.
 HDR=$(printf 'Referer: %s\r\n' "$REFERER")
-"$FF" -y -loglevel error -headers "$HDR" -i "$SRC" -frames:v 1 -q:v 2 "$FRAME"
-[ -s "$FRAME" ] || { echo "error: frame grab failed" >&2; exit 1; }
+grab_ok=0
+for attempt in 1 2 3; do
+  "$FF" -y -loglevel error -headers "$HDR" -i "$SRC" -frames:v 1 -q:v 2 "$FRAME" 2>/dev/null || true
+  if [ -s "$FRAME" ]; then grab_ok=1; break; fi
+  log "frame grab attempt $attempt failed (transient stream/ffmpeg error)"
+  [ "$attempt" -lt 3 ] || break
+  sleep 3
+  # Re-mint — the signed token or the live segment may have rotated.
+  MINT=$(curl -fsS -A "$UA" -e "$REFERER" "${EMBED_API}?r=${R}" | base64 -d 2>/dev/null || true)
+  NEWSRC=$(printf '%s' "$MINT" | "$PYTHON" -c 'import sys,json;print(json.load(sys.stdin).get("streamSrc",""))' 2>/dev/null || true)
+  [ -n "$NEWSRC" ] && SRC="$NEWSRC"
+done
+if [ "$grab_ok" -ne 1 ]; then
+  log "skip: frame grab failed after retries (transient stream error) — next run will retry"
+  exit 0
+fi
 log "frame: $FRAME ($(wc -c <"$FRAME" | tr -d ' ') bytes)"
 
 # ---- concurrent Scripps sensor features (NTU + chl) ------------------------
