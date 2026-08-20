@@ -53,6 +53,7 @@ Snapshot of the tool's predicted viz per spot, captured each day so incoming rep
 ---
 
 ## Safety / shark notes
+- **2026-08-19 — Lover's Point (Pacific Grove) CLOSED: health-safety alert (High Bacterial Levels), beach signposted.** Diver geared up but was turned away; noticed a **strong rotten-egg / sulfur smell** in parking lot #3. Reported to the **Monterey County Health Dept** (weekly water testers), who cross-reported to the **Sewer Authority** — **possible broken/leaking sewage line** could explain both the high bacteria and the sulfur smell; under investigation. **Advisory: avoid Lover's Point / Pacific Grove water near-term until the closure lifts and the source is confirmed.** Also 8/19: **San Carlos Beach (Monterey Breakwater entry) still CLOSED due to sea lions.**
 - **2026-07-12 — Great white shark attack, Fort Ross Cove (Sonoma coast, NorCal).** Spearfisherman attacked ~10am Sunday 7/12 at a marked spot in Fort Ross Cove. **Diver OK** — minor cuts to head/ear; lost one JBL fin in the attack. Source: NorCal Underwater Hunters (FB), reported ~7/18. Fort Ross is squarely in the "Red Triangle." **Advisory: dive the Fort Ross / Sonoma coast with caution near-term.** → include in this week's report (NorCal safety note).
 
 ---
@@ -72,6 +73,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 ---
 
 ## My dives
+
+### 2026-08-19 (Wed) — McAbee (Monterey) OVER-call ✗ (surge not captured) + Shaw's Cove (Laguna) under-call ✗ (edge)
+- **McAbee Beach / Cannery Row (grades `monterey`) — OVER-call ✗.** Reported (8/19 AM): viz **10 ft at 30 ft, 15 ft at 40 ft**, 60°F, **noticeable 3–4 ft surge**, "dropped off a bit since last week." Tool `monterey` **23–28 (Good)**, strat note OFF (clear chl). 23–28 vs 10–15 → **no overlap = MISS (over-call).** Cause: the water's clear (bloom gone → chl low → tool reads 23–28), but a **3–4 ft surge** is churning the shallow/mid Cannery Row structure down to 10–15, and the tool's WE input doesn't capture that localized surge (MO752 offshore swell was ~1.1 ft @ 5s — surge amplifies in the shallows). Same class as the MR reef-pocket surge gap. **OVER-call = the trust-damaging direction — flag + WATCH, do NOT tune** (1 report, transient surge, and I've over-corrected Monterey before). If Monterey keeps over-calling on surge days, the fix is a surge-aware WE input for the Breakwater/Cannery point, NOT a calibration haircut. Posted display-only (surge-transient shouldn't feed calibration). Wildlife: big sheephead (followed 10 min), very friendly harbor seal (followed 30 min into 4 ft of water).
+- **Shaw's Cove (grades `laguna`) — under-call ✗ (edge, safe direction).** Reported (8/19 AM): viz **10–15 ft** near the reef/shallows; juvenile **leopard shark** on entry + a pair of juvenile **bat rays** in the shallows. Tool `laguna` **6–9 (Poor)**. 6–9 vs 10–15 → **no overlap = MISS**, but only a **1 ft gap** and it's the SAFE (under-call) direction — and divers under-call viz, so actual may be even higher. Not tuning off one edge under-call. Posted display-only.
 
 ### 2026-08-18 (Tue, PM) — Treasure Island (Laguna) — logged (stale; not a clean grade)
 - **Reported (8/18 PM, logged 8/19):** Treasure Island viz **5–10 ft**, **noticeably better at high/slack tide**. Waves **1–3 ft and glassy in the AM**, but **churned up under the surface with a bit of a rip.**
