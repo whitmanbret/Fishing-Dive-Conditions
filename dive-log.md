@@ -73,6 +73,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-18 (Tue, PM) — Treasure Island (Laguna) — logged (stale; not a clean grade)
+- **Reported (8/18 PM, logged 8/19):** Treasure Island viz **5–10 ft**, **noticeably better at high/slack tide**. Waves **1–3 ft and glassy in the AM**, but **churned up under the surface with a bit of a rip.**
+- **Grade caveat:** day-late report — the tool doesn't retain 8/18's prediction, so no fair same-day comparison. Current `treasureisland` reads **13–18 ft (Fair)**, but that's *today's* (8/19) calmer Laguna, not 8/18's churned water — reference only, NOT a grade. Kept the surface-vs-subsurface note (glassy top, churned/rip below) — same "calm surface ≠ calm water column" pattern seen at MR; and the tidal-clearing note (better at slack) is useful TI intel. Posted display-only.
+
 ### 2026-08-19 (Wed, PM) — La Jolla Cove → 1/4-mi buoy — MATCH ✅ (viz); ⚠️ tool SST ~6°F HIGH (upwelling lag)
 - **Reported (PM):** Cove out to the white 1/4-mile buoy — swell down to **1–2 ft (calmer)**, viz **5–15 hazy**. Water **cooled a lot**: **61°F at the cove entrance, 58–64°F by the buoy.**
 - **Tool `ljcove` (live, PM):** **6–8 ft** (Poor), swell 1.9 ft. 6–8 sits inside 5–15 → **MATCH ✅.** The Cove climbed from this morning's 2–4 → 6–8 as the swell eased — the tool tracked the afternoon calm-down correctly.
