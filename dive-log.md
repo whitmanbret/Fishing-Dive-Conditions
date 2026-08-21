@@ -78,6 +78,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-21 (Fri) — La Jolla Shores (Bret + Jimi firsthand) — MATCH ✅ (clean day; confirms 8/20 over-call was transient haze)
+- **Reported (firsthand, the Garden):** surf down, W/WNW swell (not bathtub-flat), steady southward pull on the swimout. Viz **15–25 ft mostly**, cloudier **10–15 south along the wall / above V-point**. Strong thermocline: **69°F @ 0', 54°F @ 115'**. Baby-fish clouds (likely barred sand bass).
+- **Tool `ljshores`:** **18–23 (Good)** — ntu **0.37**, chl 0.38, src Scripps Pier (cam ~12–17 correctly inert — it agreed). 18–23 sits inside the main 15–25 → **MATCH ✅**; the cloudy-south 10–15 is the usual spatial spread. **Key confirmation: on a genuinely clean day the Shores read is spot-on (ntu 0.37 → 18–23 ≈ actual 15–25), so the 8/20 over-call (14–19 vs 5–10) was TRANSIENT surface green-haze, NOT a calibration bug.** Reinforces the "surface-haze is the only gap, don't tune the NTU" conclusion. Posted display-only. (Also: Jimi's SPG leak fixed — new/lubed flow-restrictor o-rings, no bubbles.)
+
 ### 2026-08-21 (Fri) — Crescent Bay — MATCH ✅ + SD shop context (green 5–15, cooling, SW groundswell due Sun 8/23)
 - **Crescent Bay (grades `crescent`) — MATCH ✅.** Reported (Fri AM): 2–3 ft surf (easy entry/exit), viz **so-so, cloudy 5–12 ft**. Tool `crescent` **7–11 (Poor)** → 7–11 sits inside 5–12 → clean MATCH. Wildlife: a few yellowtail, tons of topsmelt feeding in the sun, a stingray over the reef; no leopards on the south end today (seen elsewhere). Posted display-only.
 - **SD shop context (8/21, not a spot grade):** SD-wide **green/hazy, viz 5–15 depending on spot**, swell 1–2 ft, **surface temp 68–71°F** (continuing the upwelling cool-down — down from the mid-70s; matches the offshore 65–66° signal + the in-water 58–64° earlier this week), incoming tide maybe cleaning it up this evening. **Forecast note: a moderate SW groundswell is due Sun 8/23 and expected to stick a few days** (matches the offshore S-swell detail) — flag for the weekend outlook.
