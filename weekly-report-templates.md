@@ -11,6 +11,16 @@ the format, voice, and past examples are never lost.
 
 ---
 
+## 📌 Pending intel for the NEXT weekly report (clear after use)
+
+**As of 2026-08-21 — SoCal 3-day satellite composites (chlorophyll + SST):**
+- **Water-clarity picture:** offshore & the islands (Catalina, San Clemente, San Nicolas, the banks) are **clean blue water** (chl ~0.1–0.3); a **green-to-yellow chlorophyll ribbon (~1–3+) hugs the entire coast** LA→Laguna→Dana Point→Oceanside/Carlsbad→La Jolla→San Diego. **That coastal green band is the "green haze" divers reported all week** (Shaw's, La Jolla) — confirms it's regional, not spot noise. Narrative: *nearshore is green/hazy, the islands are the clean-water play.*
+- **Temp:** warm surface **~72–74°F** across nearshore SoCal (matches the 72°F Shaw's report), with a **cooler 67–70°F tongue offshore to the west**. But there's **localized upwelling** (in-water 58–64°F at the La Jolla ¼-mi buoy on 8/19) — so a warm surface lens over much colder upwelled water in spots. Narrative: *warm on top, surprise cold below where it's upwelling — bring the extra layer.*
+- **Fish/offshore beat:** activity clustered along the coast (Oceanside→San Mateo→Dana Point) and around Catalina. **Paraphrase into our own voice, NO source named, casual/declarative** (per blog-style rule) — e.g. "the bite's stacked up along the coast from Oceanside to San Mateo, and the island's holding fish too."
+- *(These are point-in-time snapshots — verify still current when writing; delete this block once used.)*
+
+---
+
 ## Structure & voice
 
 ### Regions (always in this order, with a color status emoji)
