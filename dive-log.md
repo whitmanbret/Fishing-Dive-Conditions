@@ -78,6 +78,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-20 (Thu) — Goff / Treasure Island — MATCH ✅ (and it contrasts with Shaw's, useful signal)
+- **Reported (8/20 ~11am–1:30pm):** Goff Island — easy entry/exit, viz "not the greatest, **15–20 ft**." Tool `treasureisland` **17–22 (Fair)** → overlaps 15–20 at 17–20 → **MATCH ✅** (a touch high but clean overlap).
+- **Useful contrast:** same day, same general area, Goff/`treasureisland` (MOP **OC270**) **matches** at 17–22 while Shaw's/`laguna` (MOP **OC281**) **under-calls** at 6–9 vs 10–15. Two adjacent Laguna spots, opposite errors → **the Shaw's under-call is OC281/Shaw's-specific, NOT a blanket Laguna problem.** This argues AGAINST any region-wide Laguna WE change (would break Goff, which is fine) and FOR keeping any future fix tightly scoped to the `laguna`/OC281 clean-day + long-period case. Good confirmation of the "don't tune broadly" call. Posted display-only.
+
 ### 2026-08-20 (Thu) — Shaw's Cove (Laguna) — under-call ✗ (2nd straight; clean-day WE penalty — NOT tuning, = Goff pattern)
 - **Reported (8/20 AM):** Shaw's Cove viz **~15 ft**, waves small but definitely rising. Tool `laguna` **6–9 (Poor)** → under-call MISS (**2nd straight** Laguna under-call: 8/19 was 10–15 vs 6–9).
 - **Diagnosed the input — it's ACCURATE, not an over-read.** Live MOP OC281 (Shaw's nearshore) reads **2.3 ft @ 14s → WE 78**, matching the tool's live WE **74**. chl **0.4 (gin-clear, live)**. Path = **Wave-Energy fallback** (no live NTU at Laguna). So there's **no bad swell input to correct** (unlike the 8/18 forecast MOP fix) — the miss is the **WE→viz penalty being too harsh on a clean-water day with a gentle long-period swell**: WE=ft²×period actually *rewards* period, so a small 2.3 ft @ **14s** groundswell scores WE 78 and crushes viz to 6–9, even though clean chl 0.4 + gentle long-period surge gave the diver 15.
