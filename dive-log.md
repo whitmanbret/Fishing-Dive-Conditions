@@ -78,6 +78,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-21 (Fri) — Crescent Bay — MATCH ✅ + SD shop context (green 5–15, cooling, SW groundswell due Sun 8/23)
+- **Crescent Bay (grades `crescent`) — MATCH ✅.** Reported (Fri AM): 2–3 ft surf (easy entry/exit), viz **so-so, cloudy 5–12 ft**. Tool `crescent` **7–11 (Poor)** → 7–11 sits inside 5–12 → clean MATCH. Wildlife: a few yellowtail, tons of topsmelt feeding in the sun, a stingray over the reef; no leopards on the south end today (seen elsewhere). Posted display-only.
+- **SD shop context (8/21, not a spot grade):** SD-wide **green/hazy, viz 5–15 depending on spot**, swell 1–2 ft, **surface temp 68–71°F** (continuing the upwelling cool-down — down from the mid-70s; matches the offshore 65–66° signal + the in-water 58–64° earlier this week), incoming tide maybe cleaning it up this evening. **Forecast note: a moderate SW groundswell is due Sun 8/23 and expected to stick a few days** (matches the offshore S-swell detail) — flag for the weekend outlook.
+- **Mission Point Park (MPP) 7am 8/21 — DUPLICATE of the entry below (already logged + posted); not re-logged.**
+
 ### 2026-08-21 (Fri) — Little Corona del Mar — under-call ✗ (safe direction; spatial — sheltered cove clearer than the newport point)
 - **Reported (8/21):** Little Corona del Mar **20–25 ft** (clean). Tool `newport` **9–14 (Fair)** → 9–14 vs 20–25, **no overlap = MISS (under-call, ~6–11 low).**
 - **Read:** safe (under-call) direction. Two factors: (1) genuinely clean day the tool's chl/WE aren't fully crediting; (2) **spatial — "Little Corona" is a sheltered rocky cove / marine conservation area that reads clearer than the broader Newport/CdM point** the `newport` spot models (compare: 8/18 the open CdM was 10–15 = MATCH vs tool 7–12). So part of the gap is the sub-spot being clearer than its parent. **Not tuning** — one clean-day under-call, safe direction, and partly spatial. Watch if the whole Newport area (not just the sheltered cove) keeps reading 20+ over a 9–14 tool. Posted display-only.
