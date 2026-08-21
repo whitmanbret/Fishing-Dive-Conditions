@@ -78,6 +78,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-21 (Fri) — Little Corona del Mar — under-call ✗ (safe direction; spatial — sheltered cove clearer than the newport point)
+- **Reported (8/21):** Little Corona del Mar **20–25 ft** (clean). Tool `newport` **9–14 (Fair)** → 9–14 vs 20–25, **no overlap = MISS (under-call, ~6–11 low).**
+- **Read:** safe (under-call) direction. Two factors: (1) genuinely clean day the tool's chl/WE aren't fully crediting; (2) **spatial — "Little Corona" is a sheltered rocky cove / marine conservation area that reads clearer than the broader Newport/CdM point** the `newport` spot models (compare: 8/18 the open CdM was 10–15 = MATCH vs tool 7–12). So part of the gap is the sub-spot being clearer than its parent. **Not tuning** — one clean-day under-call, safe direction, and partly spatial. Watch if the whole Newport area (not just the sheltered cove) keeps reading 20+ over a 9–14 tool. Posted display-only.
+
 ### 2026-08-21 (Fri) — Mission Bay Jetty — edge MATCH ✅ (deep) but missed the murky surface (stratification again)
 - **Reported (7am 8/21, Mission Point Park / MB jetty):** surface **bad — "could barely see fin tips" (~1–2 ft)**, opening to **~15 ft at 20 ft depth**. Warm temps. Tool `mission` **15–20 (Fair)**, strat note OFF.
 - **Grade:** tool 15–20 overlaps the **at-depth 15** → **edge MATCH** (nailed the clearer deep water), but it **misses the murky ~1–2 ft surface layer** — the same murky-surface-over-clearer-depths stratification that hit McAbee and LJ. **The strat note should arguably fire here** (murky green surface, clearer below), but it's OFF — likely chl isn't high enough to trip it and `mission` isn't flagged for stratification. Another data point for the "surface haze/murk the point sensor + single number don't capture" theme (the real lever remains a surface-clarity signal, not tuning). Mission Bay is river-influenced (`riverInfluence`), so the surface murk is likely tidal/outflow on the surface. Posted display-only.
