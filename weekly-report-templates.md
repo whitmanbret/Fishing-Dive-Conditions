@@ -16,7 +16,14 @@ the format, voice, and past examples are never lost.
 **As of 2026-08-21 — SoCal 3-day satellite composites (chlorophyll + SST):**
 - **Water-clarity picture:** offshore & the islands (Catalina, San Clemente, San Nicolas, the banks) are **clean blue water** (chl ~0.1–0.3); a **green-to-yellow chlorophyll ribbon (~1–3+) hugs the entire coast** LA→Laguna→Dana Point→Oceanside/Carlsbad→La Jolla→San Diego. **That coastal green band is the "green haze" divers reported all week** (Shaw's, La Jolla) — confirms it's regional, not spot noise. Narrative: *nearshore is green/hazy, the islands are the clean-water play.*
 - **Temp:** warm surface **~72–74°F** across nearshore SoCal (matches the 72°F Shaw's report), with a **cooler 67–70°F tongue offshore to the west**. But there's **localized upwelling** (in-water 58–64°F at the La Jolla ¼-mi buoy on 8/19) — so a warm surface lens over much colder upwelled water in spots. Narrative: *warm on top, surprise cold below where it's upwelling — bring the extra layer.*
-- **Fish/offshore beat:** activity clustered along the coast (Oceanside→San Mateo→Dana Point) and around Catalina. **Paraphrase into our own voice, NO source named, casual/declarative** (per blog-style rule) — e.g. "the bite's stacked up along the coast from Oceanside to San Mateo, and the island's holding fish too."
+- **Fish/offshore beat (synthesized from the week's offshore reports, 8/17–8/20 — OUR voice, NO source, nothing verbatim, casual/declarative):**
+  - **The marlin showed up!** Striped marlin are the headline — showing just about every day around Catalina and in the Channel (best south of Church Rock / off Long Point), with standout "Mag Bay-style" marlin fishing out at the 43.
+  - **Dorado and baby ("rat") yellowfin are filling in** down south — scattered on the kelp paddies and dolphin schools out at the 267/209 off Oceanside–Del Mar, and around the Mexican tuna pens (2–10 lb fish, a few 40–60 lb mixed in).
+  - **Bluefin have basically bugged out** for cooler water — pretty much done locally (lone small foamer below Santa Cruz/Anacapa was the only sign).
+  - **The yellowtail moved north.** The coastal grade thinned out of La Jolla/San Diego and pushed up the line to Oceanside → San Mateo → Dana Point and into OC/LA. Islands (Catalina, Clemente, Coronados, Cortez/Tanner) still hold scattered yellows if you can stomach the rough water.
+  - **Water story = warm surface with a cold upwelling shot.** Off Point Loma to the Coronados the temp dropped from ~74° to 65–66° in a couple days (upwelling) — slowed the tuna bite and lines up with the cold water divers felt inshore; it also "rolled and turned green" at the Coronados. Warm mid-70s elsewhere = no squid, tight bait.
+  - **Rough/snotty offshore** — Small Craft Advisories on the outer banks + Channel Islands through the weekend; the further offshore/north you went, the worse it got.
+  - **Dive-relevant aside:** lots of hammerheads roaming the warm offshore water this week (pelagic, not a nearshore concern, but a fun "warm-water summer" note).
 - *(These are point-in-time snapshots — verify still current when writing; delete this block once used.)*
 
 ---
