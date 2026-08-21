@@ -78,6 +78,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-21 (Fri) — Mission Bay Jetty — edge MATCH ✅ (deep) but missed the murky surface (stratification again)
+- **Reported (7am 8/21, Mission Point Park / MB jetty):** surface **bad — "could barely see fin tips" (~1–2 ft)**, opening to **~15 ft at 20 ft depth**. Warm temps. Tool `mission` **15–20 (Fair)**, strat note OFF.
+- **Grade:** tool 15–20 overlaps the **at-depth 15** → **edge MATCH** (nailed the clearer deep water), but it **misses the murky ~1–2 ft surface layer** — the same murky-surface-over-clearer-depths stratification that hit McAbee and LJ. **The strat note should arguably fire here** (murky green surface, clearer below), but it's OFF — likely chl isn't high enough to trip it and `mission` isn't flagged for stratification. Another data point for the "surface haze/murk the point sensor + single number don't capture" theme (the real lever remains a surface-clarity signal, not tuning). Mission Bay is river-influenced (`riverInfluence`), so the surface murk is likely tidal/outflow on the surface. Posted display-only.
+
 ### 2026-08-20 (Thu) — Goff / Treasure Island — MATCH ✅ (and it contrasts with Shaw's, useful signal)
 - **Reported (8/20 ~11am–1:30pm):** Goff Island — easy entry/exit, viz "not the greatest, **15–20 ft**." Tool `treasureisland` **17–22 (Fair)** → overlaps 15–20 at 17–20 → **MATCH ✅** (a touch high but clean overlap).
 - **Useful contrast:** same day, same general area, Goff/`treasureisland` (MOP **OC270**) **matches** at 17–22 while Shaw's/`laguna` (MOP **OC281**) **under-calls** at 6–9 vs 10–15. Two adjacent Laguna spots, opposite errors → **the Shaw's under-call is OC281/Shaw's-specific, NOT a blanket Laguna problem.** This argues AGAINST any region-wide Laguna WE change (would break Goff, which is fine) and FOR keeping any future fix tightly scoped to the `laguna`/OC281 clean-day + long-period case. Good confirmation of the "don't tune broadly" call. Posted display-only.
