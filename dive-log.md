@@ -78,6 +78,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-21 (Fri) — Butterfly House / Carmel River (Carmel Bay) — under-call ✗ (likely stale bloom read; region has cleared)
+- **Reported (Reef Check survey, Bret's 1st time at the site):** Butterfly House (Carmel River), Carmel Bay — viz **~25 ft**, 55°F avg, looked rough on top but surge manageable (noticeable at 35 ft, minimal by 55 ft). Beautiful giant-kelp bed → urchin barren beyond. **First wolf eel** (spotter credit Denali). Grades against `carmel`.
+- **Tool `carmel`:** **15–20 ft (green water)** with the **bloom/strat note FIRING** → 15–20 vs 25, **no overlap = MISS (under-call ~5).** The "green water" flag is the tell: **`carmel` still thinks there's a bloom while the rest of the Carmel/Monterey region has CLEARED** (Point Lobos 20–50, Monastery 20+, `monterey` 23–28 all clean on live chl this week). Butterfly House at 25 clean confirms Carmel Bay cleared too. Likely `carmel` is leaning on bloom-**climatology** (or a stale/higher chl point) rather than the fresh live chl that cleared `monterey`. **Safe (under-call) direction, 1 report → NOT tuning**, but WATCH: if `carmel` keeps reading "green water 15–20" while Carmel Bay dives report 25+, its chl source needs the same look that fixed the Monterey bloom-clearing (this would be a legit stale-data fix, not a risky boost — but verify the chl source + get a 2nd report first). (Also: Butterfly House sits near the Point Lobos boundary; the clean 25 is more `ptlobos`-like than the general Carmel-Bay point.)
+
 ### 2026-08-21 (Fri) — Treasure Island — MATCH ✅
 - **Reported (8/21 afternoon):** Treasure Island **10–15 ft**, waves **0–1 ft** (calm), murkier further out / cleaner closer to shore (an inversion of the usual — outer murk, likely offshore green/plankton, with cleaner water inshore). Tool `treasureisland` **11–16 (Fair)** → 11–16 overlaps 10–15 → clean **MATCH**. 3rd straight Treasure Island/Goff match this week (8/20 Goff 17–22 vs 15–20, today 11–16 vs 10–15) — the tool tracks this spot well. Posted display-only.
 
