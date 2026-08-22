@@ -1364,6 +1364,7 @@
         <div class="viz-outage-note" id="vizOutageNote" style="display:none"></div>
         <div class="viz-strat-note" id="vizStratNote" style="display:none"></div>
         <div class="viz-surf-note" id="vizSurfNote" style="display:none"></div>
+        <div class="viz-current-note" id="vizCurrentNote" style="display:none"></div>
         <div class="viz-score-small" id="vizScoreSmall" style="display:none"></div>
         <div id="vizFeetLabel" style="display:none">--</div>
         <!-- Hidden gauge for score calc -->
@@ -7659,6 +7660,31 @@ async function updateDisplay() {
         _surfEl.style.cssText = 'display:block;font-size:11px;line-height:1.35;margin-top:5px;color:#b8860b;font-weight:600';
       } else {
         _surfEl.style.display = 'none';
+      }
+    }
+  } catch(e) {}
+
+  // Current-prone clean-water caveat (2026-08-22). Spots like PV / Flat Rock rip
+  // on current/tide, and the global current model UNDER-reads that topographic rip
+  // (the reason loc.currentProne exists — 7/20 over-call). So on a GIN-CLEAR day the
+  // reef can be 30–50 ft when the current's slack, or crash to single digits if it's
+  // running, and the tool can't tell which from its inputs. Rather than auto-lift the
+  // number (which would over-call the current-blown afternoons — see dive-log 8/22),
+  // surface the upside + the current wildcard so the diver checks it. Info, not a
+  // number change. Repeated PV clean-day under-calls (8/16 25, 8/21 40–50) vs a
+  // 14–23 tool are exactly this: clean water the number can't credit without a
+  // current signal.
+  try {
+    const _curEl = document.getElementById('vizCurrentNote');
+    if (_curEl) {
+      const _chlClean = D.chlorophyll !== undefined && D.chlorophyll !== null
+        && D.chlorophyll <= 0.3 && !D.chlIsClimatology;
+      const _cleanCurrentProne = !!loc.currentProne && _chlClean;
+      if (_cleanCurrentProne && vizEst !== '--' && vizEst !== 'Service unavailable') {
+        _curEl.textContent = "🌊 Water's gin-clear offshore, but this point rips on current/tide — clarity on the reef can jump to 30–50 ft when it's slack, or drop fast if the current's running (the number shown plays it safe). Check the current before you commit.";
+        _curEl.style.cssText = 'display:block;font-size:11px;line-height:1.35;margin-top:5px;color:#2a7ab0;font-weight:600';
+      } else {
+        _curEl.style.display = 'none';
       }
     }
   } catch(e) {}
