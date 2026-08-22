@@ -78,6 +78,9 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-21 (Fri) — Treasure Island — MATCH ✅
+- **Reported (8/21 afternoon):** Treasure Island **10–15 ft**, waves **0–1 ft** (calm), murkier further out / cleaner closer to shore (an inversion of the usual — outer murk, likely offshore green/plankton, with cleaner water inshore). Tool `treasureisland` **11–16 (Fair)** → 11–16 overlaps 10–15 → clean **MATCH**. 3rd straight Treasure Island/Goff match this week (8/20 Goff 17–22 vs 15–20, today 11–16 vs 10–15) — the tool tracks this spot well. Posted display-only.
+
 ### 2026-08-21 (Fri) — La Jolla Shores (Bret + Jimi firsthand) — MATCH ✅ (clean day; confirms 8/20 over-call was transient haze)
 - **Reported (firsthand, the Garden):** surf down, W/WNW swell (not bathtub-flat), steady southward pull on the swimout. Viz **15–25 ft mostly**, cloudier **10–15 south along the wall / above V-point**. Strong thermocline: **69°F @ 0', 54°F @ 115'**. Baby-fish clouds (likely barred sand bass).
 - **Tool `ljshores`:** **18–23 (Good)** — ntu **0.37**, chl 0.38, src Scripps Pier (cam ~12–17 correctly inert — it agreed). 18–23 sits inside the main 15–25 → **MATCH ✅**; the cloudy-south 10–15 is the usual spatial spread. **Key confirmation: on a genuinely clean day the Shores read is spot-on (ntu 0.37 → 18–23 ≈ actual 15–25), so the 8/20 over-call (14–19 vs 5–10) was TRANSIENT surface green-haze, NOT a calibration bug.** Reinforces the "surface-haze is the only gap, don't tune the NTU" conclusion. Posted display-only. (Also: Jimi's SPG leak fixed — new/lubed flow-restrictor o-rings, no bubbles.)
