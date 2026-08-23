@@ -78,6 +78,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-22→23 — Laguna area: Treasure Island MATCH ✅, Crescent + Shaw's edge MATCH ✅ (surf building)
+- **Treasure Island (8/22, 37 divers):** viz **10–20**, lots of life, surf building 1–2 ft. Tool `treasureisland` **7–12 (Poor)** now → overlap at 10–12 → **MATCH** (TI dropped 11–16→7–12 as the surf builds — tracking it). 5th straight TI/Goff match.
+- **Crescent Bay (8/22 AM) + Shaw's Cove (8/23 AM), one reporter:** viz **8 up to 15+ in places**, surf 2–3 ft, the **Twin Points reef between them stirred up/cloudy**. Tool `crescent` **5–8** and `laguna` **5–8** → both edge **MATCH** (overlap at 8). Note: `laguna` under-called on the calm days earlier this week (6–9 vs 10–15), but with 2–3 ft surf now its low 5–8 read matches better — consistent with the WE-driven behavior (it reads the surge). Warm, tons of life (calico, sheephead, zebra perch, halfmoon, topsmelt, juvenile blacksmith, croakers, a few yellowtail, sting/bat rays).
+
 ### 2026-08-22 (Sat) — Monterey-area trio (logged 8/23): North Monastery under-call (deep), McAbee edge over, Otter Point edge — + fish-gone note
 - **North Monastery (grades `monterey`):** Reef Check survey — 3 ft surface chop but calm below 25 ft; **12 m (~39 ft) at 25 ft**, 55°F; 5 red abalone; harbor seal. Tool `monterey` **21–26 (bloom season)** → 21–26 vs 39 = **under-call** (deeper-is-clearer; strat note firing, surface-weighted number under the deep survey viz).
 - **McAbee (grades `monterey`):** **15–20 ft.** Tool `monterey` 21–26 → edge **over-call** (1 ft, 20 vs 21).
