@@ -78,6 +78,13 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-22 (Sat) — Monterey-area trio (logged 8/23): North Monastery under-call (deep), McAbee edge over, Otter Point edge — + fish-gone note
+- **North Monastery (grades `monterey`):** Reef Check survey — 3 ft surface chop but calm below 25 ft; **12 m (~39 ft) at 25 ft**, 55°F; 5 red abalone; harbor seal. Tool `monterey` **21–26 (bloom season)** → 21–26 vs 39 = **under-call** (deeper-is-clearer; strat note firing, surface-weighted number under the deep survey viz).
+- **McAbee (grades `monterey`):** **15–20 ft.** Tool `monterey` 21–26 → edge **over-call** (1 ft, 20 vs 21).
+- **Otter Point (grades `hopkins`):** **20–25 ft.** Tool `hopkins` ~26–31 → edge (1 ft high).
+- **Spatial-spread note:** one `monterey` number (21–26) can't match both the Cannery Row breakwater end (McAbee 15–20) AND open north Carmel at depth (N Monastery 39) — it lands as a reasonable middle (edge-matches McAbee, under-calls the deep N Monastery). ~1-day-lagged grade (8/22 dives, 8/23 tool), Monterey stable.
+- **⚠️ Ecological note (not viz):** McAbee AND Otter Point both reported **the fish essentially GONE — "bottom like a lonely desert,"** perch/opaleye/kelp fish all cleared out. Two spots, same day → likely the **cold upwelling** (58–64°F water that showed up last week) pushed the warm-water fish out / down. Worth watching; matches the region's temp drop. Not a tool signal, just logged.
+
 ### 2026-08-22 (Sat, PM batch) — Shores (edge under-call, swell building), MR + TI + Point Pinos all MATCH ✅
 - **La Jolla Shores (Bret + Katherine, firsthand AM):** surf ~2 ft short-interval/bumpy (SW groundswell arriving), viz **15–25 mostly / 10–20 shallows**, 55°F @ depth. Tool `ljshores` **9–14 (Fair)** now → edge **under-call** vs the 15–25 main (MATCH vs the 10–20 shallows). The tool **dropped 18–23 (midday) → 9–14** as the groundswell built — so it's tracking the swell, and Bret's cleaner 15–25 was the calmer earlier window. Safe direction, timing-driven. (Bret dropped both fins to an overhead set on entry — recovered them; "never lose track of the surf" note. Mantis shrimp + sandflat elbow crabs.)
 - **Marine Room → Devil's Slide (8–9:30am):** **5–10 ft in front of MR** (crowded), improving south — particulate at the wall then **10–15 at the gazebo**. Chilly now. Tons of leopard sharks. Tool `ljmarineroom` **7–10 (Poor)** → **MATCH** (MR-front read; the 10–15 south is the usual spatial improvement).
