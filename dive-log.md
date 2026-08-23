@@ -78,6 +78,12 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-22 (Sat, PM batch) — Shores (edge under-call, swell building), MR + TI + Point Pinos all MATCH ✅
+- **La Jolla Shores (Bret + Katherine, firsthand AM):** surf ~2 ft short-interval/bumpy (SW groundswell arriving), viz **15–25 mostly / 10–20 shallows**, 55°F @ depth. Tool `ljshores` **9–14 (Fair)** now → edge **under-call** vs the 15–25 main (MATCH vs the 10–20 shallows). The tool **dropped 18–23 (midday) → 9–14** as the groundswell built — so it's tracking the swell, and Bret's cleaner 15–25 was the calmer earlier window. Safe direction, timing-driven. (Bret dropped both fins to an overhead set on entry — recovered them; "never lose track of the surf" note. Mantis shrimp + sandflat elbow crabs.)
+- **Marine Room → Devil's Slide (8–9:30am):** **5–10 ft in front of MR** (crowded), improving south — particulate at the wall then **10–15 at the gazebo**. Chilly now. Tons of leopard sharks. Tool `ljmarineroom` **7–10 (Poor)** → **MATCH** (MR-front read; the 10–15 south is the usual spatial improvement).
+- **Montage → Treasure Island (7am group):** 0–1 ft waves, **10–20 ft**. Tool `treasureisland` **11–16 (Fair)** → **MATCH**. (4th straight TI/Goff match.)
+- **Point Pinos South (Pacific Grove), graded vs `hopkins` proxy:** **20–25 ft in the deeper water despite wind chop**, huge mysid-shrimp swarms in the shallows, very low particulate. Tool `hopkins` **26–31 (bloom season)**, strat note firing → 26–31 vs 20–25 is 1 ft high = **edge MATCH** (Point Pinos is more wind-exposed than sheltered Hopkins, and "deeper despite chop" fits the deeper-is-clearer strat note). Confirms the central-coast bloom-season number is running about right (contrast the `carmel` stale-bloom under-call 8/21 — hopkins/monterey/ptlobos are on live chl and reading well; carmel is the odd one out).
+
 ### 2026-08-22 (Sat) — LJ Marine Room — MATCH ✅
 - **Reported (this AM):** MR **5–10 ft** in the good spots (shallows). Tool `ljmarineroom` **8–13 (Fair)** → overlaps at 8–10 → **MATCH** (tool a touch high).
 
