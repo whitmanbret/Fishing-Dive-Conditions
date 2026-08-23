@@ -77,8 +77,27 @@ TS=$(date -u +%Y%m%dT%H%M%SZ)
 FRAME="$FRAME_DIR/scripps_${TS}.jpg"
 
 # ---- mint signed HLS URL ---------------------------------------------------
+# Retry the mint curl: HDOnTap intermittently drops the TLS handshake
+# (curl 35 "SSL_ERROR_SYSCALL"), which under `set -e` hard-fails the whole job
+# and emails, even though the next run succeeds. Guard with `|| true` so the
+# transient error doesn't abort, retry a few times, then fall through to the
+# offline/empty handling below (which skips cleanly). Same philosophy as the
+# frame-grab and offline paths.
 R=$(printf '%s' "$REFERER" | base64)
-MINT=$(curl -fsS -A "$UA" -e "$REFERER" "${EMBED_API}?r=${R}" | base64 -d 2>/dev/null)
+MINT=""
+for attempt in 1 2 3; do
+  MINT=$(curl -fsS -A "$UA" -e "$REFERER" "${EMBED_API}?r=${R}" 2>/dev/null | base64 -d 2>/dev/null || true)
+  [ -n "$MINT" ] && break
+  log "mint attempt $attempt failed (network/TLS to HDOnTap)"
+  [ "$attempt" -lt 3 ] && sleep 3
+done
+if [ -z "$MINT" ]; then
+  # curl never returned a body after retries — transient connectivity to HDOnTap
+  # (e.g. curl 35 SSL_ERROR_SYSCALL). Skip cleanly like the offline case rather
+  # than hard-fail + email; the next hourly run almost always reconnects.
+  log "skip: could not reach HDOnTap after retries (transient network/TLS)"
+  exit 0
+fi
 SRC=$(printf '%s' "$MINT" | "$PYTHON" -c 'import sys,json;print(json.load(sys.stdin).get("streamSrc",""))' 2>/dev/null)
 if [ -z "$SRC" ]; then
   # HDOnTap returns HTTP 200 with {"error":true,"errorMessage":"...offline!"} when the
