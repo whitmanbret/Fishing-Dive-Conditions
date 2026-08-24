@@ -13,18 +13,7 @@ the format, voice, and past examples are never lost.
 
 ## 📌 Pending intel for the NEXT weekly report (clear after use)
 
-**As of 2026-08-21 — SoCal 3-day satellite composites (chlorophyll + SST):**
-- **Water-clarity picture:** offshore & the islands (Catalina, San Clemente, San Nicolas, the banks) are **clean blue water** (chl ~0.1–0.3); a **green-to-yellow chlorophyll ribbon (~1–3+) hugs the entire coast** LA→Laguna→Dana Point→Oceanside/Carlsbad→La Jolla→San Diego. **That coastal green band is the "green haze" divers reported all week** (Shaw's, La Jolla) — confirms it's regional, not spot noise. Narrative: *nearshore is green/hazy, the islands are the clean-water play.*
-- **Temp:** warm surface **~72–74°F** across nearshore SoCal (matches the 72°F Shaw's report), with a **cooler 67–70°F tongue offshore to the west**. But there's **localized upwelling** (in-water 58–64°F at the La Jolla ¼-mi buoy on 8/19) — so a warm surface lens over much colder upwelled water in spots. Narrative: *warm on top, surprise cold below where it's upwelling — bring the extra layer.*
-- **Fish/offshore beat (synthesized from the week's offshore reports, 8/17–8/20 — OUR voice, NO source, nothing verbatim, casual/declarative):**
-  - **The marlin showed up!** Striped marlin are the headline — showing just about every day around Catalina and in the Channel (best south of Church Rock / off Long Point), with standout "Mag Bay-style" marlin fishing out at the 43.
-  - **Dorado and baby ("rat") yellowfin are filling in** down south — scattered on the kelp paddies and dolphin schools out at the 267/209 off Oceanside–Del Mar, and around the Mexican tuna pens (2–10 lb fish, a few 40–60 lb mixed in).
-  - **Bluefin have basically bugged out** for cooler water — pretty much done locally (lone small foamer below Santa Cruz/Anacapa was the only sign).
-  - **The yellowtail moved north.** The coastal grade thinned out of La Jolla/San Diego and pushed up the line to Oceanside → San Mateo → Dana Point and into OC/LA. Islands (Catalina, Clemente, Coronados, Cortez/Tanner) still hold scattered yellows if you can stomach the rough water.
-  - **Water story = warm surface with a cold upwelling shot.** Off Point Loma to the Coronados the temp dropped from ~74° to 65–66° in a couple days (upwelling) — slowed the tuna bite and lines up with the cold water divers felt inshore; it also "rolled and turned green" at the Coronados. Warm mid-70s elsewhere = no squid, tight bait.
-  - **Rough/snotty offshore** — Small Craft Advisories on the outer banks + Channel Islands through the weekend; the further offshore/north you went, the worse it got.
-  - **Dive-relevant aside:** lots of hammerheads roaming the warm offshore water this week (pelagic, not a nearshore concern, but a fun "warm-water summer" note).
-- *(These are point-in-time snapshots — verify still current when writing; delete this block once used.)*
+*(none pending — the 8/21 chl/SST composites + offshore beat were used in the Aug 17–23 report below.)*
 
 ---
 
@@ -66,6 +55,99 @@ upwelling), and practical (what to dive, when, where's sheltered in swell). The 
 ---
 
 ## Past examples (verbatim reference)
+
+### FACEBOOK — Week of August 17–23, 2026 (generic, no individuals named; offshore intel paraphrased, no source)
+The upwelling showed up. After weeks of warm water, cold clean water pushed up from below this week — you could feel it: 57°F at depth in La Jolla, low-50s in Monterey, distinct cold "fingers" you'd scooter right through. Up top it stayed warm and green-hazy nearshore, so most of the coast fished a hazy 5–15 ft… except Palos Verdes, which went gin-clear and stole the week at 40–50 ft. A SW groundswell filled in over the weekend and roughed up the exposed spots.
+
+🟡 SAN DIEGO / LA JOLLA — warm, green, and patchy
+Nearshore stayed green and hazy most of the week — the Cove, Marine Room, and Shores ran a hazy 5–15 ft, with clean pockets up to 15–25 on the calm mornings (the Shores "Garden" had a couple of genuinely nice 15–25 days). It was patchy day to day and even spot to spot — a drone shot this weekend showed clear water over one patch of reef and a murk band right next to it. Underneath was the upwelling story: warm up top (68–72°F early, cooling to ~57°F at depth by the weekend) over a sharp thermocline. Cove and Marine Room were the murkiest; the Shores and points held the clean pockets. Then a SW groundswell (~2 ft, short interval) filled in over the weekend and added surge. Tip: on the green/hazy days, drop deeper and hunt the clean pockets — and remember the shallows churn first when the surge is up.
+
+🟡 ORANGE COUNTY / LAGUNA — sheltered coves held, exposed ones got surgy
+Classic Laguna mixed bag. Shaw's, Crescent, and Treasure Island ran a decent 8–20 ft on the calm days, dropping to a milky 5–10 as the weekend surf built (2–3 ft). The Twin Points reef between Crescent and Shaw's stirred up cloudy. Treasure Island was the steady pick — good conditions and tons of life all week. The gem: Little Corona del Mar hit a gin-clear 20–25 ft on a calm day. Warm water and loads of life — juvenile blacksmith, croakers, a few surprise yellowtail, sting and bat rays. Same old rule: on a surf day, pick the sheltered spots and go deeper.
+
+🟢 LA / SOUTH BAY (Palos Verdes) — the star of the week
+PV went off. Flat Rock / Xmas Tree Cove and White Point ran a gin-clear 40–50 ft — you could see the anchor sitting on the reef from the surface. The satellite chlorophyll backed it up: the whole PV peninsula was clean blue water while the harbor and flats to the east were green. 74°F on top. One caveat that makes PV, PV: those points rip on current, and clarity can crash fast when it's running — so check the current before you commit. But on a slack, clean day this week, PV had the best water in SoCal.
+
+🔵 CATALINA / CORONADO ISLANDS — big blue, but rough
+The islands held their usual blue water, but it was a rough, snotty week offshore — Small Craft Advisories on the outer banks and Channel Islands for most of it. The Coronados "rolled and turned green" midweek as the upwelling kicked in. Yellowtail around, but not always chewing.
+
+🟢 CENTRAL COAST (Carmel / Pt Lobos) — cleared up, and cold
+Carmel Bay and Point Lobos have cleared out of the long summer bloom. Butterfly House / Carmel River ran ~25 ft; North Monastery hit a beautiful 39 ft on the Reef Check survey (below the surface chop). Cold, though — 55°F and dropping, so bring the thick suit.
+
+🔴 MONTEREY BAY — cold, clear-ish, and the fish took off
+The bay ran a hazy-green 15–30 ft — 10–15 in the Cannery Row shallows (McAbee), opening to 20–30 at the pinnacles and out at Point Pinos / Otter Point. But the headline was the cold: upwelling dropped the water into the low-50s (51–56°F), with distinct cold patches you'd scooter right through. And the fish bailed — divers at McAbee and Otter both found the reef "like a lonely desert," the usual perch, opaleye, and kelp fish just gone, likely pushed out or down by the cold shot. Bring the 7mm.
+
+⚠️ HEADS UP — Lover's Point (Pacific Grove) was CLOSED midweek on a health-safety alert (high bacteria; a diver reported a strong sulfur/rotten-egg smell in the lot and called it in to Monterey County Health, who cross-reported to the Sewer Authority — possible sewage leak, under investigation). San Carlos Beach also stayed closed for sea lions. Always check before you go, and verify any closure or reg with the local authority (and CDFW for MPA rules).
+
+📊 HOW THE FORECAST DID THIS WEEK
+Another solid week — the tool matched what divers actually found on roughly 8 out of 10 reports, and the misses skewed the safe way (reading a touch low rather than over-promising). It nailed the green/hazy La Jolla cluster, Treasure Island (five straight matches), the surgy Laguna days, the Marine Room, and the Monterey shallow-vs-deep split — and it caught the weekend surf building and dropped its numbers right on cue. Where it read low, it did it on purpose: the gin-clear days like Palos Verdes (it called high-teens when PV was 40–50) and the calm-morning Laguna coves. PV's a special case — its clarity gets killed by current the tool can't measure, so instead of over-promising we added a note that flags the 30–50 upside and tells you to go check the current. Under-promising beats over-promising. Two upgrades shipped this week too: we re-sourced the forecast swell to the nearshore model (it had been reading offshore swell ~2× too high, quietly under-calling every calm SoCal day), and we added guardrails so a noisy pier sensor can't crush the number.
+
+🔗 Real-time conditions: conditions.spearfactor.com — Dive safe out there, and mind the cold water and the weekend surge.
+#spearfishing #californiadiving #spearfactor #lajolla #palosverdes #montereybay #diveconditions #freediving #upwelling
+
+### INSTAGRAM — Week of August 17–23, 2026 (condensed)
+🌊 CA DIVE REPORT — Aug 17–23
+The upwelling arrived. Warm & green-hazy up top, cold & clean below (57°F at depth in LJ, low-50s in Monterey).
+🟡 SD/La Jolla: hazy 5–15, clean pockets 15–25 on the calm mornings. Patchy.
+🟡 Laguna: coves 8–20, milky 5–10 as the weekend surf built. Treasure Island steady; Little Corona a gin-clear 20–25.
+🟢 Palos Verdes: THE spot this week — gin-clear 40–50 (but PV rips on current, check it).
+🟢 Carmel/Lobos: bloom cleared, 25–39 ft, cold 55°F.
+🔴 Monterey: 15–30, cold low-50s, and the fish took off — reef "like a desert."
+Tool went ~8/10; misses read safe (low) on the gin-clear days.
+🔗 conditions.spearfactor.com — Dive safe!
+#spearfishing #californiadiving #spearfactor #palosverdes #lajolla #montereybay #freediving #diveconditions
+
+### WEEKLY EMAIL — Week of August 17–23, 2026 (detailed)
+**Subject line options (pick one):**
+- The upwelling arrived — cold water, green surface, and one gin-clear surprise
+- Palos Verdes stole the week (40–50 ft) while the cold water moved in
+- Warm on top, cold below: your Aug 17–23 California dive report
+
+**Preheader:** Green-hazy nearshore, a cold upwelling shot, and Palos Verdes going gin-clear at 40–50 ft.
+
+Hey divers,
+
+This was the week the ocean flipped the script. After a long stretch of warm water, cold, clean, nutrient-rich water pushed up from below — you could feel it everywhere: 57°F at depth in La Jolla, low-50s in Monterey, and distinct cold "fingers" divers scootered right through in Pacific Grove. That cold water does two things at once: it feeds the plankton that greens the surface (hence the hazy nearshore all week) AND it drops your bottom temp into wetsuit-upgrade territory. Warm and green on top, cold and clearer below — read the whole water column this week. And then there was Palos Verdes, which ignored the memo and went gin-clear at 40–50 ft.
+
+🐙 WILDLIFE NOTES
+A stacked week. Leopard sharks were everywhere at La Jolla's Marine Room (schooled up, unbothered, a few feet away). Bat rays all over — including one that laid down for a photo shoot at the bottom of a Monterey pinnacle. Add a wolf eel (a first, at Butterfly House in Carmel), 10+ sea hares and a field of sand dollars at Otter Cove, five red abalone at North Monastery, a mantis shrimp and sandflat elbow crabs at the Shores, mysid-shrimp swarms "in the billions" off Point Pinos, plus the usual calico, sheephead, opaleye, sargo, zebra perch, halfmoon, topsmelt, a round ray and a small moray. And a recurring guest star: friendly harbor seals pestering divers for 30 minutes at a stretch.
+
+🌊 THE WEEK BY REGION
+
+🟡 SAN DIEGO / LA JOLLA — warm, green, patchy
+Nearshore stayed green and hazy most of the week — the Cove, Marine Room, and Shores fished a hazy 5–15 ft, with clean pockets to 15–25 on the calm mornings (the Shores Garden had a couple genuinely nice 15–25 days). It was patchy — a drone shot this weekend showed clear water over one patch of reef and a murk band right beside it, which is exactly why one diver could call it "no viz" while another filmed 5–15 in the clean water a few kicks away. Warm up top (68–72°F early) cooling to ~57°F at depth over a sharp thermocline, then a ~2 ft short-interval SW groundswell filled in over the weekend and added surge. Tactical: drop deeper and hunt the clean pockets; the shallows churn first when the surge is up.
+
+🟡 ORANGE COUNTY / LAGUNA — sheltered held, exposed got surgy
+Shaw's, Crescent, and Treasure Island ran 8–20 ft on the calm days, dropping to a milky 5–10 as the weekend surf built to 2–3 ft. Twin Points reef between Crescent and Shaw's stirred up cloudy. Treasure Island was the steady pick all week. The standout: Little Corona del Mar, a gin-clear 20–25 on a calm day. Warm, and loaded with life. Rule of the week: on a surf day, pick the sheltered coves and go deeper.
+
+🟢 LA / SOUTH BAY (Palos Verdes) — the star
+PV went off. Flat Rock / Xmas Tree Cove and White Point ran a gin-clear 40–50 ft — anchor-on-the-reef-from-the-surface clear. The satellite chlorophyll confirmed it: the whole PV peninsula was clean blue while the harbor east of it was green. 74°F on top. The one catch that makes PV, PV: those points rip on current, and clarity can crash fast when it's running — so check the current before you commit. On a slack, clean day this week, though, PV had the best water in the state.
+
+🔵 CATALINA / CORONADO ISLANDS — big blue, but rough
+The islands kept their blue water, but offshore was rough and snotty for most of the week (Small Craft Advisories on the outer banks and Channel Islands). The Coronados "rolled and turned green" midweek with the upwelling.
+
+🟢 CENTRAL COAST (Carmel / Pt Lobos) — cleared, and cold
+The long summer bloom has finally cleared out of Carmel Bay and Point Lobos. Butterfly House / Carmel River ran ~25 ft; North Monastery hit a beautiful 39 ft on the Reef Check survey, below the surface chop. Cold — 55°F and dropping.
+
+🔴 MONTEREY BAY — cold, clear-ish, fish gone
+The bay ran a hazy-green 15–30 ft: 10–15 in the Cannery Row shallows (McAbee), opening to 20–30 at the pinnacles and out at Point Pinos / Otter. The headline was the cold — upwelling into the low-50s (51–56°F) with distinct cold patches. And the fish took off: divers at McAbee and Otter both found the reef "like a lonely desert," the usual perch/opaleye/kelp fish simply gone, likely pushed out or down by the cold. Bring the 7mm.
+
+⚠️ HEADS UP: Lover's Point (Pacific Grove) was closed midweek on a health-safety alert — high bacteria, a strong sulfur smell reported in the lot (called in to Monterey County Health → Sewer Authority; possible sewage leak, under investigation). San Carlos Beach stayed closed for sea lions. Check before you go, and verify closures/regs with the local authority and CDFW.
+
+🎣 FISH & OFFSHORE INTEL
+The marlin showed up — striped marlin nearly every day around Catalina and in the Channel, with standout fishing out at the 43. Dorado and baby ("rat") yellowfin are filling in down south on the kelp paddies and dolphin schools off Oceanside–Del Mar. Bluefin basically bugged out for cooler water. The yellowtail moved north — thinned out of La Jolla/San Diego and pushed up to Oceanside → San Mateo → Dana Point; the islands still hold scattered fish if you can take the rough water. And that same cold shot that greened the water slowed the tuna bite off Point Loma and the Coronados. Warm water elsewhere means no squid and tight bait. (Fun aside: lots of hammerheads roaming the warm offshore water — pelagic, not a nearshore worry.)
+
+🌡️ THE UPWELLING — read the whole water column
+Here's what actually happened: NW winds and the North Pacific High drove cold, nutrient-rich water up from depth (upwelling). That cold water is a two-for-one — the nutrients feed a plankton bloom that greens and hazes the surface, and the water itself drops your bottom temp into the 50s. So this week you got warm, green, hazy water up top sitting over cold, often-clearer water below the thermocline. Two takeaways: plan for the bottom temp (thicker suit than the surface suggests), and on the green-surface days, your best visibility is frequently deeper.
+
+🌑 MOON & (WHITE SEABASS) TIDES
+The moon waxed from a thin crescent through first quarter (~8/20) to a waxing gibbous by the weekend, building toward the full moon on ~8/27. As we roll into the full moon, keep the deep iron / flat-fall in the rotation around the low-light windows — the white seabass bite tends to pick up on the moon.
+
+Real-time predictions for every spot: **conditions.spearfactor.com**
+
+Dive safe — mind the cold water and the weekend surge.
+
+Bret / SpearFactor
 
 ### FACEBOOK — Week of August 10–16, 2026 (plain-language; generic, no individual reports named; offshore intel paraphrased, no source)
 A week of big swings. La Jolla started gin-clear, caught a sneaky haze midweek, then a weekend swell blew it out. Up in Monterey it was the opposite — the summer bloom that's greened the surface for weeks finally cleared and the water opened way up. Warm surface everywhere, cold clean water underneath.
