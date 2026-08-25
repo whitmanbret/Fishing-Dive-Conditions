@@ -13,7 +13,15 @@ the format, voice, and past examples are never lost.
 
 ## 📌 Pending intel for the NEXT weekly report (clear after use)
 
-*(none pending — the 8/21 chl/SST composites + offshore beat were used in the Aug 17–23 report below.)*
+**As of 2026-08-24 — offshore/fish beat for the Aug 24–30 report (OUR voice, NO source, nothing verbatim, casual/declarative):**
+- **Marlin went nuclear.** The striped-marlin bite is being called maybe the best SoCal's ever seen — bigger than the epic 2015 run. Small packs of fish tearing up bait balls, thick on the 43 / Clemente Ridge (289) and out on the Osborn Bank, plus a bunch inside Santa Cruz Island (multiple 4-fish days). Mostly on the troll. THE story of the week.
+- **Dorado (mahi) filled in strong.** More and more kelp paddies holding dodos down south (off Dana–Oceanside, the 267/209) and around Catalina/the slide, with some legit bull-mahi up to the low-30-lb class (one 34-lb, 5-footer). Check anything floating.
+- **Baby ("rat") yellowfin are everywhere** — 1–5 lb fish running with the dolphin from the 289 up through the 267/209 and at the Mexican pens, with a few legit 20–60 lb units mixed in. Anchovy's the key bait to get them going.
+- **Bluefin basically done** — just a few 12–15 lb-ers on top of Tanner Bank and some schools mixed with the seiners below Santa Cruz.
+- **Coastal yellowtail still chewing** — PV/LA Harbor ("best summer in years"), the 105/Horseshoe/Izor's, Dana Point–Oceanside (Salt Creek, dawn & dusk), and improving at the Coronados/Rockpile. The catch all week: BAIT is scarce — sardines hard to get, so it's anchovy or plastics/iron.
+- **Warm-water / El Niño angle (dive-relevant, and citable BY NAME):** with the warm water, tropical strays are showing up. Scripps (Marine Vertebrate Collection) is running a community "unusual fish" reporting effort — a nice call-to-action for divers: if you see something that doesn't belong, photograph it and report it to Scripps. (This is a real Scripps program — OK to name Scripps; still never name the offshore-report source.)
+- **CONDITIONS OUTLOOK for the report:** an **increasing SOUTH swell is due Wed–Thu (8/27–28), moderate period, up to ~6 ft** — flag it for divers (exposed south-facing spots will get surgy late in the week; the SW-facing Laguna coves + PV points especially). Offshore ran warm/clear (76–80°F at the paddies); Coronados still greenish ~72–74.5°F.
+- *(Point-in-time — verify still current when writing; delete this block once used.)*
 
 ---
 
