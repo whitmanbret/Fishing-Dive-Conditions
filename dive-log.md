@@ -78,6 +78,9 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-25 (Tue) — North Monastery (Carmel) — MATCH ✅ (exact on shallow + strat note nails the deep)
+- **Reported:** North Monastery Beach — hazy, **15–20 ft in the shallows, improving to ~30 ft at 50–90 ft** (still hazy), very fishy, healthy kelp. Tool `monterey` **15–20 ft (green water)**, strat note firing → **exact MATCH** on the shallow 15–20, and the strat note ("clearer below the thermocline") captures the deeper 30. **Tool tracked a slight re-greening** (was 21–26 bloom-season ~8/23 → now 15–20 green, matching "hazy"). **Fish note:** "very fishy, healthy kelp" — a contrast with the 8/22 McAbee/Otter "fish-gone desert"; the cold-shot fish exodus is patchy/spot-specific, not bay-wide (North Monastery still holds fish). Posted display-only.
+
 ### 2026-08-25 (Tue) — La Jolla Shores MATCH ✅ (cleared to good/aquarium), Goff MATCH ✅ (exact)
 - **La Jolla Shores (`ljshores`) — MATCH ✅.** Multiple reports: (1) calm-morning "warm water, calm seas, **good viz**" (6:15–7:30am, beach club → outer reef → ½-mi buoy); (2) later a shark/ray day, **spotty** — "**aquarium conditions**" in the sand/clear spots (front of the hotel, sand dollar beds) but the **shallow reef basically zero, 5–10 in deeper areas**; (3) night dive **20+ ft at 75 ft depth, 60°F.** Tool `ljshores` **19–24 (Good)** → matches the good/aquarium/20+ reads; the zero shallow reef is spatial patchiness. **The Shores cleared up nicely after the weekend green/surge.** Temp note: **60°F at 75 ft** is notably WARMER at depth than last week's upwelling cold (57°F) — the cold shot may be relaxing at La Jolla.
 - **Goff / Treasure Island (`treasureisland`) — MATCH ✅ (exact).** Reported: **10–15 ft at noon**, worsening as they got out. Tool `treasureisland` **10–15 (Fair)** → exact match. 6th+ straight TI/Goff match — rock-solid spot.
