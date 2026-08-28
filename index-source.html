@@ -1240,7 +1240,7 @@
 
     <!-- Scripps PIERViz underwater camera -->
     <div class="action-bar">
-      <a class="action-bar-btn cam-action" href="https://coollab.ucsd.edu/pierviz/" target="_blank" rel="noopener">📹 Scripps Underwater Cam</a>
+      <a id="scrippsCamBtn" class="action-bar-btn cam-action" href="https://coollab.ucsd.edu/pierviz/" target="_blank" rel="noopener">📹 Scripps Underwater Cam</a>
     </div>
 
     <!-- Favorites Bar -->
@@ -10743,6 +10743,9 @@ function onLocationChange() {
   const countySel = document.getElementById('countySelect');
   const regionLabel = countySel.options[countySel.selectedIndex].textContent;
   document.getElementById('subtitleRegion').textContent = regionLabel + ' — Live Oceanographic Model';
+  // The Scripps underwater cam lives at La Jolla — only relevant for San Diego County.
+  const _camBtn = document.getElementById('scrippsCamBtn');
+  if (_camBtn) _camBtn.style.display = (countySel.value === 'sandiego') ? '' : 'none';
   // Clear stale insight text and forecast immediately on location switch
   document.getElementById('insightText').textContent = 'Loading conditions for ' + loc.name + '...';
   // Hide site-specific tip immediately on location switch so it doesn't linger
@@ -11649,6 +11652,28 @@ loadAlertSettings();
         PN.requestPermissions().then(function(r){ if (r.receive === 'granted') reg(); });
       }
     });
+  } catch(e){}
+})();
+</script>
+
+<!-- Native-app: open external links (Scripps cam, other webcams, Blog/Courses/etc.)
+     in a clean in-app browser with a Done button, instead of navigating the app's
+     webview away. Inert in a real browser — links behave exactly as before there. -->
+<script>
+(function(){
+  try {
+    var C = window.Capacitor;
+    if (!C || typeof C.isNativePlatform !== 'function' || !C.isNativePlatform()) return;
+    var Browser = C.Plugins && C.Plugins.Browser;
+    if (!Browser) return;
+    document.addEventListener('click', function(e){
+      var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      if (!/^https?:\/\//i.test(href)) return;   // external absolute URLs only
+      e.preventDefault();
+      Browser.open({ url: href }).catch(function(){});
+    }, true);
   } catch(e){}
 })();
 </script>
