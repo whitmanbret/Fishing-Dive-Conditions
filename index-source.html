@@ -11619,6 +11619,39 @@ updateFavoriteStar();
 renderFavoritesBar();
 loadAlertSettings();
 </script>
+
+<!-- Native-app (Capacitor) push registration. Completely inert in a web browser
+     — only runs when the page is inside the native SpearFactor app, where
+     Capacitor injects window.Capacitor with the native push bridge. Registers
+     for viz/swell alerts and POSTs the device token to the worker. -->
+<script>
+(function(){
+  try {
+    var C = window.Capacitor;
+    if (!C || typeof C.isNativePlatform !== 'function' || !C.isNativePlatform()) return;
+    var PN = C.Plugins && C.Plugins.PushNotifications;
+    if (!PN) return;
+    var reg = function(){
+      PN.addListener('registration', function(t){
+        try {
+          fetch('https://spearfactor-api.whitmanbret.workers.dev/push/register', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: t.value, platform: C.getPlatform() })
+          });
+        } catch(e){}
+      });
+      PN.addListener('registrationError', function(){});
+      PN.register();
+    };
+    PN.checkPermissions().then(function(p){
+      if (p.receive === 'granted') { reg(); }
+      else if (p.receive === 'prompt' || p.receive === 'prompt-with-rationale') {
+        PN.requestPermissions().then(function(r){ if (r.receive === 'granted') reg(); });
+      }
+    });
+  } catch(e){}
+})();
+</script>
 </body>
 </html>
 <!-- deployed 2026-03-24T01:16:52Z -->
