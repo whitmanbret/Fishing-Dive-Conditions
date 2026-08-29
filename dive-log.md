@@ -79,6 +79,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-08-29 (Sat) — LJ Marine Room (Bret firsthand, AM) — edge over-call ~2 ft (near-match; Cove worse; warm-at-depth + triggerfish)
+- **Reported:** Marine Room **~10 ft** viz; **"really bad" over toward the Cove.** Warm even at depth — **73°F at 28 ft** (max depth this round, out past the buoys). Finally saw the **two triggerfish** ✅ (warm-water strays — fits the regime). Tool `ljmarineroom` **12–16 ft** → report ~10 sits just below → **~2 ft edge over-call** (tool a touch high). BUT "about 10" is an eyeball and divers under-call murk, so effectively a **near-match** — single report, not a tuning signal.
+- **Consistent with the weekend theme:** SW groundswell → clarity variable, protected water better. **Cove worse than Marine Room** fits the standing watch that `ljcove` can over-read when the Cove/canyon is murkier than the shallow/pier water. **Warm-at-depth** (73°F @ 28 ft here; 62°F @ 115' at Shores same window) = the strange warm-deep signal all over LJ right now. Posted to `ljmarineroom` with calibration.
+
 ### 2026-08-29 (Sat) — SD shop daily (La Jolla) — MATCH ✅ (aligns with cam-adj; SW-swell "protected areas better" call)
 - **Shop report:** Vis **10–15 ft** (ranging **5–15**, variable), swell 2–3 ft, surface 70–74°F. High 5.0 ft @ 10:39am / 5.4 ft @ 10:29pm; low 1.2 ft @ 4:27pm. "Nearest piling clearly visible, 11-ft piling fairly hazy." SW groundswell building through Sun 8/30 + light–moderate NW windswell → surge at exposed sites, **protected areas the better bet**; smooth surface up top despite the underlying swell energy. Tool `ljshores` (read live 8/30) **10–15 (cam-adj)** → overlaps the shop's 10–15 headline → **MATCH ✅** (note: shop is 8/29, tool read 8/30 — same SW-swell window). Posted display-only. Good corroboration of the "clarity variable / go protected on the SW swell" theme running all weekend.
 
