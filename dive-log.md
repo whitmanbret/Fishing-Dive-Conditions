@@ -79,7 +79,9 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
-### 2026-08-30 (Sat) — Point Vicente (PV) — MATCH ✅ (pea-soup day; tool read PV LOW correctly — caveat-note working, no over-call)
+### 2026-08-31 (Sun) — Fisherman's Cove, Laguna (4:30pm) — MATCH ✅ (diver explicitly confirmed the app "about right"); temp read ~2°F low
+- **Reported:** at Fisherman's Cove (North Laguna, adjacent to Shaw's/Diver's Cove — grades vs `laguna`) at 4:30pm. **"What I'm seeing on the app right now for Shaw's Cove is about right."** Water was **actually 79°F.** Live app read: `laguna` viz **5–8 ft**, water temp **77°F**.
+- **Grade:** **MATCH ✅ on viz** — a rare *direct* user validation of the app's live number (diver looked at the app and called it right), not just an independent report I graded after. 5–8 ft = the surgy/low afternoon read on the running S swell + wind chop; matches. **Temp:** app 77°F vs actual **79°F → ~2°F low.** Minor, and could be real (an afternoon-warmed shallow cove runs warmer than the nearest sensor/buoy) — but it's a data point that the OC water-temp source may read a touch cool right now (the warm regime again: 79°F at a Laguna cove in the afternoon). Not a fix off one reading; note it. Posted to `laguna` with calibration.
 - **Reported:** bumpy ride out to Pt Vicente; **patches of blue mixed into pea-soup that dominated**; **viz not good, 15 ft at best.** Surface 74°F, 71°F at 40'; squirrely winds. Tool `pv` **10–14 ft** → "15 at best" (mostly worse) overlaps 10–14 at 14–15 → **MATCH ✅**. **Notable:** last week PV was the gin-clear star (40–50, the known clean-day under-call); THIS week PV was murky and the tool read it **low (10–14) correctly** — so the PV current caveat-note is doing its job and the model isn't stuck over-calling PV. Good both-directions data point. Posted to `pv` with calibration.
 
 ### 2026-08-30 (Sat) — Treasure Island (Laguna) — MATCH ✅ (Poor called right; helps resolve the TI/Crystal Cove SW-swell watch)
