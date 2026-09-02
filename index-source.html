@@ -7674,18 +7674,27 @@ async function updateDisplay() {
   // number change. Repeated PV clean-day under-calls (8/16 25, 8/21 40–50) vs a
   // 14–23 tool are exactly this: clean water the number can't credit without a
   // current signal.
+  // (2026-09-01) Added the cove-to-cove downside. The gin-clear upside above is only
+  // half the story: PV's clarity ALSO varies sharply spot-to-spot — a diver found
+  // Bluff Cove a murky 5 ft while Flat Rock (just north) looked way clearer the same
+  // hour (dive-log 9/1, photo-corroborated). Same reason (topographic current/eddy),
+  // opposite direction. So show the scout-cove-to-cove tip on ALL currentProne days,
+  // and append the 30–50 upside only when the water's actually gin-clear. Purely
+  // additive guidance — NO number change (kept out of the estimate for the same
+  // reason as the upside: the tool can't tell which cove you're standing over).
   try {
     const _curEl = document.getElementById('vizCurrentNote');
-    if (_curEl) {
+    if (_curEl && !!loc.currentProne && vizEst !== '--' && vizEst !== 'Service unavailable') {
       const _chlClean = D.chlorophyll !== undefined && D.chlorophyll !== null
         && D.chlorophyll <= 0.3 && !D.chlIsClimatology;
-      const _cleanCurrentProne = !!loc.currentProne && _chlClean;
-      if (_cleanCurrentProne && vizEst !== '--' && vizEst !== 'Service unavailable') {
-        _curEl.textContent = "🌊 Water's gin-clear offshore, but this point rips on current/tide — clarity on the reef can jump to 30–50 ft when it's slack, or drop fast if the current's running (the number shown plays it safe). Check the current before you commit.";
-        _curEl.style.cssText = 'display:block;font-size:11px;line-height:1.35;margin-top:5px;color:#2a7ab0;font-weight:600';
+      if (_chlClean) {
+        _curEl.textContent = "🌊 Water's gin-clear offshore, but these points rip on current/tide — clarity on the reef can jump to 30–50 ft when it's slack, or drop fast if the current's running (the number shown plays it safe). It also varies sharply cove-to-cove — one cove can be clear while the next is murky. Scout from the bluff before you commit.";
       } else {
-        _curEl.style.display = 'none';
+        _curEl.textContent = "🌊 Clarity here varies sharply cove-to-cove and with the current/tide — one cove can be murky while the next runs clear, and a ripping current can crash viz fast. Scout from the bluff before you commit.";
       }
+      _curEl.style.cssText = 'display:block;font-size:11px;line-height:1.35;margin-top:5px;color:#2a7ab0;font-weight:600';
+    } else if (_curEl) {
+      _curEl.style.display = 'none';
     }
   } catch(e) {}
 
