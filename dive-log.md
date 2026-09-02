@@ -79,6 +79,9 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-01 (Mon) — Shaw's Cove, Laguna — MATCH ✅ (5–10 w/ heavy swell ↔ tool 5–8; 2nd Shaw's confirmation in 2 days)
+- **Reported:** Shaw's Cove **5–10 ft viz** and **a lot of swell.** Tool `laguna` (Shaw's/Diver's) **5–8 ft** → overlaps 5–10 at 5–8 → **MATCH ✅**, and "lots of swell" fits the low/surgy read. Second Shaw's-area confirmation in two days (cf. 8/31 Fisherman's Cove "app about right" 5–8). The running S swell + wind chop keeps the exposed Laguna coves surgy and low — tool's tracking it. Posted to `laguna` with calibration.
+
 ### 2026-09-01 (Mon) — Bluff Cove, PV — ⚠️ over-call at Bluff Cove (~9–13 ft high) BUT spatially confounded (Flat Rock looked clearer) → PV note candidate, no number change
 - **Reported:** Bluff Cove (PV), water **warm**, waves **small**, but **viz ~5 ft** — "first time in that murky of water," dipped out early. **Flat Rock (just north) looked way clearer from the trail** — surprised there was that much difference over so short a distance. Tool `pv` **14–18 ft** → Bluff Cove 5 does NOT overlap → **~9–13 ft over-call** at that cove.
 - **Grade — the trust-costly direction, so worth flagging, but NOT a number cut on one report:** (1) **Spatially confounded** — the diver says **Flat Rock (the canonical PV anchor the model leans on) looked clearer**, so the peninsula wasn't uniformly 5; 14–18 may be right for Flat Rock and wrong only for the Bluff Cove pocket. (2) **Small waves + warm + murky = not swell; it's a local turbid/plankton pocket** — consistent with the 3-day chl composite showing the PV coast green (~1 mg/m³). (3) PV is the known **current-/spatially-variable** spot — clarity swings cove-to-cove.
