@@ -79,6 +79,13 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-05 (Sat) — Mission Point Park (Mission Bay) — OVER-call ⚠️ (tool 14–19 vs 5–10): back-bay dive vs cleaner jetty-mouth the spot leans on
+- **Reported (7AM):** MPP **murky 5–10 ft**, water calm w/ consistent (tidal) flow. **73°F surface, 70°F at 15–20 ft** (warm, little thermocline). Lots of schooling fish; **first time seeing NO rays at MPP** (fauna note). Tool `mission` (Mission Bay / Jetties) **14–19 ft (settling)** → **OVER-call ~4–9 ft** (trust-costly direction).
+- **Likely cause:** MPP is a **back-bay** dive site (the submerged structure NW of Mission Point Park — see dive-track heatmap); it holds murkier bay water than the **jetty-mouth/channel** the `mission` spot appears calibrated toward (cleaner ocean flush). Same flavor as Muni Wharf vs Breakwater — a murkier sub-location the single spot number over-reads. **Single report → no change, but it's the over-call direction so it's a WATCH:** if MPP over-calls again, `mission` may need a back-bay haircut (or a note that the back bay runs murkier than the jetty). Posted w/ calibration (MPP is the representative Mission Bay shore dive per the heatmap — the over-call should register).
+
+### 2026-09-05 (Sat) — LJ Shores — MATCH ✅ (tool 6–10 ↔ dominant poor viz; clear pockets = spatial upside); baby bat ray
+- **Reported:** "some **clear pockets around the reef**, but **poor viz everywhere else toward the Cove**" — mostly an exercise swim. **Baby bat ray in the shallows.** Tool `ljshores` **6–10 ft (settling)** → matches the DOMINANT poor viz → **MATCH ✅**; the clear pockets are the spatial upside the single number can't capture. Consistent with the swell filling in (Marie groundswell). Posted w/ calibration.
+
 ### 2026-09-05 (Fri) — LJ Cove — MATCH ✅ (poor, swell filling in ↔ tool 5–8); Cove fix holding on a surgy day (no over-call)
 - **Reported:** poor vis at the Cove this morning, occasional bigger set waves, **swell filling in today** (the Tropical Storm Marie / hurricane SW groundswell landing — as the fish beat forecast for Fri 9/5). Tool `ljcove` **5–8 ft (settling)** → poor → **MATCH ✅.**
 - **Fix check:** this is exactly the surgy-swell setup that produced the 9/3 over-call (then 19–24 on a clean pier NTU). Today the tool reads **5–8, low** — no gin-clear pass on a surgy day. Consistent with the 9/4 `_coveClearOverride` fix working, though I can't fully isolate it (today's NTU may also be naturally higher post-blowout). Either way: right direction, MATCH, no over-call. Posted w/ calibration.
