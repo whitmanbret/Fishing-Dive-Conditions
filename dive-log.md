@@ -79,6 +79,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-05 (Fri) — LJ Cove — MATCH ✅ (poor, swell filling in ↔ tool 5–8); Cove fix holding on a surgy day (no over-call)
+- **Reported:** poor vis at the Cove this morning, occasional bigger set waves, **swell filling in today** (the Tropical Storm Marie / hurricane SW groundswell landing — as the fish beat forecast for Fri 9/5). Tool `ljcove` **5–8 ft (settling)** → poor → **MATCH ✅.**
+- **Fix check:** this is exactly the surgy-swell setup that produced the 9/3 over-call (then 19–24 on a clean pier NTU). Today the tool reads **5–8, low** — no gin-clear pass on a surgy day. Consistent with the 9/4 `_coveClearOverride` fix working, though I can't fully isolate it (today's NTU may also be naturally higher post-blowout). Either way: right direction, MATCH, no over-call. Posted w/ calibration.
+
 ### 2026-09-04 (Fri) — Crescent Bay (Laguna) — UNDER-call ✗ (~13–15 ft, SAFE dir): tool penalizing a clean window ahead of building swell
 - **Reported:** "Just got out at Crescent. **20+ ft viz and beautiful.** Swell is picking up though." Tool `crescent` **5–7 ft** → actual **20+ → big UNDER-call ~13–15 ft.**
 - **Diagnosis:** the tool is reading Crescent low off the **running/building S swell (WE + coveTrap penalty)** — but the diver caught a **clean window before the swell dirtied it** (he explicitly flags "swell picking up," i.e. it's on the way, not here yet in-water). Crescent is a fairly protected Laguna pocket that can stay clean until the swell really lands.
