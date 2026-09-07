@@ -79,6 +79,19 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-06 (Sun) — LJ Cove + Marine Room — MATCH ✅✅ + **LJ COVE FIX VALIDATED IN THE WILD** (strong-surge day → tool reads LOW, no over-call)
+- **Reported:** "Yesterday at La Jolla Cove and the Marine Room, visibility was **5 ft at best, with strong surge**" (Marie swell peaking). Live tool: `ljcove` **4–6 ft (settling)**, `ljmarineroom` **5–6 ft (settling)** → **MATCH ✅✅.**
+- **✅ THE 9/4 LJ COVE FIX IS WORKING:** this is exactly the failure mode that produced the 9/3 over-call (clean-ish sensor + surge). Post-fix, on a strong-surge day the Cove now reads **4–6** (correctly low) instead of getting the clear-day boost → **no over-call.** The `_coveClearOverride` change (live surge keeps the full reef dampener + withholds the boost) is doing its job in production. Both posted w/ calibration.
+
+### 2026-09-06 (Sun) — South Monastery (Carmel) — MATCH ✅ (tool 17–22 ↔ 15–25, mid-range; clears deeper)
+- **Reported (2 divers):** "at least 10–15 in the shallows, 25 at 50 ft depth"; "**15–25 ft, better as we got deeper**." Some urchin barren + kelp in the shallows, more kelp once out. Entry/exit not as tricky as North Monastery but still not easy. Tool `carmel` **17–22 ft (bloom season)** → sits mid-range of 15–25, overlaps → **MATCH ✅** (shallow 10–15 a touch under = safe; deep 25 a touch over — the usual clears-with-depth). Posted w/ calibration.
+
+### 2026-09-06 (Sun) — Point Lobos (w/ Sergei) — cove-bloom split AGAIN (tool 15–20 in the gap: cove 5–10 / outside 25) — Nth corroboration, strat-note overdue
+- **Reported:** viz **5–10' inside the cove, opening to ~25' outside.** Otter skeleton in the sand channel is half-gone vs two weeks ago (bones buried/scattered). Tool `ptlobos` **15–20 ft (green tinge)** → falls in the GAP: over the 5–10 cove, under the 25 outside → the recurring `ptlobos` stratification the single number can't resolve (now 4th+ corroboration: 8/29, 8/30, 9/4, 9/6). **The strat-note is overdue** — "on bloom days the inner cove (Whalers/Bluefish) runs single-digit while the outer/deep water stays 25–60+." Posted display-only (cove-vs-outside split).
+
+### 2026-09-06 (Sun) — Catalina, Lovers Cove (Avalon) — MATCH ✅ (tool 40–45+ ↔ 50 later; the 20-at-best = swell surging the Avalon frontside)
+- **Reported:** Lovers Cove **20 ft at best** early ("hurricane swell definitely arrived and messed up the viz" — waves crashing over the Avalon break wall; Pier 24 closed oceanfront dining for rogue waves), then **easily 50 ft** a bit later. Tool `catalina` **40–45+ ft** → overlaps the 50 → **MATCH ✅**; the transient 20-at-best is the **Marie swell wrapping into the exposed Avalon frontside** — an island-wide single number can't show that localized dip. Loaded with life: garibaldi, calico bass, blacksmith, opaleye, **2 sea turtles**, and a **pair of fin whales** on the boat ride. **Islands still the clean play** even as the swell peaks (cf. San Clemente 80 ft same weekend). Posted w/ calibration.
+
 ### 2026-09-05 (Sat) — San Clemente Island — MATCH ✅ (80 ft gin blue ↔ tool 50–55+ "excellent" bucket); islands = the clean play while the mainland blows
 - **Reported:** **80-foot viz at San Clemente Island** Saturday. Tool `sanclemente` **50–55+ ft** → the "+" is the open-ended excellent-bluewater bucket (island spots top their display ~55+), so 80 lands inside it → **MATCH ✅** (directionally nailed the gin-clear island water; the display just can't show the full 80). Textbook **islands-are-the-clean-water-play** contrast: same weekend the SD/OC mainland is poor-to-blown from the Marie SW groundswell (LJ 6–10, Crescent 3–4, coves surgy), the offshore islands stayed gin-clear 80 ft. (Access note: San Clemente is **Navy-controlled** — live-fire/closures common; monitor VHF 16 + the Navy closure schedule.) Posted w/ calibration.
 
