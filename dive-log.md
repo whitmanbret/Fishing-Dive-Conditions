@@ -79,6 +79,9 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-05 (Sat) — San Clemente Island — MATCH ✅ (80 ft gin blue ↔ tool 50–55+ "excellent" bucket); islands = the clean play while the mainland blows
+- **Reported:** **80-foot viz at San Clemente Island** Saturday. Tool `sanclemente` **50–55+ ft** → the "+" is the open-ended excellent-bluewater bucket (island spots top their display ~55+), so 80 lands inside it → **MATCH ✅** (directionally nailed the gin-clear island water; the display just can't show the full 80). Textbook **islands-are-the-clean-water-play** contrast: same weekend the SD/OC mainland is poor-to-blown from the Marie SW groundswell (LJ 6–10, Crescent 3–4, coves surgy), the offshore islands stayed gin-clear 80 ft. (Access note: San Clemente is **Navy-controlled** — live-fire/closures common; monitor VHF 16 + the Navy closure schedule.) Posted w/ calibration.
+
 ### 2026-09-05 (Sat) — Mission Point Park (Mission Bay) — OVER-call ⚠️ (tool 14–19 vs 5–10) — GENUINE same-spot miss (MPP IS the jetty entrance)
 - **Reported (7AM):** MPP **murky 5–10 ft**, water calm w/ consistent (tidal) flow. **73°F surface, 70°F at 15–20 ft** (warm, little thermocline). Lots of schooling fish; **first time seeing NO rays at MPP** (fauna note). Tool `mission` (Mission Bay / Jetties) **14–19 ft (settling)** → **OVER-call ~4–9 ft** (trust-costly direction).
 - **↻ CORRECTION (per Bret):** MPP is NOT a back-bay site — it's **inside Mission Bay right along the jetty at the entrance**, i.e. exactly the jetty/channel water the `mission` spot represents. So this is NOT a sub-spot mismatch (unlike Muni Wharf vs Breakwater) — it's a **genuine over-call at the modeled spot.**
