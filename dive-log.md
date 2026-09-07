@@ -79,6 +79,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-07 (Mon) — ✅ TOOL LABEL FIX (deployed): "(settling)" → "(bloom easing)" + suppressed on surf days
+- **Why:** user flagged that the "(settling)" tag reads like the SURF is calming, which is misleading on a sustained big-surf day (9/6 LJ Cove showed "4–6 ft (settling)" during PEAK Marie surge). The tag actually describes the BLOOM easing (clean NTU + moderate chl), nothing to do with surf.
+- **Fix (label-only, NO number change), worker `calcVizNtuPath`:** (A) renamed the `bloomDecay` suffix from " (settling)" to " (bloom easing)" so it's unambiguously about the green water; (B) SUPPRESS the tag entirely when surf/surge dominates (`_surgeStir` = max(rawWE,clusterWE) > 50), so a swell-blown number carries no bloom label. `_bloomEaseTag = bloomDecay ? (_surgeStir ? '' : ' (bloom easing)') : null`.
+- **Verified (wrangler dev, old→fixed, numbers identical):** calm decaying bloom **11–16 "(settling)" → 11–16 "(bloom easing)"**; surf-dominant **6–10 "(settling)" → 6–10 ""** (suppressed). Live prod confirmed. (Worker not git-tracked — this is the record.)
+
 ### 2026-09-06 (Sun) — LJ Cove + Marine Room — MATCH ✅✅ + **LJ COVE FIX VALIDATED IN THE WILD** (strong-surge day → tool reads LOW, no over-call)
 - **Reported:** "Yesterday at La Jolla Cove and the Marine Room, visibility was **5 ft at best, with strong surge**" (Marie swell peaking). Live tool: `ljcove` **4–6 ft (settling)**, `ljmarineroom` **5–6 ft (settling)** → **MATCH ✅✅.**
 - **✅ THE 9/4 LJ COVE FIX IS WORKING:** this is exactly the failure mode that produced the 9/3 over-call (clean-ish sensor + surge). Post-fix, on a strong-surge day the Cove now reads **4–6** (correctly low) instead of getting the clear-day boost → **no over-call.** The `_coveClearOverride` change (live surge keeps the full reef dampener + withholds the boost) is doing its job in production. Both posted w/ calibration.
