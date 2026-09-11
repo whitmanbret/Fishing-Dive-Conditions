@@ -79,6 +79,9 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-10 (Wed) — Monterey Municipal Wharf (Wharf 2) — micro-spot mismatch (display-only)
+- **Reported:** Wharf 2, "**vis good, opening up to 10 ft in spots.**" Tool `monterey` (Breakwater/San Carlos) **15–20 ft (green water)** → Wharf 2 (~10, murkier inner harbor) sits below the modeled Breakwater — the known Muni Wharf micro-spot gap (cf. 8/30, 9/7), NOT a Breakwater over-call. Display-only. (Monterey greening up "green water" as the fall shifts.)
+
 ### 2026-09-11 (Thu) — Fort Bragg / Mendocino (NorCal) — big UNDER-call ✗ (safe, ~12–16 ft): climatology "bloom season" + exposed-shelter + big swell, but divers dive PROTECTED coves
 - **Reported:** Fort Bragg **15–20 ft this morning.** Tool `fortbragg` **2–4 ft (bloom season)** → UNDER-call by ~12–16. Captured inputs: **chl 3.5 CLIMATOLOGY** (no live NorCal sensor → Sept Mendocino climo assumes heavy bloom), **rawWE 242** (big swell), **shelter=low** (models the exposed outer coast). Both penalties stack → 2–4.
 - **Diagnosis:** two-part over-pessimism at a data-sparse NorCal spot — (1) the **Sept climatology chl (3.5)** is a bloom-season *assumption* that doesn't match the actual clear fall water (NorCal often cleans up as upwelling relaxes); (2) the spot is modeled as **exposed (shelter=low)** on a rawWE-242 swell, but Mendocino divers dive the **tucked-in coves** (Van Damme, Russian Gulch, etc.) that stay diveable — the single exposed-coast number can't represent them.
