@@ -1359,6 +1359,7 @@
         <div class="gauge-label" style="color:var(--viz-color)">Dive Visibility</div>
         <div class="viz-feet-hero" id="vizFeetHero">--</div>
         <div class="gauge-rating rating-none" id="vizRating">--</div>
+        <div class="viz-zone-split" id="vizZoneSplit" style="display:none"></div>
         <div class="viz-confidence" id="vizConfidence" style="display:none"></div>
         <div class="source-health" id="sourceHealth" style="display:none"></div>
         <div class="viz-outage-note" id="vizOutageNote" style="display:none"></div>
@@ -7419,6 +7420,10 @@ async function updateDisplay() {
       if (worker.effectiveWE !== null && worker.effectiveWE !== undefined) {
         effectiveWE = worker.effectiveWE;
       }
+      // ZONE SPLIT (2026-09-11): stash the deep-zone estimate for the shallow/deep
+      // display rendered alongside the strat/surf notes below (function-scoped var).
+      var _wkDeep = (Number.isFinite(Number(worker.deepLo)) && Number.isFinite(Number(worker.deepHi)))
+        ? { lo: Number(worker.deepLo), hi: Number(worker.deepHi), split: !!worker.deepSplit } : null;
     } else {
       vizSource = 'Service unavailable';
     }
@@ -7639,6 +7644,39 @@ async function updateDisplay() {
         _stratEl.style.cssText = 'display:block;font-size:11px;line-height:1.35;margin-top:5px;color:#2a7ab0;font-weight:600';
       } else {
         _stratEl.style.display = 'none';
+      }
+    }
+  } catch(e) {}
+
+  // ── ZONE SPLIT display (2026-09-11) — shallow vs deep as two numbers ─────────
+  // The strat/surf notes already flag the split in words; this shows it as numbers.
+  //   A) SURGE-driven (LJ cluster, Laguna coves): the headline IS the shallow (surge
+  //      crushed it); the worker's deepLo/deepHi (surge undone) is the clearer deep.
+  //   B) Central-CA bloom stratification: the headline is ~the DEEP; a surface bloom
+  //      cap makes the shallow lower — estimated here (the worker can't undo a
+  //      climatology cap it never applied to the number). Conservative + gated to
+  //      the exact conditions the notes fire, so it can't appear where it shouldn't.
+  try {
+    const _zEl = document.getElementById('vizZoneSplit');
+    if (_zEl) {
+      const _m = /(\d+)\s*[–-]\s*(\d+)/.exec(String(vizEst));
+      const _hLo = _m ? Number(_m[1]) : null, _hHi = _m ? Number(_m[2]) : null;
+      const _reg = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
+      const _bloomLbl = typeof vizEst === 'string' && /bloom season|\(bloom\)|pea soup|green water/i.test(vizEst);
+      const _stratBloom = _bloomLbl && _reg === 'central' && !loc.bluewater && !loc.offshore;
+      const _okHero = vizEst !== '--' && vizEst !== 'Service unavailable' && _hLo !== null && _hHi !== null;
+      let shLo, shHi, dpLo, dpHi;
+      if (_okHero && typeof _wkDeep !== 'undefined' && _wkDeep && _wkDeep.split) {
+        shLo = _hLo; shHi = _hHi; dpLo = _wkDeep.lo; dpHi = _wkDeep.hi;                 // A: headline = shallow
+      } else if (_okHero && _stratBloom) {
+        dpLo = _hLo; dpHi = _hHi;                                                        // B: headline = deep
+        shLo = Math.max(2, Math.round(_hLo * 0.35)); shHi = Math.max(shLo + 1, Math.round(_hHi * 0.40));
+      }
+      if (shLo !== undefined && dpHi > shHi + 2) {
+        _zEl.innerHTML = '🌊 <b>Shallow</b> ' + shLo + '–' + shHi + ' ft · <b>Deep</b> ' + dpLo + '–' + dpHi + ' ft <span style="opacity:.72">(clearer past the surge / below the thermocline)</span>';
+        _zEl.style.cssText = 'display:block;font-size:11px;line-height:1.35;margin-top:4px;color:#2a7ab0;font-weight:600';
+      } else {
+        _zEl.style.display = 'none';
       }
     }
   } catch(e) {}
