@@ -79,6 +79,16 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-11 (Fri) — Shaw's Cove (Laguna) — ✅ MATCH + ZONE-SPLIT VALIDATION (5–20 ft by location)
+- **Reported (4–6 pm):** viz **5'–20' depending on location.** Poor near shore **<5'** on the **1.9' low tide (4:09 pm)** — no stingrays/yellowfin croakers/leopard sharks in the shallows. East side of Twin Points reef was "Grand Central Station" (hundreds of juvenile blacksmith, 3 yellowfin tuna). **Plenty of surge — take care near the reef.**
+- **Tool `laguna` (read next-day 9/12): headline 5–8 ft (Poor) + ZONE-SPLIT "Shallow 5–8 · Deep 13–22 ft."** The report's **5' near shore ↔ 20' out** gradient spans BOTH zones → **MATCH.** The diver independently described exactly the shallow-vs-deep split the feature now surfaces — near-shore <5–5 (surge + low-tide stir) vs cleaner 20 out on the reef (inside deep 13–22).
+- **✅ This is the cleanest field validation of the zone-split feature yet:** a single diver reporting "5 to 20 depending where you are" is precisely the murky-shallow / clear-deep pattern the split was built for, and both numbers landed. (Next-day read caveat: NW-wind regime held between 9/11–9/12, so conditions comparable.)
+
+### 2026-09-11 (Fri) — God's Rock (offshore pinnacle, ½ mi W of La Jolla Cove) — near-miss ✗ (slight over-call, safe): ~10 ft vs tool 13–18
+- **Reported:** kayaked out to **God's Rock** (~½ mile west of La Jolla Cove, offshore pinnacle), **10 ft through the top 30 ft** of the water column.
+- **Tool `ljcove` (read next-day 9/12): 13–18 ft (Fair)** → no overlap, tool ~3 ft high → **slight over-call / near-miss.** Small gap, and two real caveats: (1) **God's Rock is an offshore pinnacle**, not the cove nearshore — there's no dedicated tool spot for it, `ljcove` is just the nearest proxy; (2) **next-day read** (report 9/11, tool 9/12). Also within the diver-underestimate margin (green-ish water often under-called on a number).
+- **Action: NONE (single report, tiny gap, spot-mismatch + next-day-read caveats).** Not evidence of an `ljcove` over-call — the 9/11 Crystal Cove & Shaw's reads were dead-on, and the SD nearshore was rolling cool/green (would push viz DOWN, consistent with the 10-ft read). Logged as a watch point only.
+
 ### 2026-09-11 (Thu) — Crystal Cove (Reef Point) — ✅ MATCH (~15 ft)
 - **Reported:** Crystal Cove, **Reef Point**, ~**15 ft at 10:00**, hazy on the surface with surge. "Definitely worse than yesterday" — and yesterday "Crystal Cove had the best visibility that I've seen."
 - **Tool `crystalcove` (live same-day): 14–19 ft (Fair)** → the reported 15 ft lands squarely inside → **MATCH** (any-overlap rule; 15 is dead-center of 14–19). Rating "Fair" fits the hazy-surface-with-surge read.
