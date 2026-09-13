@@ -79,6 +79,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-13 (Sun) — Marine Room — ✅ MATCH (25–30 ↔ tool 22–28 Good); SD green roll CLEARED overnight
+- **Reported:** "**Conditions were 25 to 30 ft today at the Marine Room, looking up from the bottom in 30 ft of water.**"
+- **Tool `ljmarineroom`: 22–28 ft (Good)** → the reported **25–30 overlaps 22–28 → MATCH.** Even discounting the **"looking up from the bottom" vertical read** (which over-reads horizontal viz — cf. feedback_aerial_overreads_viz), the tool's 22–28 lands right on it, so it matches on the horizontal interpretation too.
+- **🔑 The SD green/murky roll CLEARED overnight:** MR went from **3–6 ft green water (9/12)** → **22–28 Good (9/13)** as the chl/NTU inputs came back clean (the NW-wind cool/green pulse relaxed). The tool tracked the clean-up UP in step — same responsive behavior as the 9/12 *down*-roll (ljcove 13–18→3–5). Zone-split now hidden (no strat/surf note on a clean Good day), consistent with uniformly clear water. **No action** — the model is tracking the SD swing in both directions.
+
 ### 2026-09-07 (Mon, Labor Day) — Monterey Bay boat pinnacles (Mt. Chetron + VT 3) — 📝 retrospective, NOT live-graded (5 days late)
 - **Reported (logged 9/12, dive was 9/07):** BeachhopperII boat day. "**Long-period swell → rollers up top and surge down below.** Sun → blossoming flora/fauna → **sea snot drove visibility down to about 15', maybe 20' if you were generous.**" **Mt. Chetron:** "top layer a thick, snotty green; **pronounced thermocline at ~30', dramatic darkening below; surge reached all the way to the bottom.**" **VT 3:** similar; critters (SD + white-speckled dorids, big hermit, chill cabezon, moss crab).
 - **⚠️ Too old to grade against a live read** — no same-day (9/07) tool value retained; today's `monterey` (21–26 bloom season / shallow 7–10 / deep 21–26) is 5 days off. **Logged as retrospective color, no MATCH/miss call.**
