@@ -79,6 +79,12 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-07 (Mon, Labor Day) — Monterey Bay boat pinnacles (Mt. Chetron + VT 3) — 📝 retrospective, NOT live-graded (5 days late)
+- **Reported (logged 9/12, dive was 9/07):** BeachhopperII boat day. "**Long-period swell → rollers up top and surge down below.** Sun → blossoming flora/fauna → **sea snot drove visibility down to about 15', maybe 20' if you were generous.**" **Mt. Chetron:** "top layer a thick, snotty green; **pronounced thermocline at ~30', dramatic darkening below; surge reached all the way to the bottom.**" **VT 3:** similar; critters (SD + white-speckled dorids, big hermit, chill cabezon, moss crab).
+- **⚠️ Too old to grade against a live read** — no same-day (9/07) tool value retained; today's `monterey` (21–26 bloom season / shallow 7–10 / deep 21–26) is 5 days off. **Logged as retrospective color, no MATCH/miss call.**
+- **Pattern it reinforces (same as McAbee 9/12):** (1) the classic **central-bloom stratification** — snotty green surface layer, **thermocline ~30'**, darker below — which the zone-split is built around; (2) the reported **15–20' surface viz** would again sit ABOVE the model's central-bloom **SHALLOW zone (7–10)**, another data point that the shallow-side estimate runs low for these Monterey boat/pinnacle sites (the standing calibration TODO). **No action** (stale single retrospective) — filed as color.
+- **Note:** "surge reached all the way to the bottom" on a long-period swell = a reminder that on Monterey groundswell the deep isn't always calmer/clearer (cf. the Molla Mtn "dark deep" inversion 9/11) — depth ≠ automatically better up here when the swell is long-period.
+
 ### 2026-09-12 (Sat) — Crescent Bay (AM, post-Marie) — ✅ MATCH via DEEP zone (15 ft ↔ deep 15–23) + resolves the trailing-swell watch
 - **Reported:** morning dive off Crescent Bay "**just after the latest swells from Marie**" — **~15 ft viz with surge**, water comfortable **low 70s°F**. Usual locals: garibaldi, blacksmith, zebra perch, sheephead.
 - **Tool `crescent`: headline 6–9 ft (Poor), zone-split "Shallow 6–9 · Deep 15–23."** The reported **15 ft lands squarely in the DEEP zone (15–23) → MATCH.** Headline shallow 6–9 is conservative for the immediate surgy shallows; the diver working the cove saw the clearer deeper water (15) the split predicts.
