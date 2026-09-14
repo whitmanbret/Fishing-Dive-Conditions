@@ -13,22 +13,7 @@ the format, voice, and past examples are never lost.
 
 ## 📌 Pending intel for the NEXT weekly report (clear after use)
 
-**As of 2026-09-10 — offshore/fish beat for the ~Sep 10–16 report (OUR voice, NO source, nothing verbatim, casual/declarative):**
-- **🌀 THE HEADLINE: the NW-WIND turn is now RAMPING into a full GALE offshore.** The south swell from earlier is gone; the story is a strong, building NW blow. **Small-craft advisories are posted across the outer waters and islands, and a GALE WATCH kicks in Sat evening through Mon** for the outer banks and West-End islands (winds 25–35 kt, seas building 8–12 ft at a short 7–9s period). Nearshore/coast stays comparatively fishable and protected through Sat, but it's getting windy, bumpy and cool. Expect surgy shallows nearshore; the short period means less punch at depth than a groundswell, but wind-chop + upwelling are greening the top.
-- **🌡️ REGIME SHIFT is here — the water ROLLED cold, green and dirty (the big dive-tool story):** the LA/South Bay area "turned for the worse" — one Horseshoe report called it **rolled, green, cold and dirty** (with a rain assist) and the yellowtail bit vanished. In SD, **Imperial Beach nearshore rolled over into the mid-60s and went dead**; Point Loma still holding a dawn bite. This is the warm-summer lens finally breaking down under NW-wind upwelling — nearshore green-up/churn short-term, potentially cleaner once it settles out. Watch the chlorophyll chart: when one zone dirties, the clean water has just moved — follow it.
-- **Big BLUEFIN are still the offshore prize** — the volume slid up to **Cherry Bank**, good grade 60–120 lb with some bruisers to **~200 lb**, on kite/flying-fish baits by day and the nighttime knife-jig bite (100–300 ft). BUT conditions out there are bad and getting worse with the gale — a look-but-can't-touch situation for most this weekend. Still some yellowtail (15–30 lb) on Tanner/Cortez.
-- **Tuna close to home:** yellowfin + skipjack just **7–8 miles off Dana Harbor** (267 zone), some 50–60 lb on the troll; more **dorado** filling in on paddies + open-water color spots; good yellowfin volume on the **9 Mile Bank** too (cedar plugs/feathers/poppers). Bullet tuna scattered through the nearshore banks.
-- **Coastal mixed-bag where you can still get bait:** yellowtail on the PV kelp line (Pt Fermin→Rocky Pt — **stay OUT of the Pt Vicente SMCA**) and the Horseshoe/105/Izor's when the water lets them, plus big **bonito (8–12+ lb)** and **bullet tuna** (want anchovy). **Catalina slower than the coast** — that earlier south swell jacked the backside and the front's off too; water's warm with **no squid**. **Bait crunch continues** — sardine scarce, mostly small anchovy; plan to jig your own mackerel.
-- **🛩️ Bight snapshot (from a spotter flight):** light winds / medium swell inshore, **thousands of manta rays and a billfish** working from the beach out to ~20 nm, best glassy spotting in the wind shadow off Catalina/San Clemente fronts. The **14 Mile Bank had blue water going green** — visual confirmation the clean water is retreating offshore.
-- **Warm-water / El Niño angle (dive-relevant, citable BY NAME):** even as the coast cools, a strengthening El Niño keeps tropical strays possible. Scripps (Marine Vertebrate Collection) runs a community "unusual fish" reporting effort — great diver call-to-action: photograph anything that doesn't belong locally and report it to Scripps. (Real Scripps program — OK to name Scripps; still NEVER name the offshore-report source.)
-- **🌊 VIZ-RELEVANT CONDITIONS (ties straight to the dive tool):**
-  - **This week's rule — the roll:** an NW-wind/upwelling turn after a warm spell **greens and cools the nearshore top** and can churn shallow viz down fast (South Bay rolled green/dirty; IB into the mid-60s). Deeper/outer water and lee corners hold up better; go deep or go protected.
-  - **Gale offshore, fishable coast (through Sat):** the marquee viz risk this weekend is offshore wind-sea, not a coastal groundswell — the coast stays comparatively calm/protected early, then the NW wind chop surges the shallows. Islands' protected fronts still the play if you're on a boat and the weather allows.
-  - **Clears with depth / stratified:** Central-coast pattern holds — inner coves murky/surgy, cleaner water outside and below the thermocline. Deep/outer is the clean play up north.
-  - **Water temp:** the warm-at-depth summer run is breaking down south — SD nearshore into the **mid-60s** and mixing; warm water holding only well offshore. Still **no squid** (was too warm).
-  - **Rain/runoff:** a recent rain assist added to the South Bay dirty-water turn — watch for a nearshore turbidity bump for a day or two after any real downpour.
-  - **⚠️ Water-quality + closures to flag for divers:** verify current advisories at your spot before you go; Monterey **Breakwater/San Carlos** closure status (sea lions) worth a check; NorCal red-tide watch. Verify any closure/advisory with the local authority; CDFW for MPA rules.
-- *(Point-in-time — verify still current when writing; delete this block once used. Prior Aug 31–Sep 9 beat was drafted 2026-09-09.)*
+**(CLEARED 2026-09-14 — the 2026-09-10 NW-gale/cool-green-roll beat was used in the Sep 7–13 weekly report, archived below. Next beat starts fresh from the next FishDope/offshore intel drop.)**
 
 ---
 
@@ -70,6 +55,77 @@ upwelling), and practical (what to dive, when, where's sheltered in swell). The 
 ---
 
 ## Past examples (verbatim reference)
+
+### FACEBOOK — Week of September 7–13, 2026 (generic, no individuals named; offshore intel paraphrased, no source)
+🌊 CALIFORNIA DIVE REPORT — Week of September 7–13, 2026
+
+The season turned this week. After a long warm-water summer, an upwelling-favorable NW wind rolled cold, green water into the nearshore — San Diego dropped into the mid-60s and went milky with suspended particulates midweek, the Laguna coves got surgy on the trailing south swell left over from Marie, and offshore blew up into a full gale. Then, right on cue for the weekend, San Diego cleared back out: the Marine Room went from a green 3–6 ft on Friday to a blue 25–30 ft on Sunday. The theme all week — murky, surgy shallows sitting over cleaner water below. Read the whole water column.
+
+🟡 SAN DIEGO / LA JOLLA — rolled green, then cleared
+Midweek the whole La Jolla cluster went green and murky — the shops called it 5–15 ft with heavy particulates, the Cove ran 7–10 on the morning, and the Marine Room was a no-go right in front, clearing to crystal water just outside in 10–15 ft of depth (leopard sharks stacked up in the murky 3–5 ft shallows). By the weekend it flipped clean: the Marine Room hit a blue 25–30 ft looking up off the bottom. Point Loma held all week — "good and blue" out by the Whistler, and the south-end kelp ran a solid 20 ft at the surface (hazing to ~10 on the bottom on a fully-mixed 73°F day with no thermocline). Tip: on the green days, get out past the immediate shallows — the clean water was usually just a little further out or a little deeper.
+
+🟡 ORANGE COUNTY / LAGUNA — surgy coves, cleaner water out and deep
+Classic trailing-swell Laguna. The leftover south groundswell kept the shallows churned — Shaw's Cove ran anywhere from under 5 ft right at the shore (on a 1.9-ft low tide) to 20 ft out on the reef, with plenty of surge; the Twin Points reef was Grand Central Station for fish. Crystal Cove's Reef Point had a hazy-but-decent ~15 ft; Crescent Bay was ~15 ft with surge. Treasure Island and Goff took the worst of the SW swell direction midweek — very murky and turbulent, waves washing over Christmas Rocks before high tide — then bounced right back to 18–20 ft by the weekend as the swell eased. Pick the lee-facing spots and drop past the surge.
+
+🟡 CENTRAL COAST (Carmel / Point Lobos) — clears with depth
+Point Lobos told the whole story in one dive: a murky 5 ft in the cove, opening to ~15 ft out at Worm Patch, and — for the tech divers scootering the deep pinnacles at Twin Peaks and Great Pinnacle — easily 40–60+ ft down at depth. There's a real surface bloom (green water up top), so the deeper you got, the better it looked. Cold and layered: 57–64°F on top, 53°F at depth.
+
+🟡 MONTEREY BAY — snotty green up top, better below the thermocline
+The bay ran a snotty-green 15–20 ft in the shallows, opening up as you dropped: McAbee was mostly 20-plus and "cleared right up below 50 ft," and the boat pinnacles (Shale Island, Mt. Chetron, Molla Mountain, VT 3) showed the same layering — murky green surface, a sharp thermocline at 20–30 ft, cleaner water underneath. Cold: 54–56°F at depth, low-60s on top. New water for a lot of divers this week too — the club hit Point Pinos and Sewers (10–20 ft, 58°F, loads of kelp with otters and harbor seals). One wrinkle: on low sun or a thick mid-layer, the deep can go dark rather than clear — a couple of divers found 80 ft murkier than the 30-ft layer. Bring the thick suit and a light.
+
+🐙 WILDLIFE
+A great week for it: leopard sharks packed into the Marine Room shallows, sea otters and harbor seals at Point Pinos and Sewers, garibaldi–blacksmith–zebra perch–sheephead at Crescent, a fish-loaded Twin Points reef, and up north a carpet of Hopkins' rose nudibranchs, busy sea hares, a rainbow star, a curious sea lion, and the resident eel holding court at Beto's Reef.
+
+🐟 FISH & OFFSHORE
+The same NW wind that greened the coast blew the outside up — Small Craft Advisories and a Gale Watch parked over the outer banks and islands. Through it, the marquee bite was big bluefin (some pushing 200 lb) stacked on the offshore banks, with yellowfin and dorado just 7–8 miles off Dana Point and more yellowfin on the 9 Mile Bank. The nearshore bite slowed as the water rolled cold and green, Catalina ran slower than the coast, and bait stayed scarce. A spotter flight counted thousands of manta rays and a billfish from the beach out to 20 miles. With El Niño nudging warm-water strays north, Scripps is running a community "unusual fish" project — photograph anything that doesn't belong locally and send it their way. As always, verify any closure, MPA boundary, or regulation with CDFW and the local authority before you dive.
+
+🌡️ THE WATER COLUMN — read it top to bottom
+An upwelling week: NW wind broke down the warm summer surface lens, feeding the plankton that greened the top while dropping the nearshore into the mid-60s. That's why nearly every report was a two-number story — a murky, surgy shallow over cleaner water deeper (Shaw's 5 near shore → 20 out; Crescent 6–9 → 15 deep; Monterey snotty top → clean past 50 ft; Point Lobos 5 in the cove → 40–60+ at the pinnacles). Two wrinkles to file away: on a thick mid-layer with low sun the deep can go dark instead of clear, and on a fully-mixed, no-thermocline day it can actually be murkier at the bottom. Plan for your bottom conditions, not just what you see from the surface.
+
+🔗 Real-time predictions: conditions.spearfactor.com — dive safe, mind the cold water and the surgy shallows, and check the tide before you pick your spot.
+#spearfishing #californiadiving #spearfactor #lajolla #laguna #montereypeninsula #pointlobos #diveconditions #freediving #upwelling
+
+### WEEKLY EMAIL — Week of September 7–13, 2026 (detailed; generic, no individuals named; offshore intel paraphrased, no source)
+**Subject line options (pick one):**
+- The season turned — cold green water rolled in, then cleared by the weekend
+- Read the whole water column: a milky shallow over cleaner water below, coast-wide
+- Your Sept 7–13 California dive report (and the weekend clear-up)
+
+**Preheader:** NW wind rolled cold, green water into the nearshore midweek — then San Diego cleared back to 25–30 ft by Sunday.
+
+Hey divers,
+
+This was the week the ocean changed gears. After a long warm-water summer, an upwelling-favorable NW wind pushed cold, green, nutrient-rich water into the nearshore — you could see it and feel it. San Diego dropped into the mid-60s and went milky with suspended particulates midweek, the Laguna coves churned on the leftover south swell from Marie, and the outside blew up into a full gale. Then the coast did what it loves to do and flipped: by the weekend San Diego cleared right back out, the Marine Room going from a green 3–6 ft on Friday to a blue 25–30 ft on Sunday. If there's one takeaway this week, it's this — almost every dive was a two-number story, a murky surgy shallow over cleaner water below. Read the whole water column.
+
+🐙 WILDLIFE NOTES
+A stacked week. Leopard sharks packed into the Marine Room shallows (right in the murky 3–5 ft, where the vis was worst and the sharks were thickest). Sea otters and harbor seals worked the kelp at Point Pinos and Sewers. Crescent Bay had the full local cast — garibaldi, blacksmith, zebra perch, sheephead — and the Twin Points reef off Shaw's was "Grand Central Station" for juvenile blacksmith and croakers. Up north: a carpet of Hopkins' rose nudibranchs, busy sea hares, a rainbow star, a curious sea lion, San Diego and white-speckled dorids, a big hermit crab, a very chill cabezon, and the resident eel still holding his spot at Beto's Reef.
+
+🌊 THE WEEK BY REGION
+
+🟡 SAN DIEGO / LA JOLLA — rolled green, then cleared. Midweek the cluster went green and murky (shops called 5–15 ft, heavy particulates; the Cove 7–10 on the morning; the Marine Room a no-go in front, clearing to crystal water just outside in 10–15 ft of depth). By the weekend it flipped — Marine Room 25–30 ft looking up off the bottom. Point Loma held all week ("good and blue" by the Whistler; south-end kelp 20 ft at the surface, ~10 on the bottom on a mixed, 73°F, no-thermocline day). On the green days, get out past the shallows.
+
+🟡 ORANGE COUNTY / LAGUNA — surgy coves, cleaner out and deep. Trailing south swell kept the shallows churned. Shaw's ran under 5 ft at the shore (1.9-ft low tide) to 20 ft out on the reef; Crystal Cove ~15 hazy; Crescent ~15 with surge. Treasure Island and Goff took the worst of the SW direction midweek (very murky, waves over Christmas Rocks) and bounced back to 18–20 ft by the weekend. Go lee, go deep.
+
+🟡 CENTRAL COAST (Carmel / Point Lobos) — clears with depth. One Point Lobos dive said it all: 5 ft in the cove, ~15 out at Worm Patch, and 40–60+ ft down at the deep pinnacles (Twin Peaks, Great Pinnacle). Real surface bloom, so deeper looked better. 57–64°F top, 53°F deep.
+
+🟡 MONTEREY BAY — snotty green up top, better below. 15–20 ft in the shallows, opening up as you dropped — McAbee mostly 20-plus and "cleared below 50 ft," the pinnacles (Shale, Chetron, Molla, VT 3) all showing green surface / sharp thermocline (20–30 ft) / cleaner below. Cold: 54–56°F deep. New water at Point Pinos and Sewers (10–20 ft, 58°F, kelp + otters). Wrinkle: on low sun or a thick mid-layer, deep can go dark instead of clear.
+
+🐟 FISH & OFFSHORE INTEL
+The NW wind that greened the coast blew the outside up — Small Craft Advisories and a Gale Watch on the outer banks and islands. The marquee bite was big bluefin (some near 200 lb) on the offshore banks, with yellowfin and dorado 7–8 miles off Dana Point and yellowfin on the 9 Mile Bank. Nearshore slowed as the water rolled cold and green; Catalina ran slower than the coast; bait stayed scarce. A spotter flight counted thousands of manta rays and a billfish from the beach out to 20 miles. With El Niño nudging warm-water strays north, Scripps runs a community "unusual fish" project — photograph anything that looks out of place and report it. Verify any closure, MPA boundary, or reg with CDFW and the local authority.
+
+🌡️ THE UPWELLING — READ THE WHOLE WATER COLUMN
+This was the week the warm summer lens broke down. Upwelling-favorable NW wind fed the plankton that greened the surface while dropping the nearshore into the mid-60s — hence the milky shallows nearly everywhere. Underneath, the water was often cleaner and always colder. Two wrinkles worth carrying: on a thick mid-layer under low sun the deep can go dark instead of clear, and on a fully-mixed, no-thermocline day (like Point Loma at 73°F top-to-bottom) it can actually be murkier at the bottom. Plan for your bottom conditions, not the surface.
+
+🌑 MOON & TIDES
+The tide did real work this week. A 1.9-ft afternoon low at Shaw's dropped the shallows under 5 ft and stirred the sand — a reminder that on a big tide swing, low water plus surge churns the shallows fastest. Time your entries and exits around the swing (Point Lobos divers had an exposed ramp on the way in and an easy exit once it filled), and if the shallows are blown, the clean water is usually a little deeper.
+
+📊 HOW THE FORECAST DID
+The shallow-vs-deep split kept earning its keep — it called the two-number days at Shaw's, Crescent, McAbee, and the Marine Room, and it tracked the San Diego green roll down midweek and back up by the weekend in near-real time. It reads a touch conservative on the gin-clear exceptions (deep offshore pinnacles, the cleared-up weekend) — we'll take under-promising over over-promising every time. Behind the scenes we also stood up a running accuracy scorecard this week to keep ourselves honest, and — in the interest of that honesty — we tried a tweak to the Treasure Island/Goff surge model on the murky day and rolled it back the next when those spots cleared to 18–20 on the same swell. Some coves just vary more than the inputs can predict, and we'd rather admit that than fake a number.
+
+🔗 Real-time predictions any day: conditions.spearfactor.com
+
+Dive safe — mind the cold water, the surgy shallows, and the tide swings.
+Bret / SpearFactor
 
 ### FACEBOOK — Week of August 17–23, 2026 (generic, no individuals named; offshore intel paraphrased, no source)
 The upwelling showed up. After weeks of warm water, cold clean water pushed up from below this week — you could feel it: 57°F at depth in La Jolla, low-50s in Monterey, distinct cold "fingers" you'd scooter right through. Up top it stayed warm and green-hazy nearshore, so most of the coast fished a hazy 5–15 ft… except Palos Verdes, which went gin-clear and stole the week at 40–50 ft. A SW groundswell filled in over the weekend and roughed up the exposed spots.
