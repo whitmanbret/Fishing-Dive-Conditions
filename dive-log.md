@@ -79,6 +79,12 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-13 (Sat) — Point Lobos (basket star N of Twin Peaks → Beto's, scooter/tech) — ✅ near-surface MATCH; deep zone contradicted BOTH ways (spatial split)
+- **Reported (logged 9/14):** scooter dive to the basket star just N of Twin Peaks, out via the sand channel to Beto's. "**With the clear 40+ ft visibility out there** we navigated well above the rock structure." Back at Worm Patch: "**Visibility was bad close to the seafloor due to a layer of brown water, but still pretty good closer to the surface.**" Max 181 ft, **57°F**, run 1:43.
+- **Tool `ptlobos` (read next-day 9/14): 12–17 ft (green water) / Shallow 12–17 · Deep 19–27**, chl 4.93 (bloom).
+- **Grade:** near-surface Worm Patch "pretty good" ↔ **shallow zone 12–17 = MATCH.** The **deep zone (19–27) is contradicted in BOTH directions on the same dive:** at the inner-cove Worm Patch SEAFLOOR it was WORSE (brown-water bottom layer), while OUT at the deep offshore reef (181 ft) it was 40+ — BETTER than the deep zone. **Spatial heterogeneity the single spot can't represent** (murky inner-cove bottom vs gin-clear offshore reef).
+- **2nd straight Point Lobos bloom day the "deep = clearer" promise breaks at the inner cove** (cf. 9/12 Beto's "hazy 15 at depth"). BUT **NO tune** — the counter-evidence is right here: McAbee 9/12 "cleared below 50," the offshore pinnacles 40–60+. Deep clarity on bloom days varies by LOCATION (inner cove brown-bottom vs offshore clear), which the inputs can't separate — the TI/crystalcove lesson again. Watch-list only; the offshore-40+ is out-of-scope tech depth for the shore model regardless. (Report POSTed with input snapshot — 3rd replayable ptlobos record.)
+
 ### 2026-09-13 (Sun) — 🧰 ACCURACY INFRASTRUCTURE shipped (backtest harness + input capture) + baseline established
 - **Why:** owner asked how to make the tool more accurate / what variables to add. Before adding ANY new variable, built the validation guardrail (the thing whose absence let me over-fit Treasure Island yesterday).
 - **Backtest/scorecard harness** — `~/Desktop/spearfactor-api/scripts/backtest.mjs` (worker repo, NOT git-tracked). Consumes graded reports (actual viz vs predicted range) → match rate, bias (over/under), MAE, per-spot breakdown. Flags: `--zone` (any-overlap rule), `--tol N`, `--exclude a,b`. Run BEFORE+AFTER any change.
