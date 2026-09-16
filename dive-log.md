@@ -79,6 +79,12 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-15 (Tue) — Mission Point Park — ✗ over-call (8–11 vs <5), but NO tune (irreducibly noisy jetty spot, swings BOTH ways)
+- **Reported:** Mission Point Park (`mission`, Mission Bay jetty entrance), **<5 ft, late morning.**
+- **Tool `mission`: 8–11 ft (Poor) / deep 12–17** → OVER-call by ~3–6. Captured inputs: **borrowed Scripps-pier NTU 0.43** (clean, from LJ ~10 mi N), chl 0.81 (clean), rawWE 75.69→effWE 11.35 (the 9/07 mission dampener fired), west swell 9s, incoming tide, shelter high.
+- **Checked the baseline before reacting — mission SWINGS BOTH WAYS on near-identical inputs:** overs on 8/28 (+10.5), 9/05 (+9.5), 9/09 (+5), today (+~5) — BUT **9/13 was actual 15 vs tool 3–6 (−10.5 UNDER, the dampener over-firing), just 2 days before today's <5.** Clean/calm days (7/09 20↔18–23, 7/30 15↔14–19) match fine.
+- **Action: NONE (same trap as TI/Crystal Cove).** The jetty channel is chaotic (tide+swell+sand) on a **borrowed** NTU sensor — the model can't tell a 5-ft day from a 15-ft day. Strengthening the dampener to catch today's <5 would WORSEN the 9/13-type under-calls (already 3–6 vs 15). It's an **irreducibly noisy spot**; today's over-call is within that noise. Leave the 9/07 dampener as-is. Captured inputs POSTed. (Baseline mission bias +3.9 is a high-variance average of big overs + one big under — not a clean directional error to chase.)
+
 ### 2026-09-15 (Tue) — Laguna coves cleared to 20+ (Divers/Shaw's + Crescent) — ✅ Crescent MATCH via deep zone / laguna UNDER-call = DATA GAP (estimate fallback)
 - **Reported (today):** "**~20+ ft in Divers Cove, Crescent Bay, and Shaw's Cove.** North end of Crescent Bay way more relaxed on surf/surge — **protected by the rocks reaching out further** — big reef to explore that doesn't get too deep." The surgy week is easing (swell now long-period SW 20s but lower height).
 - **Crescent Bay (`crescent`) — ✅ MATCH via DEEP zone:** tool **13–17 (Fair) / Shallow 13–17 · Deep 18–28** (chl clean 0.35 live, rawWE 72→effWE 20, coveTrap). The 20+ lands in the deep zone → MATCH; the diver's **protected north-end reef** = exactly the clearer water the deep zone models.
