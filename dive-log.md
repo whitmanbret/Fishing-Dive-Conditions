@@ -79,6 +79,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-16 (Wed) — Marine Room (afternoon) — ✅ qualitative MATCH (murky ↔ tool 6–9 Poor); MR holds the plume longest
+- **Reported (~2:30pm) + aerial:** MR **murky.** High-altitude aerial shows deep-blue water offshore but a distinct **murky tan/green band hugging the Shores/MR shoreline** — the sediment plume still parked on the shallow MR sand flat.
+- **Tool `ljmarineroom`: 6–9 ft (Poor)** → agrees → qualitative MATCH. Textbook MR: the shallow sandy flat at the La Jolla canyon head is the sediment SOURCE, so it stays murky longest even as the Cove/offshore cleared outside-in this morning (cf. today's ljshores 20+ / cam 25–35). Spatial + temporal heterogeneity within a mile — MR the laggard. (Aerial/qualitative; no number to POST.)
+
 ### 2026-09-16 (Wed) — Goff Cove (Treasure Island) — ✅ MATCH (hazy 20 ↔ 14–19) + TI-revert RE-VALIDATED on SW-17s groundswell
 - **Reported (~noon):** "Golf" = **Goff Cove**, **hazy ~20 ft**; still need to time entry/exit for the waves.
 - **Tool `treasureisland`: 14–19 ft (Fair)** → 20 sits 1 ft over the top → effectively **MATCH** ("hazy 20" ↔ Fair 14–19). Inputs: **swellDir SW, period 17s, rawWE 75, chl 2.5.**
