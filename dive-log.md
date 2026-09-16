@@ -79,6 +79,12 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-15 (Tue) — La Jolla AERIAL (drone, 6:30am) — 🛰️ sediment plume; tool AGREES (qualitative corroboration, no tuning)
+- **Reported (drone reel, San Diego Snorkel Report, 6:30am glassy):** a **nearshore sediment/turbidity plume blanketing the LJ shelf** — off the Shores sand, thick over the **Marine Room** reef, running **south and out past the La Jolla Cove point** into the bluer offshore water (visible murky "tongue" being carried offshore).
+- **Tool right now — AGREES it's murky:** `ljmarineroom` **7–10 ft Poor**, `ljcove` **6–9 ft Poor** (ljshores ~6–9 Poor yest). The model is already calling that exact footprint single-digit Poor — NOT over-promising clarity over a visible plume. Qualitative MATCH (aerial ↔ tool same direction).
+- **Discipline / no action:** per feedback_aerial_overreads_viz, a drone looks *down through* the surface sediment lens, so it reads like soup from above while a diver may still get the tool's 7–10 ft horizontal — so this is **corroboration, NOT a reason to push the numbers lower** (they already match). No tune.
+- **Diver-useful note:** the plume is running OUT past the Cove point, so today the usual "go deeper/further out to escape the murk" move is partly cut off on that stretch — the sediment's being carried offshore, not just sitting in the shallows. (Green-roll week continuing; consistent with the 9/14 shop 5–10 green/particulate read.)
+
 ### 2026-09-14 (Mon) — Shop daily + Flat Rock + Goff + Salt Point — ✅ 3 MATCH (incl. 2 via deep zone) / NorCal under-call (climatology+gale)
 - **La Jolla shop daily (`ljshores`, 9/14) — ✅ MATCH:** "Vis 5–10 ft, **very green, heavy particulates, murky**; mixed swell W 4ft@9s + SSW 1ft@13s; SSW wind 5–10 kt; surface 70–74°F." → Tool `ljshores` **6–9 ft (Poor)** (NTU path, Scripps ntu 0.45 but clusterWE 174 surge; deep 11–17). 5–10 ↔ 6–9 → MATCH. The green/particulate/"lots of movement" narrative matches the Poor read.
 - **Flat Rock / Indicators (`pv`, 9/13) — ✅ MATCH via DEEP zone:** "**25 ft viz west of Flat Rock near Indicators**, surface 74°F, wind 6–8 kt mid-morning." → Tool `pv` headline **13–17 (green tinge) / Deep 23–29.** The 25 lands in the deep zone → MATCH. Indicators is an outer/deeper PV reef — divers there are in the cleaner deep water the split predicts; the green-tinge surface headline (chl 2.75) reads conservative, deep nails it. (Next-day read.)
