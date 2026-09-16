@@ -79,6 +79,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-16 (Wed) — Goff Cove (Treasure Island) — ✅ MATCH (hazy 20 ↔ 14–19) + TI-revert RE-VALIDATED on SW-17s groundswell
+- **Reported (~noon):** "Golf" = **Goff Cove**, **hazy ~20 ft**; still need to time entry/exit for the waves.
+- **Tool `treasureisland`: 14–19 ft (Fair)** → 20 sits 1 ft over the top → effectively **MATCH** ("hazy 20" ↔ Fair 14–19). Inputs: **swellDir SW, period 17s, rawWE 75, chl 2.5.**
+- **🔑 RE-VALIDATES the TI SW-groundswell dampener REVERT:** today is a **SW 17-second groundswell** (period ≥12, rawWE 75) — precisely the signature the 9/12 dampener fired on (would've crushed Goff to ~4–6). Actual = **20**. 2nd SW-groundswell day (cf. 9/14 Goff 15) where Goff comes in clear/hazy-good despite long-period SW swell → Goff genuinely does NOT reliably blow out on SW groundswell; the reverted dampener would have badly under-called. Leave it reverted. "Time your entry/exit for the waves" = the surf is up (rawWE 75) but the water's clear — surf ≠ turbidity here.
+
 ### 2026-09-15 (Tue) — LJ Shores 20+ vs tool 6–9 (surge penalty over-suppressed a CLEAN day) + 📷 CAM-PIPELINE DIAGNOSIS + NTU↔viz correlation
 - **Reported (live):** La Jolla Shores actual **20+ ft**, tool showing **6–9 ft (green tinge), Poor.** Big UNDER-call (~11–14).
 - **Mechanism (captured live):** NTU **0.36** + chl **0.46** = both CLEAN, but **clusterWE 90 → effWE 77.5 → surfPenalty 0.562** crushes it. Zone Shallow 6–9 · Deep 11–16 — **even the deep zone misses 20+.** The number is pure surge penalty, not turbidity. (Aside: " (green tinge)" suffix is firing at chl 0.46 — spurious, chl<1.5; minor display bug worth a look.)
