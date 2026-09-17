@@ -79,6 +79,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-16 (Wed) — LJ shop daily (AM) — ✅ MATCH (5–10 ↔ 6–9) + RECONCILES the "20+ vs 6–9" debate
+- **Reported (shop, this morning):** La Jolla **vis 5–10 ft**, "still low but **looking less green**"; swell down 1–3, surface 72–73°F; light AM wind, 11kt pickup ~noon (surface chop), easing eve. **Bottlenose dolphins at the Marine Room** this AM.
+- **Tool `ljshores`: early-AM model 6–9 (now 8–13 Fair)** → 5–10 overlaps → **MATCH.**
+- **🔑 RECONCILES this morning's 20+ vs tool-6–9 flap:** a careful daily observer independently calls the **general nearshore 5–10 murky this morning** — the SAME morning the single in-water report said 20+. So **the model's 6–9 was RIGHT for the typical water**; the 20+ was a **clear pocket / outside-the-plume** find, not a model under-call. Directly VINDICATES the decision to leave the surge penalty alone (don't tune to a clear-pocket outlier). The cam-lift midday (12–15) actually nudged slightly ABOVE the shop's 5–10 — a reminder the cam skews optimistic. "Less green" + swell down = clearing trend continues.
+
 ### 2026-09-16 (Wed) — Marine Room (afternoon) — ✅ qualitative MATCH (murky ↔ tool 6–9 Poor); MR holds the plume longest
 - **Reported (~2:30pm) + aerial:** MR **murky.** High-altitude aerial shows deep-blue water offshore but a distinct **murky tan/green band hugging the Shores/MR shoreline** — the sediment plume still parked on the shallow MR sand flat.
 - **Tool `ljmarineroom`: 6–9 ft (Poor)** → agrees → qualitative MATCH. Textbook MR: the shallow sandy flat at the La Jolla canyon head is the sediment SOURCE, so it stays murky longest even as the Cove/offshore cleared outside-in this morning (cf. today's ljshores 20+ / cam 25–35). Spatial + temporal heterogeneity within a mile — MR the laggard. (Aerial/qualitative; no number to POST.)
