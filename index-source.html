@@ -7673,8 +7673,25 @@ async function updateDisplay() {
         shLo = Math.max(2, Math.round(_hLo * 0.35)); shHi = Math.max(shLo + 1, Math.round(_hHi * 0.40));
       }
       if (shLo !== undefined && dpHi > shHi + 2) {
-        _zEl.innerHTML = '🌊 <b>Shallow</b> ' + shLo + '–' + shHi + ' ft · <b>Deep</b> ' + dpLo + '–' + dpHi + ' ft <span style="opacity:.72">(clearer past the surge / below the thermocline)</span>';
-        _zEl.style.cssText = 'display:block;font-size:11px;line-height:1.35;margin-top:4px;color:#2a7ab0;font-weight:600';
+        // "Visibility by position" cross-section (2026-09-17) — shore→open-water
+        // gradient bar with our two REAL computed zones (shallow/break vs deep/
+        // open). No invented middle numbers; the seafloor slope + water gradient
+        // are decorative. Replaces the old text-only "Shallow X · Deep Y" line.
+        const _z1 = shLo + '–' + shHi, _z2 = dpLo + '–' + dpHi;
+        const _cell = (num, lbl, extra) =>
+          '<div style="flex:1;position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45)' + (extra || '') + '">' +
+            '<div style="font-size:15px;font-weight:800;line-height:1">' + num + ' ft</div>' +
+            '<div style="font-size:9px;font-weight:600;opacity:.9;margin-top:2px;letter-spacing:.02em">' + lbl + '</div>' +
+          '</div>';
+        _zEl.innerHTML =
+          '<div style="font-size:10px;font-weight:700;letter-spacing:.05em;color:#6b7a86;text-transform:uppercase;margin:2px 0 4px">Visibility by position</div>' +
+          '<div style="position:relative;display:flex;height:50px;border-radius:8px;overflow:hidden;background:linear-gradient(90deg,#3f6f60 0%,#2f6f8a 52%,#1a6fb2 100%)">' +
+            '<div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(201,180,132,.92) 0%,rgba(201,180,132,.45) 20%,rgba(201,180,132,0) 46%)"></div>' +
+            _cell(_z1, '🏖️ Shallow · break') +
+            _cell(_z2, '🌊 Deep · open', ';border-left:1px solid rgba(255,255,255,.18)') +
+          '</div>' +
+          '<div style="font-size:10px;color:#2a7ab0;margin-top:3px;opacity:.85">Clearer past the surge / below the thermocline</div>';
+        _zEl.style.cssText = 'display:block;margin-top:6px';
       } else {
         _zEl.style.display = 'none';
       }
