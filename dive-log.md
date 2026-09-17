@@ -79,6 +79,12 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-16 (Wed, ~11:30am) — MPP clear-20 vs poor Shores — ✅ MPP MATCH via deep zone; mission deep-zone validated again
+- **Reported:** "Saved by **clear water ~20' at MPP** after **poor viz at the Shores**." Rubberlip perch school, abundant garibaldi, lots of fishermen.
+- **MPP (`mission`) — ✅ MATCH via DEEP zone:** tool headline **6–10 (green tinge)** but zone **Shallow 6–10 · Deep 21–30** (ntu 0.16 clean, chl 0.44, rawWE 90, W 17s swell). The 20' clear = dropping past the surgy shallow into the deep zone (21–30) → MATCH. 2nd straight validation that mission's DEEP zone captures the clear water even when the headline swings (cf. 9/15 mission <5 headline over-call). The surge penalty crushes the shallow; the deep is clean.
+- **The Shores (`ljshores`) — poor (qualitative) MATCH:** matched yesterday's model ~6–9 / shop 5–10. (Cleared to 19–24 Good by 9/17.)
+- **🐛 Recurring display bug:** "(green tinge)" firing at chl 0.44 (mission) — same spurious tag as ljshores (chl<1.5 shouldn't say green tinge). Small safe fix pending.
+
 ### 2026-09-16 (Wed) — LJ shop daily (AM) — ✅ MATCH (5–10 ↔ 6–9) + RECONCILES the "20+ vs 6–9" debate
 - **Reported (shop, this morning):** La Jolla **vis 5–10 ft**, "still low but **looking less green**"; swell down 1–3, surface 72–73°F; light AM wind, 11kt pickup ~noon (surface chop), easing eve. **Bottlenose dolphins at the Marine Room** this AM.
 - **Tool `ljshores`: early-AM model 6–9 (now 8–13 Fair)** → 5–10 overlaps → **MATCH.**
