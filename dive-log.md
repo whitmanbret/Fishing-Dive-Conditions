@@ -79,6 +79,13 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-17 (Thu) — Marine Room high-tide — ✗ OVER-call (17–23 vs very murky) = sensor-blindness + confirms green-tinge bug
+- **Reported:** Marine Room at high tide today **very murky.** Tool `ljmarineroom` **17–23 (green tinge, Good)** → big OVER-call (2nd SD-cluster over-call today; cf. ljshores shop 10–15 vs 19–24).
+- **Captured inputs:** **NTU 0.16 + chl 0.49 (BOTH clean)**, waveEnergy ~6, clusterWE 58, incoming tide, path ntu → result 15–20 "(green tinge)".
+- **Root cause = SENSOR-BLINDNESS (no clean fix):** MR borrows the Scripps pier NTU (10 mi N, reads 0.16 clean) + regional satellite chl (0.49 clean); neither sees MR's **local shallow sandy pocket stirring murky at high tide.** The reef-pocket 0.6× haircut already applies but a clean-pier day still floats it to 17–23. No local turbidity signal → can't tune this out (same class as the mission borrowed-NTU problem). **No tune.**
+- **🐛 CONFIRMED: spurious "green tinge" suffix** — fires at **chl 0.49** (threshold should be >1.5). 3rd sighting (ljshores 0.46, mission 0.44, MR 0.49). It's a real display bug, mislabels clean-chl water green, and makes over-calls look even more wrong. Safe label-only fix — fixing next.
+- **Pattern watch (SD cluster over-reads on clean-sensor days):** 2 over-calls today both from clean borrowed/regional sensors missing local green/murk. NTU-can't-see-it theme (r=−0.19). The base model rides high when the pier's clean; no easy fix without local sensing, but worth watching whether a broader "clean-sensor confidence" cap is warranted.
+
 ### 2026-09-17 (Thu) — Crystal Cove — ✅ MATCH (15 ft)
 - **Crystal Cove (`crystalcove`) — ✅ MATCH:** 15 ft ↔ tool **13–18 (Fair)**, dead-center. (Reinforces crystalcove is fine on normal days — the +7.6 baseline bias was stale June data; no-tune was right.)
 
