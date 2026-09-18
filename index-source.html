@@ -7661,18 +7661,23 @@ async function updateDisplay() {
     if (_zEl) {
       const _m = /(\d+)\s*[–-]\s*(\d+)/.exec(String(vizEst));
       const _hLo = _m ? Number(_m[1]) : null, _hHi = _m ? Number(_m[2]) : null;
-      const _reg = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
-      const _bloomLbl = typeof vizEst === 'string' && /bloom season|\(bloom\)|pea soup|green water/i.test(vizEst);
-      const _stratBloom = _bloomLbl && _reg === 'central' && !loc.bluewater && !loc.offshore;
       const _okHero = vizEst !== '--' && vizEst !== 'Service unavailable' && _hLo !== null && _hHi !== null;
+      const _reg = (typeof REGION_MAP !== 'undefined' && REGION_MAP[currentLocation]) || 'sd';
       let shLo, shHi, dpLo, dpHi;
+      // Case A (SURGE — SoCal coves / LJ cluster): headline = shallow, the worker's
+      // deepLo/deepHi (surge undone) = the clearer deep. Well-validated; only this
+      // case renders the split + the "Visibility by position" visual.
       if (_okHero && typeof _wkDeep !== 'undefined' && _wkDeep && _wkDeep.split) {
-        shLo = _hLo; shHi = _hHi; dpLo = _wkDeep.lo; dpHi = _wkDeep.hi;                 // A: headline = shallow
-      } else if (_okHero && _stratBloom) {
-        dpLo = _hLo; dpHi = _hHi;                                                        // B: headline = deep
-        shLo = Math.max(2, Math.round(_hLo * 0.35)); shHi = Math.max(shLo + 1, Math.round(_hHi * 0.40));
+        shLo = _hLo; shHi = _hHi; dpLo = _wkDeep.lo; dpHi = _wkDeep.hi;
       }
-      if (shLo !== undefined && dpHi > shHi + 2) {
+      // Case B (central-CA bloom stratification) SUPPRESSED 2026-09-17: the tool can't
+      // reliably call the deep up/down direction there — central-CA deep FLIPS (clearer
+      // some days, murkier with suspended particulates others: McAbee 9/12 "cleared
+      // below 50" vs 9/17 20-shallow/10-deep; Molla dark-deep; Pt Lobos hazy-15-deep),
+      // and the old 0.35× shallow estimate ran low (McAbee shallow reports 20+, not
+      // 7–10). Showing a confidently-wrong gradient (especially as the new visual) is
+      // worse than just the headline. Re-enable only once Case B is calibrated.
+      if (shLo !== undefined && dpHi > shHi + 2 && _reg !== 'central') {
         // "Visibility by position" cross-section (2026-09-17) — shore→open-water
         // gradient bar with our two REAL computed zones (shallow/break vs deep/
         // open). No invented middle numbers; the seafloor slope + water gradient
