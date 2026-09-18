@@ -79,6 +79,9 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-17 (Thu) — Crystal Cove — ✅ MATCH (15 ft)
+- **Crystal Cove (`crystalcove`) — ✅ MATCH:** 15 ft ↔ tool **13–18 (Fair)**, dead-center. (Reinforces crystalcove is fine on normal days — the +7.6 baseline bias was stale June data; no-tune was right.)
+
 ### 2026-09-17 (Thu) — multi-region batch: 4 MATCH, mission-noise, NorCal split, + ⚠️ LJ Shores OVER-call
 - **Monterey (Monkeyface prickleback dive) — ✅ MATCH:** "20'+ most of the way, McAbee Peak cloudy ~10'." → `monterey` **21–26 (Good) / shallow 7–10** → 20+ ↔ 21–26 AND McAbee Peak 10 ↔ shallow zone 7–10. Both ends land.
 - **Veterans Park (Wed night) — ✅ MATCH:** 20–30 ft, 68°F@85', 72°F surf → `veteranspark` **17–22** (overlap 20–22).
