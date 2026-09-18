@@ -79,6 +79,13 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-18 (Fri) — Treasure Island noon — ✗ slight over-call (10–15 vs <10) on SW GROUNDSWELL — 2nd corroboration for the reverted dampener
+- **Reported (~noon):** Treasure Island **<10 ft, super rough, 3–5 ft waves, 75°F.**
+- **Tool `treasureisland`: 10–15 (Fair)** → slight OVER-call (~2–5 ft; the 10 floor just touches the <10 actual). Captured inputs: **swellDir SW, period 14 (GROUNDSWELL), rawWE 67.8, chl 2.5.**
+- **🔑 This is the EXACT condition the reverted SW-groundswell dampener targeted** (`swellDir sw/south && period≥12 && rawWE>30`). Now **2 SW-groundswell blowouts at TI**: 9/12 "very murky/turbulent" (<5–ish) and today <10 rough — both over-called by the undampened 10–19 base. The 9/12 dampener (→4–6) would have matched both.
+- **Why I reverted it (9/13) + what's still unresolved:** reverted because TI "cleared to 18–20 as the swell eased" on 9/13 — feared the dampener would crush that day. BUT I never confirmed whether 9/13 was still a *groundswell* (period≥12, which would fire the gate = genuine over-fit) or an *eased/short-period* day (gate wouldn't fire = revert was over-cautious). 9/14 was period-9 windswell (gate wouldn't fire; TI 15 matched 14–19). **No captured TI inputs for 9/13** to settle it.
+- **Action: HOLD re-ship, but this strengthens the case.** Path to safely re-ship the SW-groundswell dampener: (1) determine 9/13's swell period/energy (if <12 or eased, the revert was over-cautious and re-ship is safe); (2) or get a 3rd SW-groundswell TI report; (3) validate against the harness that it only fires on genuine groundswell (sparing the common period-9 windswell days like 9/14). Logged as building evidence — do NOT re-ship blind (this is the exact fix I over-fit once).
+
 ### 2026-09-17 (Thu) — LJ Cove + McAbee + Point Loma — ✅ Cove & PtLoma MATCH; ⚠️ McAbee exposes central-CA zone-split is BACKWARDS
 - **LJ Cove (`ljcove`) — ✅ MATCH:** "not great, hazy at shores, cleared closer to the canyon/half-mile, hazy again at the quarter, caves hazy." Tool **4–7 (Poor)** ↔ the dominant hazy nearshore/quarter/caves read = MATCH; the cleared half-mile pocket was offshore over the canyon (outside the nearshore number, cf. God's Rock).
 - **Point Loma (`pointloma`) — ✅ MATCH via deep (mild under-call):** report **15–20** ↔ tool **8–13 / deep 10–16** → overlaps at 15–16. Offshore Whistler/kelp runs clearer than the nearshore green headline (consistent w/ prior "good & blue by the Whistler"). Photo-corroborated.
