@@ -79,6 +79,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-17 (Thu) — Marine Room MORNING — ✅ MATCH (5–15 ↔ tool 9–14)
+- **Reported (this morning):** MR **5–15 ft, poor near shore / better further out**, water 73°F.
+- **Tool `ljmarineroom`: 9–14 (Fair)** → the 5–15 range contains it → MATCH; the reported shallow-poor→deeper-better gradient is the same story the tool models (9–14 sits mid-gradient; no zone-split firing today).
+- **Reconciles today's MR:** tool was RIGHT this morning (9–14 ↔ 5–15); the over-call was specifically the **midday HIGH-TIDE** read (17–23 vs very murky) — i.e., MR degraded at high tide while the tool held its morning-ish clean-sensor number. So the miss is time-of-day/tide-specific (local pocket stirs at high tide), reinforcing the sensor-blindness diagnosis rather than a flat bias.
+
 ### 2026-09-17 (Thu) — Marine Room high-tide — ✗ OVER-call (17–23 vs very murky) = sensor-blindness + confirms green-tinge bug
 - **Reported:** Marine Room at high tide today **very murky.** Tool `ljmarineroom` **17–23 (green tinge, Good)** → big OVER-call (2nd SD-cluster over-call today; cf. ljshores shop 10–15 vs 19–24).
 - **Captured inputs:** **NTU 0.16 + chl 0.49 (BOTH clean)**, waveEnergy ~6, clusterWE 58, incoming tide, path ntu → result 15–20 "(green tinge)".
