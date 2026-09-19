@@ -79,6 +79,12 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-18 (Fri) — SD shop + Children's Pool + Point Loma + Monastery — ✅ 3 SD MATCH; Monastery soft-match (central split correctly suppressed)
+- **Shop daily (`ljshores`, 9/18) — ✅ MATCH:** "hazy but a lot less green, 10–20 ft, cleaner pockets; incoming tide made the AM the better window." Tool **17–22 (Fair)** → overlaps 17–20 = MATCH. SD clearing continues (green roll fading).
+- **Children's Pool / The Arch (`ljcove`, 9/17) — ✅ MATCH:** "snowy ~10 ft." Tool **11–16 (Fair)** → 1 ft under = within noise. (2-day-stale; Children's Pool is a protected sub-spot of the Cove.)
+- **Point Loma / Sunset Cliffs (`pointloma`, 9/18 evening) — ✅ MATCH (marginal):** ~8 ft. Tool **10–15 (Fair)** → ~2 ft over, within noise; evening (afternoon-wind drop) + next-day read.
+- **Monastery (`carmel`, 9/18) — soft/qualitative match + WARM anomaly:** 2×80-min photo dives, "**viz meh above 40 ft**" (better below), strong surge above 40–50 ft w/ 3–4 ft swell. **WARM: 61°F @ 83 fsw, 63°F shallow** (unusually warm at depth for Carmel — let them stay down in wetsuits). Tool **carmel 21–26 (Good)** — they spent 80 min deep in decent water (≈21–26); the "meh" upper-40 haze is the central-CA shallow the zone-split *tried* to convey. **✅ Central-CA split-visual correctly SUPPRESSED (barShown=false)** — confirms today's gate is live. Critters: mosshead warbonnet, ~1.2m lingcod (biggest they've seen). No action.
+
 ### 2026-09-18 (Fri) — Treasure Island noon — ✗ slight over-call (10–15 vs <10) on SW GROUNDSWELL — 2nd corroboration for the reverted dampener
 - **Reported (~noon):** Treasure Island **<10 ft, super rough, 3–5 ft waves, 75°F.**
 - **Tool `treasureisland`: 10–15 (Fair)** → slight OVER-call (~2–5 ft; the 10 floor just touches the <10 actual). Captured inputs: **swellDir SW, period 14 (GROUNDSWELL), rawWE 67.8, chl 2.5.**
