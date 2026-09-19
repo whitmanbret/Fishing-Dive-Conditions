@@ -13,7 +13,18 @@ the format, voice, and past examples are never lost.
 
 ## 📌 Pending intel for the NEXT weekly report (clear after use)
 
-**(CLEARED 2026-09-14 — the 2026-09-10 NW-gale/cool-green-roll beat was used in the Sep 7–13 weekly report, archived below. Next beat starts fresh from the next FishDope/offshore intel drop.)**
+**As of 2026-09-18 — offshore/fish beat for the ~Sep 14–20 report (OUR voice, NO source, nothing verbatim, casual/declarative):**
+- **🌊🐟 THE HEADLINE: El Niño is in HIGH GEAR — one of the warmest, fishiest late-Septembers in memory.** Water holding **73–74°F offshore** and the tropical stuff has arrived: **wahoo are now showing in LOCAL SoCal water** — Newport Canyon, a few miles off Laguna, and out on the 9 Mile Bank (mostly 50–75 lb). Local wahoo is a genuinely unusual warm-water event. On top of that, **world-class striped-marlin fishing** (a marlin tournament off the east end of Anacapa reportedly released ~90 fish over one weekend), with a few blue marlin mixed in.
+- **🌡️ Weather settled into a DIURNAL pattern (dive-relevant):** grease/glassy mornings, then the usual light-to-moderate **afternoon NW sea breeze** puts chop on the surface — so **mornings are the window.** Outer waters stay rough: **Small Craft Advisory on the outer islands + Cherry/Tanner/Cortez banks, likely all week** ("not for the weak at heart" out there).
+- **Tuna close to home:** yellowfin + skipjack + bullet tuna **8–10 mi off the Domes** (Oceanside/Dana), wide-open some days (mostly small 5–8 lb), on the troll then flylined anchovy + chum; dorado filling in on paddies + open water. **Bluefin have moved WAY out** (~130 mi, Albatross Knoll / NE Bank) — not a realistic play right now.
+- **Coastal mixed-bag:** yellowtail (20–30 lb) on the PV Double Rig / 150 / 105 / Horseshoe / Izor's + the PV kelp line (**stay OUT of the Pt Vicente SMCA**); Catalina frontside perking up (Isthmus→west end); SD yellowtail + a few **white seabass (15–20 lb)** around Point Loma kelp / Buoy 3 / the Whistler and the NW Corner (a solid 15–30 lb snap on live bait one morning). **Live bait is the whole game** (sardine finally improving at the barges). Catalina/Coronados slower on cooler, dirtier water + brutal sea lions.
+- **🌊 VIZ-RELEVANT (ties to the dive tool):**
+  - **SD is CLEARING** — matches our dive reports (the green roll is fading, "a lot less green," cleaner pockets returning). But a spotter flight 9/17 still noted **green water in close from the Coronados up to La Jolla Canyon** while it was **blue offshore** — the clean water's just outside; go out/deep.
+  - **Diurnal rule:** glassy AM → afternoon NW chop stirs the shallows. **Dive early;** exposed spots get surgy by midday.
+  - Warm top (73–74°F) sitting on the El-Niño lens.
+- **Warm-water / El Niño angle (citable BY NAME):** with wahoo and tropical strays showing, it's a perfect diver call-to-action — Scripps (Marine Vertebrate Collection) runs a community "unusual fish" reporting effort; photograph anything that doesn't belong locally and report it to Scripps. (Real program — OK to name Scripps; still NEVER name the offshore-report source.)
+- **⚠️ Verify closures/regs with CDFW / the local authority** before you go (Pt Vicente SMCA; any advisories).
+- *(Point-in-time — verify still current when writing; delete once used. Prior Sep 7–13 beat archived below.)*
 
 ---
 
