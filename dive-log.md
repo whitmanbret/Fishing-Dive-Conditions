@@ -79,6 +79,14 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-20 (Sun) — SoCal batch — ✅ 5 MATCH / PV clean-day under-call (known)
+- **Flat Rock, PV (`pv`) — under-call (safe, KNOWN):** 30 ft, 74°F, 2–4 kt. Tool **18–23 (Good)** → under by ~7–12. The documented PV gin-clear / slack-current pattern the tool can't credit from its inputs (cf. 8/16 25, 8/21 40–50 vs teens); frontend already carries the 30–50 current-caveat note. No action.
+- **Shaw's (`laguna`) — ✅ MATCH:** 10–15 at noon. Tool **14–19 / deep 15–24** → overlaps 14–15.
+- **Seal Rock + Crescent (`crescent`) — ✅ MATCH:** ~15, "beautiful in the sun," Seal Rock "lots to see, better than Shaw's." Tool **10–15 / deep 14–22** → 15 top of headline + the "beautiful/better" = the deep/cleaner side.
+- **Marine Room (`ljmarineroom`) — ✅ reef MATCH (deep not surfaced):** 3 reports converge — **reef VERY murky (<5, "couldn't see my toes"), shallows/sand-dollar beds nicer, deep near the buoys 15–20.** Tool **6–9 (Poor)** = right on the murky reef; but **no zone-split fired today**, so the clean deep (15–20 near buoys) wasn't shown. Reef call good; deep under-represented. 3 baby horn sharks in the shallow rocks; warm water.
+- **LJ Cove (`ljcove`) — ✅ qualitative MATCH:** "some visibility at the Cove + quarter/half-mile buoys." Tool **13–18 (Fair)** → Cove recovered from the green-roll murk.
+- **MPP (`mission`) — ✅ MATCH (channel):** "murky in spots in the shallow bay (5–10 hazy), **GREAT in the channel!**" Tool **17–22 (Fair)** = the jetty-channel entrance mission models ↔ "great in the channel." The murky 5–10 shallow *interior bay* is a different sub-area. Nudibranch/lobsters/sea slug; **bioluminescence in Mission Bay** right now.
+
 ### 2026-09-19 (Fri/Sat, central-CA) — Pt Lobos + Carmel MATCH / McAbee OVER-call (sub-spot + red algae)
 - **Point Lobos / Rock Garden (`ptlobos`) — ✅ MATCH:** "15–20 ft, very hazy, a bit better at depth than in the cove; decent surge in Rock Garden; 58°F." Tool **17–22 (bloom season)** → overlaps 17–20 = MATCH (central-CA split correctly hidden).
 - **Monolobo / S. Monastery (`carmel`, 9/17) — ✅ MATCH:** 20 ft, 57°F, in a rare Giant Kelp patch (most of the area now urchin-barren, ~5% of pre-2014 kelp). Tool **17–22** → 20 in range = MATCH (3-day-stale read caveat).
