@@ -79,6 +79,15 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-19 (Sat) — Laguna + SD + Pt Lobos CLEARED UP — ✅ 6/6 MATCH + central-CA suppression validated
+- **The green roll has fully faded — everything 10–25 with cleaner deep/outer.** (Friday 9/18 was still hazy: Shaw's N-end 5', Seal Rock lee 10' — improved hard by Saturday.)
+- **Marine Room (`ljmarineroom`) — ✅ MATCH:** "**fully pea-soup at 9am, 5' or less just outside the surf zone.**" Tool **5–9 (Poor), deep 13–17** → nailed the pea-soup (contrast the 9/17 high-tide over-call; today the sensor caught it).
+- **LJ Shores (`ljshores`) — ✅ MATCH:** shop 10–20, **pier cam 15–20**, "could see the bottom in 30+ ft between the buoys." Tool **16–20 (cam-adj), deep 20–27** → matches shop AND pier cam (cam feed working, "cam-adj" showing); deep/between-buoys 30+ = the clean outer.
+- **Laguna (`laguna`) — ✅ MATCH:** Heisler→Picnic "very milky ~10'." Tool **11–14, deep 19–26** → 10 milky ↔ shallow; "Shaw's beautiful today" = the cleaner side.
+- **Crescent (`crescent`) — ✅ MATCH:** "15–20' at Crescent, even better toward Whiskey/Emerald." Tool **13–16, deep 19–26** → overlaps; "even better" = the deep/cleaner water.
+- **Emerald (`emerald`) — ✅ MATCH via deep:** "even better toward Emerald" (~20+). Tool headline **7–10 (Poor)** UNDER-calls (heavy shallow surge penalty) but **deep 19–26** captures the clean water. (Emerald headline runs low vs its neighbors — watch.)
+- **Point Lobos (`ptlobos`) — ✅ MATCH + central-CA suppression VALIDATED:** Beto's 10–15, Middle Reef 20–25, 55–58°F. Tool **17–22 (bloom season), zone-split correctly HIDDEN** (9/17 central-CA gate working) → single headline sits right in the 10–25 spread; no wrong gradient. ✅
+
 ### 2026-09-18 (Fri) — SD shop + Children's Pool + Point Loma + Monastery — ✅ 3 SD MATCH; Monastery soft-match (central split correctly suppressed)
 - **Shop daily (`ljshores`, 9/18) — ✅ MATCH:** "hazy but a lot less green, 10–20 ft, cleaner pockets; incoming tide made the AM the better window." Tool **17–22 (Fair)** → overlaps 17–20 = MATCH. SD clearing continues (green roll fading).
 - **Children's Pool / The Arch (`ljcove`, 9/17) — ✅ MATCH:** "snowy ~10 ft." Tool **11–16 (Fair)** → 1 ft under = within noise. (2-day-stale; Children's Pool is a protected sub-spot of the Cove.)
