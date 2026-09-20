@@ -79,6 +79,12 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-19 (Fri/Sat, central-CA) — Pt Lobos + Carmel MATCH / McAbee OVER-call (sub-spot + red algae)
+- **Point Lobos / Rock Garden (`ptlobos`) — ✅ MATCH:** "15–20 ft, very hazy, a bit better at depth than in the cove; decent surge in Rock Garden; 58°F." Tool **17–22 (bloom season)** → overlaps 17–20 = MATCH (central-CA split correctly hidden).
+- **Monolobo / S. Monastery (`carmel`, 9/17) — ✅ MATCH:** 20 ft, 57°F, in a rare Giant Kelp patch (most of the area now urchin-barren, ~5% of pre-2014 kelp). Tool **17–22** → 20 in range = MATCH (3-day-stale read caveat).
+- **McAbee → Hopkins Deep (`monterey`) — ✗ OVER-call (21–26 vs 10):** "vis not good, 10 ft most places, 57–60°F; night dive also 10 with more swell/surge + **pieces of red algae.**" Tool `monterey` **21–26 (Good)** → big over-call (~11–16).
+  - **Diagnosis (no tune):** `monterey` is **Breakwater/San Carlos-weighted** (deeper/clearer), but the **McAbee shore dive** (Cannery Row shallows) ran murky on a **red-algae + surge** nearshore event neither the NTU nor chl input captured. Recurring McAbee-vs-Breakwater sub-spot gap (cf. 9/12 McAbee 20-shallow/10-deep). Can't fix without a McAbee-specific spot or local sensor; central-CA split is already suppressed (and even a shallow estimate wouldn't reliably catch this — direction flips). Logged as watch: **McAbee shore dives keep running below the monterey headline** — if it persists, consider a McAbee micro-spot or a nearshore haircut (validate vs harness first).
+
 ### 2026-09-19 (Sat) — Laguna + SD + Pt Lobos CLEARED UP — ✅ 6/6 MATCH + central-CA suppression validated
 - **The green roll has fully faded — everything 10–25 with cleaner deep/outer.** (Friday 9/18 was still hazy: Shaw's N-end 5', Seal Rock lee 10' — improved hard by Saturday.)
 - **Marine Room (`ljmarineroom`) — ✅ MATCH:** "**fully pea-soup at 9am, 5' or less just outside the surf zone.**" Tool **5–9 (Poor), deep 13–17** → nailed the pea-soup (contrast the 9/17 high-tide over-call; today the sensor caught it).
