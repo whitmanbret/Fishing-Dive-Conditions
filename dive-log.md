@@ -79,6 +79,10 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-16 (Tue, logged 9/20) — Malibu outer reef — 📝 gin-clear-outer / murky-inside (PV pattern), stale-read
+- **Reported:** Malibu **50' viz on the OUTER reef** once past the **inside "milkshake" erosion murk.** Classic clean-outer / churned-inside split.
+- **Tool `malibu` (read 9/20, 4-day stale): 18–23 (Good), no split.** Can't grade cleanly (stale). Directionally the **same clean-outer-reef-under-call as PV** — a topographically clean outer reef (50', gin-clear) the nearshore-weighted number won't credit, over a murky shallow inside. Adds to this period's **LA/South Bay "gin-clear outer reef" theme** (PV Flat Rock 25–30 same window). No action (stale, single, known clean-outer pattern). Note: malibu didn't fire a zone-split — same "clean-outer not surfaced" gap as PV/MR.
+
 ### 2026-09-20 (Sun) — SoCal batch — ✅ 5 MATCH / PV clean-day under-call (known)
 - **Flat Rock, PV (`pv`) — under-call (safe, KNOWN):** 30 ft, 74°F, 2–4 kt. Tool **18–23 (Good)** → under by ~7–12. The documented PV gin-clear / slack-current pattern the tool can't credit from its inputs (cf. 8/16 25, 8/21 40–50 vs teens); frontend already carries the 30–50 current-caveat note. No action.
 - **Shaw's (`laguna`) — ✅ MATCH:** 10–15 at noon. Tool **14–19 / deep 15–24** → overlaps 14–15.
