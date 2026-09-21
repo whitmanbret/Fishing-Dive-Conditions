@@ -82,6 +82,15 @@ Fort Bragg to Sonoma is clearing — Salt Point 20–25 outside, Windemere/Still
 🐟 FISH & OFFSHORE
 Maybe the fishiest late-September in memory — world-class striped marlin from Anacapa to the Coronados (a 100-pounder off the Coronado Islands this weekend), and wahoo in local water (Newport Canyon, off Laguna). Wide-open yellowfin 8–10 mi off the Domes; bluefin way out (~130 mi). Live bait's tight — get there early. Snap a photo of any out-of-place strays for Scripps' unusual-fish project, and check regs with CDFW.
 
+📊 HOW'D THE TOOL DO?
+This week the tool matched the actual dive reports on 35 of them — about 78%, which is above our season average. Most of the misses were on the safe side: it read the gin-clear outer reefs (PV, Malibu, NorCal) low, because it can't see that current-driven clarity in the data. The only real over-calls were Treasure Island on the groundswell and the Marine Room at high tide, where conditions change faster than our sensors catch. We'd always rather under-promise than over-promise.
+
+🔬 WHY LA JOLLA SHORES AND THE MARINE ROOM DON'T MATCH
+They sit a few hundred yards apart but dive like two different worlds. The Marine Room is a shallow, sandy flat at the head of the La Jolla canyon — a sediment trap that stirs up on surge and high tide, so it holds the murk longest (pea-soup at the reef this week while the Shores, a short swim north, ran 15–20). The tool reads them separately — the Marine Room gets a more conservative profile by design — though with our nearest sensor up the coast, it can lag a beat when that pocket stirs on a high tide.
+
+🤝 MY PROMISE
+I'm going to keep improving this tool for the greater dive community — which I'm a member of myself — and I have no plans to charge for it at any point in the future until I'm 100% confident you're getting the absolute best visibility prediction tool available to divers. And I applaud everyone else working on this too: visibility is a hard problem, there's probably more than one way to crack it, and we're all in this together. Until then it stays free, and every report you send makes it sharper for the next diver. Thank you for being part of it.
+
 📚 New on the blog this week: The Orange County Dive Site Guide — Laguna Beach and Beyond, North to South (spearfactor.com/post/the-orange-county-dive-site-guide-laguna-beach-and-beyond-north-to-south), and Two Weeks to the Lobster Opener — A Diver's Prep Checklist (spearfactor.com/post/two-weeks-to-the-lobster-opener-a-diver-s-prep-checklist).
 
 🔗 Real-time predictions: conditions.spearfactor.com — dive safe, respect the warm-water surge, and go early.
