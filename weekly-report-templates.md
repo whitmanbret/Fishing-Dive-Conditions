@@ -13,18 +13,7 @@ the format, voice, and past examples are never lost.
 
 ## 📌 Pending intel for the NEXT weekly report (clear after use)
 
-**As of 2026-09-20 (still holding — same picture 9/18→9/20; by 9/20 weather EASED inshore, SCA now mainly the far-NW islands, + bait getting tight: Mission Bay/Newport barges out) — offshore/fish beat for the ~Sep 14–20 report (OUR voice, NO source, nothing verbatim, casual/declarative):**
-- **🌊🐟 THE HEADLINE: El Niño is in HIGH GEAR — one of the warmest, fishiest late-Septembers in memory.** Water holding **73–74°F offshore** and the tropical stuff has arrived: **wahoo are now showing in LOCAL SoCal water** — Newport Canyon, a few miles off Laguna, and out on the 9 Mile Bank (mostly 50–75 lb). Local wahoo is a genuinely unusual warm-water event. On top of that, **world-class striped-marlin fishing** (a marlin tournament off the east end of Anacapa reportedly released ~90 fish over one weekend), with a few blue marlin mixed in.
-- **🌡️ Weather settled into a DIURNAL pattern (dive-relevant):** grease/glassy mornings, then the usual light-to-moderate **afternoon NW sea breeze** puts chop on the surface — so **mornings are the window.** Outer waters stay rough: **Small Craft Advisory on the outer islands + Cherry/Tanner/Cortez banks, likely all week** ("not for the weak at heart" out there).
-- **Tuna close to home:** yellowfin + skipjack + bullet tuna **8–10 mi off the Domes** (Oceanside/Dana), wide-open some days (mostly small 5–8 lb), on the troll then flylined anchovy + chum; dorado filling in on paddies + open water. **Bluefin have moved WAY out** (~130 mi, Albatross Knoll / NE Bank) — not a realistic play right now.
-- **Coastal mixed-bag:** yellowtail (20–30 lb) on the PV Double Rig / 150 / 105 / Horseshoe / Izor's + the PV kelp line (**stay OUT of the Pt Vicente SMCA**); Catalina frontside perking up (Isthmus→west end); SD yellowtail + a few **white seabass (15–20 lb)** around Point Loma kelp / Buoy 3 / the Whistler and the NW Corner (a solid 15–30 lb snap on live bait one morning). **Live bait is the whole game** (sardine finally improving at the barges). Catalina/Coronados slower on cooler, dirtier water + brutal sea lions.
-- **🌊 VIZ-RELEVANT (ties to the dive tool):**
-  - **SD is CLEARING** — matches our dive reports (the green roll is fading, "a lot less green," cleaner pockets returning). But a spotter flight 9/17 still noted **green water in close from the Coronados up to La Jolla Canyon** while it was **blue offshore** — the clean water's just outside; go out/deep.
-  - **Diurnal rule:** glassy AM → afternoon NW chop stirs the shallows. **Dive early;** exposed spots get surgy by midday.
-  - Warm top (73–74°F) sitting on the El-Niño lens.
-- **Warm-water / El Niño angle (citable BY NAME):** with wahoo and tropical strays showing, it's a perfect diver call-to-action — Scripps (Marine Vertebrate Collection) runs a community "unusual fish" reporting effort; photograph anything that doesn't belong locally and report it to Scripps. (Real program — OK to name Scripps; still NEVER name the offshore-report source.)
-- **⚠️ Verify closures/regs with CDFW / the local authority** before you go (Pt Vicente SMCA; any advisories).
-- *(Point-in-time — verify still current when writing; delete once used. Prior Sep 7–13 beat archived below.)*
+**(CLEARED 2026-09-20 — the El-Niño-high-gear beat (9/18→9/20) was used in the Sep 14–20 weekly report, archived below. Next beat starts fresh from the next offshore intel drop. Standing threads to carry forward: El Niño warm water + local wahoo, world-class marlin, bluefin ~130 mi out, grease-AM/NW-breeze-PM diurnal, bait tight.)**
 
 ---
 
@@ -66,6 +55,90 @@ upwelling), and practical (what to dive, when, where's sheltered in swell). The 
 ---
 
 ## Past examples (verbatim reference)
+
+### FACEBOOK — Week of September 14–20, 2026 (Bret's voice; every logged report included; offshore intel paraphrased, no source)
+🌊 CALIFORNIA DIVE REPORT — Week of September 14–20, 2026
+
+Here's the short version: the warm water came back and the ocean woke up. That cold, green upwelling roll that had the whole coast looking like a lava lamp finally let go. Surface temps climbed back to 73–74°F, San Diego and Laguna scrubbed themselves clean over the week, the South Bay and Malibu outer reefs went flat-out gin-clear, and offshore turned into a marlin-and-wahoo free-for-all. One thing to keep in your head all week: the murk sat up top and in the shallows, with the cleaner water underneath and outside. Read the whole column — and on a surgy spot, go early.
+
+🟡 SAN DIEGO / LA JOLLA — started green, ended clean (with a couple of holdouts)
+Early week was a mess. The shops were calling 5–10 ft with a ton of particulate, and there was a sediment plume you could see smeared off the Marine Room from the air. It cleaned a little more each day, and by the weekend La Jolla Shores was a solid 15–20 (30+ if you swam out between the buoys — one diver saw the bottom out there), the Cove came back to the mid-teens ("some viz" at the quarter and half-mile buoys), and a Wednesday-night Shores dive told the whole story in one swim: cloudy ~10 ft on the sand, opening to ~12 in the Garden, then a surgy 5 ft down in the canyon. Two holdouts to know about:
+• Marine Room is the laggard. That shallow sandy flat at the head of the canyon is a sediment factory, so it holds the murk longest — pea-soup single digits most mornings and again at high tide (one diver "couldn't see my toes"), with three baby horn sharks tucked in the shallow rocks. Don't fight it: drop down and swim for the buoys and it opens to a clean 15–20.
+• Point Loma was the wild card. A clean 15–20 out by the Whistler midweek, but it slid to about 8 ft one evening and settled around 10–15 today. Take that one hour by hour.
+Mission Bay (MPP) was the usual jetty story — murky 5–10 up in the shallow bay, but great in the channel — plus nudibranchs, lobsters, a sea slug, and bioluminescence firing at night. Water's 73°F, and it's still warm way down (67°F at 115 ft, 73°F at 70).
+
+🟢 LA / SOUTH BAY — this is where you should've been
+The outer reefs stole the week. Palos Verdes' Flat Rock ran a gin-clear 25–30 ft at 74°F, and up at Malibu a diver hit a jaw-dropping 50 ft on the outer reef — the catch being you had to punch through the milky "milkshake" of erosion murk on the inside to get to it. That inside-vs-outside split is the whole game up here: the shallow sandy inside can be blown out while the outer reef is straight glass. Veterans Park went 20–30 ft on a Wednesday-night dive (68°F down at 85 ft). Just remember these spots rip on current, so time the slack. Nail it and it's the best water in the state.
+
+🟡 ORANGE COUNTY / LAGUNA — coves came back, exposed stuff got worked
+The Laguna coves cleaned up to a nice 15–20 ft — Crescent, Shaw's, Diver's — and if you kicked out toward Whiskey and Emerald it got even better on the deeper reef. Crystal Cove ran a steady 15. Those "beautiful in the sun" days are back. The catch was the exposed South-Laguna stuff on the SW groundswell: Goff was a hazy-but-fishable ~15–20 most days (with a sleeping harbor seal, a leopard shark, a baby bat ray, a round ray and kelpfish keeping it interesting), but at the peak of the swell midweek Treasure Island/Goff went murky and rough — under 10 ft with 3–5 ft waves at 75°F — before bouncing right back. You know the drill: on a swell, pick the sheltered coves and drop below the surge.
+
+🟡 CENTRAL COAST (Carmel / Point Lobos) — hazy up high, better down low, and WARM
+Lobos and Carmel ran 15–25 ft — hazy in the cove and shallows, cleaner once you dropped (Beto's was 10–15 opening to 20–25 out along Middle Reef; Rock Garden 15–20; Monastery was "meh" above 40 ft and better below it). The real headline was the heat: 57–61°F even at depth, downright tropical for Carmel — folks staying down 80 minutes in wetsuits. Life was good (schools of blue rockfish under the kelp, a mosshead warbonnet, and a ~1.2 m lingcod, the biggest that diver had seen). And a gut-punch note from Monolobo: almost all the old kelp is gone, urchin-barren since the sea stars died off in 2014 — a patch of Giant Kelp is a rare find now.
+
+🟡 MONTEREY BAY — split the difference: decent deep, murky shore
+The deeper stuff held up — a Monkeyface-prickleback dive found 20+ most of the way (McAbee Peak the murky exception at ~10). But by the weekend the McAbee/Cannery Row shore dives were a grind: about 10 ft, chunks of red algae drifting through, obnoxious surge, no better on the night dive. Warm (57–60°F), and the Breakwater's still closed.
+
+🔵 NORTH COAST (Sonoma / Mendocino) — laying down and cleaning up
+Good news up north: the ocean's laying down and clearing from Fort Bragg to the Sonoma coast. Salt Point ran 20–25 once you got outside, and divers were in the water at Windemere Point and Still Water Cove finding 10–15 in the rockier areas. It's patchy nearshore, though — Shell Beach was murky the same day Salt Point was clean, so the clean water's on the outer/protected structure. Cold-water gear, as always.
+
+🐙 WILDLIFE
+Leopard sharks and three baby horn sharks in the Marine Room shallows; nudibranch/lobsters/sea slug and night-time bioluminescence at Mission Bay; harbor seal, leopard shark, baby bat ray and a round ray at Goff; blue rockfish schools, a mosshead warbonnet and a 1.2 m lingcod on the Central Coast; and rubberlip perch and garibaldi stacked up at MPP.
+
+🐟 FISH & OFFSHORE
+I'll be honest — this might be the fishiest late-September I can remember. The striped marlin bite is world-class: off the east end of Anacapa, the 43 Fathom Spot, the Osborn, and all the way down to the Coronados (a diver put a 100-pounder on the deck off the Coronado Islands this weekend). And the tropical stuff has moved into our backyard — wahoo are getting caught in Newport Canyon and off Laguna. Yellowfin are wide open just 8–10 miles off the Domes, with better 10–60 lb fish out at the Osborn, and dorado on the paddies. Bluefin, if you want them, are way out there (~130 miles). Live bait is everything right now and the barges are running thin, so get there early. With all these warm-water strays showing, snap a photo of anything that looks out of place and send it to Scripps' unusual-fish project. And check your closures and regs with CDFW and the local authority before you go.
+
+🌡️ THE WATER COLUMN — warm on top, read it deep
+This was the week the warm surface came roaring back (73–74°F down south, freakishly warm at depth up in Carmel). Once that cold upwelling pulse let go, everything flipped to warm-and-clearing — but warm doesn't mean clear top to bottom. You had a haze on the surface and reef (and red algae up in Monterey) sitting over cleaner water below. Two habits paid off everywhere: go early before the afternoon NW sea breeze chops the shallows, and get deep or get outside where the clean water lives.
+
+🔗 Real-time predictions: conditions.spearfactor.com — dive safe, respect the warm-water surge, and go early.
+#spearfishing #californiadiving #spearfactor #lajolla #palosverdes #malibu #laguna #pointlobos #diveconditions #freediving #elnino
+
+### WEEKLY EMAIL — Week of September 14–20, 2026 (Bret's voice; every logged report included; offshore intel paraphrased, no source)
+**Subject line options (pick one):**
+- The week the warm water came back (and Malibu hit 50 ft)
+- Green murk to gin-clear — your Sept 14–20 dive report
+- Warm on top, clean underneath: read the whole column
+
+**Preheader:** The cold roll let go, 73–74°F came back, and the South Bay/Malibu outer reefs went gin-clear (Malibu hit 50 ft).
+
+Hey divers,
+
+If you sat this week out, you missed the turn. Last week the whole coast looked like a lava lamp — cold, green, upwelled water everywhere. This week it let go. The surface warmed back to 73–74°F, San Diego and Laguna scrubbed themselves clean, and the South Bay and Malibu outer reefs went flat-out gin-clear. Offshore, El Niño kicked the door in — world-class marlin, and the thing that still surprises me, wahoo in our own local water. Here's the one habit that would've paid off no matter where you dove: go early, and go deep. Mornings were glass before the sea breeze chopped up the shallows, and just about everywhere the murk sat up top while the clean water waited below and outside.
+
+🐙 WILDLIFE NOTES
+Leopard sharks and three baby horn sharks in the Marine Room shallows; nudibranch, lobsters and a sea slug at MPP (with bioluminescence firing at night); a harbor seal, leopard shark, baby bat ray and round ray at Goff; schools of blue rockfish under the Lobos kelp, a mosshead warbonnet, and a ~1.2 m lingcod in Carmel; rubberlip perch and garibaldi at MPP.
+
+🌊 THE WEEK BY REGION
+
+🟡 SAN DIEGO / LA JOLLA — started green, ended clean. Early week hazy-green (5–10 ft, a plume you could see from the air off the Marine Room). By the weekend: La Jolla Shores 15–20 (30+ between the buoys), the Cove back to mid-teens (some viz out at the quarter/half-mile buoys). A Wednesday-night Shores dive summed it up — ~10 on the sand, ~12 in the Garden, a surgy 5 down in the canyon. Two holdouts: Marine Room stayed the laggard (single digits, "couldn't see my toes," clean 15–20 only once you drop toward the buoys), and Point Loma was the wild card — 15–20 by the Whistler midweek, ~8 ft one evening, ~10–15 today (take it hour by hour). Mission Bay was the usual — murky 5–10 in the shallow bay, great in the channel. 73°F, and warm way down (67°F at 115 ft).
+
+🟢 LA / SOUTH BAY — where you should've been. The outer reefs went off. PV's Flat Rock: gin-clear 25–30 at 74°F. Malibu: 50 ft on the outer reef, once you punched through the milky "milkshake" murk on the inside. Veterans Park went 20–30 on a Wednesday night. That inside-vs-outside split is the whole game here, and it all hinges on timing the current slack. Get the window right and it's the best water in the state.
+
+🟡 ORANGE COUNTY / LAGUNA — coves came back, exposed stuff got worked. Crescent/Shaw's/Diver's cleaned up to 15–20 (kick out to Whiskey/Emerald for better on the deeper reef); Crystal Cove a steady 15. Goff ran a hazy 15–20 most days, but a midweek SW groundswell blew out Treasure Island/Goff (under 10, 3–5 ft waves, 75°F) before it recovered. Warm and stacked with life.
+
+🟡 CENTRAL COAST (Carmel / Point Lobos) — clears with depth, and warm. 15–25 ft — hazy shallow/cove, better deep (Beto's 10–15 → Middle Reef 20–25; Rock Garden 15–20; Monastery meh above 40, better below). Freakishly warm — 57–61°F at depth. And a hard note from Monolobo: mostly urchin-barren since the 2014 sea-star die-off; a Giant Kelp patch is a rare find now.
+
+🟡 MONTEREY BAY — decent deep, murky shore. The deeper stuff held (a Monkeyface dive found 20+, McAbee Peak the ~10 exception), but by the weekend McAbee/Cannery Row shore dives were ~10 ft with red algae and surge, no better on the night dive. 57–60°F, Breakwater still closed.
+
+🔵 NORTH COAST (Sonoma / Mendocino) — laying down and cleaning up. The ocean's relaxing and clearing from Fort Bragg to the Sonoma coast. Salt Point 20–25 once you got outside; divers at Windemere Point and Still Water Cove found 10–15 in the rockier areas. Patchy nearshore though — Shell Beach was murky the same day Salt Point was clean, so the good water's on the outer/protected structure.
+
+🐟 FISH & OFFSHORE INTEL
+Might be the fishiest late-September I can remember. Striped marlin everywhere — Anacapa's east end, the 43 Fathom Spot, the Osborn, down to the Coronados (a diver landed a 100-pounder off the Coronado Islands this weekend). Wahoo have moved into local water — Newport Canyon and off Laguna. Wide-open yellowfin 8–10 mi off the Domes, better 10–60 lb fish at the Osborn, dorado on the paddies. Bluefin are way out (~130 mi). Live bait is everything and the barges are thin — get there early. With warm-water strays around, photograph anything out of place and send it to Scripps' unusual-fish project. And check closures/regs with CDFW and the local authority before you go.
+
+🌡️ THE MARINE HEATWAVE — warm on top, read the column
+The cold upwelling pulse let go and the warm surface came roaring back (73–74°F south, strikingly warm at depth in Carmel). Warm water clears the nearshore green but leaves a haze on the surface and reef sitting over cleaner water below — that's why "read it deep" was the move all week, and why the South Bay outer reefs had such a dramatic inside-vs-outside split.
+
+🌑 MOON & TIDES
+Waxing crescent, modest tides — but honestly the pattern that mattered was daily, not lunar: glassy mornings, an afternoon NW sea breeze stirring the shallows, and incoming tides pushing cleaner water in. Dive early, and if the shallows are churned, the clean water's a little deeper or a little farther out.
+
+📊 HOW THE TOOL DID
+A good week, and here's the honest scorecard. It tracked the San Diego clean-up in near real time — dropped the numbers as the murk rolled in, then walked them back up as it cleared — and it read the Laguna coves, Crystal Cove, Point Lobos, Monterey's deep stuff, and the Marine Room mornings dead-on. Two newer features earned their keep: the Scripps pier-cam adjustment (lining up with the shop's cam calls at the Shores) and the shallow-vs-deep "visibility by position" bar (nailing the surgy coves). Where it missed, it mostly missed safe — it lowballed the South Bay/Malibu outer reefs on their gin-clear slack-current days (called high-teens when Malibu's outer reef was 50), but I'd rather under-promise than send you out on a current-blown afternoon, so we flag the upside instead. The honest over-calls to own: it read Treasure Island/Goff a touch high on the midweek groundswell (a cove that swings more than the data can see), and it floated the Marine Room high at one high tide when the local pocket stirred up (our nearest sensor's ten miles away and can't see it). We also shipped a fix so that shallow/deep bar only shows where it's trustworthy (the SoCal surge coves) and stays hidden up on the Central Coast, where the deep flips clear-or-murky day to day.
+
+🔗 Real-time predictions any day: conditions.spearfactor.com
+
+Dive safe — warm water, early mornings, and read it deep.
+Bret / SpearFactor
 
 ### FACEBOOK — Week of September 7–13, 2026 (generic, no individuals named; offshore intel paraphrased, no source)
 🌊 CALIFORNIA DIVE REPORT — Week of September 7–13, 2026
