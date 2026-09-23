@@ -79,6 +79,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-22 (Tue) — MR + MPP — ✅ MR MATCH + 📷 CAM-CAP VALIDATED (cam over-read caught) + MPP cooler/blue (warm anomaly easing)
+- **Marine Room (`ljmarineroom`) — ✅ MATCH:** "not a great day on the surface, very choppy, not great vis; only good vis just outside LJ Cove between the middle and outer quarter buoys." Tool **5–10 (Poor) / deep 13–19** → the choppy poor nearshore ↔ 5–10 Poor; the good-only-at-the-outer-buoys ↔ the deep/outer clean water. MATCH.
+- **📷 CAM-CAP VALIDATED (the important one):** diver said "**the pier cam looked amazing**" while the in-water was choppy/poor — a textbook **cam-over-read**. `/camviz` confirms the cam posted **25–35 (high)**. And the tool held: **ljshores showed just 10–14 "(cam-adj)", NOT 25–35** — the **+6 cam-lift cap** stopped the over-reading cam from blowing up the number on a choppy day. Exactly the conservative behavior we built (cf. 9/15 correlation: cam noisy, don't trust raw). Real-world proof the cap earns its keep — had we loosened it, ljshores would've badly over-called today. Leave the cap.
+- **MPP (`mission`) — qualitative, positive:** "water was cooler, **BLUE**, and felt closer to normal than it has in a while." No ft number (noisy jetty spot; tool 8–11 / deep 17–26). Read it as a **conditions note**: the warm/hazy Kelvin-Wave setup is easing — cooler, bluer water returning. Good sign after yesterday's warm/hazy SD over-call day (9/21). Watch whether SD viz firms up as it cools.
+
 ### 2026-09-21 (Mon) — Monterey weekend + SD cluster — ✅ 4 MATCH / ⚠️ 2 SD OVER-calls (clean-sensor-over-hazy, building pattern)
 - **Monterey / McAbee weekend (`monterey`) — ✅ MATCH:** 5 dives — Sat McAbee AM 20' mid-reef → PM 15' (surge up) → night 10' (surge + loose algae); Sun Mt. Chetron (boat) hazy 20', McAbee Pinnacle 15'→10'. 60–61°F surface, thermocline to 55°F below 50' (viz improved a bit below). Tool **15–20 (bloom season), split hidden** → sits right in the 15–20 spread; MATCH. Wolf eel, treefish, diamondback tritonia, Hopkins rose, sea-hare spawning.
 - **Children's Pool (`ljcove`, 7am) — ✅ MATCH:** snowy 10' ↔ tool **10–14** → MATCH.
