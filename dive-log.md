@@ -79,6 +79,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-24 (Thu) — SD clearing + Veterans Park gin-clear — ✅ 2 MATCH / Veterans Park under-call (South Bay clean-current, known)
+- **LJ Shores (shop daily) — ✅ MATCH:** "moderate, slowly clearing, still some haze/particulate, 10–15, find clear pockets," 74.7°F. Tool **15–20 (Fair)** → overlaps at 15 (tool a touch top-heavy vs shop's 10–15, but MATCH). SD clearing continues.
+- **Terranea, PV (`pv`, 9/23 AM) — ✅ MATCH (marginal):** 10' yesterday morning. Tool **12–16 (Fair)** → 10 is ~2 under the floor = within noise. Next-day read. ⚠️ **MPA note: Terranea sits in the Point Vicente SMCA — NO take of reef species; pelagics only. Verify with CDFW.**
+- **Veterans Park (`veteranspark`, 9/23 night) — under-call ✗ (safe, KNOWN):** "**fantastic, solid 30', could see lights 70' away.**" Tool **13–18 (Fair)** → under by ~12–17. The **South Bay gin-clear / slack-current** pattern (cf. Flat Rock, Malibu outer reef) — the tool can't credit current-driven clarity from its inputs, errs low (safe). No tune (same as PV; frontend flags the upside). Warm: surface 70s, **66°F @ 100'** (El-Niño warm-at-depth). Critters: ~8 Navanax, small octo, young barracuda school, box jellies shallow (50'+).
+
 ### 2026-09-23 (Wed) — SD clearing (LJ Shores over-call RESOLVED) + OC/central batch — ✅ 3 MATCH / MR under / Goff over
 - **LJ Shores (shop daily) — ✅ MATCH + the 9/21 over-call RESOLVED:** "clearing, slight haze, 10–15 and 20 in spots." Tool **15–20 (Fair)** → overlaps → MATCH. Yesterday/9-21 ljshores over-called (23–28 vs hazy 10–15); today the water cleared AND the tool came down to 15–20 → aligned. Confirms the clean-sensor-over-hazy over-calls were **transient (hazy days), not a standing bias** — as the water actually cleared, the tool matched. (Good news for the "don't tune it" call.)
 - **MPP (`mission`) — ✅ MATCH (straddle):** "okay near the sand, really bad 2–3' in the bay, then magically cleared to 10–15 at the point/channel; best viz near the rocks." 73°F. Tool **7–9 (Poor) / deep 14–20** → the 2–3 interior-bay murk sits below, the 10–15 channel ↔ the deep zone. Classic noisy-jetty murky-bay/clear-channel split. (Also helped a diver locate "the channel" = the deep Mission Bay entrance channel off the jetty tip — map Q answered.)
