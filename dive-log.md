@@ -79,6 +79,11 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
+### 2026-09-25 (Fri) — SD FULLY CLEARED: Marine Room 20–30 + Coronados 80+ — ✅ 2 MATCH + cam was a correct leading signal
+- **Marine Room (`ljmarineroom`, 3:30–6pm) — ✅ MATCH:** "**Beautiful viz 20–30', could see sand grains on the bottom in 30' of water! Great everywhere except the shallow reef.**" Tool **17–23 (Good)** → overlaps 20–23 = MATCH. **MR fully cleared** — and the tool came UP with it (contrast 9/22 over-call on the choppy day, 9/23 under-call vs swimmers). "Great except the shallow reef" = MR's sediment shallow-flat is the last holdout, exactly the known pattern (deep/outer clears first, shallow reef laggard). 🐙🦈 great life.
+- **📷 CAM was a CORRECT leading signal this time:** owner noted "**the Scripps camera yesterday (9/24) looked amazing in the afternoon**" — and today the water is genuinely 20–30 clear. So here the cam-amazing PREDICTED the real clearing (vs 9/22, when cam looked amazing but in-water was choppy/poor = over-read). Reinforces: the cam is a useful signal but noisy — right today, over-read 9/22 — which is exactly why the **+6 lift cap** hedges it (trusts it partially, never fully).
+- **"Corner of the Islands" (`coronado`, 9/24) — ✅ MATCH (bluewater):** "**80+ ft** at the corner of the Islands" (Coronado Islands, "the Corner"). Tool `coronado` rated **Excellent** (bluewater spot — rates rather than giving a precise ceiling number). 80+ ↔ Excellent = qualitative MATCH. Bluewater island water is gin-clear as expected on the warm El-Niño offshore.
+
 ### 2026-09-24 (Thu) — SD clearing + Veterans Park gin-clear — ✅ 2 MATCH / Veterans Park under-call (South Bay clean-current, known)
 - **LJ Shores (shop daily) — ✅ MATCH:** "moderate, slowly clearing, still some haze/particulate, 10–15, find clear pockets," 74.7°F. Tool **15–20 (Fair)** → overlaps at 15 (tool a touch top-heavy vs shop's 10–15, but MATCH). SD clearing continues.
 - **Terranea, PV (`pv`, 9/23 AM) — ✅ MATCH (marginal):** 10' yesterday morning. Tool **12–16 (Fair)** → 10 is ~2 under the floor = within noise. Next-day read. ⚠️ **MPA note: Terranea sits in the Point Vicente SMCA — NO take of reef species; pelagics only. Verify with CDFW.**
