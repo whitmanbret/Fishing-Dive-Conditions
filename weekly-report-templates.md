@@ -13,7 +13,13 @@ the format, voice, and past examples are never lost.
 
 ## 📌 Pending intel for the NEXT weekly report (clear after use)
 
-**(CLEARED 2026-09-20 — the El-Niño-high-gear beat (9/18→9/20) was used in the Sep 14–20 weekly report, archived below. Next beat starts fresh from the next offshore intel drop. Standing threads to carry forward: El Niño warm water + local wahoo, world-class marlin, bluefin ~130 mi out, grease-AM/NW-breeze-PM diurnal, bait tight.)**
+**Sourcing rules (always):** never name the source, nothing verbatim, **"divers" not "spearfishers,"** general fish *movement* only (no GPS/spots/specifics), and **carry the CDFW season/limit/MPA disclaimer** on anything take-related.
+
+**Beat for the week ending 2026-09-27 (fish movement — keep it general):**
+- **El Niño warm water still on** — tropical/pelagic species holding close. Offshore a few miles off the OC/SD coast: good scattered signal of **dorado (mahi), yellowfin, skipjack and bullet tuna** on kelp paddies (find-the-paddy game, very hit-or-miss); **striped marlin exceptional** this stretch (some of the best in memory), a few **blue marlin** and **scattered wahoo** mixed in; **bluefin** showing again way out on the outer banks.
+- **Coastal yellowtail has slowed** noticeably (was hot, now a pick) — still some around the islands/kelp and PV coast. Inshore reefs/kelp holding **calico bass, bonito, and a few white seabass**. Coronado Islands has yellowtail but **heavy sea-lion pressure**.
+- **⚠️ CONDITIONS HEADS-UP (dive-relevant — this is the important one):** a **big south/SE swell from a distant hurricane (Polo) is forecast to arrive Mon–Tue (9/28–29)**, on top of **increasing WNW wind Sun→Mon** (gusts 20+ kt in the outer waters) and a **slight rain chance Sun night/Mon**. Translation for divers: expect **rising surge and shallow-cove/reef blowout risk early next week**, south-facing exposures hit first, and watch for AM runoff murk if the rain lands. Sheltered/north-facing spots and deeper water will hold up best. Good beat for a "plan around the south swell" tactical note.
+- **Standing threads:** warm surface lens over cooler upwelled water, MR shallow-reef morning-high-tide murk, PV/South-Bay current-driven gin-clear, bait still tight (small anchovy).
 
 ---
 
