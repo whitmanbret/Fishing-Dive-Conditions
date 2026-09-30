@@ -79,7 +79,9 @@ Goal: pair the Scripps underwater cam (direct clarity ground truth) with the con
 
 ## My dives
 
-### 2026-09-29 (Tue, logged 9/30) — POLO SWELL LANDED: LJ cluster poor + big surf — ✅ Shores/Cove MATCH (surge tracked) / ❌ MR OVER-call (didn't take the cluster surge crush)
+### 2026-09-30 (Wed) — Polo peak easing: Crescent fishable between sets + SD bioluminescence — ✅ MATCH (tool correctly conservative on the swell)
+- **Crescent Bay (`crescent`, Bret) — ✅ MATCH (tool safe-conservative):** "**wasn't that bad between sets** — 10–15' in the shallow around there, mainly in the lulls; waves scary breaking on the rocks so I hung south of them. Biggest day at 4–5 ft swell, supposed to mellow the rest of the week." Tool **7–11 (Poor), deep 18–28, 73.6°F** → overlaps at 10–11 = MATCH; tool ran a touch low (safe direction) on the peak-swell day, and the real water was a bit better **in the lulls** (between-sets viz beats the surge-crushed headline). Deep 18–28 = the clean past the surge. **This is the Polo peak** — swell easing from here, so expect the OC coves to climb back through the week.
+- **✨ SD BIOLUMINESCENCE — "tons around San Diego, especially Mission Bay":** big biolum right now, strongest in Mission Bay. No viz number → conditions/wildlife note. Recurring MB biolum (cf. 9/17, 9/20) — night-dive draw and a dinoflagellate signal (fits the warm/productive water). Great weekly-report + community note. — POLO SWELL LANDED: LJ cluster poor + big surf — ✅ Shores/Cove MATCH (surge tracked) / ❌ MR OVER-call (didn't take the cluster surge crush)
 - **Reported (Bret, 9/29):** "**LJ Shores / MR and the Cove yesterday was poor vis with big surf.**" The Polo south swell arrived as forecast (heads-up flagged 9/28).
 - **LJ Shores (`ljshores`) — ✅ MATCH:** tool (live 9/30 read) **6–9 (Poor), deep 12–18**, 72.4°F → dropped from 14–18 on 9/28 as the surge filled in = MATCH with poor+big-surf. **The surge penalty tracked the Polo blowout** — exactly the live test flagged on 9/28. ✅
 - **LJ Cove (`ljcove`) — ✅ MATCH:** **5–9 (Poor), deep 12–18** → poor+big-surf = MATCH. Cove crushed like the Shores.
