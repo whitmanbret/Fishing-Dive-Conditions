@@ -118,9 +118,28 @@ if you cannot resolve even the near piling), the visibility range in feet, a
 confidence level, and a single-sentence rationale.\
 """
 
+# Visual calibration reference (2026-10-03): an operator-annotated Scripps frame
+# with the 4 / 11 / 14 / 30 ft pilings labeled by arrow. Prepending it as a visual
+# few-shot lets the model SEE which piling is which instead of inferring from the
+# text description alone — the main source of noisy cam reads (misidentifying the
+# furthest resolvable piling). Falls back to text-only calibration if the file is
+# absent, so the automation never breaks on a missing asset.
+REFERENCE_IMAGE_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "reference", "scripps_pilings_labeled.jpg"
+)
+REFERENCE_CAPTION = (
+    "CALIBRATION REFERENCE (not the frame to score): this is an operator-annotated "
+    "Scripps Pier frame with the piling distances labeled — 4 ft (nearest, right, "
+    "heavily fouled), 11 ft (next piling right), 14 ft (left, pump/instrument line), "
+    "30 ft (farthest, back-center). Use it to identify which piling is which in the "
+    "live frame that follows."
+)
+FRAME_CAPTION = "LIVE FRAME TO SCORE (estimate the visibility from this one):"
+
 USER_INSTRUCTION = (
-    "Estimate the current underwater visibility at La Jolla Shores from this "
-    "Scripps Pier underwater camera frame, using the piling calibration."
+    "Estimate the current underwater visibility at La Jolla Shores from the LIVE "
+    "Scripps Pier camera frame above, using the piling calibration and the labeled "
+    "reference frame to locate the pilings."
 )
 
 
@@ -166,6 +185,25 @@ def build_image_block(image: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Message content
+# ---------------------------------------------------------------------------
+def _build_content(image: str) -> list:
+    """User-message content: labeled calibration reference (if present, cached) +
+    the live frame to score. Falls back to text-only calibration if the reference
+    asset is missing."""
+    content: list = []
+    if os.path.isfile(REFERENCE_IMAGE_PATH):
+        ref_block = build_image_block(REFERENCE_IMAGE_PATH)
+        # Cache the stable reference (image + caption) so the hourly automation only
+        # pays for the varying live frame after the first call.
+        ref_block["cache_control"] = {"type": "ephemeral"}
+        content += [{"type": "text", "text": REFERENCE_CAPTION}, ref_block,
+                    {"type": "text", "text": FRAME_CAPTION}]
+    content += [build_image_block(image), {"type": "text", "text": USER_INSTRUCTION}]
+    return content
+
+
+# ---------------------------------------------------------------------------
 # Estimation
 # ---------------------------------------------------------------------------
 def estimate(image: str, model: str) -> tuple[VizEstimate, "anthropic.types.Usage"]:
@@ -183,7 +221,7 @@ def estimate(image: str, model: str) -> tuple[VizEstimate, "anthropic.types.Usag
         messages=[
             {
                 "role": "user",
-                "content": [build_image_block(image), {"type": "text", "text": USER_INSTRUCTION}],
+                "content": _build_content(image),
             }
         ],
         output_format=VizEstimate,
