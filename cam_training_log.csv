@@ -403,3 +403,4 @@ capture_time_utc,frame_file,ntu,chl,sensor_time_utc,cam_viz_low_ft,cam_viz_high_
 20261021T002745Z,scripps_20261021T002745Z.jpg,0.45,0.6,2026-10-21T00:08:00Z,4,8,moderate,0,True
 20261021T175715Z,scripps_20261021T175715Z.jpg,-0.05,0.47,2026-10-21T17:40:00Z,14,20,moderate,14,True
 20261021T213214Z,scripps_20261021T213214Z.jpg,0.45,0.38,2026-10-21T21:08:00Z,14,20,moderate,14,True
+20261022T003029Z,scripps_20261022T003029Z.jpg,0.3,0.64,2026-10-22T00:08:00Z,10,14,moderate,11,True
