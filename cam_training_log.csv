@@ -457,3 +457,4 @@ capture_time_utc,frame_file,ntu,chl,sensor_time_utc,cam_viz_low_ft,cam_viz_high_
 20261112T020959Z,scripps_20261112T020959Z.jpg,2.37,0.66,2026-11-12T01:52:00Z,0,4,low,0,False
 20261112T204243Z,scripps_20261112T204243Z.jpg,0.77,0.51,2026-11-12T20:24:00Z,14,20,moderate,14,True
 20261113T014418Z,scripps_20261113T014418Z.jpg,-0.07,0.38,2026-11-13T01:08:00Z,0,4,low,0,False
+20261113T202400Z,scripps_20261113T202400Z.jpg,0.8,0.93,2026-11-13T19:52:00Z,4,8,moderate,0,True
